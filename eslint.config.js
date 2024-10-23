@@ -1,32 +1,25 @@
-import eslint from '@eslint/js';
-import prettier from 'eslint-config-prettier';
-import svelte from 'eslint-plugin-svelte';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import pluginVue from 'eslint-plugin-vue'
+import vueTsEslintConfig from '@vue/eslint-config-typescript'
+import pluginVitest from '@vitest/eslint-plugin'
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
-export default tseslint.config(
-	eslint.configs.recommended,
-	...tseslint.configs.recommended,
-	...svelte.configs['flat/recommended'],
-	prettier,
-	...svelte.configs['flat/prettier'],
-	{
-		languageOptions: {
-			globals: {
-				...globals.browser,
-				...globals.node
-			}
-		}
-	},
-	{
-		files: ['**/*.svelte'],
-		languageOptions: {
-			parserOptions: {
-				parser: tseslint.parser
-			}
-		}
-	},
-	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
-	}
-);
+export default [
+  {
+    name: 'app/files-to-lint',
+    files: ['**/*.{ts,mts,tsx,vue}'],
+  },
+
+  {
+    name: 'app/files-to-ignore',
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
+  },
+
+  ...pluginVue.configs['flat/essential'],
+  ...vueTsEslintConfig(),
+
+  {
+    ...pluginVitest.configs.recommended,
+    files: ['src/**/__tests__/*'],
+  },
+  skipFormatting,
+]
