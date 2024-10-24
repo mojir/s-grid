@@ -4,7 +4,7 @@ import { ref, useTemplateRef } from 'vue'
 const rows = ref(
   Array.from({ length: 99 }, (_, i) => ({
     id: `${i + 1}`,
-    height: 30,
+    height: 26,
   })),
 )
 
@@ -97,9 +97,18 @@ function syncScroll(event: Event) {
             v-for="col of cols"
             :key="col.id"
             :style="dim(col.width, colHeaderHeight)"
-            class="flex overflow-hidden justify-center text-xs items-center box-border border-r border-slate-700"
+            class="flex"
           >
-            {{ col.id }}
+            <div :style="dim(3, null)" />
+            <div
+              class="flex flex-1 justify-center text-xs items-center select-none"
+            >
+              {{ col.id }}
+            </div>
+            <div
+              :style="dim(5, null)"
+              class="flex box-border border-x-2 border-slate-800 bg-slate-700 hover:cursor-col-resize mr-[-2px] z-10"
+            />
           </div>
         </div>
       </div>
@@ -114,9 +123,21 @@ function syncScroll(event: Event) {
             v-for="row of rows"
             :key="row.id"
             :style="dim(rowHeaderWidth, row.height)"
-            class="flex overflow-hidden justify-center items-center text-xs box-border border-b border-slate-700"
+            class="flex flex-col justify-center items-center text-xs"
           >
-            {{ row.id }}
+            <div
+              :style="dim(null, 5)"
+              class="flex w-full"
+            />
+            <div
+              class="flex flex-1 overflow-hidden justify-center text-xs items-center select-none"
+            >
+              {{ row.id }}
+            </div>
+            <div
+              :style="dim(null, 5)"
+              class="flex w-full box-border border-y-2 border-slate-800 bg-slate-700 hover:cursor-row-resize mb-[-2px] z-10"
+            />
           </div>
         </div>
         <div
