@@ -1,53 +1,16 @@
 <script setup lang="ts">
 import { Cell, useGrid } from '@/composables/useGrid'
+import { useSyncScroll } from '@/composables/useSyncScroll'
 import { ref, useTemplateRef } from 'vue'
+import { cssUtils } from '@/utils'
 
-const { grid, getId } = useGrid(100, 26)
-
-const rowHeaderWidth = 50
-const colHeaderHeight = 25
-function dim(w: number | null, h: number | null) {
-  const result: Record<string, string> = {}
-  if (w !== null) {
-    result.width = `${w}px`
-    result.minWidth = `${w}px`
-  }
-  if (h !== null) {
-    result.height = `${h}px`
-    result.minHeight = `${h}px`
-  }
-  return result
-}
+const { dim } = cssUtils
+const { grid, toGridId } = useGrid(100, 26)
 
 const sheetRef = useTemplateRef('sheet')
 const rowHeaderRef = useTemplateRef('rowHeader')
 const colHeaderRef = useTemplateRef('colHeader')
-let activeScrollElement: HTMLElement | null = null
-let scrollTimer = 0
-
-function syncScroll(event: Event) {
-  // Avoid looping when another div trigger scroll event
-  if (activeScrollElement && activeScrollElement !== event.target) {
-    return
-  }
-
-  activeScrollElement = event.target as HTMLElement
-
-  if (activeScrollElement === sheetRef.value) {
-    rowHeaderRef.value!.scrollTop = activeScrollElement.scrollTop
-    colHeaderRef.value!.scrollLeft = activeScrollElement.scrollLeft
-  } else if (activeScrollElement === rowHeaderRef.value) {
-    sheetRef.value!.scrollTop = activeScrollElement.scrollTop
-  } else if (activeScrollElement === colHeaderRef.value) {
-    sheetRef.value!.scrollLeft = activeScrollElement.scrollLeft
-  }
-
-  // Reset scrollingDiv after sync to allow future scroll events
-  clearTimeout(scrollTimer)
-  scrollTimer = setTimeout(() => {
-    activeScrollElement = null
-  }, 20)
-}
+const syncScroll = useSyncScroll(sheetRef, rowHeaderRef, colHeaderRef)
 
 function setValue() {
   const cell = grid.value.getOrCreateCell(cellId.value)
@@ -62,7 +25,7 @@ function applyFormatter() {
 const valueInputRef = useTemplateRef('valueInput')
 
 function setCellId(i: number, j: number) {
-  cellId.value = getId(i, j)
+  cellId.value = toGridId(i, j)
   valueInputRef.value?.focus()
 }
 
@@ -132,11 +95,11 @@ const numberFormatter = ref('#(* 2 %)')
     <div class="flex flex-grow flex-col overflow-hidden">
       <div
         class="flex"
-        :style="dim(null, colHeaderHeight)"
+        :style="dim(null, grid.colHeaderHeight)"
       >
         <div
           class="flex bg-slate-800 box-border border-b border-r border-slate-700"
-          :style="dim(rowHeaderWidth, colHeaderHeight)"
+          :style="dim(grid.rowHeaderWidth, grid.colHeaderHeight)"
         ></div>
         <div
           class="flex overflow-y-auto bg-slate-800 no-scrollbar"
@@ -146,7 +109,7 @@ const numberFormatter = ref('#(* 2 %)')
           <div
             v-for="col of grid.cols"
             :key="col.id"
-            :style="dim(col.width, colHeaderHeight)"
+            :style="dim(col.width, grid.colHeaderHeight)"
             class="flex"
           >
             <div :style="dim(3, null)" />
@@ -166,13 +129,13 @@ const numberFormatter = ref('#(* 2 %)')
         <div
           ref="rowHeader"
           class="flex flex-col overflow-x-auto bg-slate-800 no-scrollbar"
-          :style="dim(rowHeaderWidth, null)"
+          :style="dim(grid.rowHeaderWidth, null)"
           @scroll="syncScroll"
         >
           <div
             v-for="row of grid.rows"
             :key="row.id"
-            :style="dim(rowHeaderWidth, row.height)"
+            :style="dim(grid.rowHeaderWidth, row.height)"
             class="flex flex-col justify-center items-center text-xs"
           >
             <div
@@ -206,7 +169,7 @@ const numberFormatter = ref('#(* 2 %)')
               :key="col.id"
               :style="dim(col.width, row.height)"
               class="flex overflow-hidden box-border border-r border-b border-slate-800"
-              :class="{ 'border-slate-500 border': getId(i, j) === cellId }"
+              :class="{ 'border-slate-500 border': toGridId(i, j) === cellId }"
               @click="cellClicked(i, j, grid.cells[i][j])"
             >
               {{ grid.cells[i][j]?.displayValue }}
