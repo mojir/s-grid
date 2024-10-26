@@ -1,28 +1,8 @@
 <script setup lang="ts">
+import { Cell, useGrid } from '@/composables/useGrid'
 import { ref, useTemplateRef } from 'vue'
 
-const rows = ref(
-  Array.from({ length: 99 }, (_, i) => ({
-    id: `${i + 1}`,
-    height: 26,
-  })),
-)
-
-const cols = ref(
-  Array.from({ length: 26 * 3 }, (_, i) => ({
-    id: getColHeader(i),
-    width: 100,
-  })),
-)
-
-function getColHeader(col: number) {
-  let result = ''
-  while (col >= 0) {
-    result = String.fromCharCode((col % 26) + 65) + result
-    col = Math.floor(col / 26) - 1
-  }
-  return result
-}
+const { grid, getId } = useGrid(100, 26)
 
 const rowHeaderWidth = 50
 const colHeaderHeight = 25
@@ -68,15 +48,85 @@ function syncScroll(event: Event) {
     activeScrollElement = null
   }, 20)
 }
+
+function setValue() {
+  const cell = grid.value.getOrCreateCell(cellId.value)
+  cell.input.value = cellValue.value
+}
+
+function applyFormatter() {
+  const cell = grid.value.getOrCreateCell(cellId.value)
+  cell.numberFormatter.value = numberFormatter.value
+}
+
+const valueInputRef = useTemplateRef('valueInput')
+
+function setCellId(i: number, j: number) {
+  cellId.value = getId(i, j)
+  valueInputRef.value?.focus()
+}
+
+function cellClicked(i: number, j: number, cell: Cell | null) {
+  setCellId(i, j)
+  console.log(cell)
+  cellValue.value = cell?.input.value ?? ''
+  numberFormatter.value = cell?.numberFormatter.value ?? ''
+}
+
+const cellId = ref('A1')
+const cellValue = ref('')
+const numberFormatter = ref('#(* 2 %)')
 </script>
 
 <template>
+  <div class="flex flex-col py-2 ml-4 gap-2">
+    <div class="flex gap-2 items-center">
+      <div class="flex gap-1 items-center">
+        CellId:<input
+          class="border py-1 px-2"
+          v-model="cellId"
+        />
+      </div>
+    </div>
+
+    <div class="flex gap-2 items-center">
+      <div class="flex gap-1 items-center">
+        Value:<input
+          class="border py-1 px-2"
+          v-model="cellValue"
+          ref="valueInput"
+          @blur="setValue"
+        />
+      </div>
+      <button
+        @click="setValue"
+        class="underline"
+      >
+        Set value
+      </button>
+    </div>
+
+    <div class="flex gap-2 items-center">
+      <div class="flex gap-1 items-center">
+        Formatter:<input
+          class="border py-1 px-2"
+          v-model="numberFormatter"
+        />
+      </div>
+      <button
+        @click="applyFormatter"
+        class="underline"
+      >
+        Apply formatter
+      </button>
+    </div>
+  </div>
   <main class="flex flex-col h-screen bg-slate-900 text-slate-300">
     <div
       :style="dim(null, 50)"
       class="flex justify-center items-center text-2xl"
     >
-      Litsheet
+      &lambda;itsheet
     </div>
 
     <div class="flex flex-grow flex-col overflow-hidden">
@@ -94,7 +144,7 @@ function syncScroll(event: Event) {
           @scroll="syncScroll"
         >
           <div
-            v-for="col of cols"
+            v-for="col of grid.cols"
             :key="col.id"
             :style="dim(col.width, colHeaderHeight)"
             class="flex"
@@ -120,7 +170,7 @@ function syncScroll(event: Event) {
           @scroll="syncScroll"
         >
           <div
-            v-for="row of rows"
+            v-for="row of grid.rows"
             :key="row.id"
             :style="dim(rowHeaderWidth, row.height)"
             class="flex flex-col justify-center items-center text-xs"
@@ -146,17 +196,21 @@ function syncScroll(event: Event) {
           @scroll="syncScroll"
         >
           <div
-            v-for="row of rows"
+            v-for="(row, i) of grid.rows"
             :key="row.id"
             :style="dim(null, row.height)"
             class="flex"
           >
             <div
-              v-for="col of cols"
+              v-for="(col, j) of grid.cols"
               :key="col.id"
               :style="dim(col.width, row.height)"
               class="flex overflow-hidden box-border border-r border-b border-slate-800"
-            ></div>
+              :class="{ 'border-slate-500 border': getId(i, j) === cellId }"
+              @click="cellClicked(i, j, grid.cells[i][j])"
+            >
+              {{ grid.cells[i][j]?.displayValue }}
+            </div>
           </div>
         </div>
       </div>
