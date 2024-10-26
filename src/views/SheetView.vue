@@ -10,8 +10,7 @@ import HeaderBar from '@/components/HeaderBar.vue'
 import FormulaBar from '@/components/FormulaBar.vue'
 import FooterBar from '@/components/FooterBar.vue'
 
-const { grid, fromIdToCoords, fromCoordsToId } = useGrid()
-const activeCellId = ref<string>('A1')
+const { grid, fromIdToCoords, fromCoordsToId, activeCellId } = useGrid()
 const { wh, h } = cssUtils
 
 onMounted(() => {
@@ -110,10 +109,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
       class="flex flex-col overflow-hidden"
       ref="gridWrapper"
     >
-      <FormulaBar
-        :active-cell-id="activeCellId"
-        ref="formulaBarRef"
-      />
+      <FormulaBar ref="formulaBarRef" />
       <div
         class="flex"
         :style="h(grid.colHeaderHeight)"
@@ -133,7 +129,6 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           @scroll="syncScroll"
         />
         <DataGrid
-          v-model:active-cell-id="activeCellId"
           ref="dataGridRef"
           @scroll="syncScroll"
           @cell-dblclick="formulaBarRef.focus()"

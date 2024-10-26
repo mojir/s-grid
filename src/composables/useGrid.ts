@@ -6,6 +6,7 @@ const lits = new Lits()
 
 const defaultNbrOfRows = 100
 const defaultNbrOfCols = 26
+const activeCellId = ref<string>('A1')
 
 export class Cell {
   public input = ref('')
@@ -93,6 +94,11 @@ class Grid {
     )
   }
 
+
+  public getOrCreateActiveCell(): Cell {
+    return this.getOrCreateCell(activeCellId.value)
+  }
+
   public getOrCreateCell(id: string): Cell {
     const [row, col] = fromIdToCoords(id)
     if (this.cells[row][col] !== null) {
@@ -101,6 +107,10 @@ class Grid {
     this.cells[row][col] = new Cell(this, id)
     this.trigger()
     return this.cells[row][col]
+  }
+
+  public getActiveCell(): Cell | undefined {
+    return this.getCell(activeCellId.value)
   }
 
   public getCell(id: string): Cell | undefined {
@@ -135,7 +145,7 @@ export const useGrid = createSharedComposable(() => {
     return `${getColHeader(col)}${row + 1}`
   }
 
-  return { grid, fromCoordsToId, fromIdToCoords }
+  return { grid, fromCoordsToId, fromIdToCoords, activeCellId }
 })
 
 function getColHeader(col: number) {

@@ -1,24 +1,18 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
 import { cssUtils } from '@/utils'
-import { onMounted, ref, toRefs, watch } from 'vue'
-
-const props = defineProps<{
-  activeCellId: string
-}>()
-
-const { activeCellId } = toRefs(props)
+import { onMounted, ref, watch } from 'vue'
 
 const { h, wh } = cssUtils
-const { grid } = useGrid()
+const { grid, activeCellId } = useGrid()
 
 const initialValue = ref('')
 const cellValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 const focused = ref(false)
 
-watch(activeCellId, newActiveCellId => {
-  cellValue.value = grid.value.getCell(newActiveCellId)?.input.value ?? ''
+watch(activeCellId, () => {
+  cellValue.value = grid.value.getActiveCell()?.input.value ?? ''
   initialValue.value = cellValue.value
 })
 
@@ -38,7 +32,7 @@ function onBlur() {
 
 function save() {
   if (initialValue.value !== cellValue.value) {
-    const cell = grid.value.getOrCreateCell(props.activeCellId)
+    const cell = grid.value.getOrCreateActiveCell()
     cell.input.value = cellValue.value
     initialValue.value = cellValue.value
   }

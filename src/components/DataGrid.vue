@@ -3,16 +3,11 @@ import { useGrid } from '@/composables/useGrid'
 import { ref } from 'vue'
 import { cssUtils } from '@/utils'
 
-const activeCellId = defineModel('activeCellId', {
-  type: String,
-  required: true,
-})
-
 const emit = defineEmits<{
   (e: 'cell-dblclick', id: string): void
 }>()
 
-const { grid, fromCoordsToId } = useGrid()
+const { grid, fromCoordsToId, activeCellId } = useGrid()
 
 const { wh, h } = cssUtils
 
