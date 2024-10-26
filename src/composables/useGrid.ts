@@ -1,4 +1,5 @@
 import { computed, customRef, ref, shallowReadonly } from "vue"
+import { createSharedComposable } from '@vueuse/core'
 import { isLitsFunction, Lits } from "@mojir/lits"
 
 const lits = new Lits()
@@ -71,8 +72,9 @@ class Grid {
   public rows: { id: string; height: number }[]
   public cols: { id: string; width: number }[]
   public cells: (Cell | null)[][]
-  public rowHeaderWidth: number
-  public colHeaderHeight: number
+  public readonly rowHeaderWidth = 50
+  public readonly colHeaderHeight = 25
+
 
   constructor(rows: number, cols: number, private readonly trigger: () => void) {
     this.rows = Array.from({ length: rows }, (_, i) => ({
@@ -86,8 +88,6 @@ class Grid {
     this.cells = Array.from({ length: rows }, () =>
       Array.from({ length: cols }, () => null),
     )
-    this.rowHeaderWidth = 50
-    this.colHeaderHeight = 25
   }
 
   public getOrCreateCell(id: string): Cell {
@@ -111,7 +111,7 @@ class Grid {
   }
 }
 
-export function useGrid(rows: number, cols: number) {
+export const useGrid = createSharedComposable((rows: number, cols: number) => {
   const grid = shallowReadonly(customRef((track, trigger) => {
     const gridInstance = new Grid(rows, cols, trigger)
     return {
@@ -123,12 +123,12 @@ export function useGrid(rows: number, cols: number) {
     }
   }))
 
-  function getId(row: number, col: number) {
+  function toGridId(row: number, col: number) {
     return `${getColHeader(col)}${row + 1}`
   }
 
-  return { grid, getId }
-}
+  return { grid, toGridId }
+})
 
 function getColHeader(col: number) {
   let result = ''
