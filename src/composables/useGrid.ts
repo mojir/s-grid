@@ -135,7 +135,7 @@ export const useGrid = createSharedComposable(() => {
     return `${getColHeader(col)}${row + 1}`
   }
 
-  return { grid, fromCoordsToId }
+  return { grid, fromCoordsToId, fromIdToCoords }
 })
 
 function getColHeader(col: number) {

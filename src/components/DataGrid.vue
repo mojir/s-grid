@@ -3,15 +3,27 @@ import { useGrid } from '@/composables/useGrid'
 import { ref } from 'vue'
 import { cssUtils } from '@/utils'
 
-const { grid, fromCoordsToId } = useGrid()
 const activeCellId = defineModel('activeCellId', {
   type: String,
   required: true,
 })
 
+const emit = defineEmits<{
+  (e: 'cell-dblclick', id: string): void
+}>()
+
+const { grid, fromCoordsToId } = useGrid()
+
 const { wh, h } = cssUtils
 
 const el = ref<HTMLDivElement>()
+
+function onClick(id: string) {
+  activeCellId.value = id
+}
+function onDblClick(id: string) {
+  emit('cell-dblclick', id)
+}
 
 defineExpose({
   el,
@@ -33,11 +45,13 @@ defineExpose({
         v-for="(col, j) of grid.cols"
         :key="col.id"
         :style="wh(col.width, row.height)"
-        class="flex overflow-hidden box-border border-r border-b border-slate-800"
+        class="flex overflow-hidden box-border border-r border-b pl-[3px] pt-[1px] border-slate-800 items-center"
         :class="{
-          'border-slate-500 border': fromCoordsToId(i, j) === activeCellId,
+          'border-slate-400 border pt-0 pl-[2px]':
+            fromCoordsToId(i, j) === activeCellId,
         }"
-        @click="activeCellId = fromCoordsToId(i, j)"
+        @click="onClick(fromCoordsToId(i, j))"
+        @dblclick="onDblClick(fromCoordsToId(i, j))"
       >
         {{ grid.cells[i][j]?.displayValue }}
       </div>
