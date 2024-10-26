@@ -4,6 +4,9 @@ import { isLitsFunction, Lits } from "@mojir/lits"
 
 const lits = new Lits()
 
+const defaultNbrOfRows = 100
+const defaultNbrOfCols = 26
+
 export class Cell {
   public input = ref('')
   public output = computed(() => {
@@ -69,9 +72,9 @@ export class Cell {
 }
 
 class Grid {
-  public rows: { id: string; height: number }[]
-  public cols: { id: string; width: number }[]
-  public cells: (Cell | null)[][]
+  public readonly rows: { id: string; height: number }[]
+  public readonly cols: { id: string; width: number }[]
+  public readonly cells: (Cell | null)[][]
   public readonly rowHeaderWidth = 50
   public readonly colHeaderHeight = 25
 
@@ -91,7 +94,7 @@ class Grid {
   }
 
   public getOrCreateCell(id: string): Cell {
-    const { row, col } = getRowAndCol(id)
+    const [row, col] = fromIdToCoords(id)
     if (this.cells[row][col] !== null) {
       return this.cells[row][col]
     }
@@ -100,8 +103,13 @@ class Grid {
     return this.cells[row][col]
   }
 
+  public getCell(id: string): Cell | undefined {
+    const [row, col] = fromIdToCoords(id)
+    return this.cells[row][col] ?? undefined
+  }
+
   public removeCell(id: string) {
-    const { row, col } = getRowAndCol(id)
+    const [row, col] = fromIdToCoords(id)
     if (this.cells[row][col] === null) {
       return
     }
@@ -111,9 +119,9 @@ class Grid {
   }
 }
 
-export const useGrid = createSharedComposable((rows: number, cols: number) => {
+export const useGrid = createSharedComposable(() => {
   const grid = shallowReadonly(customRef((track, trigger) => {
-    const gridInstance = new Grid(rows, cols, trigger)
+    const gridInstance = new Grid(defaultNbrOfRows, defaultNbrOfCols, trigger)
     return {
       get() {
         track()
@@ -123,11 +131,11 @@ export const useGrid = createSharedComposable((rows: number, cols: number) => {
     }
   }))
 
-  function toGridId(row: number, col: number) {
+  function fromCoordsToId(row: number, col: number) {
     return `${getColHeader(col)}${row + 1}`
   }
 
-  return { grid, toGridId }
+  return { grid, fromCoordsToId }
 })
 
 function getColHeader(col: number) {
@@ -138,13 +146,12 @@ function getColHeader(col: number) {
   }
   return result
 }
-
-function getRowAndCol(id: string) {
+function fromIdToCoords(id: string): [number, number] {
   const match = id.match(/([A-Z]+)([0-9]+)/)
   if (!match) {
     throw new Error('Invalid cell id')
   }
   const [, col, row] = match
-  return { row: Number(row) - 1, col: col.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0) }
+  return [Number(row) - 1, col.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)]
 }
 
