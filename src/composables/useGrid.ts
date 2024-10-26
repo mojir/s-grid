@@ -7,6 +7,11 @@ export class Cell {
   public input = ref('')
   public output = computed(() => {
     const input = this.input.value
+
+    if (input === '') {
+      return 0
+    }
+
     if (input.startsWith('=')) {
       const program = input.slice(1)
 
@@ -18,33 +23,33 @@ export class Cell {
       }, {})
 
       const result = lits.run(program, { values })
-      if (isLitsFunction(result) || Array.isArray(result) || typeof result === 'object' && result !== null) {
-        throw new Error('Not supported')
-      }
 
       return result
     }
-    if (input === '') {
-      return 0
-    }
+
     const number = Number(input)
     if (!Number.isNaN(number)) {
       return number
     }
+
     return input
   })
 
   public displayValue = computed<string>(() => {
-    const formattedValue = this.numberFormatterFn.value && typeof this.output.value === 'number' ?
-      lits.apply(this.numberFormatterFn.value, [this.output.value])
-      : this.input.value === '' ? '' : this.output.value
+    if (this.input.value === '') {
+      return ''
+    }
+
+    const formattedValue = this.formatter.value
+      ? lits.apply(this.formatter.value, [this.output.value])
+      : this.output.value
 
     return `${formattedValue}`
   })
 
   public numberFormatter = ref<string | null>(null) // Lits function to format numbers
 
-  private numberFormatterFn = computed(() => {
+  private formatter = computed(() => {
     if (this.numberFormatter.value === null) {
       return null
     }
