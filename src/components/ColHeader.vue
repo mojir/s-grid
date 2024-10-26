@@ -5,7 +5,7 @@ import { ref } from 'vue'
 
 const { grid } = useGrid()
 
-const { wh, w, h } = cssUtils
+const { wh, w } = cssUtils
 
 const el = ref<HTMLDivElement>()
 
