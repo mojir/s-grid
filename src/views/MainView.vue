@@ -4,7 +4,7 @@ import { ref, useTemplateRef, watch } from 'vue'
 import { cssUtils } from '@/utils'
 import DataSheet from '@/components/DataSheet.vue'
 
-const { dim } = cssUtils
+const { h } = cssUtils
 const { grid } = useGrid()
 
 const activeCellId = ref<string>('')
@@ -76,7 +76,7 @@ const numberFormatter = ref('#(* 2 %)')
   </div>
   <main class="flex flex-col h-screen bg-slate-900 text-slate-300">
     <div
-      :style="dim(null, 50)"
+      :style="h(50)"
       class="flex justify-center items-center text-2xl"
     >
       &lambda;itsheet
@@ -85,7 +85,7 @@ const numberFormatter = ref('#(* 2 %)')
     <DataSheet v-model:active-cell-id="activeCellId" />
 
     <div
-      :style="dim(null, 30)"
+      :style="h(30)"
       class="bg-slate-800 box-border border-t border-slate-700"
     ></div>
   </main>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
 import { useSyncScroll } from '@/composables/useSyncScroll'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { cssUtils } from '@/utils'
 import DataGrid from '@/components/DataGrid.vue'
 import RowHeader from './RowHeader.vue'
@@ -13,27 +13,24 @@ const activeCellId = defineModel('activeCellId', {
   required: true,
 })
 
-const { dim } = cssUtils
+const { wh, h } = cssUtils
 
 const dataGridRef = ref<typeof DataGrid>()
 const rowHeaderRef = ref<typeof RowHeader>()
 const colHeaderRef = ref<typeof ColHeader>()
-const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
 
-watch(dataGridRef, () => {
-  console.log('gridRef', dataGridRef.value)
-})
+const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
 </script>
 
 <template>
   <div class="flex flex-grow flex-col overflow-hidden">
     <div
       class="flex"
-      :style="dim(null, grid.colHeaderHeight)"
+      :style="h(grid.colHeaderHeight)"
     >
       <div
         class="flex bg-slate-800 box-border border-b border-r border-slate-700"
-        :style="dim(grid.rowHeaderWidth, grid.colHeaderHeight)"
+        :style="wh(grid.rowHeaderWidth, grid.colHeaderHeight)"
       ></div>
       <ColHeader
         ref="colHeaderRef"

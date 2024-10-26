@@ -9,7 +9,7 @@ const activeCellId = defineModel('activeCellId', {
   required: true,
 })
 
-const { dim } = cssUtils
+const { wh, h } = cssUtils
 
 const el = ref<HTMLDivElement>()
 
@@ -26,13 +26,13 @@ defineExpose({
     <div
       v-for="(row, i) of grid.rows"
       :key="row.id"
-      :style="dim(null, row.height)"
+      :style="h(row.height)"
       class="flex"
     >
       <div
         v-for="(col, j) of grid.cols"
         :key="col.id"
-        :style="dim(col.width, row.height)"
+        :style="wh(col.width, row.height)"
         class="flex overflow-hidden box-border border-r border-b border-slate-800"
         :class="{
           'border-slate-500 border': fromCoordsToId(i, j) === activeCellId,

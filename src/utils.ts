@@ -1,14 +1,22 @@
 export const cssUtils = {
-  dim: (w: number | null, h: number | null) => {
-    const result: Record<string, string> = {}
-    if (w !== null) {
-      result.width = `${w}px`
-      result.minWidth = `${w}px`
+  wh: (w: number, h: number) => {
+    return {
+      width: `${w}px`,
+      minWidth: `${w}px`,
+      height: `${h}px`,
+      minHeight: `${h}px`
     }
-    if (h !== null) {
-      result.height = `${h}px`
-      result.minHeight = `${h}px`
+  },
+  w: (w: number) => {
+    return {
+      width: `${w}px`,
+      minWidth: `${w}px`
     }
-    return result
+  },
+  h: (h: number) => {
+    return {
+      height: `${h}px`,
+      minHeight: `${h}px`
+    }
   }
 }
