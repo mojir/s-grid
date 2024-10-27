@@ -10,7 +10,7 @@ import HeaderBar from '@/components/HeaderBar.vue'
 import FormulaBar from '@/components/FormulaBar.vue'
 import FooterBar from '@/components/FooterBar.vue'
 
-const { grid, fromIdToCoords, fromCoordsToId, activeCellId } = useGrid()
+const { grid, move } = useGrid()
 const { wh, h } = cssUtils
 
 onMounted(() => {
@@ -34,66 +34,42 @@ function onKeyDown(e: KeyboardEvent) {
   } else if (e.key === 'ArrowDown') {
     e.preventDefault()
     formulaBarRef.value.save()
-    const [row, col] = fromIdToCoords(activeCellId.value)
-    const nextRow = row + 1
-    formulaBarRef.value.save()
-    if (nextRow < grid.value.rows.length) {
-      activeCellId.value = fromCoordsToId(nextRow, col)
-    }
+    move('down')
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
     formulaBarRef.value.save()
-    const [row, col] = fromIdToCoords(activeCellId.value)
-    const nextRow = row - 1
-    if (nextRow >= 0) {
-      activeCellId.value = fromCoordsToId(nextRow, col)
-    }
+    move('up')
   } else if (e.key === 'ArrowRight') {
     e.preventDefault()
     formulaBarRef.value.save()
-    const [row, col] = fromIdToCoords(activeCellId.value)
-    const nextCol = col + 1
-    if (nextCol < grid.value.cols.length) {
-      activeCellId.value = fromCoordsToId(row, nextCol)
-    }
+    move('right')
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault()
     formulaBarRef.value.save()
-    const [row, col] = fromIdToCoords(activeCellId.value)
-    const nextCol = col - 1
-    if (nextCol >= 0) {
-      activeCellId.value = fromCoordsToId(row, nextCol)
-    }
+    move('left')
   } else if (e.key === 'Tab') {
     e.preventDefault()
     formulaBarRef.value.save()
     if (e.shiftKey) {
-      const [row, col] = fromIdToCoords(activeCellId.value)
-      const nextCol = col - 1
-      if (nextCol >= 0) {
-        activeCellId.value = fromCoordsToId(row, nextCol)
-      }
+      move('left')
     } else {
-      const [row, col] = fromIdToCoords(activeCellId.value)
-      const nextCol = col + 1
-      if (nextCol < grid.value.cols.length) {
-        activeCellId.value = fromCoordsToId(row, nextCol)
-      }
+      move('right')
     }
   } else if (e.key === 'Enter') {
     e.preventDefault()
     if (formulaBarRef.value.hasFocus()) {
       formulaBarRef.value.save()
-      const [row, col] = fromIdToCoords(activeCellId.value)
-      const nextRow = row + 1
-      if (nextRow < grid.value.rows.length) {
-        activeCellId.value = fromCoordsToId(nextRow, col)
-      }
+      move('down')
     } else {
       formulaBarRef.value.focus()
     }
   } else if (e.key === 'Escape') {
     formulaBarRef.value.cancel()
+  } else if (e.key === 'Backspace') {
+    if (!formulaBarRef.value.hasFocus()) {
+      grid.value.clearActiveCell()
+      formulaBarRef.value.update('')
+    }
   }
 }
 

@@ -1,21 +1,47 @@
 import type { LitsParams } from '@mojir/lits'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const builtinCommandNames = [
+  'ClearActiveCell!',
+  'ClearCell!',
+  'ClearAllCells!',
+  'GetActiveCellDisplayValue',
+  'GetActiveCellId',
+  'GetActiveCellInput',
+  'GetActiveCellOutput',
+  'GetCellDisplayValue',
+  'GetCellInput',
+  'GetCellOutput',
+  'MoveActiveCell!',
+  'MoveActiveCellBy!',
+  'MoveActiveCellTo!',
+  'MoveActiveCellToCol!',
+  'MoveActiveCellToLastCol!',
+  'MoveActiveCellToLastRow!',
+  'MoveActiveCellToRow!',
+  'SetCellInput!',
+] as const
+
+type BuiltinCommandName = typeof builtinCommandNames[number]
+
 type JsFunctions = NonNullable<LitsParams['jsFunctions']>
 
-type Command = {
-  name: string
+type Command<T extends string> = {
+  name: T
   description: string
-  execute: (...args: unknown[]) => unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  execute: (...args: any[]) => unknown
 }
 
 
 class CommandCenter {
-  private commands: Map<string, Command> = new Map()
+  private commands: Map<string, Command<string>> = new Map()
   private readonly _jsFunctions: JsFunctions = {}
 
-  public registerCommand(command: Command) {
+  public registerCommand(command: Command<BuiltinCommandName>) {
     if (this.commands.has(command.name)) {
-      throw new Error(`Command ${command.name} already exists`)
+      console.error(`Command ${command.name} already exists`)
+      return
     }
     this.commands.set(command.name, command)
     this._jsFunctions[command.name] = { fn: (...args: unknown[]) => this.exec(command.name, ...args) }
@@ -25,7 +51,8 @@ class CommandCenter {
     console.log('exec', name, args)
     const command = this.commands.get(name)
     if (!command) {
-      throw new Error(`Command ${name} not found`)
+      console.error(`Command ${name} not found`)
+      return
     }
     return command.execute(...args)
   }
@@ -38,6 +65,8 @@ class CommandCenter {
 let commandCenter: CommandCenter | null = null
 export function getCommandCenter(): CommandCenter {
   commandCenter = commandCenter || new CommandCenter()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ; (window as any).commandCenter = commandCenter
   return commandCenter
 }
 

@@ -55,6 +55,10 @@ defineExpose({
     inputRef.value?.blur()
   },
   hasFocus: () => focused.value,
+  update: (input: string) => {
+    cellValue.value = input
+    initialValue.value = input
+  },
 })
 </script>
 
