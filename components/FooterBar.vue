@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
-import { h } from '@/utils/cssUtils'
+import { hs } from '@/utils/cssUtils'
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
 
@@ -27,12 +27,12 @@ const errorMessage = computed(() => {
 
 <template>
   <div
-    :style="h(30)"
+    :style="hs(30)"
     class="flex bg-slate-800 box-border border-t border-slate-700 items-center px-2 text-sm"
   >
     <div
-      class="text-red-500"
       v-if="errorMessage"
+      class="text-red-500"
     >
       Error: {{ errorMessage }}
     </div>

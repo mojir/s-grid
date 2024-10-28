@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
-import { h } from '@/utils/cssUtils'
+import { hs } from '@/utils/cssUtils'
 import { onMounted, ref, watch } from 'vue'
 
 const { grid, activeCellId, selection } = useGrid()
@@ -103,14 +103,14 @@ defineExpose({
 <template>
   <div
     class="overflow-hiddent flex bg-slate-900 border-t border-slate-800 items-center"
-    :style="h(32)"
+    :style="hs(32)"
   >
     <div
-      :style="h(20)"
+      :style="hs(20)"
       class="overflow-hidden items-center flex flex-1"
     >
       <div
-        :style="h(20)"
+        :style="hs(20)"
         class="flex pl-2 border-r border-slate-600 text-sm pr-4 min-w-20"
       >
         {{ focused ? activeCellId : selection }}
@@ -122,13 +122,13 @@ defineExpose({
         &lambda;
       </div>
       <input
-        class="w-full py-1 px-2 bg-transparent text-slate-300 text-sm border-none focus:outline-none selection:bg-slate-700"
-        v-model="cellValue"
         ref="inputRef"
+        v-model="cellValue"
+        class="w-full py-1 px-2 bg-transparent text-slate-300 text-sm border-none focus:outline-none selection:bg-slate-700"
         @blur="onBlur"
         @focus="onFocus"
         @keydown="onKeyDown"
-      />
+      >
     </div>
   </div>
 </template>

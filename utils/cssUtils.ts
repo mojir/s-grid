@@ -1,4 +1,4 @@
-export function wh(w: number, h: number) {
+export function whs(w: number, h: number) {
   return {
     width: `${w}px`,
     minWidth: `${w}px`,
@@ -8,14 +8,14 @@ export function wh(w: number, h: number) {
     maxHeight: `${h}px`,
   }
 }
-export function w(w: number) {
+export function ws(w: number) {
   return {
     width: `${w}px`,
     minWidth: `${w}px`,
     maxWidth: `${w}px`,
   }
 }
-export function h(h: number) {
+export function hs(h: number) {
   return {
     height: `${h}px`,
     minHeight: `${h}px`,

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
 import { ref, watch } from 'vue'
-import { h } from '@/utils/cssUtils'
+import { hs } from '@/utils/cssUtils'
 import GridCell from './GridCell.vue'
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', id: string): void
-  (e: 'cell-click', id: string): void
+  (e: 'cell-dblclick' | 'cell-click', id: string): void
 }>()
 
 const { grid, activeCellId } = useGrid()
@@ -28,13 +27,13 @@ defineExpose({
 
 <template>
   <div
-    class="overflow-auto"
     ref="el"
+    class="overflow-auto"
   >
     <div
       v-for="row of grid.rows"
       :key="row.label"
-      :style="h(row.height)"
+      :style="hs(row.height)"
       class="flex"
     >
       <div

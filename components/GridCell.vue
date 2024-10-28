@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGrid, type Col, type Row } from '@/composables/useGrid'
-import { wh } from '@/utils/cssUtils'
+import { whs } from '@/utils/cssUtils'
 import {
   fromIdToCoords,
   getSelectionFromId,
@@ -67,8 +67,7 @@ const isSelectionRight = computed(
 )
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', id: string): void
-  (e: 'cell-click', id: string): void
+  (e: 'cell-dblclick' | 'cell-click', id: string): void
 }>()
 
 watch(activeCellId, () => {
@@ -82,10 +81,11 @@ watch(activeCellId, () => {
 
 <template>
   <div
-    :style="wh(col.width, row.height)"
     :id="cellId"
-    class="flex overflow-hidden box-border border-r border-b pl-[3px] pt-[1px] border-slate-800 items-center text-sm"
+    :style="whs(col.width, row.height)"
+    class="flex overflow-hidden box-border border-r border-b pl-[3px] pt-[1px] items-center text-sm"
     :class="{
+      'border-slate-800': !isActiveCell,
       'border-slate-400 border pt-0 pl-[2px]': isActiveCell,
       'bg-[rgba(29,37,58,.9)]': isInsideSelection,
       'border-t-slate-700 border-t pt-0': isSelectionTop,

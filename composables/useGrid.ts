@@ -1,7 +1,6 @@
 import { computed, customRef, ref, shallowReadonly } from "vue"
 import { createSharedComposable } from '@vueuse/core'
 import { isLitsFunction, Lits } from "@mojir/lits"
-import { getCommandCenter } from "@/commandCenter"
 import { clampId, clampSelection, fromCoordsToId, fromIdToCoords, fromRangeToCoords, getColIdFromIndex, getColIndex, insideSelection, isCellId, sortSelection } from "@/utils/cellId"
 
 export type Row = { index: number, label: string; height: number }
@@ -15,6 +14,7 @@ const unsortedSelection = ref<string>('A1')
 
 const selection = computed(() => sortSelection(unsortedSelection.value))
 
+const { registerCommand, jsFunctions } = useCommandCenter()
 
 export class Cell {
   public input = ref('')
@@ -29,7 +29,6 @@ export class Cell {
     if (input.startsWith('=')) {
       const program = input.slice(1)
 
-      const jsFunctions = getCommandCenter().jsFunctions
       try {
         const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
         const values = [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
@@ -124,8 +123,7 @@ class Grid {
   }
 
   private registerCommands() {
-    const commandCenter = getCommandCenter()
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'SetCellInput!',
       execute: (id: string, input: string) => {
         const cell = this.getOrCreateCell(id)
@@ -133,35 +131,35 @@ class Grid {
       },
       description: 'Set the input of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'ClearCell!',
       execute: (id: string) => {
         this.clearCell(id)
       },
       description: 'Set the input of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'ClearAllCells!',
       execute: () => {
         this.clearAllCells()
       },
       description: 'Clear all cells',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'ClearActiveCell!',
       execute: () => {
         this.clearActiveCell()
       },
       description: 'Clear the active cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetActiveCellId',
       execute: () => {
         return activeCellId.value
       },
       description: 'Set the input of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetCellInput',
       execute: (id: string) => {
         const cell = this.getCell(id)
@@ -169,7 +167,7 @@ class Grid {
       },
       description: 'Get the input of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetCellOutput',
       execute: (id: string) => {
         const cell = this.getCell(id)
@@ -177,7 +175,7 @@ class Grid {
       },
       description: 'Get the output of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetCellDisplayValue',
       execute: (id: string) => {
         const cell = this.getCell(id)
@@ -185,35 +183,35 @@ class Grid {
       },
       description: 'Get the formatted output of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetActiveCellInput',
       execute: () => {
         return this.getActiveCell()?.input.value
       },
       description: 'Get the input of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetActiveCellOutput',
       execute: () => {
         return this.getActiveCell()?.output.value ?? 0
       },
       description: 'Get the output of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'GetActiveCellDisplayValue',
       execute: () => {
         return this.getActiveCell()?.displayValue.value
       },
       description: 'Get the formatted output of a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'CreateCellAlias!',
       execute: (alias: string, id: string) => {
         this.createCellAlias(alias, id)
       },
       description: 'Create an alias for a cell',
     })
-    commandCenter.registerCommand({
+    registerCommand({
       name: 'RenameCellAlias!',
       execute: (alias: string, newAlias: string) => {
         this.renameCellAlias(alias, newAlias)
@@ -449,21 +447,21 @@ export const useGrid = createSharedComposable(() => {
     return insideSelection(unsortedSelection.value, id)
   }
 
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCell!',
     execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
-      moveActiveCell(dir, steps)
+      moveActiveCell(dir, { steps })
     },
     description: 'Move the active cell in a direction by a number of steps, default steps is 1',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellTo!',
     execute: (id: string, options: MoveActiveCellToOptions) => {
       moveActiveCellTo(id, options)
     },
     description: 'Move the active cell to a specific cell',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToRow!',
     execute: (rowId: string | number, options: MoveActiveCellToOptions) => {
       const [, currentColIndex] = fromIdToCoords(activeCellId.value)
@@ -472,7 +470,7 @@ export const useGrid = createSharedComposable(() => {
     },
     description: 'Move the active cell to a specific row',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToCol!',
     execute: (colId: string, options: MoveActiveCellToOptions) => {
       const [currentRowIndex] = fromIdToCoords(activeCellId.value)
@@ -481,61 +479,61 @@ export const useGrid = createSharedComposable(() => {
     },
     description: 'Move the active cell to a specific column',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToFirstRow!',
     execute: (options: MoveActiveCellToOptions) => {
       moveActiveCellToFirstRow(options)
     },
     description: 'Move the active cell to the first row, within the selection if specified',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToFirstCol!',
     execute: (options: MoveActiveCellToOptions) => {
       moveActiveCellToFirstCol(options)
     },
     description: 'Move the active cell to the first column, within the selection if specified',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToLastRow!',
     execute: (options: MoveActiveCellToOptions) => {
       moveActiveCellToLastRow(options)
     },
     description: 'Move the active cell to the last row, within the selection if specified',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveActiveCellToLastCol!',
     execute: (options: MoveActiveCellToOptions) => {
       moveActiveCellToLastCol(options)
     },
     description: 'Move the active cell to the last column, within the selection if specified',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'GetSelection',
     execute: () => unsortedSelection.value,
     description: 'Set the selection',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'SetSelection!',
     execute: (selection: string) => {
       setSelection(selection)
     },
     description: 'Set the selection',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'ResetSelection!',
     execute: () => {
       resetSelection()
     },
     description: 'Set the selection',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'MoveSelection!',
     execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
       moveSelection(dir, steps)
     },
     description: 'Set the selection',
   })
-  getCommandCenter().registerCommand({
+  registerCommand({
     name: 'ExpandSelection!',
     execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
       expandSelection(dir, steps)

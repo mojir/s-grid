@@ -41,19 +41,19 @@ type Command<T extends string> = {
   execute: (...args: any[]) => unknown
 }
 
+export const useCommandCenter = createSharedComposable(() => {
 
-class CommandCenter {
-  private commands: Map<string, Command<string>> = new Map()
-  private readonly _jsFunctions: JsFunctions = {}
+  const commands: Map<string, Command<string>> = new Map()
+  const jsFunctions: JsFunctions = {}
 
-  public registerCommand(command: Command<BuiltinCommandName>) {
-    this.commands.set(command.name, command)
-    this._jsFunctions[command.name] = { fn: (...args: unknown[]) => this.exec(command.name, ...args) }
+  function registerCommand(command: Command<BuiltinCommandName>) {
+    commands.set(command.name, command)
+    jsFunctions[command.name] = { fn: (...args: unknown[]) => exec(command.name, ...args) }
   }
 
-  public exec(name: string, ...args: unknown[]) {
+  function exec(name: string, ...args: unknown[]) {
     console.log('exec', name, args)
-    const command = this.commands.get(name)
+    const command = commands.get(name)
     if (!command) {
       console.error(`Command ${name} not found`)
       return
@@ -61,16 +61,9 @@ class CommandCenter {
     return command.execute(...args)
   }
 
-  public get jsFunctions() {
-    return this._jsFunctions
+  return {
+    jsFunctions,
+    registerCommand,
+    exec,
   }
-}
-
-let commandCenter: CommandCenter | null = null
-export function getCommandCenter(): CommandCenter {
-  commandCenter = commandCenter || new CommandCenter()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ; (window as any).commandCenter = commandCenter
-  return commandCenter
-}
-
+})
