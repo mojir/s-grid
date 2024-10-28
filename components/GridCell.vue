@@ -93,8 +93,9 @@ watch(activeCellId, () => {
   <div
     :id="cellId"
     :style="whs(col.width, row.height)"
-    class="flex box-border items-center text-sm"
+    class="flex box-border items-center text-sm whitespace-nowrap"
     :class="{
+      'bg-none': !hasContent && !isInsideSelection,
       'bg-slate-900': hasContent && !isInsideSelection,
       'border-slate-800 border-l-0 border-r border-b pl-[3px] pt-[1px]': !isActiveCell,
       'border-slate-500 border pt-0 pl-[2px]': isActiveCell,

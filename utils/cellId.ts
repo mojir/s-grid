@@ -98,7 +98,7 @@ export function isCellId(id: unknown): id is string {
 }
 
 export function isRange(id: unknown): id is string {
-  return /^[A-Z]+\d+:[A-Z]+\d+$/.test(id as string)
+  return /^[A-Z]+\d+-[A-Z]+\d+$/.test(id as string)
 }
 
 export function getCellIdsInRange(range: string): string[] {
@@ -111,6 +111,43 @@ export function getCellIdsInRange(range: string): string[] {
     }
   }
   return cellIds
+}
+
+type StructuredSelection = {
+  matrix?: never
+  flat: string[]
+} | {
+  matrix: string[][]
+  flat?: never
+}
+export function getStructuredCellIdsInRange(range: string): StructuredSelection {
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+
+  if (startRow === endRow) {
+    const cellIds: string[] = []
+    for (let col = startCol; col <= endCol; col++) {
+      cellIds.push(fromCoordsToId(startRow, col))
+    }
+    return { flat: cellIds }
+  }
+
+  if (startCol === endCol) {
+    const cellIds: string[] = []
+    for (let row = startRow; row <= endRow; row++) {
+      cellIds.push(fromCoordsToId(row, startCol))
+    }
+    return { flat: cellIds }
+  }
+
+  const cellIds: string[][] = []
+  for (let row = startRow; row <= endRow; row++) {
+    const rowIds: string[] = []
+    cellIds.push(rowIds)
+    for (let col = startCol; col <= endCol; col++) {
+      rowIds.push(fromCoordsToId(row, col))
+    }
+  }
+  return { matrix: cellIds }
 }
 
 export function cellBelow(id: string, range: string): string {

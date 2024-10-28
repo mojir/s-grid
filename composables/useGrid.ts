@@ -32,8 +32,36 @@ export class Cell {
       try {
         const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
         const values = [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
-          const cell = this.grid.getOrCreateCell(id.symbol)
-          acc[id.symbol] = cell.output.value
+          if (isCellId(id.symbol)) {
+            const cell = this.grid.getOrCreateCell(id.symbol)
+            acc[id.symbol] = cell.output.value
+          }
+          else if (isRange(id.symbol)) {
+            const data = getStructuredCellIdsInRange(id.symbol)
+            if (data.matrix) {
+              const matrixValues: unknown[][] = []
+              for (const row of data.matrix) {
+                const rowValues: unknown[] = []
+                matrixValues.push(rowValues)
+                for (const cellId of row) {
+                  const cell = this.grid.getOrCreateCell(cellId)
+                  rowValues.push(cell.output.value)
+                }
+              }
+              acc[id.symbol] = matrixValues
+            }
+            else {
+              const arrayValues: unknown[] = []
+              for (const cellId of data.flat) {
+                const cell = this.grid.getOrCreateCell(cellId)
+                arrayValues.push(cell.output.value)
+              }
+              acc[id.symbol] = arrayValues
+            }
+          }
+          else {
+            console.error(`Unknown identifier ${id.symbol}`)
+          }
           return acc
         }, {})
         const result = lits.run(program, { values, jsFunctions })
@@ -45,9 +73,12 @@ export class Cell {
       }
     }
 
-    const number = parseFloat(input)
-    if (!Number.isNaN(number)) {
-      return number
+    if (Number.isNaN(parseFloat(input))) {
+      return input
+    }
+
+    if (Number.isNaN(Number(input))) {
+      return input
     }
 
     return input

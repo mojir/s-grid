@@ -54,7 +54,7 @@ function onMouseMove(event: Event) {
 
   if (mouseDownStart.value) {
     if (isCellId(target?.id)) {
-      setSelection(`${mouseDownStart.value}:${target.id}`)
+      setSelection(`${mouseDownStart.value}-${target.id}`)
     }
   }
 }
