@@ -1,12 +1,40 @@
 <script setup lang="ts">
-import { cssUtils } from '@/utils'
+import { useGrid } from '@/composables/useGrid'
+import { h } from '@/utils/cssUtils'
+import { isLitsError } from '@mojir/lits'
+import { computed } from 'vue'
 
-const { h } = cssUtils
+const { activeCellId, grid } = useGrid()
+const errorMessage = computed(() => {
+  const cell = grid.value.getCell(activeCellId.value)
+  const output = cell?.output.value
+  if (output instanceof Error) {
+    if (isLitsError(output)) {
+      return output.shortMessage
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const message = (output as any)?.message
+
+    if (typeof message === 'string') {
+      return message || 'Unknown error'
+    }
+
+    return `${output}`
+  }
+  return null
+})
 </script>
 
 <template>
   <div
     :style="h(30)"
-    class="bg-slate-800 box-border border-t border-slate-700"
-  ></div>
+    class="flex bg-slate-800 box-border border-t border-slate-700 items-center px-2 text-sm"
+  >
+    <div
+      class="text-red-500"
+      v-if="errorMessage"
+    >
+      Error: {{ errorMessage }}
+    </div>
+  </div>
 </template>

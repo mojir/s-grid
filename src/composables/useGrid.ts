@@ -2,15 +2,23 @@ import { computed, customRef, ref, shallowReadonly } from "vue"
 import { createSharedComposable } from '@vueuse/core'
 import { isLitsFunction, Lits } from "@mojir/lits"
 import { getCommandCenter } from "@/commandCenter"
+import { clampId, clampSelection, fromCoordsToId, fromIdToCoords, fromRangeToCoords, getColIdFromIndex, getColIndex, insideSelection, isCellId, sortSelection } from "@/utils/cellId"
 
+export type Row = { index: number, label: string; height: number }
+export type Col = { index: number, label: string; width: number }
 const lits = new Lits()
 
 const defaultNbrOfRows = 100
 const defaultNbrOfCols = 26
 const activeCellId = ref<string>('A1')
+const unsortedSelection = ref<string>('A1')
+
+const selection = computed(() => sortSelection(unsortedSelection.value))
+
 
 export class Cell {
   public input = ref('')
+  public alias = ref<string | null>(null)
   public output = computed(() => {
     const input = this.input.value
 
@@ -22,15 +30,19 @@ export class Cell {
       const program = input.slice(1)
 
       const jsFunctions = getCommandCenter().jsFunctions
-      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
-      const values = [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
-        const cell = this.grid.getOrCreateCell(id.symbol)
-        acc[id.symbol] = cell.output.value
-        return acc
-      }, {})
-      const result = lits.run(program, { values, jsFunctions })
+      try {
+        const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
+        const values = [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
+          const cell = this.grid.getOrCreateCell(id.symbol)
+          acc[id.symbol] = cell.output.value
+          return acc
+        }, {})
+        const result = lits.run(program, { values, jsFunctions })
 
-      return result
+        return result
+      } catch (error) {
+        return error
+      }
     }
 
 
@@ -47,8 +59,12 @@ export class Cell {
       return ''
     }
 
+    if (this.output.value instanceof Error) {
+      return 'ERR'
+    }
     if (isLitsFunction(this.output.value)) {
-      return 'λ'
+      const alias = this.alias.value
+      return `${alias ? `${alias} ` : ''}λ`
     }
 
     const formattedValue = this.formatterFn.value
@@ -70,33 +86,41 @@ export class Cell {
     return isLitsFunction(fn) ? fn : null
   })
 
-  constructor(private readonly grid: Grid, private readonly id: string) {
+  constructor(private readonly grid: Grid, public id: string) {
     console.log('Cell created')
   }
 
 }
 
 class Grid {
-  public readonly rows: { id: string; height: number }[]
-  public readonly cols: { id: string; width: number }[]
+  public readonly rows: Row[]
+  public readonly cols: Col[]
   public readonly cells: (Cell | null)[][]
   public readonly rowHeaderWidth = 50
   public readonly colHeaderHeight = 25
-
+  public readonly cellAliases = new Map<string, Cell>()
+  private _range: string
 
   constructor(rows: number, cols: number, private readonly trigger: () => void) {
     this.rows = Array.from({ length: rows }, (_, i) => ({
-      id: `${i + 1}`,
+      index: i,
+      label: `${i + 1}`,
       height: 26,
     }))
     this.cols = Array.from({ length: cols }, (_, i) => ({
-      id: getColFromIndex(i),
+      index: i,
+      label: getColIdFromIndex(i),
       width: 100,
     }))
     this.cells = Array.from({ length: rows }, () =>
       Array.from({ length: cols }, () => null),
     )
+    this._range = `A1:${getColIdFromIndex(cols - 1)}${rows - 1}`
     this.registerCommands()
+  }
+
+  public get range() {
+    return this._range
   }
 
   private registerCommands() {
@@ -171,7 +195,7 @@ class Grid {
     commandCenter.registerCommand({
       name: 'GetActiveCellOutput',
       execute: () => {
-        return this.getActiveCell()?.output.value
+        return this.getActiveCell()?.output.value ?? 0
       },
       description: 'Get the output of a cell',
     })
@@ -182,6 +206,42 @@ class Grid {
       },
       description: 'Get the formatted output of a cell',
     })
+    commandCenter.registerCommand({
+      name: 'CreateCellAlias!',
+      execute: (alias: string, id: string) => {
+        this.createCellAlias(alias, id)
+      },
+      description: 'Create an alias for a cell',
+    })
+    commandCenter.registerCommand({
+      name: 'RenameCellAlias!',
+      execute: (alias: string, newAlias: string) => {
+        this.renameCellAlias(alias, newAlias)
+      },
+      description: 'Rename an alias for a cell',
+    })
+  }
+
+  public createCellAlias(alias: string, id: string) {
+    if (this.cellAliases.has(alias)) {
+      throw new Error(`Alias ${alias} already exists`)
+    }
+    const cell = this.getOrCreateCell(id)
+    cell.alias.value = alias
+    this.cellAliases.set(alias, cell)
+  }
+
+  public renameCellAlias(alias: string, newAlias: string) {
+    if (!this.cellAliases.has(alias)) {
+      throw new Error(`Alias ${alias} does not exist`)
+    }
+    if (this.cellAliases.has(newAlias)) {
+      throw new Error(`newAlias ${alias} already exists`)
+    }
+    const cell = this.getOrCreateCell(alias)
+    cell.alias.value = newAlias
+    this.cellAliases.delete(alias)
+    this.cellAliases.set(newAlias, cell)
   }
 
   public getOrCreateActiveCell(): Cell {
@@ -189,11 +249,13 @@ class Grid {
   }
 
   public getOrCreateCell(id: string): Cell {
-    const [row, col] = fromIdToCoords(id)
+    const cell = this.cellAliases.get(id)
+    const cellId = cell ? cell.id : id
+    const [row, col] = fromIdToCoords(cellId)
     if (this.cells[row][col] !== null) {
       return this.cells[row][col]
     }
-    this.cells[row][col] = new Cell(this, id)
+    this.cells[row][col] = new Cell(this, cellId)
     this.trigger()
     return this.cells[row][col]
   }
@@ -203,7 +265,9 @@ class Grid {
   }
 
   public getCell(id: string): Cell | undefined {
-    const [row, col] = fromIdToCoords(id)
+    const cell = this.cellAliases.get(id)
+    const cellId = cell ? cell.id : id
+    const [row, col] = fromIdToCoords(cellId)
     return this.cells[row][col] ?? undefined
   }
 
@@ -230,13 +294,15 @@ class Grid {
     }
     this.trigger()
   }
+}
 
-  public clampId(id: string): string {
-    const [row, col] = fromIdToCoords(id)
-    const clampedRow = Math.max(0, Math.min(row, this.rows.length - 1))
-    const clampedCol = Math.max(0, Math.min(col, this.cols.length - 1))
-    return fromCoordsToId(clampedRow, clampedCol)
-  }
+type MoveActiveCellOptions = {
+  steps?: number
+  withinSelection?: boolean
+}
+
+type MoveActiveCellToOptions = {
+  withinSelection?: boolean
 }
 
 export const useGrid = createSharedComposable(() => {
@@ -251,108 +317,244 @@ export const useGrid = createSharedComposable(() => {
     }
   }))
 
-  function move(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
+  function moveActiveCell(dir: 'up' | 'down' | 'left' | 'right', options: MoveActiveCellOptions = {}) {
+    const steps = options.steps ?? 1
     const [row, col] = fromIdToCoords(activeCellId.value)
     switch (dir) {
       case 'up':
-        activeCellId.value = fromCoordsToId(Math.max(0, row - steps), col)
+        moveActiveCellTo(fromCoordsToId(row - steps, col), options)
         break
       case 'down':
-        activeCellId.value = fromCoordsToId(Math.min(row + steps, grid.value.rows.length - 1), col)
+        moveActiveCellTo(fromCoordsToId(row + steps, col), options)
         break
       case 'left':
-        activeCellId.value = fromCoordsToId(row, Math.max(0, col - steps))
+        moveActiveCellTo(fromCoordsToId(row, col - steps), options)
         break
       case 'right':
-        activeCellId.value = fromCoordsToId(row, Math.min(col + steps, grid.value.cols.length - 1))
+        moveActiveCellTo(fromCoordsToId(row, col + steps), options)
         break
     }
+  }
+
+  function moveSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
+    const cell = unsortedSelection.value.split(':')[0]
+    const [row, col] = fromIdToCoords(cell)
+    switch (dir) {
+      case 'up':
+        setSelection(fromCoordsToId(row - steps, col))
+        break
+
+      case 'down':
+        setSelection(fromCoordsToId(row + steps, col))
+        break
+
+      case 'left':
+        setSelection(fromCoordsToId(row, col - steps))
+        break
+
+      case 'right':
+        setSelection(fromCoordsToId(row, col + steps))
+        break
+    }
+  }
+
+  function expandSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
+    const startCell = unsortedSelection.value.split(':')[0]
+    const endCell = unsortedSelection.value.split(':')[1] ?? unsortedSelection.value
+    const [row, col] = fromIdToCoords(endCell)
+    switch (dir) {
+      case 'up':
+        setSelection(`${startCell}:${fromCoordsToId(row - steps, col)}`)
+        break
+
+      case 'down':
+        setSelection(`${startCell}:${fromCoordsToId(row + steps, col)}`)
+        break
+
+      case 'left':
+        setSelection(`${startCell}:${fromCoordsToId(row, col - steps)}`)
+        break
+
+      case 'right':
+        setSelection(`${startCell}:${fromCoordsToId(row, col + steps)}`)
+        break
+    }
+  }
+
+  function moveActiveCellToFirstRow(options: MoveActiveCellToOptions = {}) {
+    const range = options.withinSelection && !isCellId(selection.value)
+      ? selection.value
+      : grid.value.range
+
+    const [rowIndex] = fromRangeToCoords(range)
+    const [, colIndex] = fromIdToCoords(activeCellId.value)
+
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+  }
+
+  function moveActiveCellToFirstCol(options: MoveActiveCellToOptions = {}) {
+    const range = options.withinSelection && !isCellId(selection.value)
+      ? selection.value
+      : grid.value.range
+
+    const [, colIndex] = fromRangeToCoords(range)
+    const [rowIndex] = fromIdToCoords(activeCellId.value)
+
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+  }
+
+  function moveActiveCellToLastRow(options: MoveActiveCellToOptions = {}) {
+    const range = options.withinSelection && !isCellId(selection.value)
+      ? selection.value
+      : grid.value.range
+
+    const [, , rowIndex] = fromRangeToCoords(range)
+    const [, colIndex] = fromIdToCoords(activeCellId.value)
+
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+  }
+
+  function moveActiveCellToLastCol(options: MoveActiveCellToOptions = {}) {
+    const range = options.withinSelection && !isCellId(selection.value)
+      ? selection.value
+      : grid.value.range
+
+    const [, , , colIndex] = fromRangeToCoords(range)
+    const [rowIndex] = fromIdToCoords(activeCellId.value)
+
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+  }
+
+  function moveActiveCellTo(id: string, options: MoveActiveCellToOptions = {}) {
+    const withinSelectionRange = options.withinSelection && !isCellId(selection.value)
+    const range = withinSelectionRange
+      ? selection.value
+      : grid.value.range
+
+    activeCellId.value = clampId(id, range)
+    if (!withinSelectionRange) {
+      unsortedSelection.value = activeCellId.value
+    }
+  }
+
+  function setSelection(newSelection: string) {
+    unsortedSelection.value = clampSelection(newSelection, grid.value.range)
+  }
+
+  function resetSelection() {
+    unsortedSelection.value = activeCellId.value
+  }
+
+  function isInsideSelection(id: string): boolean {
+    return insideSelection(unsortedSelection.value, id)
   }
 
   getCommandCenter().registerCommand({
     name: 'MoveActiveCell!',
     execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
-      move(dir, steps)
+      moveActiveCell(dir, steps)
     },
     description: 'Move the active cell in a direction by a number of steps, default steps is 1',
   })
   getCommandCenter().registerCommand({
     name: 'MoveActiveCellTo!',
-    execute: (id: string) => {
-      activeCellId.value = grid.value.clampId(id)
+    execute: (id: string, options: MoveActiveCellToOptions) => {
+      moveActiveCellTo(id, options)
     },
     description: 'Move the active cell to a specific cell',
   })
   getCommandCenter().registerCommand({
     name: 'MoveActiveCellToRow!',
-    execute: (row: string | number) => {
+    execute: (rowId: string | number, options: MoveActiveCellToOptions) => {
       const [, currentColIndex] = fromIdToCoords(activeCellId.value)
-      const rowIndex = (typeof row === 'string' ? Number(row) : row) - 1
-      activeCellId.value = grid.value.clampId(fromCoordsToId(rowIndex, currentColIndex))
+      const rowIndex = (typeof rowId === 'string' ? Number(rowId) : rowId) - 1
+      moveActiveCellTo(fromCoordsToId(rowIndex, currentColIndex), options)
     },
     description: 'Move the active cell to a specific row',
   })
   getCommandCenter().registerCommand({
     name: 'MoveActiveCellToCol!',
-    execute: (row: string) => {
+    execute: (colId: string, options: MoveActiveCellToOptions) => {
       const [currentRowIndex] = fromIdToCoords(activeCellId.value)
-      const colIndex = getColIndex(row)
-      activeCellId.value = grid.value.clampId(fromCoordsToId(currentRowIndex, colIndex))
+      const colIndex = getColIndex(colId)
+      moveActiveCellTo(fromCoordsToId(currentRowIndex, colIndex), options)
     },
     description: 'Move the active cell to a specific column',
   })
   getCommandCenter().registerCommand({
-    name: 'MoveActiveCellBy!',
-    execute: (rowSteps: number, colSteps) => {
-      const [row, col] = fromIdToCoords(activeCellId.value)
-      activeCellId.value = grid.value.clampId(fromCoordsToId(row + rowSteps, col + colSteps))
+    name: 'MoveActiveCellToFirstRow!',
+    execute: (options: MoveActiveCellToOptions) => {
+      moveActiveCellToFirstRow(options)
     },
-    description: 'Move the active cell by a number of steps in row and column',
+    description: 'Move the active cell to the first row, within the selection if specified',
+  })
+  getCommandCenter().registerCommand({
+    name: 'MoveActiveCellToFirstCol!',
+    execute: (options: MoveActiveCellToOptions) => {
+      moveActiveCellToFirstCol(options)
+    },
+    description: 'Move the active cell to the first column, within the selection if specified',
   })
   getCommandCenter().registerCommand({
     name: 'MoveActiveCellToLastRow!',
-    execute: () => {
-      const [, currentColIndex] = fromIdToCoords(activeCellId.value)
-      activeCellId.value = fromCoordsToId(grid.value.rows.length - 1, currentColIndex)
+    execute: (options: MoveActiveCellToOptions) => {
+      moveActiveCellToLastRow(options)
     },
-    description: 'Move the active cell to the last row',
+    description: 'Move the active cell to the last row, within the selection if specified',
   })
   getCommandCenter().registerCommand({
     name: 'MoveActiveCellToLastCol!',
-    execute: () => {
-      const [currentRowIndex] = fromIdToCoords(activeCellId.value)
-      activeCellId.value = fromCoordsToId(currentRowIndex, grid.value.cols.length - 1)
+    execute: (options: MoveActiveCellToOptions) => {
+      moveActiveCellToLastCol(options)
     },
-    description: 'Move the active cell to the last column',
+    description: 'Move the active cell to the last column, within the selection if specified',
+  })
+  getCommandCenter().registerCommand({
+    name: 'GetSelection',
+    execute: () => unsortedSelection.value,
+    description: 'Set the selection',
+  })
+  getCommandCenter().registerCommand({
+    name: 'SetSelection!',
+    execute: (selection: string) => {
+      setSelection(selection)
+    },
+    description: 'Set the selection',
+  })
+  getCommandCenter().registerCommand({
+    name: 'ResetSelection!',
+    execute: () => {
+      resetSelection()
+    },
+    description: 'Set the selection',
+  })
+  getCommandCenter().registerCommand({
+    name: 'MoveSelection!',
+    execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
+      moveSelection(dir, steps)
+    },
+    description: 'Set the selection',
+  })
+  getCommandCenter().registerCommand({
+    name: 'ExpandSelection!',
+    execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
+      expandSelection(dir, steps)
+    },
+    description: 'Set the selection',
   })
 
-
-  return { grid, fromCoordsToId, fromIdToCoords, activeCellId, move }
+  return {
+    activeCellId: shallowReadonly(activeCellId),
+    selection: shallowReadonly(selection),
+    fromCoordsToId,
+    fromIdToCoords,
+    grid,
+    moveActiveCell,
+    moveActiveCellTo,
+    setSelection,
+    resetSelection,
+    isInsideSelection,
+    moveSelection,
+    expandSelection,
+  }
 })
-
-function getColFromIndex(col: number) {
-  let result = ''
-  while (col >= 0) {
-    result = String.fromCharCode((col % 26) + 65) + result
-    col = Math.floor(col / 26) - 1
-  }
-  return result
-}
-function getColIndex(col: string) {
-  return col.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)
-}
-
-function fromCoordsToId(row: number, col: number) {
-  row = Math.max(0, row)
-  col = Math.max(0, col)
-  return `${getColFromIndex(col)}${row + 1}`
-}
-function fromIdToCoords(id: string): [number, number] {
-  const match = id.match(/([A-Z]+)([0-9]+)/)
-  if (!match) {
-    throw new Error('Invalid cell id')
-  }
-  const [, col, row] = match
-  return [Number(row) - 1, getColIndex(col)]
-}
-

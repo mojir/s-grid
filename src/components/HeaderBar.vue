@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { cssUtils } from '@/utils'
-
-const { h } = cssUtils
+import { h } from '@/utils/cssUtils'
 </script>
 
 <template>

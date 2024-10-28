@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
-import { cssUtils } from '@/utils'
+import { w, wh } from '@/utils/cssUtils'
 import { ref } from 'vue'
 
 const { grid } = useGrid()
-
-const { wh, w } = cssUtils
 
 const el = ref<HTMLDivElement>()
 
@@ -21,13 +19,13 @@ defineExpose({
   >
     <div
       v-for="col of grid.cols"
-      :key="col.id"
+      :key="col.label"
       :style="wh(col.width, grid.colHeaderHeight)"
       class="flex"
     >
       <div :style="w(3)" />
       <div class="flex flex-1 justify-center text-xs items-center select-none">
-        {{ col.id }}
+        {{ col.label }}
       </div>
       <div
         :style="w(5)"

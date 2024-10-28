@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { useGrid } from '@/composables/useGrid'
-import { ref } from 'vue'
-import { cssUtils } from '@/utils'
+import { ref, watch } from 'vue'
+import { h } from '@/utils/cssUtils'
+import GridCell from './GridCell.vue'
 
 const emit = defineEmits<{
   (e: 'cell-dblclick', id: string): void
+  (e: 'cell-click', id: string): void
 }>()
 
-const { grid, fromCoordsToId, activeCellId } = useGrid()
+const { grid, activeCellId } = useGrid()
 
-const { wh, h } = cssUtils
+watch(activeCellId, () => {
+  const cellElement = document.getElementById(activeCellId.value)
+  cellElement?.scrollIntoView({
+    block: 'nearest',
+    inline: 'nearest',
+  })
+})
 
 const el = ref<HTMLDivElement>()
-
-function onClick(id: string) {
-  activeCellId.value = id
-}
-function onDblClick(id: string) {
-  emit('cell-dblclick', id)
-}
 
 defineExpose({
   el,
@@ -31,24 +32,21 @@ defineExpose({
     ref="el"
   >
     <div
-      v-for="(row, i) of grid.rows"
-      :key="row.id"
+      v-for="row of grid.rows"
+      :key="row.label"
       :style="h(row.height)"
       class="flex"
     >
       <div
-        v-for="(col, j) of grid.cols"
-        :key="col.id"
-        :style="wh(col.width, row.height)"
-        class="flex overflow-hidden box-border border-r border-b pl-[3px] pt-[1px] border-slate-800 items-center"
-        :class="{
-          'border-slate-400 border pt-0 pl-[2px]':
-            fromCoordsToId(i, j) === activeCellId,
-        }"
-        @click="onClick(fromCoordsToId(i, j))"
-        @dblclick="onDblClick(fromCoordsToId(i, j))"
+        v-for="col of grid.cols"
+        :key="col.label"
       >
-        {{ grid.cells[i][j]?.displayValue }}
+        <GridCell
+          :row="row"
+          :col="col"
+          @cell-click="emit('cell-click', $event)"
+          @cell-dblclick="emit('cell-dblclick', $event)"
+        />
       </div>
     </div>
   </div>

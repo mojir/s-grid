@@ -13,13 +13,21 @@ const builtinCommandNames = [
   'GetCellInput',
   'GetCellOutput',
   'MoveActiveCell!',
-  'MoveActiveCellBy!',
   'MoveActiveCellTo!',
   'MoveActiveCellToCol!',
-  'MoveActiveCellToLastCol!',
+  'MoveActiveCellToFirstRow!',
+  'MoveActiveCellToFirstCol!',
   'MoveActiveCellToLastRow!',
+  'MoveActiveCellToLastCol!',
   'MoveActiveCellToRow!',
   'SetCellInput!',
+  'SetSelection!',
+  'ResetSelection!',
+  'GetSelection',
+  'MoveSelection!',
+  'ExpandSelection!',
+  'CreateCellAlias!',
+  'RenameCellAlias!',
 ] as const
 
 type BuiltinCommandName = typeof builtinCommandNames[number]
@@ -39,10 +47,6 @@ class CommandCenter {
   private readonly _jsFunctions: JsFunctions = {}
 
   public registerCommand(command: Command<BuiltinCommandName>) {
-    if (this.commands.has(command.name)) {
-      console.error(`Command ${command.name} already exists`)
-      return
-    }
     this.commands.set(command.name, command)
     this._jsFunctions[command.name] = { fn: (...args: unknown[]) => this.exec(command.name, ...args) }
   }
