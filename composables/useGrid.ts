@@ -285,15 +285,6 @@ class Grid {
   }
 }
 
-type MoveActiveCellOptions = {
-  steps?: number
-  withinSelection?: boolean
-}
-
-type MoveActiveCellToOptions = {
-  withinSelection?: boolean
-}
-
 export const useGrid = createSharedComposable(() => {
   const grid = shallowReadonly(customRef((track, trigger) => {
     const gridInstance = new Grid(defaultNbrOfRows, defaultNbrOfCols, trigger)
@@ -306,21 +297,21 @@ export const useGrid = createSharedComposable(() => {
     }
   }))
 
-  function moveActiveCell(dir: 'up' | 'down' | 'left' | 'right', options: MoveActiveCellOptions = {}) {
-    const steps = options.steps ?? 1
-    const [row, col] = fromIdToCoords(activeCellId.value)
+  function moveActiveCell(dir: 'up' | 'down' | 'left' | 'right') {
+    const range = isRange(selection.value) ? selection.value : grid.value.range
+
     switch (dir) {
       case 'up':
-        moveActiveCellTo(fromCoordsToId(row - steps, col), options)
+        moveActiveCellTo(cellAbove(activeCellId.value, range))
         break
       case 'down':
-        moveActiveCellTo(fromCoordsToId(row + steps, col), options)
+        moveActiveCellTo(cellBelow(activeCellId.value, range))
         break
       case 'left':
-        moveActiveCellTo(fromCoordsToId(row, col - steps), options)
+        moveActiveCellTo(cellLeft(activeCellId.value, range))
         break
       case 'right':
-        moveActiveCellTo(fromCoordsToId(row, col + steps), options)
+        moveActiveCellTo(cellRight(activeCellId.value, range))
         break
     }
   }
@@ -370,52 +361,44 @@ export const useGrid = createSharedComposable(() => {
     }
   }
 
-  function moveActiveCellToFirstRow(options: MoveActiveCellToOptions = {}) {
-    const range = options.withinSelection && !isCellId(selection.value)
-      ? selection.value
-      : grid.value.range
+  function moveActiveCellToFirstRow() {
+    const range = isRange(selection.value) ? selection.value : grid.value.range
 
     const [rowIndex] = fromRangeToCoords(range)
     const [, colIndex] = fromIdToCoords(activeCellId.value)
 
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
   }
 
-  function moveActiveCellToFirstCol(options: MoveActiveCellToOptions = {}) {
-    const range = options.withinSelection && !isCellId(selection.value)
-      ? selection.value
-      : grid.value.range
+  function moveActiveCellToFirstCol() {
+    const range = isRange(selection.value) ? selection.value : grid.value.range
 
     const [, colIndex] = fromRangeToCoords(range)
     const [rowIndex] = fromIdToCoords(activeCellId.value)
 
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
   }
 
-  function moveActiveCellToLastRow(options: MoveActiveCellToOptions = {}) {
-    const range = options.withinSelection && !isCellId(selection.value)
-      ? selection.value
-      : grid.value.range
+  function moveActiveCellToLastRow() {
+    const range = isRange(selection.value) ? selection.value : grid.value.range
 
     const [, , rowIndex] = fromRangeToCoords(range)
     const [, colIndex] = fromIdToCoords(activeCellId.value)
 
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
   }
 
-  function moveActiveCellToLastCol(options: MoveActiveCellToOptions = {}) {
-    const range = options.withinSelection && !isCellId(selection.value)
-      ? selection.value
-      : grid.value.range
+  function moveActiveCellToLastCol() {
+    const range = isRange(selection.value) ? selection.value : grid.value.range
 
     const [, , , colIndex] = fromRangeToCoords(range)
     const [rowIndex] = fromIdToCoords(activeCellId.value)
 
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex), options)
+    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
   }
 
-  function moveActiveCellTo(id: string, options: MoveActiveCellToOptions = {}) {
-    const withinSelectionRange = options.withinSelection && !isCellId(selection.value)
+  function moveActiveCellTo(id: string) {
+    const withinSelectionRange = isRange(selection.value)
     const range = withinSelectionRange
       ? selection.value
       : grid.value.range
@@ -440,61 +423,61 @@ export const useGrid = createSharedComposable(() => {
 
   registerCommand({
     name: 'MoveActiveCell!',
-    execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
-      moveActiveCell(dir, { steps })
+    execute: (dir: 'up' | 'down' | 'left' | 'right') => {
+      moveActiveCell(dir)
     },
     description: 'Move the active cell in a direction by a number of steps, default steps is 1',
   })
   registerCommand({
     name: 'MoveActiveCellTo!',
-    execute: (id: string, options: MoveActiveCellToOptions) => {
-      moveActiveCellTo(id, options)
+    execute: (id: string) => {
+      moveActiveCellTo(id)
     },
     description: 'Move the active cell to a specific cell',
   })
   registerCommand({
     name: 'MoveActiveCellToRow!',
-    execute: (rowId: string | number, options: MoveActiveCellToOptions) => {
+    execute: (rowId: string | number) => {
       const [, currentColIndex] = fromIdToCoords(activeCellId.value)
       const rowIndex = (typeof rowId === 'string' ? Number(rowId) : rowId) - 1
-      moveActiveCellTo(fromCoordsToId(rowIndex, currentColIndex), options)
+      moveActiveCellTo(fromCoordsToId(rowIndex, currentColIndex))
     },
     description: 'Move the active cell to a specific row',
   })
   registerCommand({
     name: 'MoveActiveCellToCol!',
-    execute: (colId: string, options: MoveActiveCellToOptions) => {
+    execute: (colId: string) => {
       const [currentRowIndex] = fromIdToCoords(activeCellId.value)
       const colIndex = getColIndex(colId)
-      moveActiveCellTo(fromCoordsToId(currentRowIndex, colIndex), options)
+      moveActiveCellTo(fromCoordsToId(currentRowIndex, colIndex))
     },
     description: 'Move the active cell to a specific column',
   })
   registerCommand({
     name: 'MoveActiveCellToFirstRow!',
-    execute: (options: MoveActiveCellToOptions) => {
-      moveActiveCellToFirstRow(options)
+    execute: () => {
+      moveActiveCellToFirstRow()
     },
     description: 'Move the active cell to the first row, within the selection if specified',
   })
   registerCommand({
     name: 'MoveActiveCellToFirstCol!',
-    execute: (options: MoveActiveCellToOptions) => {
-      moveActiveCellToFirstCol(options)
+    execute: () => {
+      moveActiveCellToFirstCol()
     },
     description: 'Move the active cell to the first column, within the selection if specified',
   })
   registerCommand({
     name: 'MoveActiveCellToLastRow!',
-    execute: (options: MoveActiveCellToOptions) => {
-      moveActiveCellToLastRow(options)
+    execute: () => {
+      moveActiveCellToLastRow()
     },
     description: 'Move the active cell to the last row, within the selection if specified',
   })
   registerCommand({
     name: 'MoveActiveCellToLastCol!',
-    execute: (options: MoveActiveCellToOptions) => {
-      moveActiveCellToLastCol(options)
+    execute: () => {
+      moveActiveCellToLastCol()
     },
     description: 'Move the active cell to the last column, within the selection if specified',
   })

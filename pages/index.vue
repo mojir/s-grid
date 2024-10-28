@@ -93,10 +93,10 @@ function onKeyDown(e: KeyboardEvent) {
       formulaBarRef.value.save()
     }
     if (e.shiftKey) {
-      moveActiveCell('up', { withinSelection: true })
+      moveActiveCell('up')
     }
     else {
-      moveActiveCell('down', { withinSelection: true })
+      moveActiveCell('down')
     }
   }
   else if (e.key === 'Escape') {
@@ -163,10 +163,10 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        moveActiveCell('left', { withinSelection: true })
+        moveActiveCell('left')
       }
       else {
-        moveActiveCell('right', { withinSelection: true })
+        moveActiveCell('right')
       }
     }
   }

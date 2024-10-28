@@ -112,3 +112,63 @@ export function getCellIdsInRange(range: string): string[] {
   }
   return cellIds
 }
+
+export function cellBelow(id: string, range: string): string {
+  const [row, col] = fromIdToCoords(id)
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+  let nextRow = row + 1
+  let nextCol = col
+  if (nextRow > endRow) {
+    nextRow = startRow
+    nextCol += 1
+    if (nextCol > endCol) {
+      nextCol = startCol
+    }
+  }
+  return fromCoordsToId(nextRow, nextCol)
+}
+
+export function cellAbove(id: string, range: string): string {
+  const [row, col] = fromIdToCoords(id)
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+  let nextRow = row - 1
+  let nextCol = col
+  if (nextRow < startRow) {
+    nextRow = endRow
+    nextCol -= 1
+    if (nextCol < startCol) {
+      nextCol = endCol
+    }
+  }
+  return fromCoordsToId(nextRow, nextCol)
+}
+
+export function cellRight(id: string, range: string): string {
+  const [row, col] = fromIdToCoords(id)
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+  let nextRow = row
+  let nextCol = col + 1
+  if (nextCol > endCol) {
+    nextCol = startCol
+    nextRow += 1
+    if (nextRow > endRow) {
+      nextRow = startRow
+    }
+  }
+  return fromCoordsToId(nextRow, nextCol)
+}
+
+export function cellLeft(id: string, range: string): string {
+  const [row, col] = fromIdToCoords(id)
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+  let nextRow = row
+  let nextCol = col - 1
+  if (nextCol < startCol) {
+    nextCol = endCol
+    nextRow -= 1
+    if (nextRow < startRow) {
+      nextRow = endRow
+    }
+  }
+  return fromCoordsToId(nextRow, nextCol)
+}
