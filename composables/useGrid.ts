@@ -131,7 +131,7 @@ class Grid {
       description: 'Set the input of a cell',
     })
     registerCommand({
-      name: 'ClearCell!',
+      name: 'Clear!',
       execute: (id: string) => {
         this.clear(id)
       },

@@ -2,8 +2,7 @@ import type { LitsParams } from '@mojir/lits'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const builtinCommandNames = [
-  'ClearActiveCell!',
-  'ClearCell!',
+  'Clear!',
   'ClearAllCells!',
   'GetActiveCellDisplayValue',
   'GetActiveCellId',
