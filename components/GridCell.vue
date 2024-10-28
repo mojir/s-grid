@@ -95,7 +95,7 @@ watch(activeCellId, () => {
     :style="whs(col.width, row.height)"
     class="flex box-border items-center text-sm"
     :class="{
-      'bg-slate-900': hasContent,
+      'bg-slate-900': hasContent && !isInsideSelection,
       'border-slate-800 border-l-0 border-r border-b pl-[3px] pt-[1px]': !isActiveCell,
       'border-slate-500 border pt-0 pl-[2px]': isActiveCell,
       'bg-[rgba(29,37,58,.9)]': isInsideSelection,

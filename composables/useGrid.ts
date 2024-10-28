@@ -113,7 +113,7 @@ class Grid {
     this.cells = Array.from({ length: rows }, () =>
       Array.from({ length: cols }, () => null),
     )
-    this._range = `A1:${getColIdFromIndex(cols - 1)}${rows - 1}`
+    this._range = `A1-${getColIdFromIndex(cols - 1)}${rows - 1}`
     this.registerCommands()
   }
 
@@ -317,7 +317,7 @@ export const useGrid = createSharedComposable(() => {
   }
 
   function moveSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
-    const cell = unsortedSelection.value.split(':')[0]
+    const cell = unsortedSelection.value.split('-')[0]
     const [row, col] = fromIdToCoords(cell)
     switch (dir) {
       case 'up':
@@ -339,24 +339,24 @@ export const useGrid = createSharedComposable(() => {
   }
 
   function expandSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
-    const startCell = unsortedSelection.value.split(':')[0]
-    const endCell = unsortedSelection.value.split(':')[1] ?? unsortedSelection.value
+    const startCell = unsortedSelection.value.split('-')[0]
+    const endCell = unsortedSelection.value.split('-')[1] ?? unsortedSelection.value
     const [row, col] = fromIdToCoords(endCell)
     switch (dir) {
       case 'up':
-        setSelection(`${startCell}:${fromCoordsToId(row - steps, col)}`)
+        setSelection(`${startCell}-${fromCoordsToId(row - steps, col)}`)
         break
 
       case 'down':
-        setSelection(`${startCell}:${fromCoordsToId(row + steps, col)}`)
+        setSelection(`${startCell}-${fromCoordsToId(row + steps, col)}`)
         break
 
       case 'left':
-        setSelection(`${startCell}:${fromCoordsToId(row, col - steps)}`)
+        setSelection(`${startCell}-${fromCoordsToId(row, col - steps)}`)
         break
 
       case 'right':
-        setSelection(`${startCell}:${fromCoordsToId(row, col + steps)}`)
+        setSelection(`${startCell}-${fromCoordsToId(row, col + steps)}`)
         break
     }
   }

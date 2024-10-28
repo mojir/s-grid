@@ -33,14 +33,14 @@ export function clampId(id: string, range: string): string {
 }
 
 export function fromRangeToCoords(range: string): [number, number, number, number] {
-  const [start, end] = range.split(':')
+  const [start, end] = range.split('-')
   const [startRow, startCol] = fromIdToCoords(start)
   const [endRow, endCol] = fromIdToCoords(end)
   return [startRow, startCol, endRow, endCol]
 }
 
 export function clampSelection(selection: string, range: string): string {
-  const [start, end] = selection.split(':')
+  const [start, end] = selection.split('-')
 
   if (!end) {
     return clampId(start, range)
@@ -53,11 +53,11 @@ export function clampSelection(selection: string, range: string): string {
     return clampedStart
   }
 
-  return `${clampedStart}:${clampedEnd}`
+  return `${clampedStart}-${clampedEnd}`
 }
 
 export function sortSelection(selection: string): string {
-  const [start, end] = selection.split(':')
+  const [start, end] = selection.split('-')
   if (!end) {
     return start
   }
@@ -70,11 +70,11 @@ export function sortSelection(selection: string): string {
   const sortedStartColIndex = Math.min(startColIndex, endColIndex)
   const sortedEndColIndex = Math.max(startColIndex, endColIndex)
 
-  return `${fromCoordsToId(sortedStartRowIndex, sortedStartColIndex)}:${fromCoordsToId(sortedEndRowIndex, sortedEndColIndex)}`
+  return `${fromCoordsToId(sortedStartRowIndex, sortedStartColIndex)}-${fromCoordsToId(sortedEndRowIndex, sortedEndColIndex)}`
 }
 
 export function insideSelection(selection: string, id: string): boolean {
-  const [start, end] = selection.split(':')
+  const [start, end] = selection.split('-')
   if (end) {
     const [row, col] = fromIdToCoords(id)
     const [startRow, startCol] = fromIdToCoords(start)
@@ -85,11 +85,11 @@ export function insideSelection(selection: string, id: string): boolean {
 }
 
 export function getSelectionFromId(selection: string): string {
-  return selection.split(':')[0]
+  return selection.split('-')[0]
 }
 
 export function getSelectionToId(selection: string): string {
-  const [first, last] = selection.split(':')
+  const [first, last] = selection.split('-')
   return last ?? first
 }
 
