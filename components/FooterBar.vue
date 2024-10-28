@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useGrid } from '@/composables/useGrid'
-import { hs } from '@/utils/cssUtils'
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
+import { useGrid } from '@/composables/useGrid'
+import { hs } from '@/utils/cssUtils'
 
 const { activeCellId, grid } = useGrid()
 const errorMessage = computed(() => {

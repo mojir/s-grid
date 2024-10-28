@@ -54,7 +54,6 @@ export function clampSelection(selection: string, range: string): string {
   }
 
   return `${clampedStart}:${clampedEnd}`
-
 }
 
 export function sortSelection(selection: string): string {
@@ -97,4 +96,3 @@ export function getSelectionToId(selection: string): string {
 export function isCellId(id: unknown): id is string {
   return /^[A-Z]+\d+$/.test(id as string)
 }
-

@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@mojir/lits": "file:../lits",
@@ -24,6 +25,7 @@
     "@vueuse/nuxt": "^11.1.0",
     "happy-dom": "^15.7.4",
     "playwright-core": "^1.48.2",
+    "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   }
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useGrid } from '@/composables/useGrid'
 import { ref, watch } from 'vue'
-import { hs } from '@/utils/cssUtils'
 import GridCell from './GridCell.vue'
+import { useGrid } from '@/composables/useGrid'
+import { hs } from '@/utils/cssUtils'
 
 const emit = defineEmits<{
   (e: 'cell-dblclick' | 'cell-click', id: string): void

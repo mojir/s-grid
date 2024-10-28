@@ -1,10 +1,10 @@
-import { computed, customRef, ref, shallowReadonly } from "vue"
+import { computed, customRef, ref, shallowReadonly } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
-import { isLitsFunction, Lits } from "@mojir/lits"
-import { clampId, clampSelection, fromCoordsToId, fromIdToCoords, fromRangeToCoords, getColIdFromIndex, getColIndex, insideSelection, isCellId, sortSelection } from "@/utils/cellId"
+import { isLitsFunction, Lits } from '@mojir/lits'
+import { clampId, clampSelection, fromCoordsToId, fromIdToCoords, fromRangeToCoords, getColIdFromIndex, getColIndex, insideSelection, isCellId, sortSelection } from '@/utils/cellId'
 
-export type Row = { index: number, label: string; height: number }
-export type Col = { index: number, label: string; width: number }
+export type Row = { index: number, label: string, height: number }
+export type Col = { index: number, label: string, width: number }
 const lits = new Lits()
 
 const defaultNbrOfRows = 100
@@ -39,11 +39,11 @@ export class Cell {
         const result = lits.run(program, { values, jsFunctions })
 
         return result
-      } catch (error) {
+      }
+      catch (error) {
         return error
       }
     }
-
 
     const number = parseFloat(input)
     if (!Number.isNaN(number)) {
@@ -88,7 +88,6 @@ export class Cell {
   constructor(private readonly grid: Grid, public id: string) {
     console.log('Cell created')
   }
-
 }
 
 class Grid {
@@ -311,7 +310,7 @@ export const useGrid = createSharedComposable(() => {
         track()
         return gridInstance
       },
-      set() { }
+      set() { },
     }
   }))
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, toRefs, watch } from 'vue'
 import { useGrid, type Col, type Row } from '@/composables/useGrid'
 import { whs } from '@/utils/cssUtils'
 import {
@@ -7,7 +8,6 @@ import {
   getSelectionToId,
   insideSelection,
 } from '@/utils/cellId'
-import { computed, toRefs, watch } from 'vue'
 
 const props = defineProps<{
   row: Row
@@ -22,8 +22,8 @@ const cellId = computed(() => fromCoordsToId(row.value.index, col.value.index))
 const isActiveCell = computed(() => activeCellId.value === cellId.value)
 const isInsideSelection = computed(
   () =>
-    activeCellId.value !== selection.value &&
-    insideSelection(selection.value, cellId.value),
+    activeCellId.value !== selection.value
+    && insideSelection(selection.value, cellId.value),
 )
 
 const rowId = computed(() => fromIdToCoords(cellId.value)[0])
@@ -43,27 +43,27 @@ const selectionToCol = computed(
 
 const isSelectionTop = computed(
   () =>
-    !isActiveCell.value &&
-    isInsideSelection.value &&
-    rowId.value === selectionFromRow.value,
+    !isActiveCell.value
+    && isInsideSelection.value
+    && rowId.value === selectionFromRow.value,
 )
 const isSelectionBottom = computed(
   () =>
-    !isActiveCell.value &&
-    isInsideSelection.value &&
-    rowId.value === selectionToRow.value,
+    !isActiveCell.value
+    && isInsideSelection.value
+    && rowId.value === selectionToRow.value,
 )
 const isSelectionLeft = computed(
   () =>
-    !isActiveCell.value &&
-    isInsideSelection.value &&
-    colId.value === selectionFromCol.value,
+    !isActiveCell.value
+    && isInsideSelection.value
+    && colId.value === selectionFromCol.value,
 )
 const isSelectionRight = computed(
   () =>
-    !isActiveCell.value &&
-    isInsideSelection.value &&
-    colId.value === selectionToCol.value,
+    !isActiveCell.value
+    && isInsideSelection.value
+    && colId.value === selectionToCol.value,
 )
 
 const emit = defineEmits<{

@@ -22,6 +22,3 @@ export function hs(h: number) {
     maxHeight: `${h}px`,
   }
 }
-
-
-

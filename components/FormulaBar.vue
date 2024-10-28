@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { onMounted, ref, watch } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { hs } from '@/utils/cssUtils'
-import { onMounted, ref, watch } from 'vue'
 
 const { grid, activeCellId, selection } = useGrid()
 const emit = defineEmits<{
@@ -17,23 +17,23 @@ const editingLits = ref(false)
 watch(selection, () => {
   const inputElement = inputRef.value
   if (
-    editingLits.value &&
-    inputElement &&
-    selection.value !== activeCellId.value
+    editingLits.value
+    && inputElement
+    && selection.value !== activeCellId.value
   ) {
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
     const value = inputElement.value
-    inputElement.value =
-      value.slice(0, start) + selection.value + value.slice(end)
+    inputElement.value
+      = value.slice(0, start) + selection.value + value.slice(end)
     inputElement.setSelectionRange(start, start + selection.value.length)
     cellValue.value = inputElement.value
     inputElement.focus()
   }
 })
 watch(focused, () => {
-  editingLits.value =
-    !editingLits.value && focused.value && cellValue.value.startsWith('=')
+  editingLits.value
+    = !editingLits.value && focused.value && cellValue.value.startsWith('=')
 })
 watch(cellValue, () => {
   editingLits.value = focused.value && cellValue.value.startsWith('=')
@@ -61,7 +61,8 @@ function onBlur() {
   if (!editingLits.value) {
     focused.value = false
     save()
-  } else {
+  }
+  else {
     inputRef.value?.focus()
   }
 }

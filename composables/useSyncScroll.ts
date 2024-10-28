@@ -1,7 +1,7 @@
-import type ColHeader from "@/components/ColHeader.vue"
-import type DataGrid from "@/components/DataGrid.vue"
-import type RowHeader from "@/components/RowHeader.vue"
-import type { Ref } from "vue"
+import type { Ref } from 'vue'
+import type ColHeader from '@/components/ColHeader.vue'
+import type DataGrid from '@/components/DataGrid.vue'
+import type RowHeader from '@/components/RowHeader.vue'
 
 let activeScrollElement: HTMLElement | null = null
 let scrollTimer: ReturnType<typeof setTimeout> | null = null
@@ -11,7 +11,6 @@ export function useSyncScroll(
   rowHeaderRef: Ref<typeof RowHeader | undefined>,
   colHeaderRef: Ref<typeof ColHeader | undefined>,
 ) {
-
   function syncScroll(event: Event) {
     if (!dataGridRef.value || !rowHeaderRef.value || !colHeaderRef.value) {
       return
@@ -26,9 +25,11 @@ export function useSyncScroll(
     if (activeScrollElement === dataGridRef.value.el) {
       rowHeaderRef.value.el.scrollTop = activeScrollElement.scrollTop
       colHeaderRef.value.el.scrollLeft = activeScrollElement.scrollLeft
-    } else if (activeScrollElement === rowHeaderRef.value.el) {
+    }
+    else if (activeScrollElement === rowHeaderRef.value.el) {
       dataGridRef.value.el.scrollTop = activeScrollElement.scrollTop
-    } else if (activeScrollElement === colHeaderRef.value.el) {
+    }
+    else if (activeScrollElement === colHeaderRef.value.el) {
       dataGridRef.value.el.scrollLeft = activeScrollElement.scrollLeft
     }
 

@@ -42,7 +42,6 @@ type Command<T extends string> = {
 }
 
 export const useCommandCenter = createSharedComposable(() => {
-
   const commands: Map<string, Command<string>> = new Map()
   const jsFunctions: JsFunctions = {}
 

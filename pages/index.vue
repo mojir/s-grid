@@ -41,7 +41,8 @@ function onMouseDown(event: Event) {
     mouseDownStart.value = cellId
     if (editLits.value) {
       setSelection(cellId)
-    } else {
+    }
+    else {
       resetSelection()
       moveActiveCellTo(cellId)
     }
@@ -71,7 +72,8 @@ function onCellDblclick() {
 function onCellClick(id: string) {
   if (editLits.value) {
     setSelection(id)
-  } else {
+  }
+  else {
     resetSelection()
     moveActiveCellTo(id)
   }
@@ -82,24 +84,29 @@ function onKeyDown(e: KeyboardEvent) {
     if (!formulaBarRef.value.hasFocus()) {
       formulaBarRef.value.focus()
     }
-  } else if (e.key === 'Enter') {
+  }
+  else if (e.key === 'Enter') {
     e.preventDefault()
     if (formulaBarRef.value.hasFocus()) {
       formulaBarRef.value.save()
     }
     if (e.shiftKey) {
       moveActiveCell('up', { withinSelection: true })
-    } else {
+    }
+    else {
       moveActiveCell('down', { withinSelection: true })
     }
-  } else if (e.key === 'Escape') {
+  }
+  else if (e.key === 'Escape') {
     formulaBarRef.value.save()
-  } else if (e.key === 'Backspace') {
+  }
+  else if (e.key === 'Backspace') {
     if (!formulaBarRef.value.hasFocus()) {
       grid.value.clearActiveCell()
       formulaBarRef.value.update('')
     }
-  } else if (e.key === 'F2') {
+  }
+  else if (e.key === 'F2') {
     if (!formulaBarRef.value.hasFocus()) {
       formulaBarRef.value.focus()
     }
@@ -111,43 +118,52 @@ function onKeyDown(e: KeyboardEvent) {
       formulaBarRef.value.save()
       if (e.shiftKey) {
         expandSelection('down')
-      } else {
+      }
+      else {
         moveActiveCell('down')
         resetSelection()
       }
-    } else if (e.key === 'ArrowUp') {
+    }
+    else if (e.key === 'ArrowUp') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
         expandSelection('up')
-      } else {
+      }
+      else {
         moveActiveCell('up')
         resetSelection()
       }
-    } else if (e.key === 'ArrowRight') {
+    }
+    else if (e.key === 'ArrowRight') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
         expandSelection('right')
-      } else {
+      }
+      else {
         moveActiveCell('right')
         resetSelection()
       }
-    } else if (e.key === 'ArrowLeft') {
+    }
+    else if (e.key === 'ArrowLeft') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
         expandSelection('left')
-      } else {
+      }
+      else {
         moveActiveCell('left')
         resetSelection()
       }
-    } else if (e.key === 'Tab') {
+    }
+    else if (e.key === 'Tab') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
         moveActiveCell('left', { withinSelection: true })
-      } else {
+      }
+      else {
         moveActiveCell('right', { withinSelection: true })
       }
     }
