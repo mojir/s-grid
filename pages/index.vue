@@ -189,11 +189,11 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
       />
       <div
         class="flex"
-        :style="h(grid.colHeaderHeight)"
+        :style="hs(grid.colHeaderHeight)"
       >
         <div
           class="flex bg-slate-800 box-border border-b border-r border-slate-700"
-          :style="wh(grid.rowHeaderWidth, grid.colHeaderHeight)"
+          :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
         />
         <ColHeader
           ref="colHeaderRef"
