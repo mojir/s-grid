@@ -10,7 +10,8 @@
     "postinstall": "nuxt prepare",
     "test": "vitest",
     "lint": "eslint . --fix",
-    "typecheck": "nuxi typecheck"
+    "typecheck": "nuxt typecheck",
+    "clean": "nuxt cleanup"
   },
   "dependencies": {
     "@mojir/lits": "file:../lits",
