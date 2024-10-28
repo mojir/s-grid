@@ -96,3 +96,19 @@ export function getSelectionToId(selection: string): string {
 export function isCellId(id: unknown): id is string {
   return /^[A-Z]+\d+$/.test(id as string)
 }
+
+export function isRange(id: unknown): id is string {
+  return /^[A-Z]+\d+:[A-Z]+\d+$/.test(id as string)
+}
+
+export function getCellIdsInRange(range: string): string[] {
+  const [startRow, startCol, endRow, endCol] = fromRangeToCoords(range)
+
+  const cellIds: string[] = []
+  for (let row = startRow; row <= endRow; row++) {
+    for (let col = startCol; col <= endCol; col++) {
+      cellIds.push(fromCoordsToId(row, col))
+    }
+  }
+  return cellIds
+}

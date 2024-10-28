@@ -8,9 +8,10 @@ const {
   setSelection,
   resetSelection,
   expandSelection,
+  selection,
 } = useGrid()
 
-const editLits = ref(false)
+const { editingLitsCode, editorFocused } = useEditor()
 const sheetViewRef = ref<HTMLDivElement>()
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -39,7 +40,7 @@ function onMouseDown(event: Event) {
   const cellId = target?.id
   if (isCellId(cellId)) {
     mouseDownStart.value = cellId
-    if (editLits.value) {
+    if (editingLitsCode.value) {
       setSelection(cellId)
     }
     else {
@@ -70,7 +71,7 @@ function onCellDblclick() {
 }
 
 function onCellClick(id: string) {
-  if (editLits.value) {
+  if (editingLitsCode.value) {
     setSelection(id)
   }
   else {
@@ -80,14 +81,15 @@ function onCellClick(id: string) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  if (e.key.length === 1) {
-    if (!formulaBarRef.value.hasFocus()) {
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (!editorFocused.value) {
+      formulaBarRef.value.update('')
       formulaBarRef.value.focus()
     }
   }
   else if (e.key === 'Enter') {
     e.preventDefault()
-    if (formulaBarRef.value.hasFocus()) {
+    if (editorFocused.value) {
       formulaBarRef.value.save()
     }
     if (e.shiftKey) {
@@ -101,18 +103,18 @@ function onKeyDown(e: KeyboardEvent) {
     formulaBarRef.value.save()
   }
   else if (e.key === 'Backspace') {
-    if (!formulaBarRef.value.hasFocus()) {
-      grid.value.clearActiveCell()
+    if (!editorFocused.value) {
+      grid.value.clear(selection.value)
       formulaBarRef.value.update('')
     }
   }
   else if (e.key === 'F2') {
-    if (!formulaBarRef.value.hasFocus()) {
+    if (!editorFocused.value) {
       formulaBarRef.value.focus()
     }
   }
 
-  if (!editLits.value) {
+  if (!editingLitsCode.value) {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       formulaBarRef.value.save()
@@ -183,10 +185,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
       ref="gridWrapper"
       class="flex flex-col overflow-hidden"
     >
-      <FormulaBar
-        ref="formulaBarRef"
-        @edit-lits="editLits = $event"
-      />
+      <FormulaBar ref="formulaBarRef" />
       <div
         class="flex"
         :style="hs(grid.colHeaderHeight)"

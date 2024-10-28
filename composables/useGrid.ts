@@ -133,7 +133,7 @@ class Grid {
     registerCommand({
       name: 'ClearCell!',
       execute: (id: string) => {
-        this.clearCell(id)
+        this.clear(id)
       },
       description: 'Set the input of a cell',
     })
@@ -143,13 +143,6 @@ class Grid {
         this.clearAllCells()
       },
       description: 'Clear all cells',
-    })
-    registerCommand({
-      name: 'ClearActiveCell!',
-      execute: () => {
-        this.clearActiveCell()
-      },
-      description: 'Clear the active cell',
     })
     registerCommand({
       name: 'GetActiveCellId',
@@ -268,17 +261,16 @@ class Grid {
     return this.cells[row][col] ?? undefined
   }
 
-  public clearActiveCell() {
-    this.clearCell(activeCellId.value)
-  }
-
-  public clearCell(id: string) {
-    const cell = this.getCell(id)
-    if (cell) {
-      const [row, col] = fromIdToCoords(id)
-      this.cells[row][col] = null
-      this.trigger()
-    }
+  public clear(id: string) {
+    const cellIds: string[] = isCellId(id) ? [id] : isRange(id) ? getCellIdsInRange(id) : []
+    cellIds.forEach((cellId) => {
+      const cell = this.getCell(cellId)
+      if (cell) {
+        const [row, col] = fromIdToCoords(cellId)
+        this.cells[row][col] = null
+        this.trigger()
+      }
+    })
   }
 
   public clearAllCells() {

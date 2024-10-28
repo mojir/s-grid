@@ -4,22 +4,21 @@ import { useGrid } from '@/composables/useGrid'
 import { hs } from '@/utils/cssUtils'
 
 const { grid, activeCellId, selection } = useGrid()
-const emit = defineEmits<{
-  (e: 'edit-lits', value: boolean): void
-}>()
+const {
+  editingLitsCode,
+  editorFocused,
+  setEditorFocused,
+  editorText, setEditingCellId, editingCellId } = useEditor()
 
 const initialValue = ref('')
-const cellValue = ref('')
 const inputRef = ref<HTMLInputElement>()
-const focused = ref(false)
-const editingLits = ref(false)
 
 watch(selection, () => {
   const inputElement = inputRef.value
   if (
-    editingLits.value
+    editingLitsCode.value
     && inputElement
-    && selection.value !== activeCellId.value
+    && selection.value !== editingCellId.value
   ) {
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
@@ -27,39 +26,32 @@ watch(selection, () => {
     inputElement.value
       = value.slice(0, start) + selection.value + value.slice(end)
     inputElement.setSelectionRange(start, start + selection.value.length)
-    cellValue.value = inputElement.value
+    editorText.value = inputElement.value
     inputElement.focus()
   }
 })
-watch(focused, () => {
-  editingLits.value
-    = !editingLits.value && focused.value && cellValue.value.startsWith('=')
-})
-watch(cellValue, () => {
-  editingLits.value = focused.value && cellValue.value.startsWith('=')
-})
-
-watch(editingLits, () => {
-  emit('edit-lits', editingLits.value)
-})
 
 watch(activeCellId, () => {
-  cellValue.value = grid.value.getCell(activeCellId.value)?.input.value ?? ''
-  initialValue.value = cellValue.value
+  save()
+  editorText.value = grid.value.getCell(activeCellId.value)?.input.value ?? ''
+  initialValue.value = editorText.value
+  setEditingCellId(activeCellId.value)
 })
 
 onMounted(() => {
-  cellValue.value = grid.value.getCell(activeCellId.value)?.input.value ?? ''
-  initialValue.value = cellValue.value
+  setEditingCellId(activeCellId.value)
+  editorText.value = grid.value.getCell(editingCellId.value)?.input.value ?? ''
+  initialValue.value = editorText.value
 })
 
 function onFocus() {
-  focused.value = true
+  setEditorFocused(true)
 }
 
 function onBlur() {
-  if (!editingLits.value) {
-    focused.value = false
+  if (!editingLitsCode.value) {
+    inputRef.value?.setSelectionRange(0, 0)
+    setEditorFocused(false)
     save()
   }
   else {
@@ -68,12 +60,11 @@ function onBlur() {
 }
 
 function save() {
-  if (initialValue.value !== cellValue.value) {
-    const cell = grid.value.getOrCreateActiveCell()
-    cell.input.value = cellValue.value
-    initialValue.value = cellValue.value
+  if (initialValue.value !== editorText.value) {
+    const cell = grid.value.getOrCreateCell(editingCellId.value)
+    cell.input.value = editorText.value
+    initialValue.value = editorText.value
   }
-  editingLits.value = false
   inputRef.value?.blur()
 }
 
@@ -89,13 +80,11 @@ defineExpose({
   },
   save,
   cancel: () => {
-    cellValue.value = initialValue.value
-    editingLits.value = false
+    editorText.value = initialValue.value
     inputRef.value?.blur()
   },
-  hasFocus: () => focused.value,
   update: (input: string) => {
-    cellValue.value = input
+    editorText.value = input
     initialValue.value = input
   },
 })
@@ -114,7 +103,7 @@ defineExpose({
         :style="hs(20)"
         class="flex pl-2 border-r border-slate-600 text-sm pr-4 min-w-20"
       >
-        {{ focused ? activeCellId : selection }}
+        {{ editorFocused ? editingCellId : selection }}
       </div>
       <div
         class="ml-4 select-none cursor-pointer"
@@ -124,7 +113,7 @@ defineExpose({
       </div>
       <input
         ref="inputRef"
-        v-model="cellValue"
+        v-model="editorText"
         class="w-full py-1 px-2 bg-transparent text-slate-300 text-sm border-none focus:outline-none selection:bg-slate-700"
         @blur="onBlur"
         @focus="onFocus"
