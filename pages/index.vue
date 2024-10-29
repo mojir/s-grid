@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import { CellId } from '~/lib/CellId'
+import { Col } from '~/lib/Col'
+import { Row } from '~/lib/Row'
 
 const {
   grid,
   moveActiveCell,
   moveActiveCellTo,
-  setSelection,
+  selectCell,
+  selectAll,
+  selectRange,
+  selectRowRange,
+  selectColRange,
   resetSelection,
   expandSelection,
   selection,
@@ -37,15 +44,37 @@ onUnmounted(() => {
 const mouseDownStart = ref('')
 function onMouseDown(event: Event) {
   const target = event.target as HTMLElement | undefined
-  const cellId = target?.id
-  if (isCellId(cellId)) {
-    mouseDownStart.value = cellId
+  const id = target?.id
+  if (CellId.isCellIdString(id)) {
+    mouseDownStart.value = id
     if (editingLitsCode.value) {
-      setSelection(cellId)
+      selectCell(id)
     }
     else {
       resetSelection()
-      moveActiveCellTo(cellId)
+      moveActiveCellTo(id)
+    }
+  }
+  if (Col.isColString(id)) {
+    mouseDownStart.value = id
+    const col = grid.value.getCol(id)
+    if (col) {
+      resetSelection()
+      if (!editingLitsCode.value) {
+        moveActiveCellTo(`${col.id}1`)
+      }
+      selectColRange(col, col)
+    }
+  }
+  if (Row.isRowString(id)) {
+    mouseDownStart.value = id
+    const row = grid.value.getRow(id)
+    if (row) {
+      resetSelection()
+      if (!editingLitsCode.value) {
+        moveActiveCellTo(`A${row.id}`)
+      }
+      selectRowRange(row, row)
     }
   }
 }
@@ -53,8 +82,22 @@ function onMouseMove(event: Event) {
   const target = event.target as HTMLElement | undefined
 
   if (mouseDownStart.value) {
-    if (isCellId(target?.id)) {
-      setSelection(`${mouseDownStart.value}-${target.id}`)
+    if (CellId.isCellIdString(mouseDownStart.value) && CellId.isCellIdString(target?.id)) {
+      selectRange(`${mouseDownStart.value}-${target.id}`)
+    }
+    else if (Col.isColString(mouseDownStart.value) && Col.isColString(target?.id)) {
+      const fromCol = grid.value.getCol(mouseDownStart.value)
+      const toCol = grid.value.getCol(target.id)
+      if (fromCol && toCol) {
+        selectColRange(fromCol, toCol)
+      }
+    }
+    else if (Row.isRowString(mouseDownStart.value) && Row.isRowString(target?.id)) {
+      const fromRow = grid.value.getRow(mouseDownStart.value)
+      const toRow = grid.value.getRow(target.id)
+      if (fromRow && toRow) {
+        selectRowRange(fromRow, toRow)
+      }
     }
   }
 }
@@ -70,16 +113,6 @@ function onCellDblclick() {
   formulaBarRef.value.focus()
 }
 
-function onCellClick(id: string) {
-  if (editingLitsCode.value) {
-    setSelection(id)
-  }
-  else {
-    resetSelection()
-    moveActiveCellTo(id)
-  }
-}
-
 function onKeyDown(e: KeyboardEvent) {
   if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
     if (!editorFocused.value) {
@@ -92,19 +125,20 @@ function onKeyDown(e: KeyboardEvent) {
     if (editorFocused.value) {
       formulaBarRef.value.save()
     }
+    resetSelection()
     if (e.shiftKey) {
-      moveActiveCell('up')
+      moveActiveCell('up', true)
     }
     else {
-      moveActiveCell('down')
+      moveActiveCell('down', true)
     }
   }
   else if (e.key === 'Escape') {
-    formulaBarRef.value.save()
+    formulaBarRef.value.cancel()
   }
   else if (e.key === 'Backspace') {
     if (!editorFocused.value) {
-      grid.value.clear(selection.value)
+      grid.value.clearRange(selection.value)
       formulaBarRef.value.update('')
     }
   }
@@ -163,10 +197,10 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        moveActiveCell('left')
+        moveActiveCell('left', true)
       }
       else {
-        moveActiveCell('right')
+        moveActiveCell('right', true)
       }
     }
   }
@@ -183,7 +217,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
     <HeaderBar />
     <div
       ref="gridWrapper"
-      class="flex flex-col overflow-hidden"
+      class="flex flex-grow flex-col overflow-hidden"
     >
       <FormulaBar ref="formulaBarRef" />
       <div
@@ -193,6 +227,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
         <div
           class="flex bg-slate-800 box-border border-b border-r border-slate-700"
           :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
+          @click="selectAll"
         />
         <ColHeader
           ref="colHeaderRef"
@@ -208,7 +243,6 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           ref="dataGridRef"
           @scroll="syncScroll"
           @cell-dblclick="onCellDblclick"
-          @cell-click="onCellClick"
         />
       </div>
     </div>

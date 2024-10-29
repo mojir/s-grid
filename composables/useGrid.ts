@@ -1,20 +1,23 @@
 import { computed, customRef, ref, shallowReadonly } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
 import { isLitsFunction, Lits } from '@mojir/lits'
-import { clampId, clampSelection, fromCoordsToId, fromIdToCoords, fromRangeToCoords, getColIdFromIndex, getColIndex, insideSelection, isCellId, sortSelection } from '@/utils/cellId'
+import { CellId } from '~/lib/CellId'
+import { CellRange } from '~/lib/CellRange'
+import { Col } from '~/lib/Col'
+import { Row } from '~/lib/Row'
 
-export type Row = { index: number, label: string, height: number }
-export type Col = { index: number, label: string, width: number }
 const lits = new Lits()
 
-const defaultNbrOfRows = 100
+const defaultNbrOfRows = 50
 const defaultNbrOfCols = 26
-const activeCellId = ref<string>('A1')
-const unsortedSelection = ref<string>('A1')
+const activeCellId = ref<CellId>(CellId.fromCoords(0, 0))
 
-const selection = computed(() => sortSelection(unsortedSelection.value))
+const unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(activeCellId.value))
+const selection = computed(() => unsortedSelection.value.toSorted())
 
 const { registerCommand, jsFunctions } = useCommandCenter()
+
+export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
 
 export class Cell {
   public input = ref('')
@@ -32,12 +35,15 @@ export class Cell {
       try {
         const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
         const values = [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
-          if (isCellId(id.symbol)) {
+          console.log('id', id.symbol)
+          if (CellId.isCellIdString(id.symbol)) {
             const cell = this.grid.getOrCreateCell(id.symbol)
             acc[id.symbol] = cell.output.value
           }
-          else if (isRange(id.symbol)) {
-            const data = getStructuredCellIdsInRange(id.symbol)
+          else if (CellRange.isCellRangeString(id.symbol)) {
+            console.log('id range', id.symbol)
+
+            const data = CellRange.fromId(id.symbol).getStructuredCellIds()
             if (data.matrix) {
               const matrixValues: unknown[][] = []
               for (const row of data.matrix) {
@@ -52,7 +58,7 @@ export class Cell {
             }
             else {
               const arrayValues: unknown[] = []
-              for (const cellId of data.flat) {
+              for (const cellId of data.array) {
                 const cell = this.grid.getOrCreateCell(cellId)
                 arrayValues.push(cell.output.value)
               }
@@ -73,12 +79,8 @@ export class Cell {
       }
     }
 
-    if (Number.isNaN(parseFloat(input))) {
-      return input
-    }
-
-    if (Number.isNaN(Number(input))) {
-      return input
+    if (!Number.isNaN(parseFloat(input)) && !Number.isNaN(Number(input))) {
+      return Number(input)
     }
 
     return input
@@ -101,6 +103,14 @@ export class Cell {
       ? lits.apply(this.formatterFn.value, [this.output.value])
       : this.output.value
 
+    if (Array.isArray(formattedValue)) {
+      return JSON.stringify(formattedValue)
+    }
+
+    if (typeof formattedValue === 'object' && formattedValue !== null) {
+      return JSON.stringify(formattedValue)
+    }
+
     return `${formattedValue}`
   })
 
@@ -116,7 +126,7 @@ export class Cell {
     return isLitsFunction(fn) ? fn : null
   })
 
-  constructor(private readonly grid: Grid, public id: string) {
+  constructor(private readonly grid: Grid, public cellId: CellId) {
     console.log('Cell created')
   }
 }
@@ -128,23 +138,15 @@ class Grid {
   public readonly rowHeaderWidth = 50
   public readonly colHeaderHeight = 25
   public readonly cellAliases = new Map<string, Cell>()
-  private _range: string
+  private _range: CellRange
 
   constructor(rows: number, cols: number, private readonly trigger: () => void) {
-    this.rows = Array.from({ length: rows }, (_, i) => ({
-      index: i,
-      label: `${i + 1}`,
-      height: 26,
-    }))
-    this.cols = Array.from({ length: cols }, (_, i) => ({
-      index: i,
-      label: getColIdFromIndex(i),
-      width: 100,
-    }))
+    this.rows = Array.from({ length: rows }, (_, rowIndex) => Row.create(rowIndex, 26))
+    this.cols = Array.from({ length: cols }, (_, colIndex) => Col.create(colIndex, 100))
     this.cells = Array.from({ length: rows }, () =>
       Array.from({ length: cols }, () => null),
     )
-    this._range = `A1-${getColIdFromIndex(cols - 1)}${rows - 1}`
+    this._range = CellRange.fromCellIds(CellId.fromCoords(0, 0), CellId.fromCoords(rows - 1, cols - 1))
     this.registerCommands()
   }
 
@@ -164,7 +166,7 @@ class Grid {
     registerCommand({
       name: 'Clear!',
       execute: (id: string) => {
-        this.clear(id)
+        this.clearRange(id)
       },
       description: 'Set the input of a cell',
     })
@@ -269,36 +271,55 @@ class Grid {
     return this.getOrCreateCell(activeCellId.value)
   }
 
-  public getOrCreateCell(id: string): Cell {
-    const cell = this.cellAliases.get(id)
-    const cellId = cell ? cell.id : id
-    const [row, col] = fromIdToCoords(cellId)
-    if (this.cells[row][col] !== null) {
-      return this.cells[row][col]
+  public getCellId(id: string | CellId): CellId {
+    if (CellId.isCellId(id)) {
+      return id
     }
-    this.cells[row][col] = new Cell(this, cellId)
+    const cell = this.cellAliases.get(id)
+    return cell ? cell.cellId : CellId.fromId(id)
+  }
+
+  public getOrCreateCell(id: string | CellId): Cell {
+    const cellId = this.getCellId(id)
+    const rowIndex = cellId.rowIndex
+    const colIndex = cellId.colIndex
+    if (this.cells[rowIndex][colIndex] !== null) {
+      return this.cells[rowIndex][colIndex]
+    }
+    this.cells[rowIndex][colIndex] = new Cell(this, cellId)
     this.trigger()
-    return this.cells[row][col]
+    return this.cells[rowIndex][colIndex]
   }
 
   public getActiveCell(): Cell | undefined {
     return this.getCell(activeCellId.value)
   }
 
-  public getCell(id: string): Cell | undefined {
-    const cell = this.cellAliases.get(id)
-    const cellId = cell ? cell.id : id
-    const [row, col] = fromIdToCoords(cellId)
-    return this.cells[row][col] ?? undefined
+  public getCell(id: string | CellId): Cell | undefined {
+    const cellId = this.getCellId(id)
+    return this.cells[cellId.rowIndex][cellId.colIndex] ?? undefined
   }
 
-  public clear(id: string) {
-    const cellIds: string[] = isCellId(id) ? [id] : isRange(id) ? getCellIdsInRange(id) : []
+  public getRow(id: string): Row | undefined {
+    return this.rows[Row.getRowIndexFromId(id)]
+  }
+
+  public getCol(id: string): Col | undefined {
+    return this.cols[Col.getColIndexFromId(id)]
+  }
+
+  public clearRange(id: string | CellRange) {
+    const cellRange = CellRange.isCellRange(id)
+      ? id
+      : CellRange.isCellRangeString(id)
+        ? CellRange.fromId(id)
+        : null
+
+    const cellIds: CellId[] = cellRange?.getAllCellIds() ?? []
     cellIds.forEach((cellId) => {
       const cell = this.getCell(cellId)
       if (cell) {
-        const [row, col] = fromIdToCoords(cellId)
-        this.cells[row][col] = null
+        this.cells[cellId.rowIndex][cellId.colIndex] = null
         this.trigger()
       }
     })
@@ -328,133 +349,115 @@ export const useGrid = createSharedComposable(() => {
     }
   }))
 
-  function moveActiveCell(dir: 'up' | 'down' | 'left' | 'right') {
-    const range = isRange(selection.value) ? selection.value : grid.value.range
+  function moveActiveCell(dir: Direction, wrap = false) {
+    const range = selection.value.size() > 1 ? selection.value : grid.value.range
 
     switch (dir) {
       case 'up':
-        moveActiveCellTo(cellAbove(activeCellId.value, range))
+        moveActiveCellTo(activeCellId.value.cellUp(range, wrap))
         break
       case 'down':
-        moveActiveCellTo(cellBelow(activeCellId.value, range))
+        moveActiveCellTo(activeCellId.value.cellDown(range, wrap))
         break
       case 'left':
-        moveActiveCellTo(cellLeft(activeCellId.value, range))
+        moveActiveCellTo(activeCellId.value.cellLeft(range, wrap))
         break
       case 'right':
-        moveActiveCellTo(cellRight(activeCellId.value, range))
+        moveActiveCellTo(activeCellId.value.cellRight(range, wrap))
+        break
+      case 'top':
+        moveActiveCellTo(activeCellId.value.cellTop(range))
+        break
+      case 'bottom':
+        moveActiveCellTo(activeCellId.value.cellBottom(range))
+        break
+      case 'leftmost':
+        moveActiveCellTo(activeCellId.value.cellLeftmost(range))
+        break
+      case 'rightmost':
+        moveActiveCellTo(activeCellId.value.cellRightmost(range))
         break
     }
   }
 
-  function moveSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
-    const cell = unsortedSelection.value.split('-')[0]
-    const [row, col] = fromIdToCoords(cell)
-    switch (dir) {
-      case 'up':
-        setSelection(fromCoordsToId(row - steps, col))
-        break
+  function expandSelection(dir: Direction) {
+    const start = unsortedSelection.value.start
+    const end = unsortedSelection.value.end.cellMove(dir, grid.value.range, false)
 
-      case 'down':
-        setSelection(fromCoordsToId(row + steps, col))
-        break
-
-      case 'left':
-        setSelection(fromCoordsToId(row, col - steps))
-        break
-
-      case 'right':
-        setSelection(fromCoordsToId(row, col + steps))
-        break
-    }
+    unsortedSelection.value = CellRange.fromCellIds(start, end)
   }
 
-  function expandSelection(dir: 'up' | 'down' | 'left' | 'right', steps = 1) {
-    const startCell = unsortedSelection.value.split('-')[0]
-    const endCell = unsortedSelection.value.split('-')[1] ?? unsortedSelection.value
-    const [row, col] = fromIdToCoords(endCell)
-    switch (dir) {
-      case 'up':
-        setSelection(`${startCell}-${fromCoordsToId(row - steps, col)}`)
-        break
+  function moveActiveCellTo(id: string | CellId) {
+    const cellId = grid.value.getCellId(id)
 
-      case 'down':
-        setSelection(`${startCell}-${fromCoordsToId(row + steps, col)}`)
-        break
-
-      case 'left':
-        setSelection(`${startCell}-${fromCoordsToId(row, col - steps)}`)
-        break
-
-      case 'right':
-        setSelection(`${startCell}-${fromCoordsToId(row, col + steps)}`)
-        break
-    }
-  }
-
-  function moveActiveCellToFirstRow() {
-    const range = isRange(selection.value) ? selection.value : grid.value.range
-
-    const [rowIndex] = fromRangeToCoords(range)
-    const [, colIndex] = fromIdToCoords(activeCellId.value)
-
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
-  }
-
-  function moveActiveCellToFirstCol() {
-    const range = isRange(selection.value) ? selection.value : grid.value.range
-
-    const [, colIndex] = fromRangeToCoords(range)
-    const [rowIndex] = fromIdToCoords(activeCellId.value)
-
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
-  }
-
-  function moveActiveCellToLastRow() {
-    const range = isRange(selection.value) ? selection.value : grid.value.range
-
-    const [, , rowIndex] = fromRangeToCoords(range)
-    const [, colIndex] = fromIdToCoords(activeCellId.value)
-
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
-  }
-
-  function moveActiveCellToLastCol() {
-    const range = isRange(selection.value) ? selection.value : grid.value.range
-
-    const [, , , colIndex] = fromRangeToCoords(range)
-    const [rowIndex] = fromIdToCoords(activeCellId.value)
-
-    moveActiveCellTo(fromCoordsToId(rowIndex, colIndex))
-  }
-
-  function moveActiveCellTo(id: string) {
-    const withinSelectionRange = isRange(selection.value)
-    const range = withinSelectionRange
+    const range = selection.value.size() > 1
       ? selection.value
       : grid.value.range
 
-    activeCellId.value = clampId(id, range)
-    if (!withinSelectionRange) {
-      unsortedSelection.value = activeCellId.value
-    }
+    activeCellId.value = cellId.clamp(range)
+    unsortedSelection.value = CellRange.fromSingleCellId(activeCellId.value)
   }
 
-  function setSelection(newSelection: string) {
-    unsortedSelection.value = clampSelection(newSelection, grid.value.range)
+  function selectRange(id: string | CellRange) {
+    const range = CellRange.isCellRange(id)
+      ? id
+      : CellRange.isCellRangeString(id)
+        ? CellRange.fromId(id).clamp(grid.value.range)
+        : null
+
+    if (!range) {
+      console.error(`Invalid range: ${id}`)
+      return
+    }
+
+    unsortedSelection.value = range
+  }
+
+  function selectCell(id: string | CellId) {
+    const cellId = CellId.isCellId(id)
+      ? id
+      : CellId.isCellIdString(id)
+        ? CellId.fromId(id).clamp(grid.value.range)
+        : null
+
+    if (!cellId) {
+      console.error(`Invalid cell id: ${id}`)
+      return
+    }
+
+    unsortedSelection.value = CellRange.fromSingleCellId(cellId)
+  }
+
+  function selectAll() {
+    unsortedSelection.value = grid.value.range
+  }
+
+  function selectColRange(fromCol: Col, toCol: Col) {
+    unsortedSelection.value
+      = CellRange.fromCellIds(
+        CellId.fromCoords(0, fromCol.index),
+        CellId.fromCoords(grid.value.range.end.rowIndex, toCol.index))
+  }
+
+  function selectRowRange(fromRow: Row, toRow: Row) {
+    unsortedSelection.value
+      = CellRange.fromCellIds(
+        CellId.fromCoords(fromRow.index, 0),
+        CellId.fromCoords(toRow.index, grid.value.range.end.colIndex))
   }
 
   function resetSelection() {
-    unsortedSelection.value = activeCellId.value
+    unsortedSelection.value = CellRange.fromSingleCellId(activeCellId.value)
   }
 
-  function isInsideSelection(id: string): boolean {
-    return insideSelection(unsortedSelection.value, id)
+  function isInsideSelection(id: string | CellId): boolean {
+    const cellId = grid.value.getCellId(id)
+    return unsortedSelection.value.contains(cellId)
   }
 
   registerCommand({
     name: 'MoveActiveCell!',
-    execute: (dir: 'up' | 'down' | 'left' | 'right') => {
+    execute: (dir: Direction) => {
       moveActiveCell(dir)
     },
     description: 'Move the active cell in a direction by a number of steps, default steps is 1',
@@ -467,52 +470,6 @@ export const useGrid = createSharedComposable(() => {
     description: 'Move the active cell to a specific cell',
   })
   registerCommand({
-    name: 'MoveActiveCellToRow!',
-    execute: (rowId: string | number) => {
-      const [, currentColIndex] = fromIdToCoords(activeCellId.value)
-      const rowIndex = (typeof rowId === 'string' ? Number(rowId) : rowId) - 1
-      moveActiveCellTo(fromCoordsToId(rowIndex, currentColIndex))
-    },
-    description: 'Move the active cell to a specific row',
-  })
-  registerCommand({
-    name: 'MoveActiveCellToCol!',
-    execute: (colId: string) => {
-      const [currentRowIndex] = fromIdToCoords(activeCellId.value)
-      const colIndex = getColIndex(colId)
-      moveActiveCellTo(fromCoordsToId(currentRowIndex, colIndex))
-    },
-    description: 'Move the active cell to a specific column',
-  })
-  registerCommand({
-    name: 'MoveActiveCellToFirstRow!',
-    execute: () => {
-      moveActiveCellToFirstRow()
-    },
-    description: 'Move the active cell to the first row, within the selection if specified',
-  })
-  registerCommand({
-    name: 'MoveActiveCellToFirstCol!',
-    execute: () => {
-      moveActiveCellToFirstCol()
-    },
-    description: 'Move the active cell to the first column, within the selection if specified',
-  })
-  registerCommand({
-    name: 'MoveActiveCellToLastRow!',
-    execute: () => {
-      moveActiveCellToLastRow()
-    },
-    description: 'Move the active cell to the last row, within the selection if specified',
-  })
-  registerCommand({
-    name: 'MoveActiveCellToLastCol!',
-    execute: () => {
-      moveActiveCellToLastCol()
-    },
-    description: 'Move the active cell to the last column, within the selection if specified',
-  })
-  registerCommand({
     name: 'GetSelection',
     execute: () => unsortedSelection.value,
     description: 'Set the selection',
@@ -520,7 +477,7 @@ export const useGrid = createSharedComposable(() => {
   registerCommand({
     name: 'SetSelection!',
     execute: (selection: string) => {
-      setSelection(selection)
+      selectRange(selection)
     },
     description: 'Set the selection',
   })
@@ -532,16 +489,9 @@ export const useGrid = createSharedComposable(() => {
     description: 'Set the selection',
   })
   registerCommand({
-    name: 'MoveSelection!',
-    execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
-      moveSelection(dir, steps)
-    },
-    description: 'Set the selection',
-  })
-  registerCommand({
     name: 'ExpandSelection!',
-    execute: (dir: 'up' | 'down' | 'left' | 'right', steps = 1) => {
-      expandSelection(dir, steps)
+    execute: (dir: Direction) => {
+      expandSelection(dir)
     },
     description: 'Set the selection',
   })
@@ -549,15 +499,16 @@ export const useGrid = createSharedComposable(() => {
   return {
     activeCellId: shallowReadonly(activeCellId),
     selection: shallowReadonly(selection),
-    fromCoordsToId,
-    fromIdToCoords,
     grid,
     moveActiveCell,
     moveActiveCellTo,
-    setSelection,
+    selectCell,
+    selectRange,
+    selectAll,
     resetSelection,
+    selectRowRange,
+    selectColRange,
     isInsideSelection,
-    moveSelection,
     expandSelection,
   }
 })

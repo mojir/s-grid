@@ -13,19 +13,29 @@ const {
 const initialValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 
+const selectionLabel = computed(() => {
+  if (editorFocused.value) {
+    return editingCellId.value.id
+  }
+  if (selection.value.size() === 1) {
+    return selection.value.start.id
+  }
+  return selection.value.id
+})
+
 watch(selection, () => {
   const inputElement = inputRef.value
-  if (
-    editingLitsCode.value
-    && inputElement
-    && selection.value !== editingCellId.value
-  ) {
+  if (editingLitsCode.value && inputElement && editorFocused.value) {
+    const selectionValue = selection.value.size() === 1
+      ? selection.value.start.id
+      : selection.value.id
+
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
     const value = inputElement.value
     inputElement.value
-      = value.slice(0, start) + selection.value + value.slice(end)
-    inputElement.setSelectionRange(start, start + selection.value.length)
+      = value.slice(0, start) + selectionValue + value.slice(end)
+    inputElement.setSelectionRange(start, start + selectionValue.length)
     editorText.value = inputElement.value
     inputElement.focus()
   }
@@ -60,12 +70,14 @@ function onBlur() {
 }
 
 function save() {
-  if (initialValue.value !== editorText.value) {
+  const text = editorText.value.trim()
+  if (initialValue.value !== text) {
     const cell = grid.value.getOrCreateCell(editingCellId.value)
-    cell.input.value = editorText.value
-    initialValue.value = editorText.value
+    cell.input.value = text
+    initialValue.value = text
   }
   inputRef.value?.blur()
+  setEditorFocused(false)
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -103,7 +115,7 @@ defineExpose({
         :style="hs(20)"
         class="flex pl-2 border-r border-slate-600 text-sm pr-4 min-w-20"
       >
-        {{ editorFocused ? editingCellId : selection }}
+        {{ selectionLabel }}
       </div>
       <div
         class="ml-4 select-none cursor-pointer"

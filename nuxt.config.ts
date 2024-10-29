@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/test-utils',
     '@nuxt/eslint',
+    '@nuxt/icon',
   ],
   devtools: { enabled: true },
   compatibilityDate: '2024-04-03',

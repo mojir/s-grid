@@ -17,6 +17,12 @@ export default {
           /* Hide scrollbar in IE and old Edge */
           '-ms-overflow-style': 'none',
         },
+        '.bg-selection': {
+          'background-color': '#323F5B',
+        },
+        '.bg-header-selection': {
+          'background-color': '#323F5B',
+        },
       })
     },
   ],

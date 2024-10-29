@@ -3,15 +3,16 @@ import { ref, watch } from 'vue'
 import GridCell from './GridCell.vue'
 import { useGrid } from '@/composables/useGrid'
 import { hs } from '@/utils/cssUtils'
+import type { CellId } from '~/lib/CellId'
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick' | 'cell-click', id: string): void
+  (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
 const { grid, activeCellId } = useGrid()
 
 watch(activeCellId, () => {
-  const cellElement = document.getElementById(activeCellId.value)
+  const cellElement = document.getElementById(activeCellId.value.id)
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',
@@ -32,18 +33,17 @@ defineExpose({
   >
     <div
       v-for="row of grid.rows"
-      :key="row.label"
+      :key="row.id"
       :style="hs(row.height)"
       class="flex"
     >
       <div
         v-for="col of grid.cols"
-        :key="col.label"
+        :key="col.id"
       >
         <GridCell
           :row="row"
           :col="col"
-          @cell-click="emit('cell-click', $event)"
           @cell-dblclick="emit('cell-dblclick', $event)"
         />
       </div>
