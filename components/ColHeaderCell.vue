@@ -39,7 +39,7 @@ const isSelected = computed(() => selection.value.containsColIndex(col.value.ind
     <Icon
       v-if="hover"
       name="mdi:triangle-down"
-      class="absolute z-10 top-[9px] right-[8px] cursor-pointer items-center justify-center text-gray-400"
+      class="absolute z-10 top-[9px] right-[8px] cursor-pointer items-center justify-center text-slate-400"
       :style="whs(8, 8)"
       @click.stop
     />

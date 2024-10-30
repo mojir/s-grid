@@ -12,7 +12,7 @@ const { sidePanelOpen } = useSidePanel()
     &lambda;itsheet
   </div>
   <div
-    class="absolute top-[12px] right-[12px] items-center text-gray-400"
+    class="absolute top-[12px] right-[12px] items-center text-slate-400"
     :style="whs(26, 26)"
   >
     <Icon

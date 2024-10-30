@@ -6,8 +6,14 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/eslint',
     '@nuxt/icon',
+    '@nuxtjs/color-mode',
   ],
   devtools: { enabled: true },
+  colorMode: {
+    classSuffix: '',
+    preference: 'light',
+    fallback: 'light',
+  },
   compatibilityDate: '2024-04-03',
   eslint: {
     config: {
