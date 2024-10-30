@@ -28,13 +28,15 @@ const errorMessage = computed(() => {
 <template>
   <div
     :style="hs(30)"
-    class="flex bg-slate-800 box-border border-t border-slate-700 items-center px-2 text-sm"
+    class="flex bg-slate-800 box-border border-t border-slate-700 items-center px-2 text-sm justify-between"
   >
-    <div
-      v-if="errorMessage"
-      class="text-red-500"
-    >
-      Error: {{ errorMessage }}
+    <div>
+      <div
+        v-if="errorMessage"
+        class="flex-1 text-red-500"
+      >
+        Error: {{ errorMessage }}
+      </div>
     </div>
   </div>
 </template>

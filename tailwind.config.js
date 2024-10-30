@@ -23,6 +23,9 @@ export default {
         '.bg-header-selection': {
           'background-color': '#323F5B',
         },
+        '.sidepanel-shadow': {
+          'box-shadow': '0 0 20px black',
+        },
       })
     },
   ],

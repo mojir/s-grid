@@ -18,8 +18,9 @@ const {
   selection,
 } = useGrid()
 
+const { sidePanelHandleKeyDown } = useSidePanel()
+
 const { editingLitsCode, editorFocused } = useEditor()
-const sheetViewRef = ref<HTMLDivElement>()
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
 const rowHeaderRef = ref()
@@ -114,6 +115,8 @@ function onCellDblclick() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  sidePanelHandleKeyDown(e)
+
   if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
     if (!editorFocused.value) {
       formulaBarRef.value.update('')
@@ -211,41 +214,45 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
 
 <template>
   <div
-    ref="sheetViewRef"
-    class="flex flex-grow flex-col overflow-hidden h-screen bg-slate-900 text-slate-300"
+    class="flex flex-grow overflow-hidden h-screen bg-slate-900 text-slate-300"
   >
-    <HeaderBar />
     <div
-      ref="gridWrapper"
-      class="flex flex-grow flex-col overflow-hidden"
+      class="flex flex-grow flex-col overflow-hidden h-screen bg-slate-900 text-slate-300"
     >
-      <FormulaBar ref="formulaBarRef" />
+      <HeaderBar />
       <div
-        class="flex"
-        :style="hs(grid.colHeaderHeight)"
+        ref="gridWrapper"
+        class="flex flex-grow flex-col overflow-hidden"
       >
+        <FormulaBar ref="formulaBarRef" />
         <div
-          class="flex bg-slate-800 box-border border-b border-r border-slate-700"
-          :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
-          @click="selectAll"
-        />
-        <ColHeader
-          ref="colHeaderRef"
-          @scroll="syncScroll"
-        />
+          class="flex"
+          :style="hs(grid.colHeaderHeight)"
+        >
+          <div
+            class="flex bg-slate-800 box-border border-b border-r border-slate-700"
+            :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
+            @click="selectAll"
+          />
+          <ColHeader
+            ref="colHeaderRef"
+            @scroll="syncScroll"
+          />
+        </div>
+        <div class="flex overflow-hidden">
+          <RowHeader
+            ref="rowHeaderRef"
+            @scroll="syncScroll"
+          />
+          <DataGrid
+            ref="dataGridRef"
+            @scroll="syncScroll"
+            @cell-dblclick="onCellDblclick"
+          />
+        </div>
       </div>
-      <div class="flex overflow-hidden">
-        <RowHeader
-          ref="rowHeaderRef"
-          @scroll="syncScroll"
-        />
-        <DataGrid
-          ref="dataGridRef"
-          @scroll="syncScroll"
-          @cell-dblclick="onCellDblclick"
-        />
-      </div>
+      <FooterBar />
     </div>
-    <FooterBar />
+    <SidePanel />
   </div>
 </template>
