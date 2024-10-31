@@ -1,5 +1,6 @@
 {
   "name": "@mojir/grid-lisp",
+  "private": true,
   "type": "module",
   "license": "MIT",
   "repository": {
