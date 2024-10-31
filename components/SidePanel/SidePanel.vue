@@ -32,12 +32,6 @@ function scrollToBottom() {
     })
   })
 }
-
-function onSidePanelClick() {
-  if (currentTab.value === 'repl') {
-    replFocused.value = true
-  }
-}
 </script>
 
 <template>
@@ -47,8 +41,6 @@ function onSidePanelClick() {
       'right-[-500px]': !sidePanelOpen,
       'sidepanel-shadow': sidePanelOpen,
     }"
-
-    @click="onSidePanelClick"
   >
     <Icon
       v-if="sidePanelOpen"

@@ -23,6 +23,8 @@ registerCommand({
   execute: () => {
     nextTick(() => {
       history.value = []
+      resetHistoryIndex()
+      clearSuggestions()
     })
   },
 })
@@ -121,6 +123,10 @@ function stringifyLitsResult(result: unknown): string | null {
   return JSON.stringify(result, null, 2)
 }
 
+function resetHistoryIndex() {
+  historyIndex = -1
+}
+
 function getHistoryEntry() {
   if (historyIndex === -1) {
     return ''
@@ -160,9 +166,7 @@ export function useREPL() {
           return getLastHistoryCommand()
       }
     },
-    resetHistoryIndex() {
-      historyIndex = -1
-    },
+    resetHistoryIndex,
     run,
     replFocused,
     getSuggestion,

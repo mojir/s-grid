@@ -126,7 +126,7 @@ defineExpose({
       <input
         ref="inputRef"
         v-model="editorText"
-        class="w-full py-1 px-2 bg-transparent dark:text-slate-300 text-gray-700 text-sm border-none focus:outline-none selection:bg-slate-700"
+        class="w-full py-1 px-2 bg-transparent dark:text-slate-300 text-gray-700 text-sm border-none focus:outline-none selection:dark:bg-slate-700 selection:bg-gray-300"
         @blur="onBlur"
         @focus="onFocus"
         @keydown="onKeyDown"

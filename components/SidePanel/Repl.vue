@@ -11,6 +11,7 @@ const {
   clearSuggestions,
 } = useREPL()
 const { sidePanelHandleKeyDown } = useSidePanel()
+const { exec } = useCommandCenter()
 
 const emit = defineEmits<{
   (e: 'scroll-to-bottom'): void
@@ -57,6 +58,14 @@ function onKeyDown(e: KeyboardEvent) {
     }
   }
 
+  if (e.ctrlKey && e.key === 'l') {
+    e.preventDefault()
+    exec('ClearRepl!')
+    enteredText.value = input.value = ''
+    clearSuggestions()
+    resetHistoryIndex()
+  }
+
   if (hasModifierKey(e)) {
     return
   }
@@ -99,8 +108,6 @@ function onKeyDown(e: KeyboardEvent) {
       @click.stop
     >
       <div class="font-sans text-sm italic dark:text-slate-500 text-gray-500 mb-2">
-        Type your Lisp expressions here
-        <br>
         For help type <b>(Help)</b>
       </div>
       <div
@@ -109,12 +116,13 @@ function onKeyDown(e: KeyboardEvent) {
         class="flex flex-col"
       >
         <div
-          class="flex items-center gap-2"
+          class="flex items-center"
           :style="hs(20)"
         >
-          <div>
-            &gt;
-          </div>
+          <Icon
+            size="20"
+            name="mdi-chevron-right"
+          />
           <div class="dark:text-slate-200 text-gray-800">
             {{ entry.program }}
           </div>
@@ -129,12 +137,16 @@ function onKeyDown(e: KeyboardEvent) {
       <div
         class="flex items"
       >
-        &gt;
+        <Icon
+          size="20"
+          name="mdi-chevron-right"
+        />
       </div>
       <input
         ref="inputRef"
         :value="input"
-        class="p-2 font-mono w-full py-1 px-2 bg-transparent dark:text-slate-200 text-gray-800 text-xs border-none focus:outline-none selection:bg-slate-700"
+        class="font-mono w-full py-1 bg-transparent dark:text-slate-200 text-gray-800 placeholder:italic placeholder-gray-400 dark:placeholder-slate-600 text-xs border-none focus:outline-none selection:dark:bg-slate-700 selection:bg-gray-300"
+        placeholder="Type your Lisp expression here"
         @input="onInput"
         @keydown.enter="runLits"
         @keydown.stop="onKeyDown"

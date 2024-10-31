@@ -207,7 +207,7 @@ class Grid {
     })
   }
 
-  public createCellAlias(alias: string, id: string) {
+  public createCellAlias(alias: string, id: string | CellId) {
     if (this.cellAliases.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
