@@ -1,7 +1,11 @@
 {
-  "name": "grid-lisp",
-  "private": true,
+  "name": "@mojir/grid-lisp",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mojir/grid-lisp.git"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -14,7 +18,7 @@
     "clean": "nuxt cleanup"
   },
   "dependencies": {
-    "@mojir/lits": "file:../lits",
+    "@mojir/lits": "1.2.0",
     "@nuxt/icon": "^1.6.1",
     "nuxt": "^3.13.2",
     "vue": "latest",
