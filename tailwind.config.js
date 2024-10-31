@@ -2,7 +2,16 @@
 export default {
   content: ['./index.html', './src/**/*.{vue,ts}'],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        lightSelection: {
+          DEFAULT: '#ccd',
+        },
+        darkSelection: {
+          DEFAULT: '#323F5B',
+        },
+      },
+    },
   },
   plugins: [
     ({ addUtilities }) => {
@@ -16,12 +25,6 @@ export default {
           'scrollbar-width': 'none',
           /* Hide scrollbar in IE and old Edge */
           '-ms-overflow-style': 'none',
-        },
-        '.bg-selection': {
-          'background-color': '#323F5B',
-        },
-        '.bg-header-selection': {
-          'background-color': '#323F5B',
         },
         '.sidepanel-shadow': {
           'box-shadow': '0 0 20px black',
