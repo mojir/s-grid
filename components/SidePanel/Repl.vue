@@ -92,14 +92,16 @@ function onKeyDown(e: KeyboardEvent) {
 
 <template>
   <div
-    class="flex flex-col w-full text-xs text-slate-400 gap-2 font-mono"
+    class="flex flex-col w-full text-xs dark:text-slate-400 text-gray-600 gap-2 font-mono"
   >
     <div
-      class="flex flex-col gap-12"
+      class="flex flex-col gap-2"
       @click.stop
     >
-      <div class="font-sans text-sm italic text-slate-500">
-        Type your expressions here
+      <div class="font-sans text-sm italic dark:text-slate-500 text-gray-500 mb-2">
+        Type your Lits expressions here
+        <br>
+        For help type <b>(Help)</b>
       </div>
       <div
         v-for="(entry, index) of history"
@@ -113,7 +115,7 @@ function onKeyDown(e: KeyboardEvent) {
           <div>
             &gt;
           </div>
-          <div class="text-slate-200">
+          <div class="dark:text-slate-200 text-gray-800">
             {{ entry.program }}
           </div>
         </div>
@@ -132,7 +134,7 @@ function onKeyDown(e: KeyboardEvent) {
       <input
         ref="inputRef"
         :value="input"
-        class="p-2 font-mono w-full py-1 px-2 bg-transparent text-slate-200 text-xs border-none focus:outline-none selection:bg-slate-700"
+        class="p-2 font-mono w-full py-1 px-2 bg-transparent dark:text-slate-200 text-gray-800 text-xs border-none focus:outline-none selection:bg-slate-700"
         @input="onInput"
         @keydown.enter="runLits"
         @keydown.stop="onKeyDown"

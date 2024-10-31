@@ -51,7 +51,6 @@ function registerCommand(command: Command<BuiltinCommandName>) {
 }
 
 function exec(name: string, ...args: unknown[]) {
-  console.log('exec', name, args)
   const command = commands.get(name)
   if (!command) {
     console.error(`Command ${name} not found`)

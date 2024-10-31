@@ -18,10 +18,9 @@ const isSelected = computed(() => selection.value.containsColIndex(col.value.ind
 
 <template>
   <div
-
     :style="whs(col.width, grid.colHeaderHeight)"
-    class="relative border-r border-b border-slate-700 box-border"
-    :class="{ 'bg-header-selection border-r-slate-600 border-b-slate-600': isSelected }"
+    class="relative border-r border-b dark:border-slate-700 border-gray-300 box-border"
+    :class="{ 'dark:bg-darkSelection bg-lightSelection dark:border-r-slate-600 border-r-gray-400 dark:border-b-slate-600 border-b-gray-400': isSelected }"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
   >
@@ -39,7 +38,7 @@ const isSelected = computed(() => selection.value.containsColIndex(col.value.ind
     <Icon
       v-if="hover"
       name="mdi:triangle-down"
-      class="absolute z-10 top-[9px] right-[8px] cursor-pointer items-center justify-center text-slate-400"
+      class="absolute z-10 top-[9px] right-[8px] cursor-pointer items-center justify-center dark:text-slate-400 text-gray-600"
       :style="whs(8, 8)"
       @click.stop
     />

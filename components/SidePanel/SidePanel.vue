@@ -10,6 +10,14 @@ watch(sidePanelOpen, () => {
   }
 })
 
+watch(currentTab, () => {
+  nextTick(() => {
+    if (currentTab.value === 'repl') {
+      replFocused.value = true
+    }
+  })
+})
+
 watch(history, () => {
   if (sidePanelOpen.value) {
     scrollToBottom()
@@ -34,9 +42,9 @@ function onSidePanelClick() {
 
 <template>
   <div
-    class="fixed top-0 bottom-0 right-0 flex-grow duration-300 box-border bg-slate-950 border-l border-slate-800 transition-all w-[600px] max-w-full"
+    class="fixed top-0 bottom-0 right-0 w-[500px] flex-grow duration-300 box-border dark:bg-slate-950 bg-gray-50 border-l dark:border-slate-800 border-gray-300 transition-[right]  max-w-full"
     :class="{
-      'right-[-600px]': !sidePanelOpen,
+      'right-[-500px]': !sidePanelOpen,
       'sidepanel-shadow': sidePanelOpen,
     }"
 
@@ -46,7 +54,7 @@ function onSidePanelClick() {
       v-if="sidePanelOpen"
       name="mdi:window-close"
       size="26"
-      class="cursor-pointer absolute top-[12px] right-[12px] text-slate-400 hover:text-slate-200 transition-colors"
+      class="cursor-pointer absolute top-[12px] right-[12px] dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black transition-colors"
       @click="sidePanelOpen = false"
     />
     <SidePanelTabs>
@@ -56,6 +64,10 @@ function onSidePanelClick() {
       >
         <SidePanelRepl
           v-if="currentTab === 'repl'"
+          @scroll-to-bottom="scrollToBottom"
+        />
+        <SidePanelSettings
+          v-if="currentTab === 'settings'"
           @scroll-to-bottom="scrollToBottom"
         />
       </div>

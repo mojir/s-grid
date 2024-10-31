@@ -18,8 +18,8 @@ const isSelected = computed(() => selection.value.containsRowIndex(row.value.ind
   <div
 
     :style="whs(grid.rowHeaderWidth, row.height)"
-    class="flex flex-col border-r border-b border-slate-700 box-border"
-    :class="{ 'bg-header-selection border-b-slate-600 border-r-slate-600': isSelected }"
+    class="flex flex-col border-r border-b dark:border-slate-700 border-gray-300 box-border"
+    :class="{ 'dark:bg-darkSelection bg-lightSelection dark:border-b-slate-600 border-b-gray-400 dark:border-r-slate-600 border-r-gray-400': isSelected }"
   >
     <div
       :id="row.id"

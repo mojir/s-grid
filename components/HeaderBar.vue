@@ -7,19 +7,19 @@ const { sidePanelOpen } = useSidePanel()
 <template>
   <div
     :style="hs(50)"
-    class="flex justify-center items-center text-2xl bg-slate-800 text-slate-300 box-border"
+    class="flex justify-center items-center text-2xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
   >
     &lambda;itsheet
   </div>
   <div
-    class="absolute top-[12px] right-[12px] items-center text-slate-400"
+    class="absolute top-[12px] right-[12px] items-center dark:text-slate-400 text-gray-600"
     :style="whs(26, 26)"
   >
     <Icon
       v-if="!sidePanelOpen"
       name="mdi:menu-open"
       size="26"
-      class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors"
+      class="cursor-pointer dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black  transition-colors"
       @click="sidePanelOpen = true"
     />
   </div>

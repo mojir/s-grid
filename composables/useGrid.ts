@@ -90,9 +90,7 @@ export class Cell {
     return isLitsFunction(fn) ? fn : null
   })
 
-  constructor(private readonly grid: Grid, public cellId: CellId) {
-    console.log('Cell created')
-  }
+  constructor(private readonly grid: Grid, public cellId: CellId) {}
 }
 
 class Grid {

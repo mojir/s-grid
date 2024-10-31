@@ -15,7 +15,7 @@ defineExpose({
 <template>
   <div
     ref="el"
-    class="flex flex-col overflow-x-auto bg-slate-800 no-scrollbar"
+    class="flex flex-col overflow-x-auto dark:bg-slate-800 bg-gray-200 no-scrollbar"
     :style="ws(grid.rowHeaderWidth)"
   >
     <RowHeaderCell

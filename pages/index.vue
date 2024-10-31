@@ -214,10 +214,10 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
 
 <template>
   <div
-    class="flex flex-grow overflow-hidden h-screen bg-slate-900 text-slate-300"
+    class="flex flex-grow overflow-hidden h-screen dark:bg-slate-900 bg-gray-100 dark:text-slate-300 text-gray-700"
   >
     <div
-      class="flex flex-grow flex-col overflow-hidden h-screen bg-slate-900 text-slate-300"
+      class="flex flex-grow flex-col overflow-hidden h-screen dark:bg-slate-900 bg-gray-100 dark:text-slate-300 text-gray-700"
     >
       <HeaderBar />
       <div
@@ -230,7 +230,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           :style="hs(grid.colHeaderHeight)"
         >
           <div
-            class="flex bg-slate-800 box-border border-b border-r border-slate-700"
+            class="flex dark:bg-slate-800 bg-gray-200 box-border border-b border-r dark:border-slate-700 border-gray-300"
             :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
             @click="selectAll"
           />

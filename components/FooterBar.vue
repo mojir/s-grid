@@ -28,7 +28,7 @@ const errorMessage = computed(() => {
 <template>
   <div
     :style="hs(30)"
-    class="flex bg-slate-800 box-border border-t border-slate-700 items-center px-2 text-sm justify-between"
+    class="flex dark:bg-slate-800 bg-gray-200 box-border border-t dark:border-slate-700 border-gray-300 items-center px-2 text-sm justify-between"
   >
     <div>
       <div

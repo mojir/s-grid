@@ -104,7 +104,7 @@ defineExpose({
 
 <template>
   <div
-    class="overflow-hiddent flex bg-slate-900 border-t border-slate-800 items-center"
+    class="overflow-hiddent flex dark:bg-slate-900 bg-gray-100 border-t dark:border-slate-800 border-gray-300 items-center"
     :style="hs(32)"
   >
     <div
@@ -113,7 +113,7 @@ defineExpose({
     >
       <div
         :style="hs(20)"
-        class="flex pl-2 border-r border-slate-600 text-sm pr-4 min-w-20"
+        class="flex pl-2 border-r dark:border-slate-600 border-gray-400 text-sm pr-4 min-w-20"
       >
         {{ selectionLabel }}
       </div>
@@ -126,7 +126,7 @@ defineExpose({
       <input
         ref="inputRef"
         v-model="editorText"
-        class="w-full py-1 px-2 bg-transparent text-slate-300 text-sm border-none focus:outline-none selection:bg-slate-700"
+        class="w-full py-1 px-2 bg-transparent dark:text-slate-300 text-gray-700 text-sm border-none focus:outline-none selection:bg-slate-700"
         @blur="onBlur"
         @focus="onFocus"
         @keydown="onKeyDown"
