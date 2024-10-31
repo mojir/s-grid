@@ -1,4 +1,16 @@
-import { isLitsError, isLitsFunction, Lits, type Context } from '@mojir/lits'
+import {
+  isLitsError,
+  isLitsFunction,
+  Lits,
+  type Context,
+  normalExpressionKeys,
+  specialExpressionKeys,
+} from '@mojir/lits'
+
+import { apiReference, isFunctionReference } from '@mojir/lits/reference'
+import type { ApiName } from '@mojir/lits/reference/api'
+
+const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
 
 type HistoryEntry = {
   program: string
@@ -10,7 +22,7 @@ const lits = new Lits()
 
 let globalContext: Context = {}
 
-const { jsFunctions, getCommandNames } = useCommandCenter()
+const { jsFunctions, commands } = useCommandCenter()
 const { grid } = useGrid()
 const { registerCommand } = useCommandCenter()
 
@@ -38,14 +50,69 @@ registerCommand({
   },
 })
 
+registerCommand({
+  name: 'Help',
+  description: 'Get the list of available commands',
+  execute: (topic?: string): string => {
+    if (!topic) {
+      let result = 'Commands:\n'
+      Array.from(commands.value.values())
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((command) => {
+          result += `  ${command.name}: ${command.description}\n`
+        })
+      return result
+    }
+    const command = commands.value.get(topic)
+    if (command) {
+      return `${command.name}
+  ${command.description}`
+    }
+    const reference = apiReference[topic as ApiName]
+    if (reference) {
+      if (isFunctionReference(reference)) {
+        return 'Builtin Lits function'
+      }
+    }
+    return `Unknown command or function ${topic}`
+  },
+})
+
 let suggestionHistory: { enteredText: string, suggestions: string[], index: number } | null = null
+
+function getAllSuggestions(enteredText: string): string[] {
+  const startsWithParentheses = enteredText.startsWith('(')
+  const searchPattern = (startsWithParentheses ? enteredText.substring(1).trim() : enteredText.trim()).toLowerCase()
+  const suggestions = new Set<string>()
+  const commandNames = Array.from(commands.value.keys())
+
+  commandNames
+    .filter(name => name.toLowerCase().startsWith(searchPattern))
+    .forEach(name => suggestions.add(name))
+
+  litsCommands.values()
+    .filter(name => name.toLowerCase().startsWith(searchPattern))
+    .forEach(name => suggestions.add(name))
+
+  if (!startsWithParentheses) {
+    commandNames
+      .filter(name => name.toLowerCase().includes(searchPattern))
+      .forEach(name => suggestions.add(name))
+
+    litsCommands.values()
+      .filter(name => name.toLowerCase().includes(searchPattern))
+      .forEach(name => suggestions.add(name))
+  }
+
+  return [...suggestions]
+}
 
 function getNextSuggestion(enteredText: string): string {
   if (suggestionHistory === null) {
-    const prefix = enteredText.startsWith('(') ? enteredText.substring(1).trim() : enteredText.trim()
+    const suggestions = getAllSuggestions(enteredText)
     suggestionHistory = {
       enteredText,
-      suggestions: getCommandNames().filter(name => name.startsWith(prefix)),
+      suggestions,
       index: -1,
     }
   }
@@ -58,8 +125,7 @@ function getNextSuggestion(enteredText: string): string {
 
 function getPreviousSuggestion(enteredText: string): string {
   if (suggestionHistory === null) {
-    const prefix = enteredText.startsWith('(') ? enteredText.substring(1).trim() : enteredText.trim()
-    const suggestions = getCommandNames().filter(name => name.startsWith(prefix))
+    const suggestions = getAllSuggestions(enteredText)
     suggestionHistory = {
       enteredText,
       suggestions,
