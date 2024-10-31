@@ -7,9 +7,9 @@ const { sidePanelOpen } = useSidePanel()
 <template>
   <div
     :style="hs(50)"
-    class="flex justify-center items-center text-2xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
+    class="flex pl-3 items-center text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
   >
-    &lambda;itsheet
+    GridLisp
   </div>
   <div
     class="absolute top-[12px] right-[12px] items-center dark:text-slate-400 text-gray-600"

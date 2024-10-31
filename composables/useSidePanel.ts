@@ -6,7 +6,7 @@ type Tab = {
   name: string
 }
 const tabs = readonly(ref<Tab[]>([
-  { id: 'repl', name: 'Repl' },
+  { id: 'repl', name: 'Lisp REPL' },
   { id: 'settings', name: 'Settings' },
 ]))
 

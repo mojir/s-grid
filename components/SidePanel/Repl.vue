@@ -99,7 +99,7 @@ function onKeyDown(e: KeyboardEvent) {
       @click.stop
     >
       <div class="font-sans text-sm italic dark:text-slate-500 text-gray-500 mb-2">
-        Type your Lits expressions here
+        Type your Lisp expressions here
         <br>
         For help type <b>(Help)</b>
       </div>
