@@ -9,10 +9,10 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const { grid, activeCellId } = useGrid()
+const { grid } = useGrid()
 
-watch(activeCellId, () => {
-  const cellElement = document.getElementById(activeCellId.value.id)
+watch(grid.value.activeCellId, (activeCellId) => {
+  const cellElement = document.getElementById(activeCellId.id)
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',

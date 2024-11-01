@@ -3,7 +3,7 @@ import { useGrid } from '@/composables/useGrid'
 import { whs } from '@/utils/cssUtils'
 import type { Col } from '~/lib/Col'
 
-const { grid, selection } = useGrid()
+const { grid } = useGrid()
 
 const props = defineProps<{
   col: Col
@@ -13,7 +13,7 @@ const hover = ref(false)
 
 const { col } = toRefs(props)
 
-const isSelected = computed(() => selection.value.containsColIndex(col.value.index))
+const isSelected = computed(() => grid.value.selection.value.containsColIndex(col.value.index))
 </script>
 
 <template>

@@ -6,16 +6,6 @@ import { Row } from '~/lib/Row'
 
 const {
   grid,
-  moveActiveCell,
-  moveActiveCellTo,
-  selectCell,
-  selectAll,
-  selectRange,
-  selectRowRange,
-  selectColRange,
-  resetSelection,
-  expandSelection,
-  selection,
 } = useGrid()
 
 const { sidePanelHandleKeyDown } = useSidePanel()
@@ -49,33 +39,33 @@ function onMouseDown(event: Event) {
   if (CellId.isCellIdString(id)) {
     mouseDownStart.value = id
     if (editingLitsCode.value) {
-      selectCell(id)
+      grid.value.selectCell(id)
     }
     else {
-      resetSelection()
-      moveActiveCellTo(id)
+      grid.value.resetSelection()
+      grid.value.moveActiveCellTo(id)
     }
   }
   if (Col.isColString(id)) {
     mouseDownStart.value = id
     const col = grid.value.getCol(id)
     if (col) {
-      resetSelection()
+      grid.value.resetSelection()
       if (!editingLitsCode.value) {
-        moveActiveCellTo(`${col.id}1`)
+        grid.value.moveActiveCellTo(`${col.id}1`)
       }
-      selectColRange(col, col)
+      grid.value.selectColRange(col, col)
     }
   }
   if (Row.isRowString(id)) {
     mouseDownStart.value = id
     const row = grid.value.getRow(id)
     if (row) {
-      resetSelection()
+      grid.value.resetSelection()
       if (!editingLitsCode.value) {
-        moveActiveCellTo(`A${row.id}`)
+        grid.value.moveActiveCellTo(`A${row.id}`)
       }
-      selectRowRange(row, row)
+      grid.value.selectRowRange(row, row)
     }
   }
 }
@@ -84,20 +74,20 @@ function onMouseMove(event: Event) {
 
   if (mouseDownStart.value) {
     if (CellId.isCellIdString(mouseDownStart.value) && CellId.isCellIdString(target?.id)) {
-      selectRange(`${mouseDownStart.value}-${target.id}`)
+      grid.value.selectRange(`${mouseDownStart.value}-${target.id}`)
     }
     else if (Col.isColString(mouseDownStart.value) && Col.isColString(target?.id)) {
       const fromCol = grid.value.getCol(mouseDownStart.value)
       const toCol = grid.value.getCol(target.id)
       if (fromCol && toCol) {
-        selectColRange(fromCol, toCol)
+        grid.value.selectColRange(fromCol, toCol)
       }
     }
     else if (Row.isRowString(mouseDownStart.value) && Row.isRowString(target?.id)) {
       const fromRow = grid.value.getRow(mouseDownStart.value)
       const toRow = grid.value.getRow(target.id)
       if (fromRow && toRow) {
-        selectRowRange(fromRow, toRow)
+        grid.value.selectRowRange(fromRow, toRow)
       }
     }
   }
@@ -128,12 +118,12 @@ function onKeyDown(e: KeyboardEvent) {
     if (editorFocused.value) {
       formulaBarRef.value.save()
     }
-    resetSelection()
+    grid.value.resetSelection()
     if (e.shiftKey) {
-      moveActiveCell('up', true)
+      grid.value.moveActiveCell('up', true)
     }
     else {
-      moveActiveCell('down', true)
+      grid.value.moveActiveCell('down', true)
     }
   }
   else if (e.key === 'Escape') {
@@ -141,7 +131,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Backspace') {
     if (!editorFocused.value) {
-      grid.value.clearRange(selection.value)
+      grid.value.clearRange(grid.value.selection.value)
       formulaBarRef.value.update('')
     }
   }
@@ -156,54 +146,54 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        expandSelection('down')
+        grid.value.expandSelection('down')
       }
       else {
-        moveActiveCell('down')
-        resetSelection()
+        grid.value.moveActiveCell('down')
+        grid.value.resetSelection()
       }
     }
     else if (e.key === 'ArrowUp') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        expandSelection('up')
+        grid.value.expandSelection('up')
       }
       else {
-        moveActiveCell('up')
-        resetSelection()
+        grid.value.moveActiveCell('up')
+        grid.value.resetSelection()
       }
     }
     else if (e.key === 'ArrowRight') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        expandSelection('right')
+        grid.value.expandSelection('right')
       }
       else {
-        moveActiveCell('right')
-        resetSelection()
+        grid.value.moveActiveCell('right')
+        grid.value.resetSelection()
       }
     }
     else if (e.key === 'ArrowLeft') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        expandSelection('left')
+        grid.value.expandSelection('left')
       }
       else {
-        moveActiveCell('left')
-        resetSelection()
+        grid.value.moveActiveCell('left')
+        grid.value.resetSelection()
       }
     }
     else if (e.key === 'Tab') {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        moveActiveCell('left', true)
+        grid.value.moveActiveCell('left', true)
       }
       else {
-        moveActiveCell('right', true)
+        grid.value.moveActiveCell('right', true)
       }
     }
   }
@@ -232,7 +222,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           <div
             class="flex dark:bg-slate-800 bg-gray-200 box-border border-b border-r dark:border-slate-700 border-gray-300"
             :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
-            @click="selectAll"
+            @click="grid.selectAll"
           />
           <ColHeader
             ref="colHeaderRef"

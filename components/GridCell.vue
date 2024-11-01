@@ -15,42 +15,42 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const { grid, activeCellId, selection } = useGrid()
+const { grid } = useGrid()
 const { editorFocused, editorText, editingCellId } = useEditor()
 
 const { row, col } = toRefs(props)
 
 const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index))
-const isActiveCell = computed(() => activeCellId.value.equals(cellId.value))
+const isActiveCell = computed(() => grid.value.activeCellId.value.equals(cellId.value))
 const isInsideSelection = computed(
   () =>
     !isActiveCell.value
-    && selection.value.contains(cellId.value),
+    && grid.value.selection.value.contains(cellId.value),
 )
 
 const isSelectionTop = computed(
   () =>
     !isActiveCell.value
     && isInsideSelection.value
-    && selection.value.isCellIdInTopRow(cellId.value),
+    && grid.value.selection.value.isCellIdInTopRow(cellId.value),
 )
 const isSelectionBottom = computed(
   () =>
     !isActiveCell.value
     && isInsideSelection.value
-    && selection.value.isCellIdInBottomRow(cellId.value),
+    && grid.value.selection.value.isCellIdInBottomRow(cellId.value),
 )
 const isSelectionLeft = computed(
   () =>
     !isActiveCell.value
     && isInsideSelection.value
-    && selection.value.isCellIdInLeftColumn(cellId.value),
+    && grid.value.selection.value.isCellIdInLeftColumn(cellId.value),
 )
 const isSelectionRight = computed(
   () =>
     !isActiveCell.value
     && isInsideSelection.value
-    && selection.value.isCellIdInRightColumn(cellId.value))
+    && grid.value.selection.value.isCellIdInRightColumn(cellId.value))
 
 const isEditingCell = computed(() => editorFocused.value && editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
@@ -61,8 +61,8 @@ const cellContent = computed(() => {
 })
 const hasContent = computed(() => !!cellContent.value || isEditingCell.value)
 
-watch(activeCellId, () => {
-  const cellElement = document.getElementById(activeCellId.value.id)
+watch(grid.value.activeCellId, (activeCellId) => {
+  const cellElement = document.getElementById(activeCellId.id)
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',

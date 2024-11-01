@@ -4,8 +4,6 @@ import { Col } from './Col'
 import { Cell } from './Cell'
 import { Row } from './Row'
 
-const { registerCommand } = useCommandCenter()
-
 export class Grid {
   public readonly rows: Row[]
   public readonly cols: Col[]
@@ -28,102 +26,10 @@ export class Grid {
       Array.from({ length: cols }, () => null),
     )
     this._range = CellRange.fromCellIds(CellId.fromCoords(0, 0), CellId.fromCoords(rows - 1, cols - 1))
-    this.registerCommands()
   }
 
   public get range() {
     return this._range
-  }
-
-  private registerCommands() {
-    registerCommand({
-      name: 'SetCellInput!',
-      execute: (id: string, input: string) => {
-        const cell = this.getOrCreateCell(id)
-        cell.input.value = input
-      },
-      description: 'Set the input of a cell',
-    })
-    registerCommand({
-      name: 'Clear!',
-      execute: (id: string) => {
-        this.clearRange(id)
-      },
-      description: 'Set the input of a cell',
-    })
-    registerCommand({
-      name: 'ClearAllCells!',
-      execute: () => {
-        this.clearAllCells()
-      },
-      description: 'Clear all cells',
-    })
-    registerCommand({
-      name: 'GetActiveCellId',
-      execute: () => {
-        return this.activeCellId.value
-      },
-      description: 'Set the input of a cell',
-    })
-    registerCommand({
-      name: 'GetCellInput',
-      execute: (id: string) => {
-        const cell = this.getCell(id)
-        return cell?.input.value
-      },
-      description: 'Get the input of a cell',
-    })
-    registerCommand({
-      name: 'GetCellOutput',
-      execute: (id: string) => {
-        const cell = this.getCell(id)
-        return cell?.output.value
-      },
-      description: 'Get the output of a cell',
-    })
-    registerCommand({
-      name: 'GetCellDisplayValue',
-      execute: (id: string) => {
-        const cell = this.getCell(id)
-        return cell?.displayValue.value
-      },
-      description: 'Get the formatted output of a cell',
-    })
-    registerCommand({
-      name: 'GetActiveCellInput',
-      execute: () => {
-        return this.getActiveCell()?.input.value
-      },
-      description: 'Get the input of a cell',
-    })
-    registerCommand({
-      name: 'GetActiveCellOutput',
-      execute: () => {
-        return this.getActiveCell()?.output.value ?? 0
-      },
-      description: 'Get the output of a cell',
-    })
-    registerCommand({
-      name: 'GetActiveCellDisplayValue',
-      execute: () => {
-        return this.getActiveCell()?.displayValue.value
-      },
-      description: 'Get the formatted output of a cell',
-    })
-    registerCommand({
-      name: 'CreateCellAlias!',
-      execute: (alias: string, id: string) => {
-        this.createCellAlias(alias, id)
-      },
-      description: 'Create an alias for a cell',
-    })
-    registerCommand({
-      name: 'RenameCellAlias!',
-      execute: (alias: string, newAlias: string) => {
-        this.renameCellAlias(alias, newAlias)
-      },
-      description: 'Rename an alias for a cell',
-    })
   }
 
   public createCellAlias(alias: string, id: string | CellId) {
@@ -189,6 +95,14 @@ export class Grid {
     return this.cols[Col.getColIndexFromId(id)]
   }
 
+  public clearCell(id: string | CellId) {
+    const cell = this.getCell(id)
+    if (cell) {
+      this.cells[cell.cellId.rowIndex][cell.cellId.colIndex] = null
+      this.trigger()
+    }
+  }
+
   public clearRange(id: string | CellRange) {
     const cellRange = CellRange.isCellRange(id)
       ? id
@@ -200,7 +114,7 @@ export class Grid {
     cellIds.forEach((cellId) => {
       const cell = this.getCell(cellId)
       if (cell) {
-        this.cells[cellId.rowIndex][cellId.colIndex] = null
+        this.cells[cell.cellId.rowIndex][cell.cellId.colIndex] = null
         this.trigger()
       }
     })
@@ -217,7 +131,7 @@ export class Grid {
     this.trigger()
   }
 
-  getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: Set<{ symbol: string }>) {
+  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: Set<{ symbol: string }>) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
       if (this.cellAliases.has(id.symbol)) {
         const cell = this.cellAliases.get(id.symbol)!
@@ -255,5 +169,111 @@ export class Grid {
       }
       return acc
     }, {})
+  }
+
+  public expandSelection(dir: Direction) {
+    const start = this.unsortedSelection.value.start
+    const end = this.unsortedSelection.value.end.cellMove(dir, this.range, false)
+
+    this.unsortedSelection.value = CellRange.fromCellIds(start, end)
+  }
+
+  public moveActiveCellTo(id: string | CellId) {
+    const cellId = this.getCellId(id)
+
+    const range = this.selection.value.size() > 1
+      ? this.selection.value
+      : this.range
+
+    this.activeCellId.value = cellId.clamp(range)
+    this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+  }
+
+  public selectRange(id: string | CellRange) {
+    const range = CellRange.isCellRange(id)
+      ? id
+      : CellRange.isCellRangeString(id)
+        ? CellRange.fromId(id).clamp(this.range)
+        : null
+
+    if (!range) {
+      console.error(`Invalid range: ${id}`)
+      return
+    }
+
+    this.unsortedSelection.value = range
+  }
+
+  public selectCell(id: string | CellId) {
+    const cellId = CellId.isCellId(id)
+      ? id
+      : CellId.isCellIdString(id)
+        ? CellId.fromId(id).clamp(this.range)
+        : null
+
+    if (!cellId) {
+      console.error(`Invalid cell id: ${id}`)
+      return
+    }
+
+    this.unsortedSelection.value = CellRange.fromSingleCellId(cellId)
+  }
+
+  public selectAll() {
+    this.unsortedSelection.value = this.range
+  }
+
+  public selectColRange(fromCol: Col, toCol: Col) {
+    this.unsortedSelection.value
+      = CellRange.fromCellIds(
+        CellId.fromCoords(0, fromCol.index),
+        CellId.fromCoords(this.range.end.rowIndex, toCol.index))
+  }
+
+  public selectRowRange(fromRow: Row, toRow: Row) {
+    this.unsortedSelection.value
+      = CellRange.fromCellIds(
+        CellId.fromCoords(fromRow.index, 0),
+        CellId.fromCoords(toRow.index, this.range.end.colIndex))
+  }
+
+  public resetSelection() {
+    this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+  }
+
+  public isInsideSelection(id: string | CellId): boolean {
+    const cellId = this.getCellId(id)
+    return this.unsortedSelection.value.contains(cellId)
+  }
+
+  public moveActiveCell(dir: Direction, wrap = false) {
+    const range = this.selection.value.size() > 1 ? this.selection.value : this.range
+
+    switch (dir) {
+      case 'up':
+        this.moveActiveCellTo(this.activeCellId.value.cellUp(range, wrap))
+        break
+      case 'down':
+        this.moveActiveCellTo(this.activeCellId.value.cellDown(range, wrap))
+        break
+      case 'left':
+        this.moveActiveCellTo(this.activeCellId.value.cellLeft(range, wrap))
+        break
+      case 'right':
+        this.moveActiveCellTo(this.activeCellId.value.cellRight(range, wrap))
+        break
+      case 'top':
+        this.moveActiveCellTo(this.activeCellId.value.cellTop(range))
+        break
+      case 'bottom':
+        this.moveActiveCellTo(this.activeCellId.value.cellBottom(range))
+        break
+      case 'leftmost':
+        this.moveActiveCellTo(this.activeCellId.value.cellLeftmost(range))
+        break
+      case 'rightmost':
+        this.moveActiveCellTo(this.activeCellId.value.cellRightmost(range))
+        break
+    }
   }
 }

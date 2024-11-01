@@ -3,7 +3,7 @@ import { useGrid } from '@/composables/useGrid'
 import { whs } from '@/utils/cssUtils'
 import type { Row } from '~/lib/Row'
 
-const { grid, selection } = useGrid()
+const { grid } = useGrid()
 
 const props = defineProps<{
   row: Row
@@ -11,7 +11,7 @@ const props = defineProps<{
 
 const { row } = toRefs(props)
 
-const isSelected = computed(() => selection.value.containsRowIndex(row.value.index))
+const isSelected = computed(() => grid.value.selection.value.containsRowIndex(row.value.index))
 </script>
 
 <template>

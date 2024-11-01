@@ -4,9 +4,9 @@ import { computed } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { hs } from '@/utils/cssUtils'
 
-const { activeCellId, grid } = useGrid()
+const { grid } = useGrid()
 const errorMessage = computed(() => {
-  const cell = grid.value.getCell(activeCellId.value)
+  const cell = grid.value.getActiveCell()
   const output = cell?.output.value
   if (output instanceof Error) {
     if (isLitsError(output)) {

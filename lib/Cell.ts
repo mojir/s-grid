@@ -77,5 +77,18 @@ export class Cell {
     return isLitsFunction(fn) ? fn : null
   })
 
+  public getJson() {
+    return {
+      'id': this.cellId.id,
+      'input': this.input.value,
+      'output': this.output.value,
+      'display-value': this.displayValue.value,
+      'alias': this.alias.value,
+      'formatter-program': this.formatter.value,
+      'row-index': this.cellId.rowIndex,
+      'col-index': this.cellId.colIndex,
+    }
+  }
+
   constructor(private readonly grid: Grid, public cellId: CellId) {}
 }

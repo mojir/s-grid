@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { hs } from '@/utils/cssUtils'
 
-const { grid, activeCellId, selection } = useGrid()
+const { grid } = useGrid()
 const {
   editingLitsCode,
   editorFocused,
@@ -17,18 +17,18 @@ const selectionLabel = computed(() => {
   if (editorFocused.value) {
     return editingCellId.value.id
   }
-  if (selection.value.size() === 1) {
-    return selection.value.start.id
+  if (grid.value.selection.value.size() === 1) {
+    return grid.value.selection.value.start.id
   }
-  return selection.value.id
+  return grid.value.selection.value.id
 })
 
-watch(selection, () => {
+watch(grid.value.selection, (selection) => {
   const inputElement = inputRef.value
   if (editingLitsCode.value && inputElement && editorFocused.value) {
-    const selectionValue = selection.value.size() === 1
-      ? selection.value.start.id
-      : selection.value.id
+    const selectionValue = selection.size() === 1
+      ? selection.start.id
+      : selection.id
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
@@ -41,15 +41,15 @@ watch(selection, () => {
   }
 })
 
-watch(activeCellId, () => {
+watch(grid.value.activeCellId, (activeCellId) => {
   save()
-  editorText.value = grid.value.getCell(activeCellId.value)?.input.value ?? ''
+  editorText.value = grid.value.getActiveCell()?.input.value ?? ''
   initialValue.value = editorText.value
-  setEditingCellId(activeCellId.value)
+  setEditingCellId(activeCellId)
 })
 
 onMounted(() => {
-  setEditingCellId(activeCellId.value)
+  setEditingCellId(grid.value.activeCellId.value)
   editorText.value = grid.value.getCell(editingCellId.value)?.input.value ?? ''
   initialValue.value = editorText.value
 })

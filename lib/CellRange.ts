@@ -147,4 +147,16 @@ export class CellRange {
   public isCellIdInRightColumn(cellId: CellId): boolean {
     return cellId.colIndex === this.end.colIndex
   }
+
+  public getJson() {
+    return {
+      'id': this.id,
+      'start-id': this.start.id,
+      'end-id': this.end.id,
+      'start-row-index': this.start.rowIndex,
+      'start-col-index': this.start.colIndex,
+      'end-row-index': this.end.rowIndex,
+      'end-col-index': this.end.colIndex,
+    }
+  }
 }
