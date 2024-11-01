@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.light {
+  --logo-fill-color: transparent;
+  --logo-grid-color: #666;
+  --logo-parens-color: #4c9ace;
+}
+
+.dark {
+  --logo-fill-color: transparent;
+  --logo-grid-color: #aaa;
+  --logo-parens-color: #63b3ed;
+}
+

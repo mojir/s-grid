@@ -9,6 +9,13 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
   ],
   devtools: { enabled: true },
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      ],
+    },
+  },
   colorMode: {
     classSuffix: '',
     preference: 'light',
