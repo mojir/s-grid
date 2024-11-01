@@ -1,4 +1,66 @@
-function hexToRgb(hex: string): [number, number, number] {
+type Tripple = [number, number, number]
+
+const hexRegExp = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i
+
+export class Color {
+  private constructor(
+    public readonly h: number,
+    public readonly s: number,
+    public readonly l: number,
+    public readonly a: number,
+  ) {
+  }
+
+  public static fromHex(hex: string): Color {
+    if (!hexRegExp.test(hex)) {
+      console.error('Invalid hex color', hex)
+      return new Color(0, 0, 0, 0)
+    }
+    const a = (hex.length === 7) ? 1 : parseInt(hex.slice(7, 9), 16) / 255
+    return new Color(...rgbToHsl(...hexToRgb(hex)), a)
+  }
+
+  public static fromHsl(h: number, s: number, l: number, a?: number): Color {
+    a ??= 1
+    if (h < 0 || h > 360 || s < 0 || s > 100 || l < 0 || l > 100 || a < 0 || a > 1) {
+      console.error('Invalid HSL color', h, s, l, a)
+      return new Color(0, 0, 0, 0)
+    }
+    return new Color(h, s, l, a)
+  }
+
+  public static fromRgb(r: number, g: number, b: number, a?: number): Color {
+    a ??= 1
+    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 1) {
+      console.error('Invalid RGB color', r, g, b, a)
+      return new Color(0, 0, 0, 0)
+    }
+    return new Color(...rgbToHsl(r, g, b), a)
+  }
+
+  get hsl(): Tripple {
+    return [this.h, this.s, this.l]
+  }
+
+  get rgb(): Tripple {
+    return hslToRgb(this.h, this.s, this.l)
+  }
+
+  get hex(): string {
+    return rgbToHex(...this.rgb)
+  }
+
+  get style(): string {
+    return `hsl(${this.h}, ${this.s}%, ${this.l}%)`
+  }
+
+  toggleLightness(): Color {
+    const newL = this.l > 50 ? 100 - this.l : 100 - this.l
+    return new Color(this.h, this.s, newL, this.a)
+  }
+}
+
+function hexToRgb(hex: string): Tripple {
   const bigint = parseInt(hex.slice(1), 16)
   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255]
 }
@@ -7,7 +69,7 @@ function rgbToHex(r: number, g: number, b: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
-function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+function rgbToHsl(r: number, g: number, b: number): Tripple {
   r /= 255
   g /= 255
   b /= 255
@@ -35,10 +97,7 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)]
 }
 
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
-  s /= 100
-  l /= 100
-
+function hslToRgb(h: number, s: number, l: number): Tripple {
   const hue2rgb = (p: number, q: number, t: number): number => {
     if (t < 0) t += 1
     if (t > 1) t -= 1
@@ -62,15 +121,4 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   }
 
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)]
-}
-
-export function toggleColorMode(hex: string): string {
-  const [r, g, b] = hexToRgb(hex)
-  const [h, s, l] = rgbToHsl(r, g, b)
-
-  // Invert lightness around the midpoint of 50
-  const newL = l > 50 ? 100 - l : 100 - l
-
-  const [newR, newG, newB] = hslToRgb(h, s, newL)
-  return rgbToHex(newR, newG, newB)
 }

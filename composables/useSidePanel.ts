@@ -1,3 +1,5 @@
+const { debugMode } = useDebug()
+
 let ctrlKeyTime: number | null = null
 
 type TabId = 'repl' | 'settings' | 'debug'
@@ -5,11 +7,18 @@ type Tab = {
   id: TabId
   name: string
 }
-const tabs = readonly(ref<Tab[]>([
+const allTabs = readonly(ref<Tab[]>([
   { id: 'repl', name: 'Lisp REPL' },
   { id: 'settings', name: 'Settings' },
   { id: 'debug', name: 'Debug' },
 ]))
+
+const tabs = computed(() => {
+  if (debugMode.value) {
+    return allTabs.value
+  }
+  return allTabs.value.filter(tab => tab.id !== 'debug')
+})
 
 const sidePanelOpen = ref<boolean>(false)
 const currentTab = ref<TabId>('repl')
