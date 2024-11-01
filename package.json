@@ -1,11 +1,11 @@
 {
-  "name": "@mojir/grid-lisp",
+  "name": "@mojir/s-grid",
   "private": true,
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mojir/grid-lisp.git"
+    "url": "git+https://github.com/mojir/s-grid.git"
   },
   "scripts": {
     "build": "nuxt build",
