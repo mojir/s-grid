@@ -101,7 +101,7 @@ function onKeyDown(e: KeyboardEvent) {
 
 <template>
   <div
-    class="flex flex-col w-full text-xs dark:text-slate-400 text-gray-600 gap-2 font-mono"
+    class="flex h-full flex-col w-full text-xs dark:text-slate-400 text-gray-600 gap-2 font-mono"
   >
     <div
       class="flex flex-col gap-2"

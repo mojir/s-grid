@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { sidePanelOpen, currentTab } = useSidePanel()
 const { replFocused, history } = useREPL()
-const contentRef = ref<HTMLDivElement>()
+const tabsRef = ref()
 
 watch(sidePanelOpen, () => {
   replFocused.value = sidePanelOpen.value
@@ -26,10 +26,7 @@ watch(history, () => {
 
 function scrollToBottom() {
   nextTick(() => {
-    contentRef.value?.scrollTo({
-      top: contentRef.value.scrollHeight,
-      behavior: 'smooth',
-    })
+    tabsRef.value?.scrollToBottom()
   })
 }
 </script>
@@ -49,20 +46,13 @@ function scrollToBottom() {
       class="cursor-pointer absolute top-[12px] right-[12px] dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black transition-colors"
       @click="sidePanelOpen = false"
     />
-    <SidePanelTabs>
-      <div
-        ref="contentRef"
-        class="flex overflow-auto pb-[50px]"
-      >
-        <SidePanelRepl
-          v-if="currentTab === 'repl'"
-          @scroll-to-bottom="scrollToBottom"
-        />
-        <SidePanelSettings
-          v-if="currentTab === 'settings'"
-          @scroll-to-bottom="scrollToBottom"
-        />
-      </div>
+    <SidePanelTabs ref="tabsRef">
+      <SidePanelReplTab
+        v-if="currentTab === 'repl'"
+        @scroll-to-bottom="scrollToBottom"
+      />
+      <SidePanelSettingsTab v-if="currentTab === 'settings'" />
+      <SidePanelDebugTab v-if="currentTab === 'debug'" />
     </SidePanelTabs>
   </div>
 </template>

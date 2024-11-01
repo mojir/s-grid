@@ -1,6 +1,6 @@
 let ctrlKeyTime: number | null = null
 
-type TabId = 'repl' | 'settings'
+type TabId = 'repl' | 'settings' | 'debug'
 type Tab = {
   id: TabId
   name: string
@@ -8,6 +8,7 @@ type Tab = {
 const tabs = readonly(ref<Tab[]>([
   { id: 'repl', name: 'Lisp REPL' },
   { id: 'settings', name: 'Settings' },
+  { id: 'debug', name: 'Debug' },
 ]))
 
 const sidePanelOpen = ref<boolean>(false)

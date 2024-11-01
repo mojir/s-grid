@@ -1,10 +1,18 @@
 <script setup lang="ts">
 const { tabs, currentTab } = useSidePanel()
+
+const tabContentRef = ref<HTMLDivElement>()
+defineExpose({
+  scrollToBottom: () => tabContentRef.value?.scrollTo({
+    top: tabContentRef.value.scrollHeight,
+    behavior: 'smooth',
+  }),
+})
 </script>
 
 <template>
   <div
-    class="px-2 flex flex-col dark:text-slate-400 text-gray-600 gap-4 h-full select-none"
+    class="px-2 pb-4 flex flex-col dark:text-slate-400 text-gray-600 gap-4 h-full select-none"
   >
     <div
       class="flex box-border text-sm px-2 gap-4 items-end"
@@ -24,7 +32,10 @@ const { tabs, currentTab } = useSidePanel()
         {{ tab.name }}
       </div>
     </div>
-    <div class="px-2 select-text">
+    <div
+      ref="tabContentRef"
+      class="px-2 select-text overflow-auto"
+    >
       <slot />
     </div>
   </div>
