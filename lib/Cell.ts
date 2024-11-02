@@ -1,6 +1,7 @@
 import { isLitsFunction, Lits } from '@mojir/lits'
 import type { CellId } from './CellId'
 import type { Grid } from './Grid'
+import { CellStyle } from './CellStyle'
 
 const lits = new Lits()
 
@@ -9,6 +10,9 @@ const { jsFunctions } = useCommandCenter()
 export class Cell {
   public input = ref('')
   public alias = ref<string | null>(null)
+  public formatter = ref<string | null>(null)
+  public style = ref(new CellStyle())
+
   public output = computed(() => {
     const input = this.input.value
 
@@ -65,8 +69,6 @@ export class Cell {
     return `${formattedValue}`
   })
 
-  public formatter = ref<string | null>(null)
-
   private formatterFn = computed(() => {
     if (this.formatter.value === null) {
       return null
@@ -81,14 +83,32 @@ export class Cell {
     return {
       'id': this.cellId.id,
       'input': this.input.value,
-      'output': this.output.value,
+      'output': formatOutputValue(this.output.value),
       'display-value': this.displayValue.value,
       'alias': this.alias.value,
       'formatter-program': this.formatter.value,
       'row-index': this.cellId.rowIndex,
       'col-index': this.cellId.colIndex,
+      'style': this.style.value.getJson(),
     }
   }
 
   constructor(private readonly grid: Grid, public cellId: CellId) {}
+}
+
+function formatOutputValue(value: unknown): unknown {
+  if (value instanceof Error) {
+    return 'ERR'
+  }
+  if (isLitsFunction(value)) {
+    return 'λ'
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    if ((value as Record<string, unknown>)['^^fn^^']) {
+      return 'λ'
+    }
+  }
+
+  return value
 }

@@ -10,6 +10,7 @@ const builtinCommandNames = [
   'ExpandSelection!',
   'GetActiveCell',
   'GetCell',
+  'GetCells',
   'GetSelection',
   'Help',
   'MoveActiveCell!',
@@ -25,6 +26,8 @@ const builtinCommandNames = [
   'RestartRepl!',
   'SetCellInput!',
   'SetSelection!',
+  'SetCellStyle!',
+  'SetCellFormatter!',
 ] as const
 
 type BuiltinCommandName = typeof builtinCommandNames[number]

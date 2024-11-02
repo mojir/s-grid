@@ -30,6 +30,7 @@ const complementColors = computed(() => {
 function addSampleData() {
   exec('ClearAllCells!')
   exec('SetCellInput!', 'A1', 'Name:')
+  exec('SetCellStyle!', 'A1', 'bold', true)
   exec('SetCellInput!', 'A2', 'Albert')
   exec('SetCellInput!', 'A3', 'Bob')
   exec('SetCellInput!', 'A4', 'Charlie')
@@ -41,6 +42,7 @@ function addSampleData() {
   exec('SetCellInput!', 'A10', 'Ivy')
 
   exec('SetCellInput!', 'B1', 'Age:')
+  exec('SetCellStyle!', 'B1', 'bold', true)
   exec('SetCellInput!', 'B2', '25')
   exec('SetCellInput!', 'B3', '30')
   exec('SetCellInput!', 'B4', '28')
@@ -52,9 +54,16 @@ function addSampleData() {
   exec('SetCellInput!', 'B10', '33')
 
   exec('SetCellInput!', 'A11', 'Sum:')
+  exec('SetCellStyle!', 'A11', 'bold', true)
+  exec('SetCellStyle!', 'A11', 'italic', true)
   exec('SetCellInput!', 'A12', 'Avg:')
+  exec('SetCellStyle!', 'A12', 'bold', true)
+  exec('SetCellStyle!', 'A12', 'italic', true)
   exec('SetCellInput!', 'B11', '=(Sum B2-B10)')
+  exec('SetCellStyle!', 'B11', 'italic', true)
   exec('SetCellInput!', 'B12', '=(Avg B2-B10)')
+  exec('SetCellStyle!', 'B12', 'italic', true)
+  exec('SetCellFormatter!', 'B12', '#(/ (round (* % 100)) 100)')
 
   exec('SetCellInput!', 'F1', `=#(reduce + %)`)
   exec('CreateCellAlias!', 'Sum', 'F1')

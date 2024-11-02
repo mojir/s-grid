@@ -3,6 +3,7 @@ import { CellRange } from './CellRange'
 import { Col } from './Col'
 import { Cell } from './Cell'
 import { Row } from './Row'
+import type { CellStyle } from './CellStyle'
 
 export class Grid {
   public readonly rows: Row[]
@@ -87,6 +88,16 @@ export class Grid {
     return this.cells[cellId.rowIndex][cellId.colIndex] ?? undefined
   }
 
+  public getCells() {
+    return this.cells
+      .flatMap(row => row.flatMap(cell => cell))
+      .filter(cell => cell !== null)
+      .reduce((acc, cell) => {
+        acc[cell.cellId.id] = cell.getJson()
+        return acc
+      }, {} as Record<string, Record<string, unknown>>)
+  }
+
   public getRow(id: string): Row | undefined {
     return this.rows[Row.getRowIndexFromId(id)]
   }
@@ -98,8 +109,7 @@ export class Grid {
   public clearCell(id: string | CellId) {
     const cell = this.getCell(id)
     if (cell) {
-      this.cells[cell.cellId.rowIndex][cell.cellId.colIndex] = null
-      this.trigger()
+      cell.input.value = ''
     }
   }
 
@@ -114,8 +124,7 @@ export class Grid {
     cellIds.forEach((cellId) => {
       const cell = this.getCell(cellId)
       if (cell) {
-        this.cells[cell.cellId.rowIndex][cell.cellId.colIndex] = null
-        this.trigger()
+        cell.input.value = ''
       }
     })
   }
@@ -274,5 +283,15 @@ export class Grid {
         this.moveActiveCellTo(this.activeCellId.value.cellRightmost(range))
         break
     }
+  }
+
+  public setCellStyle<T extends keyof CellStyle>(id: string | CellId, property: T, value: CellStyle[T]) {
+    const cell = this.getOrCreateCell(id)
+    cell.style.value[property] = value
+  }
+
+  public setCellFormatter(id: string | CellId, formatter: string) {
+    const cell = this.getOrCreateCell(id)
+    cell.formatter.value = formatter
   }
 }

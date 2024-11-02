@@ -16,10 +16,14 @@ const emit = defineEmits<{
 
 const { grid } = useGrid()
 const { editorFocused, editorText, editingCellId } = useEditor()
+const { currentTab, sidePanelOpen } = useSidePanel()
+const { run } = useREPL()
+const { debugMode } = useDebug()
 
 const { row, col } = toRefs(props)
 
 const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index))
+const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.activeCellId.value.equals(cellId.value))
 const isInsideSelection = computed(
   () =>
@@ -74,8 +78,27 @@ const cellStyle = computed(() => {
     style.backgroundColor = 'var(--cell-background-color)'
   }
 
+  if (cell.value?.style.value.bold) {
+    style.fontWeight = 'bold'
+  }
+  if (cell.value?.style.value.italic) {
+    style.fontStyle = 'italic'
+  }
   return style
 })
+
+function inspectCell(e: MouseEvent) {
+  if (!debugMode.value) {
+    return
+  }
+
+  if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    e.preventDefault()
+    sidePanelOpen.value = true
+    currentTab.value = 'repl'
+    run(`(GetCell "${cellId.value.id}") ;; Inspecting Cell`)
+  }
+}
 </script>
 
 <template>
@@ -84,6 +107,7 @@ const cellStyle = computed(() => {
     :style="cellStyle"
     class="px-1 flex box-border items-center text-sm whitespace-nowrap"
     @dblclick="emit('cell-dblclick', cellId)"
+    @click="inspectCell"
   >
     {{ cellContent }}
   </div>
