@@ -132,22 +132,6 @@ export class CellRange {
     return colIndex >= sorted.start.colIndex && colIndex <= sorted.end.colIndex
   }
 
-  public isCellIdInTopRow(cellId: CellId): boolean {
-    return cellId.rowIndex === this.start.rowIndex
-  }
-
-  public isCellIdInBottomRow(cellId: CellId): boolean {
-    return cellId.rowIndex === this.end.rowIndex
-  }
-
-  public isCellIdInLeftColumn(cellId: CellId): boolean {
-    return cellId.colIndex === this.start.colIndex
-  }
-
-  public isCellIdInRightColumn(cellId: CellId): boolean {
-    return cellId.colIndex === this.end.colIndex
-  }
-
   public getJson() {
     return {
       'id': this.id,

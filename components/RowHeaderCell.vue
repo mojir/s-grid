@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { whs } from '@/utils/cssUtils'
 import type { Row } from '~/lib/Row'
@@ -12,14 +13,27 @@ const props = defineProps<{
 const { row } = toRefs(props)
 
 const isSelected = computed(() => grid.value.selection.value.containsRowIndex(row.value.index))
+
+const cellStyle = computed(() => {
+  const style: CSSProperties = {
+    width: `${grid.value.rowHeaderWidth}px`,
+    height: `${row.value.height + 1}px`,
+    marginTop: '-1px',
+    backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
+    borderColor: 'var(--header-border-color)',
+    borderStyle: 'solid',
+    borderTopWidth: row.value.index !== 0 ? '1px' : '0px',
+    borderBottomWidth: '1px',
+    borderRightWidth: '1px',
+  }
+  return style
+})
 </script>
 
 <template>
   <div
-
-    :style="whs(grid.rowHeaderWidth, row.height)"
-    class="flex flex-col border-r border-b dark:border-slate-700 border-gray-300 box-border"
-    :class="{ 'dark:bg-darkSelection bg-lightSelection dark:border-b-slate-600 border-b-gray-400 dark:border-r-slate-600 border-r-gray-400': isSelected }"
+    :style="cellStyle"
+    class="flex flex-col box-border"
   >
     <div
       :id="row.id"

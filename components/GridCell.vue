@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, toRefs, watch } from 'vue'
+import { computed, toRefs, watch, type CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
-import { whs } from '@/utils/cssUtils'
 import { CellId } from '~/lib/CellId'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
@@ -24,33 +23,8 @@ const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index
 const isActiveCell = computed(() => grid.value.activeCellId.value.equals(cellId.value))
 const isInsideSelection = computed(
   () =>
-    !isActiveCell.value
-    && grid.value.selection.value.contains(cellId.value),
+    grid.value.selection.value.size() > 1 && grid.value.selection.value.contains(cellId.value),
 )
-
-const isSelectionTop = computed(
-  () =>
-    !isActiveCell.value
-    && isInsideSelection.value
-    && grid.value.selection.value.isCellIdInTopRow(cellId.value),
-)
-const isSelectionBottom = computed(
-  () =>
-    !isActiveCell.value
-    && isInsideSelection.value
-    && grid.value.selection.value.isCellIdInBottomRow(cellId.value),
-)
-const isSelectionLeft = computed(
-  () =>
-    !isActiveCell.value
-    && isInsideSelection.value
-    && grid.value.selection.value.isCellIdInLeftColumn(cellId.value),
-)
-const isSelectionRight = computed(
-  () =>
-    !isActiveCell.value
-    && isInsideSelection.value
-    && grid.value.selection.value.isCellIdInRightColumn(cellId.value))
 
 const isEditingCell = computed(() => editorFocused.value && editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
@@ -59,7 +33,6 @@ const cellContent = computed(() => {
   }
   return grid.value.getCell(cellId.value)?.displayValue
 })
-const hasContent = computed(() => !!cellContent.value || isEditingCell.value)
 
 watch(grid.value.activeCellId, (activeCellId) => {
   const cellElement = document.getElementById(activeCellId.id)
@@ -68,25 +41,48 @@ watch(grid.value.activeCellId, (activeCellId) => {
     inline: 'nearest',
   })
 })
+
+const cellStyle = computed(() => {
+  const style: CSSProperties = {
+    position: 'relative',
+    boxSizing: 'border-box',
+    width: `${col.value.width + 1}px`,
+    height: `${row.value.height + 1}px`,
+    marginLeft: '-1px',
+    marginTop: '-1px',
+    border: '1px solid var(--cell-border-color)',
+    userSelect: 'none',
+    overflow: 'hidden',
+  }
+
+  if (isActiveCell.value || isEditingCell.value) {
+    style.border = '1px solid var(--active-cell-border-color)'
+    // style.border = '2px solid var(--cell-border-color)'
+    // style.outline = '1px solid var(--cell-border-color)'
+    style['z-index'] = 10
+    style.userSelect = 'text'
+    style.overflow = 'visible'
+    if (isEditingCell.value) {
+      style.outline = '2px solid var(--editing-cell-outline-color)'
+    }
+  }
+
+  if (isInsideSelection.value) {
+    style.backgroundColor = 'var(--selected-cell-background-color)'
+  }
+  else {
+    style.backgroundColor = 'var(--cell-background-color)'
+  }
+
+  return style
+})
 </script>
 
 <template>
   <div
     :id="cellId.id"
-    :style="whs(col.width, row.height)"
-    class="flex box-border items-center text-sm whitespace-nowrap"
-    :class="{
-      'bg-none': !hasContent && !isInsideSelection,
-      'dark:bg-slate-900 bg-gray-100': hasContent && !isInsideSelection,
-      'dark:border-slate-800 border-gray-300 border-l-0 border-r border-b pl-[3px] pt-[1px] select-none': !isActiveCell,
-      'dark:border-slate-500 border-gray-500 border pt-0 pl-[2px]': isActiveCell,
-      'dark:bg-darkSelection bg-lightSelection  dark:border-b-slate-600 border-b-gray-400 dark:border-r-slate-600 border-r-gray-400': isInsideSelection,
-      'dark:border-t-slate-700 border-t-gray-300 border-t pt-0': isSelectionTop,
-      'dark:border-b-slate-700 border-b-gray-300 border-b': isSelectionBottom,
-      'dark:border-l-slate-700 border-l-gray-300 border-l pl-[2px]': isSelectionLeft,
-      'dark:border-r-slate-700 border-r-gray-300 border-r': isSelectionRight,
-      'dark:bg-slate-950 bg-gray-50': isEditingCell,
-    }"
+    :style="cellStyle"
+    class="px-1 flex box-border items-center text-sm whitespace-nowrap"
     @dblclick="emit('cell-dblclick', cellId)"
   >
     {{ cellContent }}

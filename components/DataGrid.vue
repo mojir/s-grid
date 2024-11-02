@@ -29,7 +29,7 @@ defineExpose({
 <template>
   <div
     ref="el"
-    class="overflow-auto"
+    class="pl-[1px] pt-[1px] overflow-auto"
   >
     <div
       v-for="row of grid.rows"
@@ -40,6 +40,7 @@ defineExpose({
       <div
         v-for="col of grid.cols"
         :key="col.id"
+        class="dark:bg-blue-700 bg-blue-200"
       >
         <GridCell
           :row="row"

@@ -14,7 +14,7 @@ defineExpose({
 <template>
   <div
     ref="el"
-    class="flex overflow-y-auto dark:bg-slate-800 bg-gray-200 no-scrollbar"
+    class="flex overflow-y-auto dark:bg-blue-800 bg-blue-600 no-scrollbar"
   >
     <ColHeaderCell
       v-for="col of grid.cols"

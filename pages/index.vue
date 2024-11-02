@@ -115,15 +115,20 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Enter') {
     e.preventDefault()
-    if (editorFocused.value) {
-      formulaBarRef.value.save()
-    }
-    grid.value.resetSelection()
-    if (e.shiftKey) {
-      grid.value.moveActiveCell('up', true)
+    if (grid.value.selection.value.size() === 1 && !editorFocused.value) {
+      formulaBarRef.value.focus()
     }
     else {
-      grid.value.moveActiveCell('down', true)
+      if (editorFocused.value) {
+        formulaBarRef.value.save()
+      }
+      // grid.value.resetSelection()
+      if (e.shiftKey) {
+        grid.value.moveActiveCell('up', true)
+      }
+      else {
+        grid.value.moveActiveCell('down', true)
+      }
     }
   }
   else if (e.key === 'Escape') {
@@ -221,7 +226,7 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
         >
           <div
             class="flex dark:bg-slate-800 bg-gray-200 box-border border-b border-r dark:border-slate-700 border-gray-300"
-            :style="whs(grid.rowHeaderWidth, grid.colHeaderHeight)"
+            :style="whs(grid.rowHeaderWidth + 1, grid.colHeaderHeight + 1)"
             @click="grid.selectAll"
           />
           <ColHeader

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { whs } from '@/utils/cssUtils'
 import type { Col } from '~/lib/Col'
@@ -14,13 +15,28 @@ const hover = ref(false)
 const { col } = toRefs(props)
 
 const isSelected = computed(() => grid.value.selection.value.containsColIndex(col.value.index))
+const cellStyle = computed(() => {
+  const style: CSSProperties = {
+    height: `${grid.value.colHeaderHeight}px`,
+    width: `${col.value.width + 1}px`,
+    minHeight: `${grid.value.colHeaderHeight}px`,
+    minWidth: `${col.value.width + 1}px`,
+    marginLeft: '-1px',
+    backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
+    borderColor: 'var(--header-border-color)',
+    borderStyle: 'solid',
+    borderLeftWidth: col.value.index !== 0 ? '1px' : '0px',
+    borderRightWidth: '1px',
+    borderBottomWidth: '1px',
+  }
+  return style
+})
 </script>
 
 <template>
   <div
-    :style="whs(col.width, grid.colHeaderHeight)"
-    class="relative border-r border-b dark:border-slate-700 border-gray-300 box-border"
-    :class="{ 'dark:bg-darkSelection bg-lightSelection dark:border-r-slate-600 border-r-gray-400 dark:border-b-slate-600 border-b-gray-400': isSelected }"
+    :style="cellStyle"
+    class="flex flex-col"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
   >
@@ -34,13 +50,6 @@ const isSelected = computed(() => grid.value.selection.value.containsColIndex(co
     <div
       :style="whs(5, grid.colHeaderHeight)"
       class="absolute bg-transparent top-0 right-[-3px] z-10 cursor-col-resize"
-    />
-    <Icon
-      v-if="hover"
-      name="mdi:triangle-down"
-      class="absolute z-10 top-[9px] right-[8px] cursor-pointer items-center justify-center dark:text-slate-400 text-gray-600"
-      :style="whs(8, 8)"
-      @click.stop
     />
   </div>
 </template>

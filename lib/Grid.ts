@@ -179,14 +179,13 @@ export class Grid {
   }
 
   public moveActiveCellTo(id: string | CellId) {
+    console.log('moveActiveCellTo', id, this.activeCellId.value)
     const cellId = this.getCellId(id)
 
-    const range = this.selection.value.size() > 1
-      ? this.selection.value
-      : this.range
-
-    this.activeCellId.value = cellId.clamp(range)
-    this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+    this.activeCellId.value = cellId.clamp(this.range)
+    if (!this.selection.value.contains(this.activeCellId.value)) {
+      this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+    }
   }
 
   public selectRange(id: string | CellRange) {
@@ -247,7 +246,7 @@ export class Grid {
   }
 
   public moveActiveCell(dir: Direction, wrap = false) {
-    const range = this.selection.value.size() > 1 ? this.selection.value : this.range
+    const range = wrap && this.selection.value.size() > 1 ? this.selection.value : this.range
 
     switch (dir) {
       case 'up':

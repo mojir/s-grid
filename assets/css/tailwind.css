@@ -6,11 +6,29 @@
   --logo-fill-color: transparent;
   --logo-grid-color: #666;
   --logo-parens-color: #4c9ace;
+
+  --header-background-color: theme('colors.gray.200'); /* colors.gray.200, rgb(249, 250, 251) */
+  --selected-header-background-color: rgba(249, 250, 251, 0.85);
+  --header-border-color: theme('colors.gray.300');
+  --cell-background-color: theme('colors.gray.100'); /* colors.gray.100, rgb(243, 244, 246) */
+  --selected-cell-background-color: rgba(243, 244, 246, 0.75);
+  --cell-border-color: theme('colors.gray.200');
+  --active-cell-border-color: theme('colors.gray.400');
+  --editing-cell-outline-color: theme('colors.gray.200');
+
 }
 
 .dark {
   --logo-fill-color: transparent;
   --logo-grid-color: #aaa;
   --logo-parens-color: #63b3ed;
-}
 
+  --header-background-color: theme('colors.slate.800'); /* colors.slate.800, rgb(30, 41, 59) */
+  --selected-header-background-color: rgb(30, 41, 59, 0.80);
+  --header-border-color: theme('colors.slate.700');
+  --cell-background-color: theme('colors.slate.900'); /* colors.slate.900, rgb(15, 23, 42) */
+  --selected-cell-background-color: rgba(15, 23, 42, 0.9);
+  --cell-border-color: theme('colors.slate.800');
+  --active-cell-border-color: theme('colors.slate.600');
+  --editing-cell-outline-color: theme('colors.slate.800');
+}
