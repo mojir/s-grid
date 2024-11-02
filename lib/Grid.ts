@@ -33,26 +33,18 @@ export class Grid {
     return this._range
   }
 
-  public createCellAlias(alias: string, id: string | CellId) {
+  public setCellAlias(id: string | CellId, alias: string) {
+    const maybeCell = this.getCell(id)
+    if (maybeCell?.alias.value === alias) {
+      return
+    }
+
     if (this.cellAliases.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
     const cell = this.getOrCreateCell(id)
     cell.alias.value = alias
     this.cellAliases.set(alias, cell)
-  }
-
-  public renameCellAlias(alias: string, newAlias: string) {
-    if (!this.cellAliases.has(alias)) {
-      throw new Error(`Alias ${alias} does not exist`)
-    }
-    if (this.cellAliases.has(newAlias)) {
-      throw new Error(`newAlias ${alias} already exists`)
-    }
-    const cell = this.getOrCreateCell(alias)
-    cell.alias.value = newAlias
-    this.cellAliases.delete(alias)
-    this.cellAliases.set(newAlias, cell)
   }
 
   public getOrCreateActiveCell(): Cell {
@@ -107,6 +99,8 @@ export class Grid {
   }
 
   public clearCell(id: string | CellId) {
+    // TODO, set cell would be nice, but it's not that easy.
+    // We need a reference counter to know when to delete the cell.
     const cell = this.getCell(id)
     if (cell) {
       cell.input.value = ''
@@ -121,12 +115,7 @@ export class Grid {
         : null
 
     const cellIds: CellId[] = cellRange?.getAllCellIds() ?? []
-    cellIds.forEach((cellId) => {
-      const cell = this.getCell(cellId)
-      if (cell) {
-        cell.input.value = ''
-      }
-    })
+    cellIds.forEach(cell => this.clearCell(cell))
   }
 
   public clearAllCells() {
@@ -134,7 +123,7 @@ export class Grid {
     const cols = this.cells[0].length
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
-        this.cells[row][col] = null
+        this.clearCell(CellId.fromCoords(row, col))
       }
     }
     this.trigger()

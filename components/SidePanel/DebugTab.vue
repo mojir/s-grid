@@ -66,9 +66,9 @@ function addSampleData() {
   exec('SetCellFormatter!', 'B12', '#(/ (round (* % 100)) 100)')
 
   exec('SetCellInput!', 'F1', `=#(reduce + %)`)
-  exec('CreateCellAlias!', 'Sum', 'F1')
+  exec('SetCellAlias!', 'F1', 'Sum')
   exec('SetCellInput!', 'F2', `=#(let [len (count %), list %] (/ (reduce + list) len))`)
-  exec('CreateCellAlias!', 'Avg', 'F2')
+  exec('SetCellAlias!', 'F2', 'Avg')
 }
 </script>
 

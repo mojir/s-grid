@@ -113,18 +113,11 @@ registerCommand({
   description: 'Get a cell by id',
 })
 registerCommand({
-  name: 'CreateCellAlias!',
-  execute: (alias: string, id: string) => {
-    grid.value.createCellAlias(alias, id)
+  name: 'SetCellAlias!',
+  execute: (id: string, alias: string) => {
+    grid.value.setCellAlias(id, alias)
   },
   description: 'Create an alias for a cell',
-})
-registerCommand({
-  name: 'RenameCellAlias!',
-  execute: (alias: string, newAlias: string) => {
-    grid.value.renameCellAlias(alias, newAlias)
-  },
-  description: 'Rename an alias for a cell',
 })
 registerCommand({
   name: 'SetCellStyle!',

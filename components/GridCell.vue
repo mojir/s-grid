@@ -62,7 +62,6 @@ const cellStyle = computed(() => {
   if (isActiveCell.value || isEditingCell.value) {
     style.border = '1px solid var(--active-cell-border-color)'
     style['z-index'] = 10
-    style.userSelect = 'text'
     if (isEditingCell.value) {
       style.outline = '2px solid var(--editing-cell-outline-color)'
     }
