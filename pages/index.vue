@@ -10,7 +10,7 @@ const {
 
 const { sidePanelHandleKeyDown } = useSidePanel()
 
-const { editingLitsCode, editorFocused } = useEditor()
+const { editingLitsCode, editorFocused, setEditorFocused } = useEditor()
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
 const rowHeaderRef = ref()
@@ -133,6 +133,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Escape') {
     formulaBarRef.value.cancel()
+    setEditorFocused(false)
   }
   else if (e.key === 'Backspace') {
     if (!editorFocused.value) {

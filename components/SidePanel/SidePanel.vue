@@ -5,7 +5,7 @@ const tabsRef = ref()
 
 watch(sidePanelOpen, () => {
   replFocused.value = sidePanelOpen.value
-  if (sidePanelOpen.value) {
+  if (sidePanelOpen.value && currentTab.value === 'repl') {
     scrollToBottom()
   }
 })
@@ -19,7 +19,7 @@ watch(currentTab, () => {
 })
 
 watch(history, () => {
-  if (sidePanelOpen.value) {
+  if (sidePanelOpen.value && currentTab.value === 'repl') {
     scrollToBottom()
   }
 })

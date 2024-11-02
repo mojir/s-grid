@@ -57,13 +57,13 @@ const cellStyle = computed(() => {
 
   if (isActiveCell.value || isEditingCell.value) {
     style.border = '1px solid var(--active-cell-border-color)'
-    // style.border = '2px solid var(--cell-border-color)'
-    // style.outline = '1px solid var(--cell-border-color)'
     style['z-index'] = 10
     style.userSelect = 'text'
-    style.overflow = 'visible'
     if (isEditingCell.value) {
       style.outline = '2px solid var(--editing-cell-outline-color)'
+    }
+    else {
+      style.overflow = 'visible'
     }
   }
 
