@@ -1,77 +1,54 @@
 <script setup lang="ts">
-import { Color } from '@/lib/color'
-
-const colorMode = useColorMode()
-const { grid } = useGrid()
-
 const { exec } = useCommandCenter()
-const cs = ['00', '88', 'FF']
-const colors = [
-  '#000000',
-  '#000022',
-  '#002200',
-  '#002222',
-  '#220000',
-  '#220022',
-  '#222200',
-  '#222222',
-  '#DDDDDD',
-  '#DDDDFF',
-  '#DDFFDD',
-  '#DDFFFF',
-  '#FFDDDD',
-  '#FFDDFF',
-  '#FFFFDD',
-  '#FFFFFF',
-  ...cs.flatMap(r => cs.flatMap(g => cs.map(b => `#${g}${r}${b}`))),
-]
 
 function addSampleData() {
   exec('ClearAllCells!')
-  exec('SetCellStyle!', 'A1', 'fontSize', 18)
-  exec('SetCellStyle!', 'B1', 'fontSize', 18)
+  exec('SetStyle!', 'fontSize', 18, 'A1')
+  exec('SetStyle!', 'fontSize', 18, 'B1')
 
-  exec('SetCellInput!', 'A1', 'Name')
-  exec('SetCellStyle!', 'A1', 'bold', true)
-  exec('SetCellInput!', 'A2', 'Albert')
-  exec('SetCellInput!', 'A3', 'Bob')
-  exec('SetCellInput!', 'A4', 'Charlie')
-  exec('SetCellInput!', 'A5', 'David')
-  exec('SetCellInput!', 'A6', 'Eve')
-  exec('SetCellInput!', 'A7', 'Frank')
-  exec('SetCellInput!', 'A8', 'Grace')
-  exec('SetCellInput!', 'A9', 'Hank')
-  exec('SetCellInput!', 'A10', 'Ivy')
+  exec('SetInput!', 'Name', 'A1')
+  exec('SetStyle!', 'bold', true, 'A1')
+  exec('SetInput!', 'Albert', 'A2')
+  exec('SetInput!', 'Bob', 'A3')
+  exec('SetInput!', 'Charlie', 'A4')
+  exec('SetInput!', 'David', 'A5')
+  exec('SetInput!', 'Eve', 'A6')
+  exec('SetInput!', 'Frank', 'A7')
+  exec('SetInput!', 'Grace', 'A8')
+  exec('SetInput!', 'Hank', 'A9')
+  exec('SetInput!', 'Ivy', 'A10')
 
-  exec('SetCellInput!', 'B1', 'Age')
-  exec('SetCellStyle!', 'B1', 'bold', true)
-  exec('SetCellStyle!', 'B1', 'justify', 'right')
-  exec('SetCellInput!', 'B2', '25')
-  exec('SetCellInput!', 'B3', '30')
-  exec('SetCellInput!', 'B4', '28')
-  exec('SetCellInput!', 'B5', '35')
-  exec('SetCellInput!', 'B6', '40')
-  exec('SetCellInput!', 'B7', '11')
-  exec('SetCellInput!', 'B8', '50')
-  exec('SetCellInput!', 'B9', '22')
-  exec('SetCellInput!', 'B10', '33')
+  exec('SetInput!', 'Age', 'B1')
+  exec('SetStyle!', 'bold', true, 'B1')
+  exec('SetStyle!', 'justify', 'right', 'B1')
+  exec('SetInput!', '25', 'B2')
+  exec('SetInput!', '30', 'B3')
+  exec('SetInput!', '28', 'B4')
+  exec('SetInput!', '35', 'B5')
+  exec('SetInput!', '40', 'B6')
+  exec('SetInput!', '11', 'B7')
+  exec('SetInput!', '50', 'B8')
+  exec('SetInput!', '22', 'B9')
+  exec('SetInput!', '33', 'B10')
 
-  exec('SetCellInput!', 'A11', 'Sum:')
-  exec('SetCellStyle!', 'A11', 'bold', true)
-  exec('SetCellStyle!', 'A11', 'italic', true)
-  exec('SetCellInput!', 'A12', 'Avg:')
-  exec('SetCellStyle!', 'A12', 'bold', true)
-  exec('SetCellStyle!', 'A12', 'italic', true)
-  exec('SetCellInput!', 'B11', '=(Sum B2-B10)')
-  exec('SetCellStyle!', 'B11', 'italic', true)
-  exec('SetCellInput!', 'B12', '=(Avg B2-B10)')
-  exec('SetCellStyle!', 'B12', 'italic', true)
-  exec('SetCellFormatter!', 'B12', '#(/ (round (* % 100)) 100)')
+  exec('SetInput!', 'Sum:', 'A11')
+  exec('SetStyle!', 'bold', true, 'A11')
+  exec('SetStyle!', 'italic', true, 'A11')
+  exec('SetInput!', 'Avg:', 'A12')
+  exec('SetStyle!', 'bold', true, 'A12')
+  exec('SetStyle!', 'italic', true, 'A12')
+  exec('SetInput!', '=(Sum B2-B10)', 'B11')
+  exec('SetStyle!', 'italic', true, 'B11')
+  exec('SetInput!', '=(Avg B2-B10)', 'B12')
+  exec('SetStyle!', 'italic', true, 'B12')
+  exec('SetFormatter!', '#(/ (round (* % 100)) 100)', 'B12')
 
-  exec('SetCellInput!', 'F1', `=#(reduce + %)`)
-  exec('SetCellAlias!', 'F1', 'Sum')
-  exec('SetCellInput!', 'F2', `=#(let [len (count %), list %] (/ (reduce + list) len))`)
-  exec('SetCellAlias!', 'F2', 'Avg')
+  exec('SetInput!', `=#(reduce + %)`, 'F1')
+  exec('SetAlias!', 'Sum', 'F1')
+  exec('SetBackgroundColor!', '#ff0000', 'F1')
+  exec('SetInput!', `=#(let [len (count %), list %] (/ (reduce + list) len))`, 'F2')
+  exec('SetAlias!', 'Avg', 'F2')
+  exec('SetBackgroundColor!', '#00ff00', 'F2')
 }
 </script>
 
@@ -85,18 +62,5 @@ function addSampleData() {
     >
       Add sample data
     </button>
-    <div class="flex flex-row w-full gap-4 p-4 bg-slate-500">
-      <div class="flex-1 flex flex-col gap-4 bg-slate-100 p-4">
-        <div
-          v-for="(color, i) of colors"
-          :key="i"
-          :style="{ backgroundColor: color }"
-          class="flex-1 flex min-h-6 rounded-lg"
-          @click="() => {
-            grid.setBackgroundColor(grid.position.value, Color.fromHex(colorMode.value, color))
-          }"
-        />
-      </div>
-    </div>
   </div>
 </template>

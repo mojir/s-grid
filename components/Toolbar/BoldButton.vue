@@ -10,7 +10,7 @@ watch(cellId, (newCellId) => {
 })
 
 function onUpdateBold(value: boolean) {
-  grid.value.getCell(cellId.value).style.value.bold = value
+  grid.value.setStyle('bold', value)
   bold.value = value
 }
 </script>

@@ -5,6 +5,7 @@ import { CellId } from '~/lib/CellId'
 import { getLineHeight } from '~/lib/CellStyle'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
+import type { Color } from '~/lib/color'
 
 const props = defineProps<{
   row: Row
@@ -20,6 +21,7 @@ const { editorFocused, editorText, editingCellId } = useEditor()
 const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
+const colorMode = useColorMode()
 
 const { row, col } = toRefs(props)
 
@@ -37,6 +39,30 @@ const cellContent = computed(() => {
     return editorText
   }
   return grid.value.getCell(cellId.value).displayValue
+})
+
+const cellBackgroundColor = computed<Color | null>(() => {
+  const bg = cell.value.backgroundColor.value
+  if (!bg) {
+    return null
+  }
+
+  if (colorMode.value === 'dark') {
+    return bg.toggleLightness()
+  }
+  return bg
+})
+
+const cellTextColor = computed<Color | null>(() => {
+  const c = cell.value.textColor.value
+  if (!c) {
+    return null
+  }
+
+  if (colorMode.value === 'dark') {
+    return c.toggleLightness()
+  }
+  return c
 })
 
 watch(grid.value.position, (position) => {
@@ -124,9 +150,15 @@ const cellStyle = computed(() => {
     style.alignItems = 'flex-end'
   }
 
-  if (cell.value.backgroundColorStyle.value) {
-    style.backgroundColor = cell.value.backgroundColorStyle.value
+  if (cellBackgroundColor.value) {
+    style.backgroundColor = isInsideSelection.value
+      ? cellBackgroundColor.value.withAlpha(0.8).getStyleString()
+      : cellBackgroundColor.value.getStyleString()
   }
+  if (cellTextColor.value) {
+    style.color = cellTextColor.value.getStyleString()
+  }
+
   return style
 })
 

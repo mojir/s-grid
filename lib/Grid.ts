@@ -36,16 +36,11 @@ export class Grid {
     return this._range
   }
 
-  public setBackgroundColor(id: string | CellId, color: Color) {
-    const cell = this.getCell(id)
-    cell.backgroundColor.value = color
-  }
-
-  public setCellAlias(id: string | CellId, alias: string) {
+  public setAlias(alias: string, id?: string | CellId) {
     if (this.cellAliases.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
-    const cell = this.getCell(id)
+    const cell = id ? this.getCell(id) : this.getCurrentCell()
     cell.alias.value = alias
     this.cellAliases.set(alias, cell)
   }
@@ -265,36 +260,70 @@ export class Grid {
     }
   }
 
-  public setCellStyle<T extends CellStyleName>(id: string | CellId, property: T, value: CellStyle[T]) {
-    const cell = this.getCell(id)
-    cell.style.value[property] = value
+  public setBackgroundColor(color: Color | null, id?: string | CellId) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : this.selection.value.getAllCellIds()
+
+    cellIds.forEach((cellId) => {
+      const cell = this.getCell(cellId)
+      cell.backgroundColor.value = color
+    })
   }
 
-  public setCellFormatter(id: string | CellId, formatter: string) {
-    const cell = this.getCell(id)
+  public setTextColor(color: Color | null, id?: string | CellId) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : this.selection.value.getAllCellIds()
+
+    cellIds.forEach((cellId) => {
+      const cell = this.getCell(cellId)
+      cell.textColor.value = color
+    })
+  }
+
+  public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], id?: string | CellId) {
+    if (!id) {
+      this.selection.value.getAllCellIds().forEach((cellId) => {
+        const cell = this.getCell(cellId)
+        cell.style.value[property] = value
+      })
+    }
+    else {
+      const cell = this.getCell(id)
+      cell.style.value[property] = value
+    }
+  }
+
+  public setFormatter(formatter: string, id?: string | CellId) {
+    const cell = id ? this.getCell(id) : this.getCurrentCell()
     cell.formatter.value = formatter
   }
 
-  public autoSetRowHeight(id: CellId | string) {
-    const cellId = CellId.isCellId(id) ? id : CellId.fromId(id)
+  public autoSetRowHeight(id?: CellId | string) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : this.selection.value.getAllCellIds()
 
+    cellIds.forEach((cellId) => {
     // No need to auto set row height for cell, if cell is empty
-    if (!this.getCell(cellId)?.displayValue.value) {
-      return
-    }
-
-    const rowIndex = cellId.rowIndex
-    const cells = this.getRowCells(rowIndex)
-
-    const maxLineHeight = cells.reduce((acc, cell) => {
-      if (!cell.displayValue.value) {
-        return acc
+      if (!this.getCell(cellId)?.displayValue.value) {
+        return
       }
-      const lineHeight = getLineHeight(cell.style.value.fontSize)
-      return lineHeight > acc ? lineHeight : acc
-    }, 0)
 
-    this.rows[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
+      const rowIndex = cellId.rowIndex
+      const cells = this.getRowCells(rowIndex)
+
+      const maxLineHeight = cells.reduce((acc, cell) => {
+        if (!cell.displayValue.value) {
+          return acc
+        }
+        const lineHeight = getLineHeight(cell.style.value.fontSize)
+        return lineHeight > acc ? lineHeight : acc
+      }, 0)
+
+      this.rows[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
+    })
   }
 
   public getRowCells(rowIndex: number): Cell[] {

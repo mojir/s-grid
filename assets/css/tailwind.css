@@ -11,13 +11,13 @@
     --header-background-color: theme('colors.gray.200'); /* colors.gray.200, rgb(249, 250, 251) */
     --selected-header-background-color: rgba(249, 250, 251, 0.85);
     --header-border-color: theme('colors.gray.300');
-    --cell-background-color: theme('colors.gray.100'); /* colors.gray.100, rgb(243, 244, 246) */
-    --selected-cell-background-color: rgba(243, 244, 246, 0.75);
+    --cell-background-color: theme('colors.white'); /* colors.white, rgb(243, 244, 246) */
+    --selected-cell-background-color: rgba(255, 255, 255, 0.8);
     --cell-border-color: theme('colors.gray.200');
     --current-cell-border-color: theme('colors.gray.400');
     --editing-cell-outline-color: theme('colors.gray.200');
 
-    --background: 0 0% 100%;
+    --background: theme('colors.white');
     --foreground: 222.2 84% 4.9%;
 
     --muted: 210 40% 96.1%;
@@ -32,7 +32,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: theme('colors.white');
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -58,27 +58,27 @@
     --selected-header-background-color: rgb(30, 41, 59, 0.80);
     --header-border-color: theme('colors.slate.700');
     --cell-background-color: theme('colors.slate.900'); /* colors.slate.900, rgb(15, 23, 42) */
-    --selected-cell-background-color: rgba(15, 23, 42, 0.9);
+    --selected-cell-background-color: rgba(15, 23, 42, 0.8);
     --cell-border-color: theme('colors.slate.800');
     --current-cell-border-color: theme('colors.slate.600');
     --editing-cell-outline-color: theme('colors.slate.800');
   
-    --background: 222.2 84% 4.9%;
+    --background: theme('colors.slate.900');
     --foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222, 47%, 11%;
     --popover-foreground: 210 40% 98%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 215, 25%, 27%;
+    --input: 215, 25%, 27%;
 
-    --primary: 210 40% 98%;
+    --primary: theme('colors.slate.900');
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;

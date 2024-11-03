@@ -10,7 +10,7 @@ watch(cellId, (newCellId) => {
 })
 
 function onUpdateBold(value: boolean) {
-  grid.value.getCell(cellId.value).style.value.italic = value
+  grid.value.setStyle('italic', value)
   italic.value = value
 }
 </script>

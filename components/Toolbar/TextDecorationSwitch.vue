@@ -13,12 +13,12 @@ watch(cellId, (newCellId) => {
 
 function onUpdateUnderline(value: boolean) {
   textDecoration.value = value ? 'underline' : null
-  grid.value.getCell(cellId.value).style.value.textDecoration = textDecoration.value
+  grid.value.setStyle('textDecoration', textDecoration.value)
 }
 
 function onUpdateLineThrough(value: boolean) {
   textDecoration.value = value ? 'line-through' : null
-  grid.value.getCell(cellId.value).style.value.textDecoration = textDecoration.value
+  grid.value.setStyle('textDecoration', textDecoration.value)
 }
 </script>
 

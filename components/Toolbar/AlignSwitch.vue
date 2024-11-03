@@ -14,17 +14,17 @@ watch(cellId, (newCellId) => {
 
 function onUpdateTop(value: boolean) {
   align.value = value ? 'top' : null
-  grid.value.getCell(cellId.value).style.value.align = align.value
+  grid.value.setStyle('align', align.value)
 }
 
 function onUpdateCenter(value: boolean) {
   align.value = value ? 'middle' : null
-  grid.value.getCell(cellId.value).style.value.align = align.value
+  grid.value.setStyle('align', align.value)
 }
 
 function onUpdateBottom(value: boolean) {
   align.value = value ? 'bottom' : null
-  grid.value.getCell(cellId.value).style.value.align = align.value
+  grid.value.setStyle('align', align.value)
 }
 </script>
 

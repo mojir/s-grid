@@ -1,6 +1,7 @@
 import { createSharedComposable } from '@vueuse/core'
 import { customRef, shallowReadonly } from 'vue'
 import { styleFontSizes, type CellStyle, type CellStyleName, type StyleFontSize } from '~/lib/CellStyle'
+import { Color } from '~/lib/color'
 import { Grid } from '~/lib/Grid'
 
 const defaultNbrOfRows = 50
@@ -76,9 +77,10 @@ registerCommand({
   description: 'Expand the selection in a direction',
 })
 registerCommand({
-  name: 'SetCellInput!',
-  execute: (id: string, input: string) => {
-    grid.value.getCell(id).input.value = input
+  name: 'SetInput!',
+  execute: (input: string, id?: string) => {
+    const cell = id ? grid.value.getCell(id) : grid.value.getCurrentCell()
+    cell.input.value = input
   },
   description: 'Set the input of a cell',
 })
@@ -118,17 +120,18 @@ registerCommand({
   description: 'Get a cell by id',
 })
 registerCommand({
-  name: 'SetCellAlias!',
-  execute: (id: string, alias: string) => {
-    grid.value.setCellAlias(id, alias)
+  name: 'SetAlias!',
+  execute: (alias: string, id?: string) => {
+    grid.value.setAlias(alias, id)
   },
   description: 'Create an alias for a cell',
 })
+
 registerCommand({
-  name: 'SetCellStyle!',
-  execute: <T extends CellStyleName>(cellId: string, property: T, value: CellStyle[T]) => {
+  name: 'SetStyle!',
+  execute: <T extends CellStyleName>(property: T, value: CellStyle[T], cellId?: string) => {
     if (validCellStyle(property, value)) {
-      grid.value.setCellStyle(cellId, property, value)
+      grid.value.setStyle(property, value, cellId)
     }
     else {
       throw new Error(`Invalid cell style property: ${property}`)
@@ -138,10 +141,28 @@ registerCommand({
 })
 
 registerCommand({
-  name: 'SetCellFormatter!',
-  execute: (cellId: string, formatter: string) => {
+  name: 'SetBackgroundColor!',
+  execute: (hexCode: string, cellId?: string) => {
+    const color = Color.fromHex(hexCode)
+    grid.value.setBackgroundColor(color, cellId)
+  },
+  description: 'Set the background color of a cell',
+})
+
+registerCommand({
+  name: 'SetTextColor!',
+  execute: (hexCode: string, cellId?: string) => {
+    const color = Color.fromHex(hexCode)
+    grid.value.setTextColor(color, cellId)
+  },
+  description: 'Set the text color of a cell',
+})
+
+registerCommand({
+  name: 'SetFormatter!',
+  execute: (formatter: string, cellId?: string) => {
     if (typeof formatter === 'string') {
-      grid.value.setCellFormatter(cellId, formatter)
+      grid.value.setFormatter(formatter, cellId)
     }
     else {
       throw new Error(`Invalid formatter: ${formatter}`)

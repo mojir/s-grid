@@ -6,7 +6,7 @@ const builtinCommandNames = [
   'ClearRange!',
   'ClearAllCells!',
   'ClearRepl!',
-  'SetCellAlias!',
+  'SetAlias!',
   'ExpandSelection!',
   'GetCurrentCell',
   'GetCell',
@@ -22,10 +22,12 @@ const builtinCommandNames = [
   'MovePositionToRow!',
   'ResetSelection!',
   'RestartRepl!',
-  'SetCellInput!',
+  'SetInput!',
   'SetSelection!',
-  'SetCellStyle!',
-  'SetCellFormatter!',
+  'SetStyle!',
+  'SetBackgroundColor!',
+  'SetTextColor!',
+  'SetFormatter!',
 ] as const
 
 type BuiltinCommandName = typeof builtinCommandNames[number]

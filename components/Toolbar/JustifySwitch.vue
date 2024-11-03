@@ -13,17 +13,17 @@ watch(cellId, (newCellId) => {
 
 function onUpdateLeft(value: boolean) {
   justify.value = value ? 'left' : null
-  grid.value.getCell(cellId.value).style.value.justify = justify.value
+  grid.value.setStyle('justify', justify.value)
 }
 
 function onUpdateCenter(value: boolean) {
   justify.value = value ? 'center' : null
-  grid.value.getCell(cellId.value).style.value.justify = justify.value
+  grid.value.setStyle('justify', justify.value)
 }
 
 function onUpdateRight(value: boolean) {
   justify.value = value ? 'right' : null
-  grid.value.getCell(cellId.value).style.value.justify = justify.value
+  grid.value.setStyle('justify', justify.value)
 }
 </script>
 

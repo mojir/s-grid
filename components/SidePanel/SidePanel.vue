@@ -24,7 +24,8 @@ function scrollToBottom() {
 
 <template>
   <div
-    class="fixed z-50 top-0 bottom-0 right-0 w-[500px] flex-grow duration-300 box-border dark:bg-slate-950 bg-gray-50 border-l dark:border-slate-800 border-gray-300 transition-[right]  max-w-full"
+    class="fixed top-0 bottom-0 right-0 w-[500px] flex-grow duration-300 box-border dark:bg-slate-950 bg-gray-50 border-l dark:border-slate-800 border-gray-300 transition-[right]  max-w-full"
+    :style="{ 'z-index': 1000 }"
     :class="{
       'right-[-500px]': !sidePanelOpen,
       'sidepanel-shadow': sidePanelOpen,

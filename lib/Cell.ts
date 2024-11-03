@@ -14,19 +14,34 @@ export class Cell {
   public formatter = ref<string | null>(null)
   public style = ref(new CellStyle())
   public backgroundColor = ref<Color | null>(null)
-  public backgroundColorStyle = computed<string | null>(() => {
-    const color = this.backgroundColor.value
+  // public backgroundColorStyle = computed<string | null>(() => {
+  //   const color = this.rawBackgroundColor.value
 
-    if (color === null) {
-      return null
-    }
+  //   if (color === null) {
+  //     return null
+  //   }
 
-    const lightness = color.lightness
-    const actualLightness = this.grid.colorMode.value?.value === color.colorMode
-      ? lightness
-      : lightness > 50 ? 100 - lightness : 100 - lightness
-    return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
-  })
+  //   const lightness = color.lightness
+  //   const actualLightness = this.grid.colorMode.value?.value === color.colorMode
+  //     ? lightness
+  //     : lightness > 50 ? 100 - lightness : 100 - lightness
+  //   return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
+  // })
+
+  public textColor = ref<Color | null>(null)
+  // public textColorStyle = computed<string | null>(() => {
+  //   const color = this.textColor.value
+
+  //   if (color === null) {
+  //     return null
+  //   }
+
+  //   const lightness = color.lightness
+  //   const actualLightness = this.grid.colorMode.value?.value === color.colorMode
+  //     ? lightness
+  //     : lightness > 50 ? 100 - lightness : 100 - lightness
+  //   return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
+  // })
 
   public output = computed(() => {
     const input = this.input.value

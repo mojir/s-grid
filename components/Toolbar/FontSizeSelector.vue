@@ -13,8 +13,8 @@ watch(cellId, (newCellId) => {
 
 function onUpdateFontSize(event: Event) {
   const value = Number((event.target as HTMLSelectElement).value) as StyleFontSize
-  grid.value.getCell(cellId.value).style.value.fontSize = value
-  grid.value.autoSetRowHeight(cellId.value)
+  grid.value.setStyle('fontSize', value)
+  grid.value.autoSetRowHeight()
 }
 </script>
 
