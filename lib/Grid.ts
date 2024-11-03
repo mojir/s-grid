@@ -11,23 +11,23 @@ const minRowHeight = 16
 export class Grid {
   public readonly rows: Row[]
   public readonly cols: Col[]
-  public readonly cells: (Cell | null)[][]
+  public readonly cells: Cell[][]
   public readonly rowHeaderWidth = 50
   public readonly colHeaderHeight = 25
   public readonly cellAliases = new Map<string, Cell>()
-  public readonly activeCellId: Ref<CellId>
+  public readonly position: Ref<CellId>
   public readonly unsortedSelection: Ref<CellRange>
   public readonly selection: ComputedRef<CellRange>
   private _range: CellRange
 
   constructor(public readonly colorMode: Ref<Ref<string> | null>, rows: number, cols: number, private readonly trigger: () => void) {
-    this.activeCellId = ref<CellId>(CellId.fromCoords(0, 0))
-    this.unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(this.activeCellId.value))
+    this.position = ref<CellId>(CellId.fromCoords(0, 0))
+    this.unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(this.position.value))
     this.selection = computed(() => this.unsortedSelection.value.toSorted())
     this.rows = Array.from({ length: rows }, (_, rowIndex) => Row.create(rowIndex, defaultLineHeight))
     this.cols = Array.from({ length: cols }, (_, colIndex) => Col.create(colIndex, 100))
-    this.cells = Array.from({ length: rows }, () =>
-      Array.from({ length: cols }, () => null),
+    this.cells = Array.from({ length: rows }, (_, rowIndex) =>
+      Array.from({ length: cols }, (_, colIndex) => new Cell(this, CellId.fromCoords(rowIndex, colIndex))),
     )
     this._range = CellRange.fromCellIds(CellId.fromCoords(0, 0), CellId.fromCoords(rows - 1, cols - 1))
   }
@@ -37,30 +37,20 @@ export class Grid {
   }
 
   public setBackgroundColor(id: string | CellId, color: Color) {
-    const cellId = this.getCellId(id)
-    const cell = this.getOrCreateCell(cellId)
+    const cell = this.getCell(id)
     cell.backgroundColor.value = color
   }
 
   public setCellAlias(id: string | CellId, alias: string) {
-    const maybeCell = this.getCell(id)
-    if (maybeCell?.alias.value === alias) {
-      return
-    }
-
     if (this.cellAliases.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
-    const cell = this.getOrCreateCell(id)
+    const cell = this.getCell(id)
     cell.alias.value = alias
     this.cellAliases.set(alias, cell)
   }
 
-  public getOrCreateActiveCell(): Cell {
-    return this.getOrCreateCell(this.activeCellId.value)
-  }
-
-  public getCellId(id: string | CellId): CellId {
+  private getCellId(id: string | CellId): CellId {
     if (CellId.isCellId(id)) {
       return id
     }
@@ -68,25 +58,18 @@ export class Grid {
     return cell ? cell.cellId : CellId.fromId(id)
   }
 
-  public getOrCreateCell(id: string | CellId): Cell {
+  public getCurrentCell(): Cell {
+    return this.getCell(this.position.value)
+  }
+
+  public getCell(id: string | CellId): Cell {
     const cellId = this.getCellId(id)
-    const rowIndex = cellId.rowIndex
-    const colIndex = cellId.colIndex
-    if (this.cells[rowIndex][colIndex] !== null) {
-      return this.cells[rowIndex][colIndex]
+    const cell = this.cells[cellId.rowIndex][cellId.colIndex]
+    if (!cell) {
+      throw new Error(`Cell ${cellId.id} is out of range`)
     }
-    this.cells[rowIndex][colIndex] = new Cell(this, cellId)
-    this.trigger()
-    return this.cells[rowIndex][colIndex]
-  }
 
-  public getActiveCell(): Cell | undefined {
-    return this.getCell(this.activeCellId.value)
-  }
-
-  public getCell(id: string | CellId): Cell | undefined {
-    const cellId = this.getCellId(id)
-    return this.cells[cellId.rowIndex][cellId.colIndex] ?? undefined
+    return cell
   }
 
   public getCells() {
@@ -145,7 +128,7 @@ export class Grid {
         acc[id.symbol] = cell.output.value
       }
       else if (CellId.isCellIdString(id.symbol)) {
-        const cell = this.getOrCreateCell(id.symbol)
+        const cell = this.getCell(id.symbol)
         acc[id.symbol] = cell.output.value
       }
       else if (CellRange.isCellRangeString(id.symbol)) {
@@ -156,7 +139,7 @@ export class Grid {
             const rowValues: unknown[] = []
             matrixValues.push(rowValues)
             for (const cellId of row) {
-              const cell = this.getOrCreateCell(cellId)
+              const cell = this.getCell(cellId)
               rowValues.push(cell.output.value)
             }
           }
@@ -165,7 +148,7 @@ export class Grid {
         else {
           const arrayValues: unknown[] = []
           for (const cellId of data.array) {
-            const cell = this.getOrCreateCell(cellId)
+            const cell = this.getCell(cellId)
             arrayValues.push(cell.output.value)
           }
           acc[id.symbol] = arrayValues
@@ -185,13 +168,12 @@ export class Grid {
     this.unsortedSelection.value = CellRange.fromCellIds(start, end)
   }
 
-  public moveActiveCellTo(id: string | CellId) {
-    console.log('moveActiveCellTo', id, this.activeCellId.value)
+  public movePositionTo(id: string | CellId) {
     const cellId = this.getCellId(id)
 
-    this.activeCellId.value = cellId.clamp(this.range)
-    if (!this.selection.value.contains(this.activeCellId.value)) {
-      this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+    this.position.value = cellId.clamp(this.range)
+    if (!this.selection.value.contains(this.position.value)) {
+      this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
     }
   }
 
@@ -244,7 +226,7 @@ export class Grid {
   }
 
   public resetSelection() {
-    this.unsortedSelection.value = CellRange.fromSingleCellId(this.activeCellId.value)
+    this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
   }
 
   public isInsideSelection(id: string | CellId): boolean {
@@ -252,44 +234,44 @@ export class Grid {
     return this.unsortedSelection.value.contains(cellId)
   }
 
-  public moveActiveCell(dir: Direction, wrap = false) {
+  public movePosition(dir: Direction, wrap = false) {
     const range = wrap && this.selection.value.size() > 1 ? this.selection.value : this.range
 
     switch (dir) {
       case 'up':
-        this.moveActiveCellTo(this.activeCellId.value.cellUp(range, wrap))
+        this.movePositionTo(this.position.value.cellUp(range, wrap))
         break
       case 'down':
-        this.moveActiveCellTo(this.activeCellId.value.cellDown(range, wrap))
+        this.movePositionTo(this.position.value.cellDown(range, wrap))
         break
       case 'left':
-        this.moveActiveCellTo(this.activeCellId.value.cellLeft(range, wrap))
+        this.movePositionTo(this.position.value.cellLeft(range, wrap))
         break
       case 'right':
-        this.moveActiveCellTo(this.activeCellId.value.cellRight(range, wrap))
+        this.movePositionTo(this.position.value.cellRight(range, wrap))
         break
       case 'top':
-        this.moveActiveCellTo(this.activeCellId.value.cellTop(range))
+        this.movePositionTo(this.position.value.cellTop(range))
         break
       case 'bottom':
-        this.moveActiveCellTo(this.activeCellId.value.cellBottom(range))
+        this.movePositionTo(this.position.value.cellBottom(range))
         break
       case 'leftmost':
-        this.moveActiveCellTo(this.activeCellId.value.cellLeftmost(range))
+        this.movePositionTo(this.position.value.cellLeftmost(range))
         break
       case 'rightmost':
-        this.moveActiveCellTo(this.activeCellId.value.cellRightmost(range))
+        this.movePositionTo(this.position.value.cellRightmost(range))
         break
     }
   }
 
   public setCellStyle<T extends CellStyleName>(id: string | CellId, property: T, value: CellStyle[T]) {
-    const cell = this.getOrCreateCell(id)
+    const cell = this.getCell(id)
     cell.style.value[property] = value
   }
 
   public setCellFormatter(id: string | CellId, formatter: string) {
-    const cell = this.getOrCreateCell(id)
+    const cell = this.getCell(id)
     cell.formatter.value = formatter
   }
 

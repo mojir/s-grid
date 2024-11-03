@@ -3,19 +3,17 @@ import { defaultFontSize, styleFontSizes, type StyleFontSize } from '~/lib/CellS
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.activeCellId.value)
+const cellId = computed(() => grid.value.position.value)
 
 const fontSize = ref<StyleFontSize>(defaultFontSize)
 
 watch(cellId, (newCellId) => {
-  const cell = grid.value.getCell(newCellId)
-  fontSize.value = cell?.style.value.fontSize ?? defaultFontSize
+  fontSize.value = grid.value.getCell(newCellId).style.value.fontSize
 })
 
 function onUpdateFontSize(event: Event) {
   const value = Number((event.target as HTMLSelectElement).value) as StyleFontSize
-  console.log('onUpdateFontSize', value)
-  grid.value.getOrCreateCell(cellId.value).style.value.fontSize = value
+  grid.value.getCell(cellId.value).style.value.fontSize = value
   grid.value.autoSetRowHeight(cellId.value)
 }
 </script>

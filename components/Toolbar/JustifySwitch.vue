@@ -3,28 +3,27 @@ import type { StyleJustify } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.activeCellId.value)
+const cellId = computed(() => grid.value.position.value)
 
 const justify = ref<StyleJustify | null>(null)
 
 watch(cellId, (newCellId) => {
-  const cell = grid.value.getCell(newCellId)
-  justify.value = cell?.style.value.justify ?? null
+  justify.value = grid.value.getCell(newCellId).style.value.justify
 })
 
 function onUpdateLeft(value: boolean) {
   justify.value = value ? 'left' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.justify = justify.value
+  grid.value.getCell(cellId.value).style.value.justify = justify.value
 }
 
 function onUpdateCenter(value: boolean) {
   justify.value = value ? 'center' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.justify = justify.value
+  grid.value.getCell(cellId.value).style.value.justify = justify.value
 }
 
 function onUpdateRight(value: boolean) {
   justify.value = value ? 'right' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.justify = justify.value
+  grid.value.getCell(cellId.value).style.value.justify = justify.value
 }
 </script>
 

@@ -43,7 +43,7 @@ function onMouseDown(event: Event) {
     }
     else {
       grid.value.resetSelection()
-      grid.value.moveActiveCellTo(id)
+      grid.value.movePositionTo(id)
     }
   }
   if (Col.isColString(id)) {
@@ -52,7 +52,7 @@ function onMouseDown(event: Event) {
     if (col) {
       grid.value.resetSelection()
       if (!editingLitsCode.value) {
-        grid.value.moveActiveCellTo(`${col.id}1`)
+        grid.value.movePositionTo(`${col.id}1`)
       }
       grid.value.selectColRange(col, col)
     }
@@ -63,7 +63,7 @@ function onMouseDown(event: Event) {
     if (row) {
       grid.value.resetSelection()
       if (!editingLitsCode.value) {
-        grid.value.moveActiveCellTo(`A${row.id}`)
+        grid.value.movePositionTo(`A${row.id}`)
       }
       grid.value.selectRowRange(row, row)
     }
@@ -105,7 +105,10 @@ function onCellDblclick() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  sidePanelHandleKeyDown(e)
+  console.log('key', e.key)
+  if (sidePanelHandleKeyDown(e)) {
+    return
+  }
 
   if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
     if (!editorFocused.value) {
@@ -124,10 +127,10 @@ function onKeyDown(e: KeyboardEvent) {
       }
       // grid.value.resetSelection()
       if (e.shiftKey) {
-        grid.value.moveActiveCell('up', true)
+        grid.value.movePosition('up', true)
       }
       else {
-        grid.value.moveActiveCell('down', true)
+        grid.value.movePosition('down', true)
       }
     }
   }
@@ -155,7 +158,7 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.expandSelection('down')
       }
       else {
-        grid.value.moveActiveCell('down')
+        grid.value.movePosition('down')
         grid.value.resetSelection()
       }
     }
@@ -166,7 +169,7 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.expandSelection('up')
       }
       else {
-        grid.value.moveActiveCell('up')
+        grid.value.movePosition('up')
         grid.value.resetSelection()
       }
     }
@@ -177,7 +180,7 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.expandSelection('right')
       }
       else {
-        grid.value.moveActiveCell('right')
+        grid.value.movePosition('right')
         grid.value.resetSelection()
       }
     }
@@ -188,7 +191,7 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.expandSelection('left')
       }
       else {
-        grid.value.moveActiveCell('left')
+        grid.value.movePosition('left')
         grid.value.resetSelection()
       }
     }
@@ -196,10 +199,10 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        grid.value.moveActiveCell('left', true)
+        grid.value.movePosition('left', true)
       }
       else {
-        grid.value.moveActiveCell('right', true)
+        grid.value.movePosition('right', true)
       }
     }
   }

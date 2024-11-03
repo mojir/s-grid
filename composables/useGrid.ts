@@ -36,18 +36,18 @@ export const useGrid = createSharedComposable(() => {
 const { grid } = useGrid()
 
 registerCommand({
-  name: 'MoveActiveCell!',
+  name: 'MovePosition!',
   execute: (dir: Direction) => {
-    grid.value.moveActiveCell(dir)
+    grid.value.movePosition(dir)
   },
-  description: 'Move the active cell in a direction',
+  description: 'Move the position in a direction',
 })
 registerCommand({
-  name: 'MoveActiveCellTo!',
+  name: 'MovePositionTo!',
   execute: (cellId: string) => {
-    grid.value.moveActiveCellTo(cellId)
+    grid.value.movePositionTo(cellId)
   },
-  description: 'Move the active cell to a specific cell',
+  description: 'Move the position to a specific cell',
 })
 registerCommand({
   name: 'GetSelection',
@@ -78,8 +78,7 @@ registerCommand({
 registerCommand({
   name: 'SetCellInput!',
   execute: (id: string, input: string) => {
-    const cell = grid.value.getOrCreateCell(id)
-    cell.input.value = input
+    grid.value.getCell(id).input.value = input
   },
   description: 'Set the input of a cell',
 })
@@ -105,16 +104,16 @@ registerCommand({
   description: 'Clear all cells',
 })
 registerCommand({
-  name: 'GetActiveCell',
+  name: 'GetCurrentCell',
   execute: () => {
-    return grid.value.getActiveCell()?.getJson() ?? 'No active cell'
+    return grid.value.getCurrentCell().getJson()
   },
-  description: 'Get the active cell',
+  description: 'Get the current cell',
 })
 registerCommand({
   name: 'GetCell',
   execute: (cellId: string) => {
-    return grid.value.getCell(cellId)?.getJson() ?? 'Empty cell'
+    return grid.value.getCell(cellId).getJson()
   },
   description: 'Get a cell by id',
 })
@@ -149,14 +148,6 @@ registerCommand({
     }
   },
   description: 'Set the formatter of a cell',
-})
-
-registerCommand({
-  name: 'GetCells',
-  execute: () => {
-    return grid.value.getCells()
-  },
-  description: 'Get all cells',
 })
 
 function validCellStyle(property: CellStyleName, value: unknown): boolean {

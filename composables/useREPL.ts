@@ -27,7 +27,6 @@ const { grid } = useGrid()
 const { registerCommand } = useCommandCenter()
 
 const history = ref<HistoryEntry[]>([])
-const replFocused = ref(false)
 
 registerCommand({
   name: 'ClearRepl!',
@@ -234,7 +233,6 @@ export function useREPL() {
     },
     resetHistoryIndex,
     run,
-    replFocused,
     getSuggestion,
     clearSuggestions,
   }

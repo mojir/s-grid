@@ -4,13 +4,11 @@ const enteredText = ref<string>('')
 const {
   history,
   run,
-  replFocused,
   getHistory,
   resetHistoryIndex,
   getSuggestion,
   clearSuggestions,
 } = useREPL()
-const { sidePanelHandleKeyDown } = useSidePanel()
 const { exec } = useCommandCenter()
 
 const emit = defineEmits<{
@@ -18,14 +16,6 @@ const emit = defineEmits<{
 }>()
 
 const inputRef = ref<HTMLInputElement>()
-watch(replFocused, () => {
-  if (replFocused.value) {
-    inputRef.value?.focus()
-  }
-  else {
-    inputRef.value?.blur()
-  }
-})
 
 watch(enteredText, () => {
   clearSuggestions()
@@ -46,8 +36,6 @@ function hasModifierKey(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  sidePanelHandleKeyDown(e)
-
   if (e.key === 'Tab') {
     e.preventDefault()
     if (e.shiftKey) {
@@ -150,8 +138,6 @@ function onKeyDown(e: KeyboardEvent) {
         @input="onInput"
         @keydown.enter="runLits"
         @keydown.stop="onKeyDown"
-        @fucus="replFocused = true"
-        @blur="replFocused = false"
       >
     </div>
   </div>

@@ -41,16 +41,16 @@ watch(grid.value.selection, (selection) => {
   }
 })
 
-watch(grid.value.activeCellId, (activeCellId) => {
+watch(grid.value.position, (position) => {
   save()
-  editorText.value = grid.value.getActiveCell()?.input.value ?? ''
+  editorText.value = grid.value.getCurrentCell()?.input.value ?? ''
   initialValue.value = editorText.value
-  setEditingCellId(activeCellId)
+  setEditingCellId(position)
 })
 
 onMounted(() => {
-  setEditingCellId(grid.value.activeCellId.value)
-  editorText.value = grid.value.getCell(editingCellId.value)?.input.value ?? ''
+  setEditingCellId(grid.value.position.value)
+  editorText.value = grid.value.getCell(editingCellId.value).input.value
   initialValue.value = editorText.value
 })
 
@@ -72,7 +72,7 @@ function onBlur() {
 function save() {
   const text = editorText.value.trim()
   if (initialValue.value !== text) {
-    const cell = grid.value.getOrCreateCell(editingCellId.value)
+    const cell = grid.value.getCell(editingCellId.value)
     cell.input.value = text
     initialValue.value = text
   }

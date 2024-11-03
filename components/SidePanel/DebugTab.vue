@@ -93,7 +93,7 @@ function addSampleData() {
           :style="{ backgroundColor: color }"
           class="flex-1 flex min-h-6 rounded-lg"
           @click="() => {
-            grid.setBackgroundColor(grid.activeCellId.value, Color.fromHex(colorMode.value, color))
+            grid.setBackgroundColor(grid.position.value, Color.fromHex(colorMode.value, color))
           }"
         />
       </div>

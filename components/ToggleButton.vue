@@ -10,19 +10,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-watch(modelValue, (newModelValue) => {
-  console.log('modelValue', newModelValue)
-})
-
 function onClick() {
-  console.log('onClick', modelValue.value)
-  if (modelValue.value) {
-    emit('update:modelValue', false)
-  }
-  else {
-    console.log('emit true')
-    emit('update:modelValue', true)
-  }
+  emit('update:modelValue', !modelValue.value)
 }
 </script>
 

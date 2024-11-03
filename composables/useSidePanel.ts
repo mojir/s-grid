@@ -22,51 +22,45 @@ const sidePanelOpen = ref<boolean>(false)
 const currentTab = ref<TabId>('repl')
 
 let ctrlKeyTime: number | null = null
-let ctrlCount = 0
-const sidePanelHandleKeyDown = (event: KeyboardEvent) => {
+function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
   if (event.key === 'Control') {
     if (ctrlKeyTime === null) {
       ctrlKeyTime = Date.now()
-      ctrlCount = 1
     }
     else {
       if (Date.now() - ctrlKeyTime < 500) {
-        ctrlCount += 1
-        ctrlKeyTime = Date.now()
-        if (ctrlCount === 2) {
-          if (sidePanelOpen.value) {
-            sidePanelOpen.value = false
-            ctrlCount = 0
-          }
-          else {
-            sidePanelOpen.value = true
-            currentTab.value = 'repl'
-          }
-        }
-        else {
-          switch (ctrlCount % 3) {
-            case 0:
-              currentTab.value = 'settings'
-              break
-            case 1:
-              currentTab.value = 'debug'
-              break
-            case 2:
-              currentTab.value = 'repl'
-              break
-          }
-        }
+        ctrlKeyTime = null
+        sidePanelOpen.value = !sidePanelOpen.value
       }
       else {
         ctrlKeyTime = Date.now()
-        ctrlCount = 1
       }
     }
   }
   else {
     ctrlKeyTime = null
-    ctrlCount = 0
   }
+
+  if (event.key === 'Escape') {
+    if (sidePanelOpen.value) {
+      sidePanelOpen.value = false
+      return true
+    }
+  }
+
+  if (event.key === 'Tab') {
+    if (sidePanelOpen.value) {
+      const direction = event.shiftKey ? -1 : 1
+      const currentTabIndex = tabs.value.findIndex(tab => tab.id === currentTab.value)
+      let nextTabIndex = (currentTabIndex + direction) % tabs.value.length
+      if (nextTabIndex < 0) {
+        nextTabIndex += tabs.value.length
+      }
+      currentTab.value = tabs.value[nextTabIndex].id
+      return true
+    }
+  }
+  return false
 }
 
 export function useSidePanel() {

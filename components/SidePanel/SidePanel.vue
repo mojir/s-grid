@@ -1,21 +1,12 @@
 <script setup lang="ts">
 const { sidePanelOpen, currentTab } = useSidePanel()
-const { replFocused, history } = useREPL()
+const { history } = useREPL()
 const tabsRef = ref()
 
 watch(sidePanelOpen, () => {
-  replFocused.value = sidePanelOpen.value
   if (sidePanelOpen.value && currentTab.value === 'repl') {
     scrollToBottom()
   }
-})
-
-watch(currentTab, () => {
-  nextTick(() => {
-    if (currentTab.value === 'repl') {
-      replFocused.value = true
-    }
-  })
 })
 
 watch(history, () => {

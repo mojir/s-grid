@@ -3,23 +3,22 @@ import type { StyleTextDecoration } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.activeCellId.value)
+const cellId = computed(() => grid.value.position.value)
 
 const textDecoration = ref<StyleTextDecoration | null>(null)
 
 watch(cellId, (newCellId) => {
-  const cell = grid.value.getCell(newCellId)
-  textDecoration.value = cell?.style.value.textDecoration ?? null
+  textDecoration.value = grid.value.getCell(newCellId).style.value.textDecoration
 })
 
 function onUpdateUnderline(value: boolean) {
   textDecoration.value = value ? 'underline' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.textDecoration = textDecoration.value
+  grid.value.getCell(cellId.value).style.value.textDecoration = textDecoration.value
 }
 
 function onUpdateLineThrough(value: boolean) {
   textDecoration.value = value ? 'line-through' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.textDecoration = textDecoration.value
+  grid.value.getCell(cellId.value).style.value.textDecoration = textDecoration.value
 }
 </script>
 

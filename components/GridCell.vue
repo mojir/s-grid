@@ -2,7 +2,7 @@
 import { computed, toRefs, watch, type CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { CellId } from '~/lib/CellId'
-import { defaultFontSize, defaultLineHeight, getLineHeight } from '~/lib/CellStyle'
+import { getLineHeight } from '~/lib/CellStyle'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 
@@ -25,7 +25,7 @@ const { row, col } = toRefs(props)
 
 const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index))
 const cell = computed(() => grid.value.getCell(cellId.value))
-const isActiveCell = computed(() => grid.value.activeCellId.value.equals(cellId.value))
+const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
 const isInsideSelection = computed(
   () =>
     grid.value.selection.value.size() > 1 && grid.value.selection.value.contains(cellId.value),
@@ -36,11 +36,11 @@ const cellContent = computed(() => {
   if (isEditingCell.value) {
     return editorText
   }
-  return grid.value.getCell(cellId.value)?.displayValue
+  return grid.value.getCell(cellId.value).displayValue
 })
 
-watch(grid.value.activeCellId, (activeCellId) => {
-  const cellElement = document.getElementById(activeCellId.id)
+watch(grid.value.position, (position) => {
+  const cellElement = document.getElementById(position.id)
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',
@@ -61,7 +61,7 @@ const cellStyle = computed(() => {
   }
 
   if (isActiveCell.value || isEditingCell.value) {
-    style.border = '1px solid var(--active-cell-border-color)'
+    style.border = '1px solid var(--current-cell-border-color)'
     style['z-index'] = 10
     if (isEditingCell.value) {
       style.outline = '2px solid var(--editing-cell-outline-color)'
@@ -76,64 +76,56 @@ const cellStyle = computed(() => {
     style.backgroundColor = 'var(--cell-background-color)'
   }
 
-  if (cell.value) {
-    const cellStyle = cell.value.style.value
-    style.fontSize = `${cellStyle.fontSize}px`
-    style.lineHeight = `${getLineHeight(cellStyle.fontSize) - 1}px`
-    if (cellStyle.bold) {
-      style.fontWeight = 'bold'
+  const cellStyle = cell.value.style.value
+  style.fontSize = `${cellStyle.fontSize}px`
+  style.lineHeight = `${getLineHeight(cellStyle.fontSize) - 1}px`
+  if (cellStyle.bold) {
+    style.fontWeight = 'bold'
+  }
+  if (cellStyle.italic) {
+    style.fontStyle = 'italic'
+  }
+  if (cellStyle.textDecoration) {
+    if (cellStyle.textDecoration === 'underline') {
+      style.textDecoration = 'underline'
     }
-    if (cellStyle.italic) {
-      style.fontStyle = 'italic'
+    else if (cellStyle.textDecoration === 'line-through') {
+      style.textDecoration = 'line-through'
     }
-    if (cellStyle.textDecoration) {
-      if (cellStyle.textDecoration === 'underline') {
-        style.textDecoration = 'underline'
-      }
-      else if (cellStyle.textDecoration === 'line-through') {
-        style.textDecoration = 'line-through'
-      }
-    }
+  }
 
-    if (cellStyle.justify) {
-      if (cellStyle.justify === 'left') {
-        style.justifyContent = 'flex-start'
-      }
-      else if (cellStyle.justify === 'center') {
-        style.justifyContent = 'center'
-      }
-      else if (cellStyle.justify === 'right') {
-        style.justifyContent = 'flex-end'
-      }
+  if (cellStyle.justify) {
+    if (cellStyle.justify === 'left') {
+      style.justifyContent = 'flex-start'
     }
-    else {
-      style.justifyContent = cell.value.isNumber.value ? 'right' : 'left'
+    else if (cellStyle.justify === 'center') {
+      style.justifyContent = 'center'
     }
-
-    if (cellStyle.align) {
-      if (cellStyle.align === 'top') {
-        style.alignItems = 'flex-start'
-      }
-      else if (cellStyle.align === 'middle') {
-        style.alignItems = 'center'
-      }
-      else if (cellStyle.align === 'bottom') {
-        style.alignItems = 'flex-end'
-      }
-    }
-    else {
-      style.alignItems = 'flex-end'
-    }
-
-    if (cell.value.backgroundColorStyle.value) {
-      style.backgroundColor = cell.value.backgroundColorStyle.value
+    else if (cellStyle.justify === 'right') {
+      style.justifyContent = 'flex-end'
     }
   }
   else {
-    style.fontSize = `${defaultFontSize}px`
-    style.lineHeight = `${defaultLineHeight - 2}px`
-    style.justifyContent = 'left'
+    style.justifyContent = cell.value.isNumber.value ? 'right' : 'left'
+  }
+
+  if (cellStyle.align) {
+    if (cellStyle.align === 'top') {
+      style.alignItems = 'flex-start'
+    }
+    else if (cellStyle.align === 'middle') {
+      style.alignItems = 'center'
+    }
+    else if (cellStyle.align === 'bottom') {
+      style.alignItems = 'flex-end'
+    }
+  }
+  else {
     style.alignItems = 'flex-end'
+  }
+
+  if (cell.value.backgroundColorStyle.value) {
+    style.backgroundColor = cell.value.backgroundColorStyle.value
   }
   return style
 })

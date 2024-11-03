@@ -11,8 +11,8 @@ const emit = defineEmits<{
 
 const { grid } = useGrid()
 
-watch(grid.value.activeCellId, (activeCellId) => {
-  const cellElement = document.getElementById(activeCellId.id)
+watch(grid.value.position, (position) => {
+  const cellElement = document.getElementById(position.id)
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',

@@ -6,7 +6,7 @@ import { hs } from '@/utils/cssUtils'
 
 const { grid } = useGrid()
 const errorMessage = computed(() => {
-  const cell = grid.value.getActiveCell()
+  const cell = grid.value.getCurrentCell()
   const output = cell?.output.value
   if (output instanceof Error) {
     if (isLitsError(output)) {

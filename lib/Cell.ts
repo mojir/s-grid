@@ -2,7 +2,7 @@ import { isLitsFunction, Lits } from '@mojir/lits'
 import type { CellId } from './CellId'
 import type { Grid } from './Grid'
 import { CellStyle } from './CellStyle'
-import { Color } from './color'
+import type { Color } from './color'
 
 const lits = new Lits()
 
@@ -118,9 +118,6 @@ export class Cell {
         this.grid.autoSetRowHeight(this.cellId)
       }
     })
-    if (this.grid.colorMode.value) {
-      this.backgroundColor.value = Color.fromHex(this.grid.colorMode.value.value, '#cccccc')
-    }
   }
 }
 

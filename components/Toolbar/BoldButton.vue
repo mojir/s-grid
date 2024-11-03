@@ -1,18 +1,16 @@
 <script setup lang="ts">
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.activeCellId.value)
+const cellId = computed(() => grid.value.position.value)
 
 const bold = ref(false)
 
 watch(cellId, (newCellId) => {
-  const cell = grid.value.getCell(newCellId)
-  console.log('cellId', cell?.cellId.id, cell?.style.value.bold)
-  bold.value = cell?.style.value.bold ?? false
+  bold.value = grid.value.getCell(newCellId).style.value.bold
 })
 
 function onUpdateBold(value: boolean) {
-  grid.value.getOrCreateCell(cellId.value).style.value.bold = value
+  grid.value.getCell(cellId.value).style.value.bold = value
   bold.value = value
 }
 </script>

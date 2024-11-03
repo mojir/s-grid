@@ -3,28 +3,28 @@ import type { StyleAlign } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.activeCellId.value)
+const cellId = computed(() => grid.value.position.value)
 
 const align = ref<StyleAlign | null>(null)
 
 watch(cellId, (newCellId) => {
   const cell = grid.value.getCell(newCellId)
-  align.value = cell?.style.value.align ?? null
+  align.value = cell.style.value.align
 })
 
 function onUpdateTop(value: boolean) {
   align.value = value ? 'top' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.align = align.value
+  grid.value.getCell(cellId.value).style.value.align = align.value
 }
 
 function onUpdateCenter(value: boolean) {
   align.value = value ? 'middle' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.align = align.value
+  grid.value.getCell(cellId.value).style.value.align = align.value
 }
 
 function onUpdateBottom(value: boolean) {
   align.value = value ? 'bottom' : null
-  grid.value.getOrCreateCell(cellId.value).style.value.align = align.value
+  grid.value.getCell(cellId.value).style.value.align = align.value
 }
 </script>
 
