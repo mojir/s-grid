@@ -79,6 +79,10 @@ export class Cell {
     return isLitsFunction(fn) ? fn : null
   })
 
+  public isNumber = computed(() => {
+    return typeof this.output.value === 'number'
+  })
+
   public getJson() {
     return {
       'id': this.cellId.id,
@@ -93,7 +97,13 @@ export class Cell {
     }
   }
 
-  constructor(private readonly grid: Grid, public cellId: CellId) {}
+  constructor(private readonly grid: Grid, public cellId: CellId) {
+    watch(this.displayValue, (newValue, oldValue) => {
+      if (!oldValue && newValue) {
+        this.grid.autoSetRowHeight(this.cellId)
+      }
+    })
+  }
 }
 
 function formatOutputValue(value: unknown): unknown {

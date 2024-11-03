@@ -4,12 +4,12 @@ export class Row {
   private constructor(
     public readonly index: number,
     public readonly id: string,
-    public height: number,
+    public readonly height: Ref<number>,
   ) {
   }
 
-  static create(index: number, width: number): Row {
-    return new Row(index, Row.getRowIdFromIndex(index), width)
+  static create(index: number, height: number): Row {
+    return new Row(index, Row.getRowIdFromIndex(index), ref(height))
   }
 
   static isRowString(id: unknown): id is string {

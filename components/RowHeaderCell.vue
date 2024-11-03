@@ -17,7 +17,7 @@ const isSelected = computed(() => grid.value.selection.value.containsRowIndex(ro
 const cellStyle = computed(() => {
   const style: CSSProperties = {
     width: `${grid.value.rowHeaderWidth}px`,
-    height: `${row.value.height + 1}px`,
+    height: `${row.value.height.value + 1}px`,
     marginTop: '-1px',
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
@@ -37,7 +37,7 @@ const cellStyle = computed(() => {
   >
     <div
       :id="row.id"
-      :style="whs(grid.rowHeaderWidth, row.height)"
+      :style="whs(grid.rowHeaderWidth, row.height.value)"
       class="flex justify-center items-center text-xs select-none"
     >
       {{ row.id }}

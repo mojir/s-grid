@@ -29,7 +29,10 @@ const complementColors = computed(() => {
 
 function addSampleData() {
   exec('ClearAllCells!')
-  exec('SetCellInput!', 'A1', 'Name:')
+  exec('SetCellStyle!', 'A1', 'fontSize', 18)
+  exec('SetCellStyle!', 'B1', 'fontSize', 18)
+
+  exec('SetCellInput!', 'A1', 'Name')
   exec('SetCellStyle!', 'A1', 'bold', true)
   exec('SetCellInput!', 'A2', 'Albert')
   exec('SetCellInput!', 'A3', 'Bob')
@@ -41,8 +44,9 @@ function addSampleData() {
   exec('SetCellInput!', 'A9', 'Hank')
   exec('SetCellInput!', 'A10', 'Ivy')
 
-  exec('SetCellInput!', 'B1', 'Age:')
+  exec('SetCellInput!', 'B1', 'Age')
   exec('SetCellStyle!', 'B1', 'bold', true)
+  exec('SetCellStyle!', 'B1', 'justify', 'right')
   exec('SetCellInput!', 'B2', '25')
   exec('SetCellInput!', 'B3', '30')
   exec('SetCellInput!', 'B4', '28')

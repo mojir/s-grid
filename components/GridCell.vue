@@ -2,6 +2,7 @@
 import { computed, toRefs, watch, type CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { CellId } from '~/lib/CellId'
+import { defaultFontSize, defaultLineHeight, getLineHeight } from '~/lib/CellStyle'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 
@@ -51,7 +52,7 @@ const cellStyle = computed(() => {
     position: 'relative',
     boxSizing: 'border-box',
     width: `${col.value.width + 1}px`,
-    height: `${row.value.height + 1}px`,
+    height: `${row.value.height.value + 1}px`,
     marginLeft: '-1px',
     marginTop: '-1px',
     border: '1px solid var(--cell-border-color)',
@@ -65,9 +66,7 @@ const cellStyle = computed(() => {
     if (isEditingCell.value) {
       style.outline = '2px solid var(--editing-cell-outline-color)'
     }
-    else {
-      style.overflow = 'visible'
-    }
+    style.overflow = 'visible'
   }
 
   if (isInsideSelection.value) {
@@ -77,11 +76,60 @@ const cellStyle = computed(() => {
     style.backgroundColor = 'var(--cell-background-color)'
   }
 
-  if (cell.value?.style.value.bold) {
-    style.fontWeight = 'bold'
+  if (cell.value) {
+    const cellStyle = cell.value.style.value
+    style.fontSize = `${cellStyle.fontSize}px`
+    style.lineHeight = `${getLineHeight(cellStyle.fontSize) - 1}px`
+    if (cellStyle.bold) {
+      style.fontWeight = 'bold'
+    }
+    if (cellStyle.italic) {
+      style.fontStyle = 'italic'
+    }
+    if (cellStyle.textDecoration) {
+      if (cellStyle.textDecoration === 'underline') {
+        style.textDecoration = 'underline'
+      }
+      else if (cellStyle.textDecoration === 'line-through') {
+        style.textDecoration = 'line-through'
+      }
+    }
+
+    if (cellStyle.justify) {
+      if (cellStyle.justify === 'left') {
+        style.justifyContent = 'flex-start'
+      }
+      else if (cellStyle.justify === 'center') {
+        style.justifyContent = 'center'
+      }
+      else if (cellStyle.justify === 'right') {
+        style.justifyContent = 'flex-end'
+      }
+    }
+    else {
+      style.justifyContent = cell.value.isNumber.value ? 'right' : 'left'
+    }
+
+    if (cellStyle.align) {
+      if (cellStyle.align === 'top') {
+        style.alignItems = 'flex-start'
+      }
+      else if (cellStyle.align === 'middle') {
+        style.alignItems = 'center'
+      }
+      else if (cellStyle.align === 'bottom') {
+        style.alignItems = 'flex-end'
+      }
+    }
+    else {
+      style.alignItems = 'flex-end'
+    }
   }
-  if (cell.value?.style.value.italic) {
-    style.fontStyle = 'italic'
+  else {
+    style.fontSize = `${defaultFontSize}px`
+    style.lineHeight = `${defaultLineHeight - 2}px`
+    style.justifyContent = 'left'
+    style.alignItems = 'flex-end'
   }
   return style
 })
@@ -104,7 +152,7 @@ function inspectCell(e: MouseEvent) {
   <div
     :id="cellId.id"
     :style="cellStyle"
-    class="px-1 flex box-border items-center text-sm whitespace-nowrap"
+    class="px-1 h-full flex box-border text-sm whitespace-nowrap"
     @dblclick="emit('cell-dblclick', cellId)"
     @click="inspectCell"
   >

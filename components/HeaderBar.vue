@@ -6,13 +6,16 @@ const { sidePanelOpen } = useSidePanel()
 
 <template>
   <div
-    :style="hs(50)"
-    class="flex items-center text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
+    :style="hs(114)"
+    class="flex items-end pb-2 px-2 text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
   >
-    <AppLogo />
+    <Toolbar />
   </div>
+  <AppLogo
+    class="absolute w-[72px] h-[72px]"
+  />
   <div
-    class="absolute top-[12px] right-[12px] items-center dark:text-slate-400 text-gray-600"
+    class="absolute top-[6px] right-[6px] items-center dark:text-slate-400 text-gray-600"
     :style="whs(26, 26)"
   >
     <Icon

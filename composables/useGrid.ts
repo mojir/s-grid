@@ -1,6 +1,6 @@
 import { createSharedComposable } from '@vueuse/core'
 import { customRef, shallowReadonly } from 'vue'
-import type { CellStyle } from '~/lib/CellStyle'
+import { styleFontSizes, type CellStyle, type CellStyleName, type StyleFontSize } from '~/lib/CellStyle'
 import { Grid } from '~/lib/Grid'
 
 const defaultNbrOfRows = 50
@@ -121,7 +121,7 @@ registerCommand({
 })
 registerCommand({
   name: 'SetCellStyle!',
-  execute: <T extends keyof CellStyle>(cellId: string, property: T, value: CellStyle[T]) => {
+  execute: <T extends CellStyleName>(cellId: string, property: T, value: CellStyle[T]) => {
     if (validCellStyle(property, value)) {
       grid.value.setCellStyle(cellId, property, value)
     }
@@ -153,12 +153,19 @@ registerCommand({
   description: 'Get all cells',
 })
 
-function validCellStyle(property: keyof CellStyle, value: unknown): boolean {
+function validCellStyle(property: CellStyleName, value: unknown): boolean {
   switch (property) {
     case 'bold':
       return typeof value === 'boolean'
     case 'italic':
       return typeof value === 'boolean'
+    case 'textDecoration':
+      return ['underline', 'line-through'].includes(value as string)
+    case 'justify':
+      return ['left', 'center', 'right'].includes(value as string)
+    case 'align':
+      return ['top', 'middle', 'bottom'].includes(value as string)
+    case 'fontSize':
+      return styleFontSizes.includes(value as StyleFontSize)
   }
-  return false
 }

@@ -1,9 +1,11 @@
+import { Cell } from './Cell'
 import { CellId } from './CellId'
 import { CellRange } from './CellRange'
+import { defaultLineHeight, getLineHeight, type CellStyle, type CellStyleName } from './CellStyle'
 import { Col } from './Col'
-import { Cell } from './Cell'
 import { Row } from './Row'
-import type { CellStyle } from './CellStyle'
+
+const minRowHeight = 16
 
 export class Grid {
   public readonly rows: Row[]
@@ -21,7 +23,7 @@ export class Grid {
     this.activeCellId = ref<CellId>(CellId.fromCoords(0, 0))
     this.unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(this.activeCellId.value))
     this.selection = computed(() => this.unsortedSelection.value.toSorted())
-    this.rows = Array.from({ length: rows }, (_, rowIndex) => Row.create(rowIndex, 26))
+    this.rows = Array.from({ length: rows }, (_, rowIndex) => Row.create(rowIndex, defaultLineHeight))
     this.cols = Array.from({ length: cols }, (_, colIndex) => Col.create(colIndex, 100))
     this.cells = Array.from({ length: rows }, () =>
       Array.from({ length: cols }, () => null),
@@ -274,7 +276,7 @@ export class Grid {
     }
   }
 
-  public setCellStyle<T extends keyof CellStyle>(id: string | CellId, property: T, value: CellStyle[T]) {
+  public setCellStyle<T extends CellStyleName>(id: string | CellId, property: T, value: CellStyle[T]) {
     const cell = this.getOrCreateCell(id)
     cell.style.value[property] = value
   }
@@ -282,5 +284,36 @@ export class Grid {
   public setCellFormatter(id: string | CellId, formatter: string) {
     const cell = this.getOrCreateCell(id)
     cell.formatter.value = formatter
+  }
+
+  public autoSetRowHeight(id: CellId | string) {
+    const cellId = CellId.isCellId(id) ? id : CellId.fromId(id)
+
+    // No need to auto set row height for cell, if cell is empty
+    if (!this.getCell(cellId)?.displayValue.value) {
+      return
+    }
+
+    const rowIndex = cellId.rowIndex
+    const cells = this.getRowCells(rowIndex)
+
+    const maxLineHeight = cells.reduce((acc, cell) => {
+      if (!cell.displayValue.value) {
+        return acc
+      }
+      const lineHeight = getLineHeight(cell.style.value.fontSize)
+      return lineHeight > acc ? lineHeight : acc
+    }, 0)
+
+    this.rows[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
+  }
+
+  public getRowCells(rowIndex: number): Cell[] {
+    const startCellId = CellId.fromCoords(rowIndex, 0)
+    const endCellId = CellId.fromCoords(rowIndex, this.cols.length - 1)
+    const range = CellRange.fromCellIds(startCellId, endCellId)
+    return range
+      .getAllCellIds()
+      .flatMap(cellId => this.getCell(cellId) ?? [])
   }
 }
