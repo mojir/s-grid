@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { whs } from '~/lib/utils'
+
 const { sidePanelOpen } = useSidePanel()
 </script>
 

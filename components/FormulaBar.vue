@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useGrid } from '@/composables/useGrid'
-import { hs } from '@/utils/cssUtils'
+import { hs } from '~/lib/utils'
 
 const { grid } = useGrid()
 const {

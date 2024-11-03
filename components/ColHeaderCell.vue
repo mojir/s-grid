@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
-import { whs } from '@/utils/cssUtils'
+import { whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 
 const { grid } = useGrid()

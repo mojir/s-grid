@@ -2,33 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-.light {
-  --logo-fill-color: transparent;
-  --logo-grid-color: theme('colors.gray.600');
-  --logo-parens-color: theme('colors.blue.400');
+@layer base {
+  :root {
+    --logo-fill-color: transparent;
+    --logo-grid-color: theme('colors.gray.600');
+    --logo-parens-color: theme('colors.blue.400');
+  
+    --header-background-color: theme('colors.gray.200'); /* colors.gray.200, rgb(249, 250, 251) */
+    --selected-header-background-color: rgba(249, 250, 251, 0.85);
+    --header-border-color: theme('colors.gray.300');
+    --cell-background-color: theme('colors.gray.100'); /* colors.gray.100, rgb(243, 244, 246) */
+    --selected-cell-background-color: rgba(243, 244, 246, 0.75);
+    --cell-border-color: theme('colors.gray.200');
+    --current-cell-border-color: theme('colors.gray.400');
+    --editing-cell-outline-color: theme('colors.gray.200');
 
-  --header-background-color: theme('colors.gray.200'); /* colors.gray.200, rgb(249, 250, 251) */
-  --selected-header-background-color: rgba(249, 250, 251, 0.85);
-  --header-border-color: theme('colors.gray.300');
-  --cell-background-color: theme('colors.gray.100'); /* colors.gray.100, rgb(243, 244, 246) */
-  --selected-cell-background-color: rgba(243, 244, 246, 0.75);
-  --cell-border-color: theme('colors.gray.200');
-  --current-cell-border-color: theme('colors.gray.400');
-  --editing-cell-outline-color: theme('colors.gray.200');
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --logo-fill-color: transparent;
+    --logo-grid-color: theme('colors.gray.400');
+    --logo-parens-color: theme('colors.blue.600');
+  
+    --header-background-color: theme('colors.slate.800'); /* colors.slate.800, rgb(30, 41, 59) */
+    --selected-header-background-color: rgb(30, 41, 59, 0.80);
+    --header-border-color: theme('colors.slate.700');
+    --cell-background-color: theme('colors.slate.900'); /* colors.slate.900, rgb(15, 23, 42) */
+    --selected-cell-background-color: rgba(15, 23, 42, 0.9);
+    --cell-border-color: theme('colors.slate.800');
+    --current-cell-border-color: theme('colors.slate.600');
+    --editing-cell-outline-color: theme('colors.slate.800');
+  
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 212.7 26.8% 83.9%;
+  }
 }
 
-.dark {
-  --logo-fill-color: transparent;
-  --logo-grid-color: theme('colors.gray.400');
-  --logo-parens-color: theme('colors.blue.600');
-
-  --header-background-color: theme('colors.slate.800'); /* colors.slate.800, rgb(30, 41, 59) */
-  --selected-header-background-color: rgb(30, 41, 59, 0.80);
-  --header-border-color: theme('colors.slate.700');
-  --cell-background-color: theme('colors.slate.900'); /* colors.slate.900, rgb(15, 23, 42) */
-  --selected-cell-background-color: rgba(15, 23, 42, 0.9);
-  --cell-border-color: theme('colors.slate.800');
-  --current-cell-border-color: theme('colors.slate.600');
-  --editing-cell-outline-color: theme('colors.slate.800');
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

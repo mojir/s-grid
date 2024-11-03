@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import GridCell from './GridCell.vue'
 import { useGrid } from '@/composables/useGrid'
-import { hs } from '@/utils/cssUtils'
+import { hs } from '~/lib/utils'
 import type { CellId } from '~/lib/CellId'
 
 const emit = defineEmits<{

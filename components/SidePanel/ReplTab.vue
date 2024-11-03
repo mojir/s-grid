@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { hs } from '~/lib/utils'
+
 const input = ref<string>('')
 const enteredText = ref<string>('')
 const {

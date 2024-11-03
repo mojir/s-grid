@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { CellId } from '~/lib/CellId'
 import { Col } from '~/lib/Col'
 import { Row } from '~/lib/Row'
+import { whs, hs } from '~/lib/utils'
 
 const {
   grid,

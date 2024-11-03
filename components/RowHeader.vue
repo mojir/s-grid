@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useGrid } from '@/composables/useGrid'
-import { ws } from '@/utils/cssUtils'
+import { ws } from '~/lib/utils'
 
 const { grid } = useGrid()
 

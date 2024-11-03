@@ -2,7 +2,7 @@
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
 import { useGrid } from '@/composables/useGrid'
-import { hs } from '@/utils/cssUtils'
+import { hs } from '~/lib/utils'
 
 const { grid } = useGrid()
 const errorMessage = computed(() => {
