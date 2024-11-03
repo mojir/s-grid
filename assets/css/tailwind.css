@@ -4,8 +4,8 @@
 
 .light {
   --logo-fill-color: transparent;
-  --logo-grid-color: #666;
-  --logo-parens-color: #4c9ace;
+  --logo-grid-color: theme('colors.gray.600');
+  --logo-parens-color: theme('colors.blue.400');
 
   --header-background-color: theme('colors.gray.200'); /* colors.gray.200, rgb(249, 250, 251) */
   --selected-header-background-color: rgba(249, 250, 251, 0.85);
@@ -20,8 +20,8 @@
 
 .dark {
   --logo-fill-color: transparent;
-  --logo-grid-color: #aaa;
-  --logo-parens-color: #63b3ed;
+  --logo-grid-color: theme('colors.gray.400');
+  --logo-parens-color: theme('colors.blue.600');
 
   --header-background-color: theme('colors.slate.800'); /* colors.slate.800, rgb(30, 41, 59) */
   --selected-header-background-color: rgb(30, 41, 59, 0.80);

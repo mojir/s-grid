@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { hs } from '@/utils/cssUtils'
-
 const { sidePanelOpen } = useSidePanel()
 </script>
 
 <template>
   <div
-    :style="hs(114)"
-    class="flex items-end pb-2 px-2 text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
+    class="flex flex-col pb-3 px-1 text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
   >
-    <Toolbar />
+    <AppLogo
+      class="w-[72px] h-[72px]"
+    />
+    <Toolbar class="mx-2" />
   </div>
-  <AppLogo
-    class="absolute w-[72px] h-[72px]"
-  />
   <div
     class="absolute top-[6px] right-[6px] items-center dark:text-slate-400 text-gray-600"
     :style="whs(26, 26)"

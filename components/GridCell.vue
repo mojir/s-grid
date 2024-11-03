@@ -124,6 +124,10 @@ const cellStyle = computed(() => {
     else {
       style.alignItems = 'flex-end'
     }
+
+    if (cell.value.backgroundColorStyle.value) {
+      style.backgroundColor = cell.value.backgroundColorStyle.value
+    }
   }
   else {
     style.fontSize = `${defaultFontSize}px`

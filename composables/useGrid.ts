@@ -10,9 +10,15 @@ const { registerCommand } = useCommandCenter()
 
 export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
 
+const colorModeRef: Ref<Ref<string> | null> = ref(null)
+
+export function setColorMode(colorMode: Ref<string>) {
+  colorModeRef.value = colorMode
+}
+
 export const useGrid = createSharedComposable(() => {
   const grid = shallowReadonly(customRef((track, trigger) => {
-    const gridInstance = new Grid(defaultNbrOfRows, defaultNbrOfCols, trigger)
+    const gridInstance = new Grid(colorModeRef, defaultNbrOfRows, defaultNbrOfCols, trigger)
     return {
       get() {
         track()

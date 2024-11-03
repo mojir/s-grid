@@ -3,6 +3,7 @@ import { CellId } from './CellId'
 import { CellRange } from './CellRange'
 import { defaultLineHeight, getLineHeight, type CellStyle, type CellStyleName } from './CellStyle'
 import { Col } from './Col'
+import type { Color } from './color'
 import { Row } from './Row'
 
 const minRowHeight = 16
@@ -19,7 +20,7 @@ export class Grid {
   public readonly selection: ComputedRef<CellRange>
   private _range: CellRange
 
-  constructor(rows: number, cols: number, private readonly trigger: () => void) {
+  constructor(public readonly colorMode: Ref<Ref<string> | null>, rows: number, cols: number, private readonly trigger: () => void) {
     this.activeCellId = ref<CellId>(CellId.fromCoords(0, 0))
     this.unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(this.activeCellId.value))
     this.selection = computed(() => this.unsortedSelection.value.toSorted())
@@ -33,6 +34,12 @@ export class Grid {
 
   public get range() {
     return this._range
+  }
+
+  public setBackgroundColor(id: string | CellId, color: Color) {
+    const cellId = this.getCellId(id)
+    const cell = this.getOrCreateCell(cellId)
+    cell.backgroundColor.value = color
   }
 
   public setCellAlias(id: string | CellId, alias: string) {

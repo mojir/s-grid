@@ -4,59 +4,64 @@ const hexRegExp = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i
 
 export class Color {
   private constructor(
-    public readonly h: number,
-    public readonly s: number,
-    public readonly l: number,
-    public readonly a: number,
+    public readonly colorMode: string,
+    public readonly hue: number,
+    public readonly saturation: number,
+    public readonly lightness: number,
+    public readonly alpha: number,
   ) {
+  //   this.styleString = computed(() => {
+  //     const actualLightness = colorMode.value === this.colorMode
+  //       ? this.lightness
+  //       : this.lightness > 50 ? 100 - this.lightness : 100 - this.lightness
+  //     return `hsla(${hue}, ${saturation}%, ${actualLightness}%, ${alpha})`
+  //   })
   }
 
-  public static fromHex(hex: string): Color {
+  public static fromHex(colorMode: string, hex: string): Color {
     if (!hexRegExp.test(hex)) {
       console.error('Invalid hex color', hex)
-      return new Color(0, 0, 0, 0)
+      return new Color(colorMode, 0, 0, 0, 0)
     }
     const a = (hex.length === 7) ? 1 : parseInt(hex.slice(7, 9), 16) / 255
-    return new Color(...rgbToHsl(...hexToRgb(hex)), a)
+    return new Color(colorMode, ...rgbToHsl(...hexToRgb(hex)), a)
   }
 
-  public static fromHsl(h: number, s: number, l: number, a?: number): Color {
+  public static fromHsl(colorMode: string, h: number, s: number, l: number, a?: number): Color {
     a ??= 1
     if (h < 0 || h > 360 || s < 0 || s > 100 || l < 0 || l > 100 || a < 0 || a > 1) {
       console.error('Invalid HSL color', h, s, l, a)
-      return new Color(0, 0, 0, 0)
+      return new Color(colorMode, 0, 0, 0, 0)
     }
-    return new Color(h, s, l, a)
+    return new Color(colorMode, h, s, l, a)
   }
 
-  public static fromRgb(r: number, g: number, b: number, a?: number): Color {
+  public static fromRgb(colorMode: string, r: number, g: number, b: number, a?: number): Color {
     a ??= 1
     if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 1) {
       console.error('Invalid RGB color', r, g, b, a)
-      return new Color(0, 0, 0, 0)
+      return new Color(colorMode, 0, 0, 0, 0)
     }
-    return new Color(...rgbToHsl(r, g, b), a)
+    return new Color(colorMode, ...rgbToHsl(r, g, b), a)
   }
 
-  get hsl(): Tripple {
-    return [this.h, this.s, this.l]
+  public getHex(): string {
+    return rgbToHex(...hslToRgb(this.hue, this.saturation, this.lightness))
   }
 
-  get rgb(): Tripple {
-    return hslToRgb(this.h, this.s, this.l)
-  }
-
-  get hex(): string {
-    return rgbToHex(...this.rgb)
-  }
-
-  get style(): string {
-    return `hsl(${this.h}, ${this.s}%, ${this.l}%)`
+  public getJson() {
+    return {
+      colorMode: this.colorMode,
+      hue: this.hue,
+      saturation: this.saturation,
+      lightness: this.lightness,
+      alpha: this.alpha,
+    }
   }
 
   toggleLightness(): Color {
-    const newL = this.l > 50 ? 100 - this.l : 100 - this.l
-    return new Color(this.h, this.s, newL, this.a)
+    const newL = this.lightness > 50 ? 100 - this.lightness : 100 - this.lightness
+    return new Color(this.colorMode, this.hue, this.saturation, newL, this.alpha)
   }
 }
 

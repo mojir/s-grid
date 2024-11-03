@@ -2,6 +2,7 @@ import { isLitsFunction, Lits } from '@mojir/lits'
 import type { CellId } from './CellId'
 import type { Grid } from './Grid'
 import { CellStyle } from './CellStyle'
+import { Color } from './color'
 
 const lits = new Lits()
 
@@ -12,6 +13,20 @@ export class Cell {
   public alias = ref<string | null>(null)
   public formatter = ref<string | null>(null)
   public style = ref(new CellStyle())
+  public backgroundColor = ref<Color | null>(null)
+  public backgroundColorStyle = computed<string | null>(() => {
+    const color = this.backgroundColor.value
+
+    if (color === null) {
+      return null
+    }
+
+    const lightness = color.lightness
+    const actualLightness = this.grid.colorMode.value?.value === color.colorMode
+      ? lightness
+      : lightness > 50 ? 100 - lightness : 100 - lightness
+    return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
+  })
 
   public output = computed(() => {
     const input = this.input.value
@@ -103,6 +118,9 @@ export class Cell {
         this.grid.autoSetRowHeight(this.cellId)
       }
     })
+    if (this.grid.colorMode.value) {
+      this.backgroundColor.value = Color.fromHex(this.grid.colorMode.value.value, '#cccccc')
+    }
   }
 }
 

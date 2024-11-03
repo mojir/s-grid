@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Color } from '@/lib/color'
 
+const colorMode = useColorMode()
+const { grid } = useGrid()
+
 const { exec } = useCommandCenter()
 const cs = ['00', '88', 'FF']
-const colors: Color[] = [
+const colors = [
   '#000000',
   '#000022',
   '#002200',
@@ -21,11 +24,7 @@ const colors: Color[] = [
   '#FFFFDD',
   '#FFFFFF',
   ...cs.flatMap(r => cs.flatMap(g => cs.map(b => `#${g}${r}${b}`))),
-].map(Color.fromHex)
-
-const complementColors = computed(() => {
-  return colors.map(c => c.toggleLightness())
-})
+]
 
 function addSampleData() {
   exec('ClearAllCells!')
@@ -91,16 +90,11 @@ function addSampleData() {
         <div
           v-for="(color, i) of colors"
           :key="i"
-          :style="{ backgroundColor: color.style }"
+          :style="{ backgroundColor: color }"
           class="flex-1 flex min-h-6 rounded-lg"
-        />
-      </div>
-      <div class="flex-1 flex flex-col gap-4 bg-slate-900 p-4">
-        <div
-          v-for="(color, i) of complementColors"
-          :key="i"
-          :style="{ backgroundColor: color.style }"
-          class="flex-1 flex min-h-6 rounded-lg"
+          @click="() => {
+            grid.setBackgroundColor(grid.activeCellId.value, Color.fromHex(colorMode.value, color))
+          }"
         />
       </div>
     </div>
