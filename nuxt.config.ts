@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
+    '@nuxthub/core',
   ],
   devtools: { enabled: true },
   app: {
@@ -24,6 +25,9 @@ export default defineNuxtConfig({
     fallback: 'dark',
   },
   compatibilityDate: '2024-04-03',
+  hub: {
+    // NuxtHub options
+  },
   eslint: {
     config: {
       stylistic: true, // <---
