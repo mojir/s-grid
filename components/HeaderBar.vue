@@ -11,6 +11,7 @@ const { sidePanelOpen } = useSidePanel()
     <AppLogo
       class="w-[72px] h-[72px]"
     />
+    Sheeet
     <Toolbar class="mx-2" />
   </div>
   <div
