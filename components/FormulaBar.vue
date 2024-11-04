@@ -26,16 +26,17 @@ const selectionLabel = computed(() => {
 watch(grid.value.selection, (selection) => {
   const inputElement = inputRef.value
   if (editingLitsCode.value && inputElement && editorFocused.value) {
-    const selectionValue = selection.size() === 1
+    const selectionValue = `${selection.size() === 1
       ? selection.start.id
-      : selection.id
+      : selection.id} `
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
     const value = inputElement.value
     inputElement.value
       = value.slice(0, start) + selectionValue + value.slice(end)
-    inputElement.setSelectionRange(start, start + selectionValue.length)
+    const position = start + selectionValue.length
+    inputElement.setSelectionRange(position, position)
     editorText.value = inputElement.value
     inputElement.focus()
   }
