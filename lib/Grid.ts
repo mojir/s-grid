@@ -271,6 +271,15 @@ export class Grid {
     })
   }
 
+  public getBackgroundColor(id?: string | CellId) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : this.selection.value.getAllCellIds()
+
+    const cell = this.getCell(cellIds[0])
+    return cell.backgroundColor.value
+  }
+
   public setTextColor(color: Color | null, id?: string | CellId) {
     const cellIds = id
       ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
@@ -280,6 +289,15 @@ export class Grid {
       const cell = this.getCell(cellId)
       cell.textColor.value = color
     })
+  }
+
+  public getTextColor(id?: string | CellId) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : this.selection.value.getAllCellIds()
+
+    const cell = this.getCell(cellIds[0])
+    return cell.textColor.value
   }
 
   public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], id?: string | CellId) {

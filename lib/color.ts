@@ -62,6 +62,14 @@ export class Color {
     const newL = this.lightness > 50 ? 100 - this.lightness : 100 - this.lightness
     return new Color(this.hue, this.saturation, newL, this.alpha)
   }
+
+  isDark(): boolean {
+    return this.lightness < 50
+  }
+
+  equals(other: Color): boolean {
+    return this.hue === other.hue && this.saturation === other.saturation && this.lightness === other.lightness && this.alpha === other.alpha
+  }
 }
 
 export const colorPalette = [

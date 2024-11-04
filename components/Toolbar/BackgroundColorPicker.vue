@@ -6,18 +6,9 @@ const { grid } = useGrid()
 
 <template>
   <ColorPicker
-    title="Background color"
+    :model-value="grid.getBackgroundColor()"
     :color-palette="colorPalette"
-    @color="grid.setBackgroundColor($event)"
-  >
-    <Button
-      variant="outline"
-      size="icon"
-    >
-      <Icon
-        class="h-6 w-6"
-        name="mdi-format-color-fill"
-      />
-    </Button>
-  </ColorPicker>
+    icon="mdi-format-color-fill"
+    @update:model-value="grid.setBackgroundColor($event)"
+  />
 </template>

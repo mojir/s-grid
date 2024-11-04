@@ -5,6 +5,7 @@ const colorMode = useColorMode()
 
 const props = defineProps<{
   color: Color
+  selected: boolean
 }>()
 
 const emit = defineEmits<{
@@ -22,7 +23,14 @@ const displayColor = computed(() => colorMode.value !== 'dark'
 <template>
   <div
     :style="{ backgroundColor: displayColor.getStyleString() }"
-    class="w-5 h-5 rounded-full"
+    class="flex w-5 h-5 rounded-full justify-center items-center cursor-pointer"
     @click="emit('color', color)"
-  />
+  >
+    <Icon
+      v-if="selected"
+      name="mdi:check"
+      class="w-4 h-4 text-black"
+      :class="{ 'text-white': color.isDark() }"
+    />
+  </div>
 </template>
