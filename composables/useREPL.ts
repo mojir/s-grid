@@ -2,12 +2,14 @@ import {
   isLitsError,
   isLitsFunction,
   Lits,
-  type Context,
   normalExpressionKeys,
   specialExpressionKeys,
+  apiReference,
+  type Context,
+  type ApiName,
+  isFunctionReference,
 } from '@mojir/lits'
 
-// import { apiReference, isFunctionReference } from '@mojir/lits/reference'
 // import type { ApiName } from '@mojir/lits/reference/api'
 
 const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
@@ -67,12 +69,12 @@ registerCommand({
       return `${command.name}
   ${command.description}`
     }
-    // const reference = apiReference[topic as ApiName]
-    // if (reference) {
-    //   if (isFunctionReference(reference)) {
-    //     return 'Builtin Lits function'
-    //   }
-    // }
+    const reference = apiReference[topic as ApiName]
+    if (reference) {
+      if (isFunctionReference(reference)) {
+        return 'Builtin Lits function'
+      }
+    }
     return `Unknown command or function ${topic}`
   },
 })

@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   colorMode: {
     classSuffix: '',
     preference: 'system',
-    fallback: 'dark',
+    fallback: 'light',
   },
   compatibilityDate: '2024-04-03',
   hub: {
