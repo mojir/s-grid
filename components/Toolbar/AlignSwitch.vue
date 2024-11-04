@@ -3,47 +3,61 @@ import type { StyleAlign } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.position.value)
+const selection = computed(() => grid.value.selection.value)
 
-const align = ref<StyleAlign | null>(null)
+const align = ref<StyleAlign>()
 
-watch(cellId, (newCellId) => {
-  const cell = grid.value.getCell(newCellId)
-  align.value = cell.style.value.align
-})
+watch(selection, (newSelection) => {
+  align.value = grid.value.getStyle('align', newSelection)
+}, { immediate: true })
 
 function onUpdateTop(value: boolean) {
-  align.value = value ? 'top' : null
+  align.value = value ? 'top' : undefined
   grid.value.setStyle('align', align.value)
 }
 
-function onUpdateCenter(value: boolean) {
-  align.value = value ? 'middle' : null
+function onUpdateMiddle(value: boolean) {
+  align.value = value ? 'middle' : undefined
   grid.value.setStyle('align', align.value)
 }
 
 function onUpdateBottom(value: boolean) {
-  align.value = value ? 'bottom' : null
+  align.value = value ? 'bottom' : undefined
   grid.value.setStyle('align', align.value)
 }
 </script>
 
 <template>
   <div class="flex gap-1">
-    <ToggleButton
-      :model-value="align === 'top'"
-      icon-name="mdi:format-vertical-align-top"
-      @update:model-value="onUpdateTop"
-    />
-    <ToggleButton
-      :model-value="align === 'middle'"
-      icon-name="mdi:format-vertical-align-center"
-      @update:model-value="onUpdateCenter"
-    />
-    <ToggleButton
-      :model-value="align === 'bottom'"
-      icon-name="mdi:format-vertical-align-bottom"
-      @update:model-value="onUpdateBottom"
-    />
+    <Toggle
+      variant="outline"
+      :pressed="align === 'top'"
+      @update:pressed="onUpdateTop"
+    >
+      <Icon
+        name="mdi:format-vertical-align-top"
+        class="w-5 h-5"
+      />
+    </Toggle>
+    <Toggle
+      variant="outline"
+      :pressed="align === 'middle'"
+      @update:pressed="onUpdateMiddle"
+    >
+      <Icon
+        name="mdi:format-vertical-align-center"
+        class="w-5 h-5"
+      />
+    </Toggle>
+    <Toggle
+      variant="outline"
+      :pressed="align === 'bottom'"
+      @update:pressed="onUpdateBottom"
+    >
+      <Icon
+        name="mdi:format-vertical-align-bottom"
+        class="w-5 h-5"
+      />
+    </Toggle>
   </div>
 </template>

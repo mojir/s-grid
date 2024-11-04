@@ -26,12 +26,12 @@ export const defaultLineHeight = getLineHeight(defaultFontSize)
 
 export type CellStyleName = keyof Omit<CellStyle, 'getJson'>
 export class CellStyle {
-  public fontSize: StyleFontSize = defaultFontSize
-  public bold = false
-  public italic = false
-  public textDecoration: StyleTextDecoration | null = null
-  public justify: StyleJustify | null = null
-  public align: StyleAlign | null = null
+  public fontSize: StyleFontSize | undefined = defaultFontSize
+  public bold: boolean | undefined = undefined
+  public italic: boolean | undefined = undefined
+  public textDecoration: StyleTextDecoration | undefined = undefined
+  public justify: StyleJustify | undefined = undefined
+  public align: StyleAlign | undefined = undefined
 
   public getJson() {
     return {
@@ -45,7 +45,10 @@ export class CellStyle {
   }
 }
 
-export function getLineHeight(fontSize: StyleFontSize): number {
+export function getLineHeight(fontSize?: StyleFontSize): number {
+  if (fontSize === undefined) {
+    return defaultLineHeight
+  }
   if (fontSize <= 10) {
     return fontSize * 1.2
   }

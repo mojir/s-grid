@@ -40,7 +40,7 @@ function onMouseDown(event: Event) {
   if (CellId.isCellIdString(id)) {
     mouseDownStart.value = id
     if (editingLitsCode.value) {
-      grid.value.selectCell(id)
+      grid.value.select(id)
     }
     else {
       grid.value.resetSelection()
@@ -75,7 +75,7 @@ function onMouseMove(event: Event) {
 
   if (mouseDownStart.value) {
     if (CellId.isCellIdString(mouseDownStart.value) && CellId.isCellIdString(target?.id)) {
-      grid.value.selectRange(`${mouseDownStart.value}-${target.id}`)
+      grid.value.select(`${mouseDownStart.value}-${target.id}`)
     }
     else if (Col.isColString(mouseDownStart.value) && Col.isColString(target?.id)) {
       const fromCol = grid.value.getCol(mouseDownStart.value)
@@ -141,7 +141,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Backspace') {
     if (!editorFocused.value) {
-      grid.value.clearRange(grid.value.selection.value)
+      grid.value.clear(grid.value.selection.value)
       formulaBarRef.value.update('')
     }
   }

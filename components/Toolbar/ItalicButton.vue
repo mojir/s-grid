@@ -1,24 +1,29 @@
 <script setup lang="ts">
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.position.value)
+const selection = computed(() => grid.value.selection.value)
 
-const italic = ref(false)
+const italic = ref<boolean>()
 
-watch(cellId, (newCellId) => {
-  italic.value = grid.value.getCell(newCellId).style.value.italic
-})
+watch(selection, (newSelection) => {
+  italic.value = grid.value.getStyle('italic', newSelection) ?? undefined
+}, { immediate: true })
 
-function onUpdateBold(value: boolean) {
+function onUpdateItalic(value: boolean) {
   grid.value.setStyle('italic', value)
   italic.value = value
 }
 </script>
 
 <template>
-  <ToggleButton
-    :model-value="italic"
-    icon-name="mdi:format-italic"
-    @update:model-value="onUpdateBold"
-  />
+  <Toggle
+    variant="outline"
+    :pressed="italic"
+    @update:pressed="onUpdateItalic"
+  >
+    <Icon
+      name="mdi:format-italic"
+      class="w-5 h-5"
+    />
+  </Toggle>
 </template>

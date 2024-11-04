@@ -105,7 +105,7 @@ defineExpose({
 
 <template>
   <div
-    class="overflow-hiddent flex dark:bg-slate-900 bg-gray-100 border-t dark:border-slate-800 border-gray-300 items-center"
+    class="overflow-hiddent flex dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center"
     :style="hs(32)"
   >
     <div

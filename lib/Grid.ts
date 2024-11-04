@@ -1,12 +1,15 @@
 import { Cell } from './Cell'
 import { CellId } from './CellId'
 import { CellRange } from './CellRange'
-import { defaultLineHeight, getLineHeight, type CellStyle, type CellStyleName } from './CellStyle'
+import { CellStyle, defaultLineHeight, getLineHeight, type CellStyleName } from './CellStyle'
 import { Col } from './Col'
 import type { Color } from './color'
 import { Row } from './Row'
 
 const minRowHeight = 16
+
+export type CellOrRangeTarget = string | CellId | CellRange
+export type CellTarget = string | CellId
 
 export class Grid {
   public readonly rows: Row[]
@@ -36,29 +39,39 @@ export class Grid {
     return this._range
   }
 
-  public setAlias(alias: string, id?: string | CellId) {
+  public setInput(input: string, target?: CellOrRangeTarget) {
+    this.getCells(target).forEach((cell) => {
+      cell.input.value = input
+    })
+  }
+
+  public setAlias(alias: string, target?: CellTarget) {
     if (this.cellAliases.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
-    const cell = id ? this.getCell(id) : this.getCurrentCell()
+    const cell = target ? this.getCell(target) : this.getCurrentCell()
     cell.alias.value = alias
     this.cellAliases.set(alias, cell)
   }
 
-  private getCellId(id: string | CellId): CellId {
-    if (CellId.isCellId(id)) {
-      return id
+  private getCellId(target?: CellTarget): CellId {
+    if (target === undefined) {
+      return this.selection.value.start
     }
-    const cell = this.cellAliases.get(id)
-    return cell ? cell.cellId : CellId.fromId(id)
+
+    if (CellId.isCellId(target)) {
+      return target
+    }
+    const cell = this.cellAliases.get(target)
+    return cell ? cell.cellId : CellId.fromId(target)
   }
 
   public getCurrentCell(): Cell {
     return this.getCell(this.position.value)
   }
 
-  public getCell(id: string | CellId): Cell {
-    const cellId = this.getCellId(id)
+  public getCell(target?: CellTarget): Cell {
+    const cellId = this.getCellId(target)
     const cell = this.cells[cellId.rowIndex][cellId.colIndex]
     if (!cell) {
       throw new Error(`Cell ${cellId.id} is out of range`)
@@ -67,14 +80,24 @@ export class Grid {
     return cell
   }
 
-  public getCells() {
-    return this.cells
-      .flatMap(row => row.flatMap(cell => cell))
-      .filter(cell => cell !== null)
-      .reduce((acc, cell) => {
-        acc[cell.cellId.id] = cell.getJson()
-        return acc
-      }, {} as Record<string, Record<string, unknown>>)
+  public getCells(target?: CellOrRangeTarget): Cell[] {
+    if (!target) {
+      return this.selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
+    }
+    else if (CellRange.isCellRange(target)) {
+      return target.getAllCellIds().map(cellId => this.getCell(cellId))
+    }
+    else if (CellRange.isCellRangeString(target)) {
+      return CellRange.fromId(target).getAllCellIds().map(cellId => this.getCell(cellId))
+    }
+    else if (CellId.isCellId(target)) {
+      return [this.getCell(target)]
+    }
+    else if (CellId.isCellIdString(target)) {
+      return [this.getCell(target)]
+    }
+
+    throw new Error(`Invalid target: ${JSON.stringify(target)}`)
   }
 
   public getRow(id: string): Row | undefined {
@@ -85,35 +108,17 @@ export class Grid {
     return this.cols[Col.getColIndexFromId(id)]
   }
 
-  public clearCell(id: string | CellId) {
-    // TODO, set cell would be nice, but it's not that easy.
-    // We need a reference counter to know when to delete the cell.
-    const cell = this.getCell(id)
-    if (cell) {
+  public clear(target?: CellOrRangeTarget) {
+    this.getCells(target).forEach((cell) => {
       cell.input.value = ''
-    }
-  }
-
-  public clearRange(id: string | CellRange) {
-    const cellRange = CellRange.isCellRange(id)
-      ? id
-      : CellRange.isCellRangeString(id)
-        ? CellRange.fromId(id)
-        : null
-
-    const cellIds: CellId[] = cellRange?.getAllCellIds() ?? []
-    cellIds.forEach(cell => this.clearCell(cell))
+      cell.backgroundColor.value = null
+      cell.textColor.value = null
+      cell.style.value = new CellStyle()
+    })
   }
 
   public clearAllCells() {
-    const rows = this.cells.length
-    const cols = this.cells[0].length
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        this.clearCell(CellId.fromCoords(row, col))
-      }
-    }
-    this.trigger()
+    this.clear(this.range)
   }
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: Set<{ symbol: string }>) {
@@ -163,43 +168,32 @@ export class Grid {
     this.unsortedSelection.value = CellRange.fromCellIds(start, end)
   }
 
-  public movePositionTo(id: string | CellId) {
-    const cellId = this.getCellId(id)
-
+  public movePositionTo(target: CellTarget) {
+    const cellId = this.getCellId(target)
     this.position.value = cellId.clamp(this.range)
+
     if (!this.selection.value.contains(this.position.value)) {
       this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
     }
   }
 
-  public selectRange(id: string | CellRange) {
-    const range = CellRange.isCellRange(id)
-      ? id
-      : CellRange.isCellRangeString(id)
-        ? CellRange.fromId(id).clamp(this.range)
-        : null
+  public select(target?: CellOrRangeTarget) {
+    const range = CellRange.isCellRange(target)
+      ? target
+      : CellRange.isCellRangeString(target)
+        ? CellRange.fromId(target).clamp(this.range)
+        : CellId.isCellId(target)
+          ? CellRange.fromSingleCellId(target).clamp(this.range)
+          : CellId.isCellIdString(target)
+            ? CellRange.fromSingleCellId(CellId.fromId(target)).clamp(this.range)
+            : null
 
     if (!range) {
-      console.error(`Invalid range: ${id}`)
+      console.error(`Unable to select, invalid target: ${target}`)
       return
     }
 
     this.unsortedSelection.value = range
-  }
-
-  public selectCell(id: string | CellId) {
-    const cellId = CellId.isCellId(id)
-      ? id
-      : CellId.isCellIdString(id)
-        ? CellId.fromId(id).clamp(this.range)
-        : null
-
-    if (!cellId) {
-      console.error(`Invalid cell id: ${id}`)
-      return
-    }
-
-    this.unsortedSelection.value = CellRange.fromSingleCellId(cellId)
   }
 
   public selectAll() {
@@ -224,7 +218,7 @@ export class Grid {
     this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
   }
 
-  public isInsideSelection(id: string | CellId): boolean {
+  public isInsideSelection(id: CellTarget): boolean {
     const cellId = this.getCellId(id)
     return this.unsortedSelection.value.contains(cellId)
   }
@@ -260,62 +254,65 @@ export class Grid {
     }
   }
 
-  public setBackgroundColor(color: Color | null, id?: string | CellId) {
-    const cellIds = id
-      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.value.getAllCellIds()
+  public setBackgroundColor(color: Color | null, target?: CellOrRangeTarget): void {
+    const cells = this.getCells(target)
 
-    cellIds.forEach((cellId) => {
-      const cell = this.getCell(cellId)
+    cells.forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
 
-  public getBackgroundColor(id?: string | CellId) {
-    const cellIds = id
-      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.value.getAllCellIds()
+  public getBackgroundColor(target?: CellOrRangeTarget): Color | null {
+    const cells = this.getCells(target)
+    const color = cells[0]?.backgroundColor.value ?? null
 
-    const cell = this.getCell(cellIds[0])
-    return cell.backgroundColor.value
+    return cells.slice(1).every(cell => cell.backgroundColor.value === color) ? color : null
   }
 
-  public setTextColor(color: Color | null, id?: string | CellId) {
-    const cellIds = id
-      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.value.getAllCellIds()
+  public setTextColor(color: Color | null, target?: CellOrRangeTarget): void {
+    const cells = this.getCells(target)
 
-    cellIds.forEach((cellId) => {
-      const cell = this.getCell(cellId)
+    console.log('cells', cells)
+    cells.forEach((cell) => {
       cell.textColor.value = color
     })
   }
 
-  public getTextColor(id?: string | CellId) {
-    const cellIds = id
-      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.value.getAllCellIds()
+  public getTextColor(target?: CellOrRangeTarget): Color | null {
+    const cells = this.getCells(target)
+    const color = cells[0]?.textColor.value ?? null
 
-    const cell = this.getCell(cellIds[0])
-    return cell.textColor.value
+    return cells.slice(1).every(cell => cell.textColor.value === color) ? color : null
   }
 
-  public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], id?: string | CellId) {
-    if (!id) {
-      this.selection.value.getAllCellIds().forEach((cellId) => {
-        const cell = this.getCell(cellId)
-        cell.style.value[property] = value
-      })
-    }
-    else {
-      const cell = this.getCell(id)
+  public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], target?: CellOrRangeTarget): void {
+    const cells = this.getCells(target)
+
+    cells.forEach((cell) => {
       cell.style.value[property] = value
-    }
+    })
   }
 
-  public setFormatter(formatter: string, id?: string | CellId) {
-    const cell = id ? this.getCell(id) : this.getCurrentCell()
-    cell.formatter.value = formatter
+  public getStyle<T extends CellStyleName>(property: T, target?: CellOrRangeTarget): CellStyle[T] {
+    const cells = this.getCells(target)
+    const styleValue = cells[0]?.style.value[property]
+
+    return cells.slice(1).every(cell => cell.style.value[property] === styleValue) ? styleValue : undefined
+  }
+
+  public setFormatter(formatter: string | null, target?: CellOrRangeTarget): void {
+    const cells = this.getCells(target)
+
+    cells.forEach((cell) => {
+      cell.formatter.value = formatter
+    })
+  }
+
+  public getFormatter(target?: CellOrRangeTarget): string | null {
+    const cells = this.getCells(target)
+    const formatter = cells[0]?.formatter.value ?? null
+
+    return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
   }
 
   public autoSetRowHeight(id?: CellId | string) {

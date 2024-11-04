@@ -3,36 +3,47 @@ import type { StyleTextDecoration } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.position.value)
+const selection = computed(() => grid.value.selection.value)
 
-const textDecoration = ref<StyleTextDecoration | null>(null)
+const textDecoration = ref<StyleTextDecoration>()
 
-watch(cellId, (newCellId) => {
-  textDecoration.value = grid.value.getCell(newCellId).style.value.textDecoration
-})
+watch(selection, (newSelection) => {
+  textDecoration.value = grid.value.getStyle('textDecoration', newSelection)
+}, { immediate: true })
 
 function onUpdateUnderline(value: boolean) {
-  textDecoration.value = value ? 'underline' : null
+  textDecoration.value = value ? 'underline' : undefined
   grid.value.setStyle('textDecoration', textDecoration.value)
 }
 
 function onUpdateLineThrough(value: boolean) {
-  textDecoration.value = value ? 'line-through' : null
+  textDecoration.value = value ? 'line-through' : undefined
   grid.value.setStyle('textDecoration', textDecoration.value)
 }
 </script>
 
 <template>
   <div class="flex gap-1">
-    <ToggleButton
-      :model-value="textDecoration === 'underline'"
-      icon-name="mdi:format-underline"
-      @update:model-value="onUpdateUnderline"
-    />
-    <ToggleButton
-      :model-value="textDecoration === 'line-through'"
-      icon-name="mdi:format-strikethrough-variant"
-      @update:model-value="onUpdateLineThrough"
-    />
+    <Toggle
+      variant="outline"
+      :pressed="textDecoration === 'underline'"
+      @update:pressed="onUpdateUnderline"
+    >
+      <Icon
+        name="mdi:format-underline"
+        class="w-5 h-5"
+      />
+    </Toggle>
+
+    <Toggle
+      variant="outline"
+      :pressed="textDecoration === 'line-through'"
+      @update:pressed="onUpdateLineThrough"
+    >
+      <Icon
+        name="mdi:format-strikethrough-variant"
+        class="w-5 h-5"
+      />
+    </Toggle>
   </div>
 </template>

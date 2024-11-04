@@ -3,46 +3,61 @@ import type { StyleJustify } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.position.value)
+const selection = computed(() => grid.value.selection.value)
 
-const justify = ref<StyleJustify | null>(null)
+const justify = ref<StyleJustify>()
 
-watch(cellId, (newCellId) => {
-  justify.value = grid.value.getCell(newCellId).style.value.justify
-})
+watch(selection, (newSelection) => {
+  justify.value = grid.value.getStyle('justify', newSelection)
+}, { immediate: true })
 
 function onUpdateLeft(value: boolean) {
-  justify.value = value ? 'left' : null
+  justify.value = value ? 'left' : undefined
   grid.value.setStyle('justify', justify.value)
 }
 
 function onUpdateCenter(value: boolean) {
-  justify.value = value ? 'center' : null
+  justify.value = value ? 'center' : undefined
   grid.value.setStyle('justify', justify.value)
 }
 
 function onUpdateRight(value: boolean) {
-  justify.value = value ? 'right' : null
+  justify.value = value ? 'right' : undefined
   grid.value.setStyle('justify', justify.value)
 }
 </script>
 
 <template>
   <div class="flex gap-1">
-    <ToggleButton
-      :model-value="justify === 'left'"
-      icon-name="mdi:format-align-left"
-      @update:model-value="onUpdateLeft"
-    />
-    <ToggleButton
-      :model-value="justify === 'center'"
-      icon-name="mdi:format-align-center"
-      @update:model-value="onUpdateCenter"
-    />
-    <ToggleButton
-      :model-value="justify === 'right'"
-      icon-name="mdi:format-align-right"
-      @update:model-value="onUpdateRight"
-    />
+    <Toggle
+      variant="outline"
+      :pressed="justify === 'left'"
+      @update:pressed="onUpdateLeft"
+    >
+      <Icon
+        name="mdi:format-align-left"
+        class="w-5 h-5"
+      />
+    </Toggle>
+    <Toggle
+      variant="outline"
+      :pressed="justify === 'center'"
+      @update:pressed="onUpdateCenter"
+    >
+      <Icon
+        name="mdi:format-align-center"
+        class="w-5 h-5"
+      />
+    </Toggle>
+    <Toggle
+      variant="outline"
+      :pressed="justify === 'right'"
+      @update:pressed="onUpdateRight"
+    >
+      <Icon
+        name="mdi:format-align-right"
+        class="w-5 h-5"
+      />
+    </Toggle>
   </div>
 </template>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 const { grid } = useGrid()
 
-const cellId = computed(() => grid.value.position.value)
+const selection = computed(() => grid.value.selection.value)
 
-const bold = ref(false)
+const bold = ref<boolean>()
 
-watch(cellId, (newCellId) => {
-  bold.value = grid.value.getCell(newCellId).style.value.bold
-})
+watch(selection, (newSelection) => {
+  bold.value = grid.value.getStyle('bold', newSelection)
+}, { immediate: true })
 
 function onUpdateBold(value: boolean) {
   grid.value.setStyle('bold', value)
@@ -16,9 +16,14 @@ function onUpdateBold(value: boolean) {
 </script>
 
 <template>
-  <ToggleButton
-    :model-value="bold"
-    icon-name="mdi:format-bold"
-    @update:model-value="onUpdateBold"
-  />
+  <Toggle
+    variant="outline"
+    :pressed="bold"
+    @update:pressed="onUpdateBold"
+  >
+    <Icon
+      name="mdi:format-bold"
+      class="w-5 h-5"
+    />
+  </Toggle>
 </template>

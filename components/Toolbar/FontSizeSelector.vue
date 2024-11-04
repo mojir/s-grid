@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { defaultFontSize, styleFontSizes, type StyleFontSize } from '~/lib/CellStyle'
+import { styleFontSizes, type StyleFontSize } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
+const fontSize = ref<string | undefined>()
+const selection = computed(() => grid.value.selection.value)
 
-const cellId = computed(() => grid.value.position.value)
+watch(selection, (newSelection) => {
+  const selectedFontSize = grid.value.getStyle('fontSize', newSelection)
+  fontSize.value = selectedFontSize ? String(selectedFontSize) : undefined
+}, { immediate: true })
 
-const fontSize = ref<StyleFontSize>(defaultFontSize)
-
-watch(cellId, (newCellId) => {
-  fontSize.value = grid.value.getCell(newCellId).style.value.fontSize
-})
-
-function onUpdateFontSize(event: Event) {
-  const value = Number((event.target as HTMLSelectElement).value) as StyleFontSize
-  grid.value.setStyle('fontSize', value)
+function onUpdateFontSize(value: string) {
+  if (!value) {
+    return
+  }
+  const numberValue = Number(value)
+  fontSize.value = value
+  grid.value.setStyle('fontSize', numberValue as StyleFontSize)
   grid.value.autoSetRowHeight()
 }
 </script>
@@ -22,18 +25,25 @@ function onUpdateFontSize(event: Event) {
   <div
     class="px-1 h-7  bg-transparent rounded-sm cursor-pointer text-sm"
   >
-    <select
-      v-model="fontSize"
-      class="h-7 bg-transparent border-none focus:outline-none dark:text-gray-300 text-gray-700 rounded-sm cursor-pointer text-sm"
-      @change="onUpdateFontSize"
+    <Select
+      :model-value="fontSize"
+      @update:model-value="onUpdateFontSize"
     >
-      <option
-        v-for="size in styleFontSizes"
-        :key="size"
-        :value="size"
-      >
-        {{ size }}
-      </option>
-    </select>
+      <SelectTrigger class="w-20">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Font size</SelectLabel>
+          <SelectItem
+            v-for="size of styleFontSizes"
+            :key="size"
+            :value="String(size)"
+          >
+            {{ size }}px
+          </SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   </div>
 </template>

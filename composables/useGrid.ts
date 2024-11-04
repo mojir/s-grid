@@ -38,65 +38,57 @@ const { grid } = useGrid()
 
 registerCommand({
   name: 'MovePosition!',
-  execute: (dir: Direction) => {
-    grid.value.movePosition(dir)
+  execute: (direction: Direction) => {
+    grid.value.movePosition(direction)
   },
-  description: 'Move the position in a direction',
+  description: 'Move the position one step in a specific direction.',
 })
 registerCommand({
   name: 'MovePositionTo!',
-  execute: (cellId: string) => {
-    grid.value.movePositionTo(cellId)
+  execute: (cell: string) => {
+    grid.value.movePositionTo(cell)
   },
   description: 'Move the position to a specific cell',
 })
 registerCommand({
   name: 'GetSelection',
   execute: () => grid.value.selection.value.getJson(),
-  description: 'Get selection range',
+  description: 'Get the current selection.',
 })
 registerCommand({
-  name: 'SetSelection!',
-  execute: (range: string) => {
-    grid.value.selectRange(range)
+  name: 'Select!',
+  execute: (target: string) => {
+    grid.value.select(target)
   },
-  description: 'Set selection to a range',
+  description: 'Select a cell or a range',
 })
 registerCommand({
   name: 'ResetSelection!',
   execute: () => {
     grid.value.resetSelection()
   },
-  description: 'Reset selection',
+  description: 'Reset selection.',
 })
 registerCommand({
   name: 'ExpandSelection!',
-  execute: (dir: Direction) => {
-    grid.value.expandSelection(dir)
+  execute: (direction: Direction) => {
+    grid.value.expandSelection(direction)
   },
-  description: 'Expand the selection in a direction',
+  description: 'Expand the selection one step in a specific direction',
 })
 registerCommand({
   name: 'SetInput!',
-  execute: (input: string, id?: string) => {
-    const cell = id ? grid.value.getCell(id) : grid.value.getCurrentCell()
-    cell.input.value = input
+  execute: (input: string, target?: string) => {
+    grid.value.setInput(input, target)
   },
-  description: 'Set the input of a cell',
+  description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
 })
 registerCommand({
-  name: 'ClearCell!',
-  execute: (id: string) => {
-    grid.value.clearCell(id)
+  name: 'Clear!',
+  execute: (target?: string) => {
+    grid.value.clear(target)
   },
-  description: 'Clear a cell',
-})
-registerCommand({
-  name: 'ClearRange!',
-  execute: (id: string) => {
-    grid.value.clearRange(id)
-  },
-  description: 'Clear a range of cells',
+  description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
 })
 registerCommand({
   name: 'ClearAllCells!',
@@ -106,18 +98,18 @@ registerCommand({
   description: 'Clear all cells',
 })
 registerCommand({
-  name: 'GetCurrentCell',
-  execute: () => {
-    return grid.value.getCurrentCell().getJson()
-  },
-  description: 'Get the current cell',
-})
-registerCommand({
   name: 'GetCell',
   execute: (cellId: string) => {
     return grid.value.getCell(cellId).getJson()
   },
-  description: 'Get a cell by id',
+  description: 'Get a cell. If no target is specified, get the active cell.',
+})
+registerCommand({
+  name: 'GetCells',
+  execute: (cellId: string) => {
+    return grid.value.getCells(cellId).map(cell => cell.getJson())
+  },
+  description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
 })
 registerCommand({
   name: 'SetAlias!',
@@ -137,38 +129,33 @@ registerCommand({
       throw new Error(`Invalid cell style property: ${property}`)
     }
   },
-  description: 'Set the style of a cell',
+  description: 'Set the style of a cell or a range of cells. If no target is specified, set the style of all cells in the current selection.',
 })
 
 registerCommand({
   name: 'SetBackgroundColor!',
-  execute: (hexCode: string, cellId?: string) => {
+  execute: (hexCode: string, target?: string) => {
     const color = Color.fromHex(hexCode)
-    grid.value.setBackgroundColor(color, cellId)
+    grid.value.setBackgroundColor(color, target)
   },
-  description: 'Set the background color of a cell',
+  description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
 })
 
 registerCommand({
   name: 'SetTextColor!',
-  execute: (hexCode: string, cellId?: string) => {
+  execute: (hexCode: string, target?: string) => {
     const color = Color.fromHex(hexCode)
-    grid.value.setTextColor(color, cellId)
+    grid.value.setTextColor(color, target)
   },
-  description: 'Set the text color of a cell',
+  description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
 })
 
 registerCommand({
   name: 'SetFormatter!',
-  execute: (formatter: string, cellId?: string) => {
-    if (typeof formatter === 'string') {
-      grid.value.setFormatter(formatter, cellId)
-    }
-    else {
-      throw new Error(`Invalid formatter: ${formatter}`)
-    }
+  execute: (formatter: string, target?: string) => {
+    grid.value.setFormatter(formatter, target)
   },
-  description: 'Set the formatter of a cell',
+  description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
 })
 
 function validCellStyle(property: CellStyleName, value: unknown): boolean {

@@ -3,11 +3,11 @@ const { exec } = useCommandCenter()
 
 function addSampleData() {
   exec('ClearAllCells!')
-  exec('SetStyle!', 'fontSize', 18, 'A1')
-  exec('SetStyle!', 'fontSize', 18, 'B1')
+
+  exec('SetStyle!', 'fontSize', 18, 'A1-Z1')
+  exec('SetStyle!', 'bold', true, 'A1-Z1')
 
   exec('SetInput!', 'Name', 'A1')
-  exec('SetStyle!', 'bold', true, 'A1')
   exec('SetInput!', 'Albert', 'A2')
   exec('SetInput!', 'Bob', 'A3')
   exec('SetInput!', 'Charlie', 'A4')
@@ -19,7 +19,6 @@ function addSampleData() {
   exec('SetInput!', 'Ivy', 'A10')
 
   exec('SetInput!', 'Age', 'B1')
-  exec('SetStyle!', 'bold', true, 'B1')
   exec('SetStyle!', 'justify', 'right', 'B1')
   exec('SetInput!', '25', 'B2')
   exec('SetInput!', '30', 'B3')
@@ -43,12 +42,15 @@ function addSampleData() {
   exec('SetStyle!', 'italic', true, 'B12')
   exec('SetFormatter!', '#(/ (round (* % 100)) 100)', 'B12')
 
-  exec('SetInput!', `=#(reduce + %)`, 'F1')
-  exec('SetAlias!', 'Sum', 'F1')
-  exec('SetBackgroundColor!', '#ff0000', 'F1')
-  exec('SetInput!', `=#(let [len (count %), list %] (/ (reduce + list) len))`, 'F2')
-  exec('SetAlias!', 'Avg', 'F2')
-  exec('SetBackgroundColor!', '#00ff00', 'F2')
+  exec('SetInput!', 'Functions', 'D1')
+  exec('SetInput!', `=#(reduce + %)`, 'D2')
+  exec('SetAlias!', 'Sum', 'D2')
+  exec('SetBackgroundColor!', '#770000', 'D2')
+  exec('SetTextColor!', '#ffffff', 'D2')
+  exec('SetInput!', `=#(let [len (count %), list %] (/ (reduce + list) len))`, 'D3')
+  exec('SetAlias!', 'Avg', 'D3')
+  exec('SetBackgroundColor!', '#007700', 'D3')
+  exec('SetTextColor!', '#ffffff', 'D3')
 }
 </script>
 

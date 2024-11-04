@@ -6,7 +6,7 @@ const { sidePanelOpen } = useSidePanel()
 
 <template>
   <div
-    class="flex flex-col pb-3 px-1 text-xl dark:bg-slate-800 bg-gray-200 dark:text-slate-300 text-gray-700 box-border"
+    class="flex flex-col pb-3 px-1 text-xl dark:bg-slate-800 bg-gray-100 dark:text-slate-300 text-gray-700 box-border"
   >
     <AppLogo
       class="w-[72px] h-[72px]"
