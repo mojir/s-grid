@@ -7,8 +7,8 @@ import {
   specialExpressionKeys,
 } from '@mojir/lits'
 
-import { apiReference, isFunctionReference } from '@mojir/lits/reference'
-import type { ApiName } from '@mojir/lits/reference/api'
+// import { apiReference, isFunctionReference } from '@mojir/lits/reference'
+// import type { ApiName } from '@mojir/lits/reference/api'
 
 const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
 
@@ -67,12 +67,12 @@ registerCommand({
       return `${command.name}
   ${command.description}`
     }
-    const reference = apiReference[topic as ApiName]
-    if (reference) {
-      if (isFunctionReference(reference)) {
-        return 'Builtin Lits function'
-      }
-    }
+    // const reference = apiReference[topic as ApiName]
+    // if (reference) {
+    //   if (isFunctionReference(reference)) {
+    //     return 'Builtin Lits function'
+    //   }
+    // }
     return `Unknown command or function ${topic}`
   },
 })
