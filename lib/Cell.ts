@@ -74,7 +74,7 @@ export class Cell {
     return input
   })
 
-  public displayValue = computed<string>(() => {
+  public display = computed<string>(() => {
     if (this.input.value === '') {
       return ''
     }
@@ -118,21 +118,21 @@ export class Cell {
 
   public getJson() {
     return {
-      'id': this.cellId.id,
-      'input': this.input.value,
-      'output': formatOutputValue(this.output.value),
-      'display-value': this.displayValue.value,
-      'alias': this.alias.value,
-      'formatter-program': this.formatter.value,
-      'row-index': this.cellId.rowIndex,
-      'col-index': this.cellId.colIndex,
-      'style': this.style.value.getJson(),
-      'references': this.referencedTargets.value.map(target => target.id),
+      id: this.cellId.id,
+      input: this.input.value,
+      output: formatOutputValue(this.output.value),
+      display: this.display.value,
+      alias: this.alias.value,
+      formatter: this.formatter.value,
+      row: this.cellId.rowIndex,
+      col: this.cellId.colIndex,
+      style: this.style.value.getJson(),
+      references: this.referencedTargets.value.map(target => target.id),
     }
   }
 
   constructor(private readonly grid: Grid, public cellId: CellId) {
-    watch(this.displayValue, (newValue, oldValue) => {
+    watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
         this.grid.autoSetRowHeight(this.cellId)
       }

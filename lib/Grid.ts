@@ -243,7 +243,7 @@ export class Grid {
 
     cellIds.forEach((cellId) => {
     // No need to auto set row height for cell, if cell is empty
-      if (!this.getCell(cellId)?.displayValue.value) {
+      if (!this.getCell(cellId)?.display.value) {
         return
       }
 
@@ -251,7 +251,7 @@ export class Grid {
       const cells = this.getRowCells(rowIndex)
 
       const maxLineHeight = cells.reduce((acc, cell) => {
-        if (!cell.displayValue.value) {
+        if (!cell.display.value) {
           return acc
         }
         const lineHeight = getLineHeight(cell.style.value.fontSize)

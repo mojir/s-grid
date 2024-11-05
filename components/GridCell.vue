@@ -42,7 +42,7 @@ const cellContent = computed(() => {
   if (isEditingCell.value) {
     return editorText
   }
-  return grid.value.getCell(cellId.value).displayValue
+  return grid.value.getCell(cellId.value).display
 })
 
 const cellBackgroundColor = computed<Color | null>(() => {
