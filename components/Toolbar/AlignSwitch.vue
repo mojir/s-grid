@@ -3,7 +3,7 @@ import type { StyleAlign } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const selection = computed(() => grid.value.selection.value)
+const { selection } = useSelection()
 
 const align = ref<StyleAlign>()
 

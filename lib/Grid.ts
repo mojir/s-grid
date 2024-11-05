@@ -1,10 +1,11 @@
+import type { ShallowRef } from 'vue'
 import { Cell } from './Cell'
 import { CellId } from './CellId'
 import { CellRange } from './CellRange'
-import { CellStyle, defaultLineHeight, getLineHeight, type CellStyleName } from './CellStyle'
-import { Col } from './Col'
+import { CellStyle, getLineHeight, type CellStyleName } from './CellStyle'
+import type { Col } from './Col'
 import type { Color } from './color'
-import { Row } from './Row'
+import type { Row } from './Row'
 
 const minRowHeight = 16
 
@@ -12,31 +13,20 @@ export type CellOrRangeTarget = string | CellId | CellRange
 export type CellTarget = string | CellId
 
 export class Grid {
-  public readonly rows: Row[]
-  public readonly cols: Col[]
   public readonly cells: Cell[][]
-  public readonly rowHeaderWidth = 50
-  public readonly colHeaderHeight = 25
-  public readonly cellAliases = new Map<string, Cell>()
   public readonly position: Ref<CellId>
-  public readonly unsortedSelection: Ref<CellRange>
-  public readonly selection: ComputedRef<CellRange>
-  private _range: CellRange
+  private readonly gridRange: ComputedRef<CellRange>
 
-  constructor(public readonly colorMode: Ref<Ref<string> | null>, rows: number, cols: number, private readonly trigger: () => void) {
-    this.position = ref<CellId>(CellId.fromCoords(0, 0))
-    this.unsortedSelection = ref<CellRange>(CellRange.fromSingleCellId(this.position.value))
-    this.selection = computed(() => this.unsortedSelection.value.toSorted())
-    this.rows = Array.from({ length: rows }, (_, rowIndex) => Row.create(rowIndex, defaultLineHeight))
-    this.cols = Array.from({ length: cols }, (_, colIndex) => Col.create(colIndex, 100))
-    this.cells = Array.from({ length: rows }, (_, rowIndex) =>
-      Array.from({ length: cols }, (_, colIndex) => new Cell(this, CellId.fromCoords(rowIndex, colIndex))),
+  constructor(
+    public readonly colorMode: Ref<Ref<string> | null>,
+    private readonly rows: Readonly<ShallowRef<Row[]>>,
+    private readonly cols: Readonly<ShallowRef<Col[]>>,
+  ) {
+    this.position = ref(CellId.fromCoords(0, 0))
+    this.cells = Array.from({ length: rows.value.length }, (_, rowIndex) =>
+      Array.from({ length: cols.value.length }, (_, colIndex) => new Cell(this, CellId.fromCoords(rowIndex, colIndex))),
     )
-    this._range = CellRange.fromCellIds(CellId.fromCoords(0, 0), CellId.fromCoords(rows - 1, cols - 1))
-  }
-
-  public get range() {
-    return this._range
+    this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rows.value.length - 1, cols.value.length - 1))
   }
 
   public setInput(input: string, target?: CellOrRangeTarget) {
@@ -45,24 +35,15 @@ export class Grid {
     })
   }
 
-  public setAlias(alias: string, target?: CellTarget) {
-    if (this.cellAliases.has(alias)) {
-      throw new Error(`Alias ${alias} already exists`)
-    }
-    const cell = target ? this.getCell(target) : this.getCurrentCell()
-    cell.alias.value = alias
-    this.cellAliases.set(alias, cell)
-  }
-
   private getCellId(target?: CellTarget): CellId {
     if (target === undefined) {
-      return this.selection.value.start
+      return useSelection().selection.value.start
     }
 
     if (CellId.isCellId(target)) {
       return target
     }
-    const cell = this.cellAliases.get(target)
+    const cell = useAlias().getAlias(target)
     return cell ? cell.cellId : CellId.fromId(target)
   }
 
@@ -82,7 +63,7 @@ export class Grid {
 
   public getCells(target?: CellOrRangeTarget): Cell[] {
     if (!target) {
-      return this.selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
+      return useSelection().selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
     }
     else if (CellRange.isCellRange(target)) {
       return target.getAllCellIds().map(cellId => this.getCell(cellId))
@@ -100,14 +81,6 @@ export class Grid {
     throw new Error(`Invalid target: ${JSON.stringify(target)}`)
   }
 
-  public getRow(id: string): Row | undefined {
-    return this.rows[Row.getRowIndexFromId(id)]
-  }
-
-  public getCol(id: string): Col | undefined {
-    return this.cols[Col.getColIndexFromId(id)]
-  }
-
   public clear(target?: CellOrRangeTarget) {
     this.getCells(target).forEach((cell) => {
       cell.input.value = ''
@@ -118,21 +91,21 @@ export class Grid {
   }
 
   public clearAllCells() {
-    this.clear(this.range)
+    this.clear(this.gridRange.value)
   }
 
-  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: Set<{ symbol: string }>) {
-    return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, id) => {
-      if (this.cellAliases.has(id.symbol)) {
-        const cell = this.cellAliases.get(id.symbol)!
-        acc[id.symbol] = cell.output.value
+  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
+    return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, target) => {
+      const aliasCell = useAlias().getAlias(target)
+      if (aliasCell) {
+        acc[target] = aliasCell.output.value
       }
-      else if (CellId.isCellIdString(id.symbol)) {
-        const cell = this.getCell(id.symbol)
-        acc[id.symbol] = cell.output.value
+      else if (CellId.isCellIdString(target)) {
+        const cell = this.getCell(target)
+        acc[target] = cell.output.value
       }
-      else if (CellRange.isCellRangeString(id.symbol)) {
-        const data = CellRange.fromId(id.symbol).getStructuredCellIds()
+      else if (CellRange.isCellRangeString(target)) {
+        const data = CellRange.fromId(target).getStructuredCellIds()
         if (data.matrix) {
           const matrixValues: unknown[][] = []
           for (const row of data.matrix) {
@@ -143,7 +116,7 @@ export class Grid {
               rowValues.push(cell.output.value)
             }
           }
-          acc[id.symbol] = matrixValues
+          acc[target] = matrixValues
         }
         else {
           const arrayValues: unknown[] = []
@@ -151,80 +124,28 @@ export class Grid {
             const cell = this.getCell(cellId)
             arrayValues.push(cell.output.value)
           }
-          acc[id.symbol] = arrayValues
+          acc[target] = arrayValues
         }
       }
       else {
-        console.error(`Unknown identifier ${id.symbol}`)
+        console.error(`Unknown identifier ${target}`)
       }
       return acc
     }, {})
   }
 
-  public expandSelection(dir: Direction) {
-    const start = this.unsortedSelection.value.start
-    const end = this.unsortedSelection.value.end.cellMove(dir, this.range, false)
-
-    this.unsortedSelection.value = CellRange.fromCellIds(start, end)
-  }
-
   public movePositionTo(target: CellTarget) {
     const cellId = this.getCellId(target)
-    this.position.value = cellId.clamp(this.range)
+    this.position.value = cellId.clamp(this.gridRange.value)
 
-    if (!this.selection.value.contains(this.position.value)) {
-      this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
+    if (!useSelection().selection.value.contains(this.position.value)) {
+      useSelection().updateSelection(CellRange.fromSingleCellId(this.position.value))
     }
-  }
-
-  public select(target?: CellOrRangeTarget) {
-    const range = CellRange.isCellRange(target)
-      ? target
-      : CellRange.isCellRangeString(target)
-        ? CellRange.fromId(target).clamp(this.range)
-        : CellId.isCellId(target)
-          ? CellRange.fromSingleCellId(target).clamp(this.range)
-          : CellId.isCellIdString(target)
-            ? CellRange.fromSingleCellId(CellId.fromId(target)).clamp(this.range)
-            : null
-
-    if (!range) {
-      console.error(`Unable to select, invalid target: ${target}`)
-      return
-    }
-
-    this.unsortedSelection.value = range
-  }
-
-  public selectAll() {
-    this.unsortedSelection.value = this.range
-  }
-
-  public selectColRange(fromCol: Col, toCol: Col) {
-    this.unsortedSelection.value
-      = CellRange.fromCellIds(
-        CellId.fromCoords(0, fromCol.index),
-        CellId.fromCoords(this.range.end.rowIndex, toCol.index))
-  }
-
-  public selectRowRange(fromRow: Row, toRow: Row) {
-    this.unsortedSelection.value
-      = CellRange.fromCellIds(
-        CellId.fromCoords(fromRow.index, 0),
-        CellId.fromCoords(toRow.index, this.range.end.colIndex))
-  }
-
-  public resetSelection() {
-    this.unsortedSelection.value = CellRange.fromSingleCellId(this.position.value)
-  }
-
-  public isInsideSelection(id: CellTarget): boolean {
-    const cellId = this.getCellId(id)
-    return this.unsortedSelection.value.contains(cellId)
   }
 
   public movePosition(dir: Direction, wrap = false) {
-    const range = wrap && this.selection.value.size() > 1 ? this.selection.value : this.range
+    const selection = useSelection().selection.value
+    const range = wrap && selection.size() > 1 ? selection : this.gridRange.value
 
     switch (dir) {
       case 'up':
@@ -318,7 +239,7 @@ export class Grid {
   public autoSetRowHeight(id?: CellId | string) {
     const cellIds = id
       ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.value.getAllCellIds()
+      : useSelection().selection.value.getAllCellIds()
 
     cellIds.forEach((cellId) => {
     // No need to auto set row height for cell, if cell is empty
@@ -337,13 +258,13 @@ export class Grid {
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
-      this.rows[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
+      this.rows.value[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
     })
   }
 
   public getRowCells(rowIndex: number): Cell[] {
     const startCellId = CellId.fromCoords(rowIndex, 0)
-    const endCellId = CellId.fromCoords(rowIndex, this.cols.length - 1)
+    const endCellId = CellId.fromCoords(rowIndex, this.cols.value.length - 1)
     const range = CellRange.fromCellIds(startCellId, endCellId)
     return range
       .getAllCellIds()

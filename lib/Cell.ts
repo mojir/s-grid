@@ -1,8 +1,9 @@
 import { isLitsFunction, Lits } from '@mojir/lits'
-import type { CellId } from './CellId'
+import { CellId } from './CellId'
 import type { Grid } from './Grid'
 import { CellStyle } from './CellStyle'
 import type { Color } from './color'
+import { CellRange } from './CellRange'
 
 const lits = new Lits()
 
@@ -14,34 +15,37 @@ export class Cell {
   public formatter = ref<string | null>(null)
   public style = ref(new CellStyle())
   public backgroundColor = ref<Color | null>(null)
-  // public backgroundColorStyle = computed<string | null>(() => {
-  //   const color = this.rawBackgroundColor.value
-
-  //   if (color === null) {
-  //     return null
-  //   }
-
-  //   const lightness = color.lightness
-  //   const actualLightness = this.grid.colorMode.value?.value === color.colorMode
-  //     ? lightness
-  //     : lightness > 50 ? 100 - lightness : 100 - lightness
-  //   return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
-  // })
 
   public textColor = ref<Color | null>(null)
-  // public textColorStyle = computed<string | null>(() => {
-  //   const color = this.textColor.value
 
-  //   if (color === null) {
-  //     return null
-  //   }
+  private unresolvedIdentifiers = computed<string[]>(() => {
+    const input = this.input.value
 
-  //   const lightness = color.lightness
-  //   const actualLightness = this.grid.colorMode.value?.value === color.colorMode
-  //     ? lightness
-  //     : lightness > 50 ? 100 - lightness : 100 - lightness
-  //   return `hsla(${color.hue}, ${color.saturation}%, ${actualLightness}%, ${color.alpha})`
-  // })
+    if (input.startsWith('=')) {
+      const program = input.slice(1)
+      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
+      return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
+    }
+
+    return []
+  })
+
+  public referencedTargets = computed(() => {
+    const alias = useAlias()
+    return this.unresolvedIdentifiers.value.flatMap((identifier) => {
+      if (CellId.isCellIdString(identifier)) {
+        return CellId.fromId(identifier)
+      }
+      if (CellRange.isCellRangeString (identifier)) {
+        return CellRange.fromId(identifier)
+      }
+      const aliasCell = alias.getAlias(identifier)
+      if (aliasCell) {
+        return aliasCell.cellId
+      }
+      return []
+    })
+  })
 
   public output = computed(() => {
     const input = this.input.value
@@ -54,8 +58,7 @@ export class Cell {
       const program = input.slice(1)
 
       try {
-        const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
-        const values = this.grid.getValuesFromUndefinedIdentifiers(unresolvedIdentifiers)
+        const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
         const result = lits.run(program, { values, jsFunctions })
         return result
       }

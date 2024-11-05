@@ -6,6 +6,7 @@ import { getLineHeight } from '~/lib/CellStyle'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
+import { CellRange } from '~/lib/CellRange'
 
 const props = defineProps<{
   row: Row
@@ -22,16 +23,19 @@ const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
+const { selection } = useSelection()
 
 const { row, col } = toRefs(props)
 
 const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index))
 const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
-const isInsideSelection = computed(
-  () =>
-    grid.value.selection.value.size() > 1 && grid.value.selection.value.contains(cellId.value),
-)
+const insideSelection = computed(() => selection.value.size() > 1 && selection.value.contains(cellId.value))
+const isReferenced = computed(() => {
+  const targets = grid.value.getCell(grid.value.position.value).referencedTargets.value
+  const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
+  return ranges.some(range => range.contains(cellId.value))
+})
 
 const isEditingCell = computed(() => editorFocused.value && editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
@@ -91,11 +95,13 @@ const cellStyle = computed(() => {
     style['z-index'] = 10
     if (isEditingCell.value) {
       style.outline = '2px solid var(--editing-cell-outline-color)'
+      style.outlineOffset = '1px'
+      style.outlineStyle = 'dashed'
     }
     style.overflow = 'visible'
   }
 
-  if (isInsideSelection.value) {
+  if (insideSelection.value) {
     style.backgroundColor = 'var(--selected-cell-background-color)'
   }
   else {
@@ -150,13 +156,20 @@ const cellStyle = computed(() => {
     style.alignItems = 'flex-end'
   }
 
-  if (cellBackgroundColor.value) {
-    style.backgroundColor = isInsideSelection.value
-      ? cellBackgroundColor.value.withAlpha(0.8).getStyleString()
-      : cellBackgroundColor.value.getStyleString()
+  if (editorFocused.value && isReferenced.value) {
+    style.backgroundColor = 'var(--referenced-cell-background-color)'
   }
-  if (cellTextColor.value) {
-    style.color = cellTextColor.value.getStyleString()
+  else {
+    if (cellBackgroundColor.value) {
+      style.backgroundColor = insideSelection.value
+        ? cellBackgroundColor.value.withAlpha(0.8).getStyleString()
+        : isReferenced.value
+          ? cellBackgroundColor.value.withAlpha(0.9).getStyleString()
+          : cellBackgroundColor.value.getStyleString()
+    }
+    if (cellTextColor.value) {
+      style.color = cellTextColor.value.getStyleString()
+    }
   }
 
   return style

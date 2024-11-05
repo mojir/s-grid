@@ -13,7 +13,6 @@ const builtinCommandNames = [
   'Help',
   'MovePosition!',
   'MovePositionTo!',
-  'ResetSelection!',
   'RestartRepl!',
   'SetInput!',
   'Select!',

@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { useGrid } from '@/composables/useGrid'
 import { whs } from '~/lib/utils'
 import type { Row } from '~/lib/Row'
-
-const { grid } = useGrid()
 
 const props = defineProps<{
   row: Row
 }>()
 
+const { rowHeaderWidth } = useRowsAndCols()
+const { selection } = useSelection()
+
 const { row } = toRefs(props)
 
-const isSelected = computed(() => grid.value.selection.value.containsRowIndex(row.value.index))
+const isSelected = computed(() => selection.value.containsRowIndex(row.value.index))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {
-    width: `${grid.value.rowHeaderWidth}px`,
+    width: `${rowHeaderWidth}px`,
     height: `${row.value.height.value + 1}px`,
     marginTop: '-1px',
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
@@ -37,13 +37,13 @@ const cellStyle = computed(() => {
   >
     <div
       :id="row.id"
-      :style="whs(grid.rowHeaderWidth, row.height.value)"
+      :style="whs(rowHeaderWidth, row.height.value)"
       class="flex justify-center items-center text-xs select-none"
     >
       {{ row.id }}
     </div>
     <div
-      :style="whs(grid.rowHeaderWidth, 5)"
+      :style="whs(rowHeaderWidth, 5)"
       class="bg-transparent mt-[-3px] z-10 cursor-row-resize"
     />
   </div>

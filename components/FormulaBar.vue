@@ -4,6 +4,7 @@ import { useGrid } from '@/composables/useGrid'
 import { hs } from '~/lib/utils'
 
 const { grid } = useGrid()
+const { selection, selecting } = useSelection()
 const {
   editingLitsCode,
   editorFocused,
@@ -17,13 +18,13 @@ const selectionLabel = computed(() => {
   if (editorFocused.value) {
     return editingCellId.value.id
   }
-  if (grid.value.selection.value.size() === 1) {
-    return grid.value.selection.value.start.id
+  if (selection.value.size() === 1) {
+    return selection.value.start.id
   }
-  return grid.value.selection.value.id
+  return selection.value.id
 })
 
-watch(grid.value.selection, (selection) => {
+watch(selection, (selection) => {
   const inputElement = inputRef.value
   if (editingLitsCode.value && inputElement && editorFocused.value) {
     const selectionValue = `${selection.size() === 1
@@ -36,9 +37,17 @@ watch(grid.value.selection, (selection) => {
     inputElement.value
       = value.slice(0, start) + selectionValue + value.slice(end)
     const position = start + selectionValue.length
-    inputElement.setSelectionRange(position, position)
+    inputElement.setSelectionRange(start, position)
     editorText.value = inputElement.value
     inputElement.focus()
+  }
+})
+
+watch(selecting, (selecting) => {
+  const inputElement = inputRef.value
+  if (!selecting && inputElement) {
+    const pos = inputElement.selectionEnd
+    inputElement.setSelectionRange(pos, pos)
   }
 })
 
@@ -56,6 +65,11 @@ onMounted(() => {
 })
 
 function onFocus() {
+  const inputElement = inputRef.value
+  if (inputElement) {
+    const length = inputElement.value.length
+    inputElement.setSelectionRange(length, length)
+  }
   setEditorFocused(true)
 }
 

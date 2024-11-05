@@ -1,8 +1,7 @@
 <script setup lang="ts">
 const { grid } = useGrid()
 
-const selection = computed(() => grid.value.selection.value)
-
+const { selection } = useSelection()
 const bold = ref<boolean>()
 
 watch(selection, (newSelection) => {

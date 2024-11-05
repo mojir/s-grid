@@ -162,7 +162,7 @@ function run(program: string) {
   let result
   try {
     const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
-    const values = grid.value.getValuesFromUndefinedIdentifiers(unresolvedIdentifiers)
+    const values = grid.value.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol))
 
     result = lits.run(program, { values, jsFunctions, globalContext })
   }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { useGrid } from '@/composables/useGrid'
 import { whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 
-const { grid } = useGrid()
+const { selection } = useSelection()
+const { colHeaderHeight } = useRowsAndCols()
 
 const props = defineProps<{
   col: Col
@@ -14,12 +14,12 @@ const hover = ref(false)
 
 const { col } = toRefs(props)
 
-const isSelected = computed(() => grid.value.selection.value.containsColIndex(col.value.index))
+const isSelected = computed(() => selection.value.containsColIndex(col.value.index))
 const cellStyle = computed(() => {
   const style: CSSProperties = {
-    height: `${grid.value.colHeaderHeight}px`,
+    height: `${colHeaderHeight}px`,
     width: `${col.value.width + 1}px`,
-    minHeight: `${grid.value.colHeaderHeight}px`,
+    minHeight: `${colHeaderHeight}px`,
     minWidth: `${col.value.width + 1}px`,
     marginLeft: '-1px',
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
@@ -42,13 +42,13 @@ const cellStyle = computed(() => {
   >
     <div
       :id="col.id"
-      :style="whs(col.width, grid.colHeaderHeight)"
+      :style="whs(col.width, colHeaderHeight)"
       class="flex flex-1 justify-center text-xs items-center select-none"
     >
       {{ col.id }}
     </div>
     <div
-      :style="whs(5, grid.colHeaderHeight)"
+      :style="whs(5, colHeaderHeight)"
       class="absolute bg-transparent top-0 right-[-3px] z-10 cursor-col-resize"
     />
   </div>

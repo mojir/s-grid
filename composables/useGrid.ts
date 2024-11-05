@@ -4,9 +4,6 @@ import { styleFontSizes, type CellStyle, type CellStyleName, type StyleFontSize 
 import { Color } from '~/lib/color'
 import { Grid } from '~/lib/Grid'
 
-const defaultNbrOfRows = 50
-const defaultNbrOfCols = 26
-
 const { registerCommand } = useCommandCenter()
 
 export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
@@ -18,8 +15,9 @@ export function setColorMode(colorMode: Ref<string>) {
 }
 
 export const useGrid = createSharedComposable(() => {
-  const grid = shallowReadonly(customRef((track, trigger) => {
-    const gridInstance = new Grid(colorModeRef, defaultNbrOfRows, defaultNbrOfCols, trigger)
+  const { rows, cols } = useRowsAndCols()
+  const grid = shallowReadonly(customRef((track) => {
+    const gridInstance = new Grid(colorModeRef, rows, cols)
     return {
       get() {
         track()
@@ -49,32 +47,6 @@ registerCommand({
     grid.value.movePositionTo(cell)
   },
   description: 'Move the position to a specific cell',
-})
-registerCommand({
-  name: 'GetSelection',
-  execute: () => grid.value.selection.value.getJson(),
-  description: 'Get the current selection.',
-})
-registerCommand({
-  name: 'Select!',
-  execute: (target: string) => {
-    grid.value.select(target)
-  },
-  description: 'Select a cell or a range',
-})
-registerCommand({
-  name: 'ResetSelection!',
-  execute: () => {
-    grid.value.resetSelection()
-  },
-  description: 'Reset selection.',
-})
-registerCommand({
-  name: 'ExpandSelection!',
-  execute: (direction: Direction) => {
-    grid.value.expandSelection(direction)
-  },
-  description: 'Expand the selection one step in a specific direction',
 })
 registerCommand({
   name: 'SetInput!',
@@ -114,7 +86,8 @@ registerCommand({
 registerCommand({
   name: 'SetAlias!',
   execute: (alias: string, id?: string) => {
-    grid.value.setAlias(alias, id)
+    const cell = grid.value.getCell(id)
+    useAlias().setAlias(alias, cell)
   },
   description: 'Create an alias for a cell',
 })

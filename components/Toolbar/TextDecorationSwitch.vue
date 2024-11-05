@@ -3,8 +3,7 @@ import type { StyleTextDecoration } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const selection = computed(() => grid.value.selection.value)
-
+const { selection } = useSelection()
 const textDecoration = ref<StyleTextDecoration>()
 
 watch(selection, (newSelection) => {

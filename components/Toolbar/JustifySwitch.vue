@@ -3,8 +3,7 @@ import type { StyleJustify } from '~/lib/CellStyle'
 
 const { grid } = useGrid()
 
-const selection = computed(() => grid.value.selection.value)
-
+const { selection } = useSelection()
 const justify = ref<StyleJustify>()
 
 watch(selection, (newSelection) => {

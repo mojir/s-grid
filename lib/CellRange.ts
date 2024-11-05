@@ -34,6 +34,10 @@ export class CellRange {
     return new CellRange(start, end)
   }
 
+  static fromDimensions(startRowIndex: number, startColIndex: number, endRowIndex: number, endColIndex: number): CellRange {
+    return new CellRange(CellId.fromCoords(startRowIndex, startColIndex), CellId.fromCoords(endRowIndex, endColIndex))
+  }
+
   static fromId(id: string): CellRange {
     const match = id.match(cellRangeRegExp)
 
@@ -146,6 +150,10 @@ export class CellRange {
 
   public isCellIdInRightColumn(cellId: CellId): boolean {
     return cellId.colIndex === this.end.colIndex
+  }
+
+  public equals(other: CellRange): boolean {
+    return this.start.equals(other.start) && this.end.equals(other.end)
   }
 
   public getJson() {

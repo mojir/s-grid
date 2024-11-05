@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useGrid } from '@/composables/useGrid'
 import { ws } from '~/lib/utils'
 
-const { grid } = useGrid()
+const { rows, rowHeaderWidth } = useRowsAndCols()
 
 const el = ref<HTMLDivElement>()
 
@@ -16,10 +15,10 @@ defineExpose({
   <div
     ref="el"
     class="flex mt-[1px] flex-col overflow-x-auto dark:bg-blue-800 bg-blue-600 no-scrollbar"
-    :style="ws(grid.rowHeaderWidth)"
+    :style="ws(rowHeaderWidth)"
   >
     <RowHeaderCell
-      v-for="row of grid.rows"
+      v-for="row of rows"
       :key="row.id"
 
       :row="row"
