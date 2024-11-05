@@ -127,6 +127,7 @@ export class Cell {
       'row-index': this.cellId.rowIndex,
       'col-index': this.cellId.colIndex,
       'style': this.style.value.getJson(),
+      'referenced-targets': this.referencedTargets.value.map(target => target.id),
     }
   }
 
