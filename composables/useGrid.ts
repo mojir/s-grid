@@ -131,6 +131,14 @@ registerCommand({
   description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
 })
 
+registerCommand({
+  name: 'ResetSelection!',
+  execute: () => {
+    grid.value.resetSelection()
+  },
+  description: 'Reset the selection',
+})
+
 function validCellStyle(property: CellStyleName, value: unknown): boolean {
   switch (property) {
     case 'bold':

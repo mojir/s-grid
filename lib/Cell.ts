@@ -51,7 +51,7 @@ export class Cell {
     const input = this.input.value
 
     if (input === '') {
-      return 0
+      return null
     }
 
     if (input.startsWith('=')) {

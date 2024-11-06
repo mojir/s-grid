@@ -273,4 +273,8 @@ export class Grid {
       .getAllCellIds()
       .flatMap(cellId => this.getCell(cellId) ?? [])
   }
+
+  public resetSelection() {
+    useSelection().select(this.position.value)
+  }
 }

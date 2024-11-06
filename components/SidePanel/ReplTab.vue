@@ -12,6 +12,7 @@ const {
   clearSuggestions,
 } = useREPL()
 const { exec } = useCommandCenter()
+const { sidePanelHandleKeyDown } = useSidePanel()
 
 const emit = defineEmits<{
   (e: 'scroll-to-bottom'): void
@@ -38,6 +39,9 @@ function hasModifierKey(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  if (sidePanelHandleKeyDown(e)) {
+    return
+  }
   if (e.key === 'Tab') {
     e.preventDefault()
     if (e.shiftKey) {

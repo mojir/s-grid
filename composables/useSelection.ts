@@ -78,8 +78,7 @@ export const useSelection = createSharedComposable(() => {
             : null
 
     if (!range) {
-      console.error(`Unable to select, invalid target: ${target}`)
-      return
+      throw Error(`Unable to select, invalid target: ${target}`)
     }
 
     updateSelection(range)

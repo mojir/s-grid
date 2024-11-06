@@ -12,7 +12,7 @@ function setEditingCellId(cellId: CellId) {
   editingCellId.value = cellId
 }
 
-const editingLitsCode = computed<boolean>(() => {
+const isEditingLitsCode = computed<boolean>(() => {
   return editorFocused.value && editorText.value.startsWith('=')
 })
 
@@ -21,7 +21,7 @@ export function useEditor() {
     editorText,
     editorFocused: readonly(editorFocused),
     setEditorFocused,
-    editingLitsCode,
+    isEditingLitsCode,
     editingCellId: readonly(editingCellId),
     setEditingCellId,
   }

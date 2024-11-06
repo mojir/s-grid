@@ -10,8 +10,9 @@ const { grid } = useGrid()
 const selection = useSelection()
 const { colHeaderHeight, rowHeaderWidth } = useRowsAndCols()
 const { sidePanelHandleKeyDown } = useSidePanel()
-const { editingLitsCode, editorFocused, setEditorFocused } = useEditor()
+const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
 const { getRow, getCol } = useRowsAndCols()
+const { hoveredCellId } = useHover()
 
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -23,15 +24,24 @@ onMounted(() => {
   window.addEventListener('mousedown', onMouseDown)
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
+  window.addEventListener('mouseenter', onMouseEnter)
+  window.addEventListener('mouseover', onMouseEnter)
   window.addEventListener('mouseleave', onMouseLeave)
+  window.addEventListener('mouseout', onMouseLeave)
   window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('blur', onBlur)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 onUnmounted(() => {
   window.removeEventListener('mousedown', onMouseDown)
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('mouseup', onMouseUp)
+  window.removeEventListener('mouseenter', onMouseEnter)
   window.removeEventListener('mouseleave', onMouseLeave)
+  window.removeEventListener('mouseout', onMouseLeave)
   window.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener('blur', onBlur)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 function resetSelection() {
@@ -40,7 +50,21 @@ function resetSelection() {
 
 const mouseDownStart = ref('')
 
-function onMouseDown(event: Event) {
+function onBlur() {
+  hoveredCellId.value = null
+}
+
+// Handle cases when user switches tabs
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    hoveredCellId.value = null
+  }
+}
+
+function onMouseDown(event: MouseEvent) {
+  if (event.button !== 0) {
+    return
+  }
   const target = event.target as HTMLElement | undefined
   const id = target?.id
   if (CellId.isCellIdString(id)) {
@@ -79,12 +103,26 @@ function onMouseDown(event: Event) {
     }
   }
 }
-function onMouseMove(event: Event) {
-  const target = event.target as HTMLElement | undefined
+function onMouseMove(_event: MouseEvent) {
+  // noop for now
+}
+function onMouseUp(event: MouseEvent) {
+  if (event.button !== 0) {
+    return
+  }
+  mouseDownStart.value = ''
+  selection.selecting.value = false
+}
 
+function onMouseEnter(event: MouseEvent) {
+  const target = event.target as HTMLElement | undefined
+  const cellId = CellId.isCellIdString(target?.id) ? target.id : null
+  if (cellId) {
+    hoveredCellId.value = cellId
+  }
   if (mouseDownStart.value) {
-    if (CellId.isCellIdString(mouseDownStart.value) && CellId.isCellIdString(target?.id)) {
-      selection.select(`${mouseDownStart.value}-${target.id}`)
+    if (CellId.isCellIdString(mouseDownStart.value) && cellId) {
+      selection.select(`${mouseDownStart.value}-${cellId}`)
     }
     else if (Col.isColString(mouseDownStart.value) && Col.isColString(target?.id)) {
       const fromCol = getCol(mouseDownStart.value)
@@ -102,13 +140,9 @@ function onMouseMove(event: Event) {
     }
   }
 }
-function onMouseUp() {
-  mouseDownStart.value = ''
-  selection.selecting.value = false
-}
 
 function onMouseLeave() {
-  mouseDownStart.value = ''
+  hoveredCellId.value = null
 }
 
 function onCellDblclick() {
@@ -120,22 +154,12 @@ function onKeyDown(e: KeyboardEvent) {
     return
   }
 
-  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    if (!editorFocused.value) {
-      formulaBarRef.value.update('')
-      formulaBarRef.value.focus()
-    }
-  }
-  else if (e.key === 'Enter') {
-    e.preventDefault()
-    if (selection.selection.value.size() === 1 && !editorFocused.value) {
-      formulaBarRef.value.focus()
-    }
-    else {
+  if (editorFocused.value) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
       if (editorFocused.value) {
         formulaBarRef.value.save()
       }
-      // resetSelection()
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }
@@ -143,24 +167,45 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.movePosition('down', true)
       }
     }
+    else if (e.key === 'Escape') {
+      formulaBarRef.value.cancel()
+    }
+    else if (e.key === 'Tab') {
+      e.preventDefault()
+      formulaBarRef.value.save()
+      if (e.shiftKey) {
+        grid.value.movePosition('left', true)
+      }
+      else {
+        grid.value.movePosition('right', true)
+      }
+    }
   }
-  else if (e.key === 'Escape') {
-    formulaBarRef.value.cancel()
-    setEditorFocused(false)
-  }
-  else if (e.key === 'Backspace') {
-    if (!editorFocused.value) {
+  else {
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      formulaBarRef.value.update('')
+      formulaBarRef.value.focus()
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      formulaBarRef.value.focus()
+    }
+    else if (e.key === 'Tab') {
+      e.preventDefault()
+      if (e.shiftKey) {
+        grid.value.movePosition('left', true)
+      }
+      else {
+        grid.value.movePosition('right', true)
+      }
+    }
+    else if (e.key === 'Backspace' || e.key === 'Delete') {
       grid.value.clear(selection.selection.value)
       formulaBarRef.value.update('')
     }
-  }
-  else if (e.key === 'F2') {
-    if (!editorFocused.value) {
+    else if (e.key === 'F2') {
       formulaBarRef.value.focus()
     }
-  }
-
-  if (!editingLitsCode.value) {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       formulaBarRef.value.save()
@@ -203,16 +248,6 @@ function onKeyDown(e: KeyboardEvent) {
       else {
         grid.value.movePosition('left')
         resetSelection()
-      }
-    }
-    else if (e.key === 'Tab') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        grid.value.movePosition('left', true)
-      }
-      else {
-        grid.value.movePosition('right', true)
       }
     }
   }

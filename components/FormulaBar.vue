@@ -6,11 +6,13 @@ import { hs } from '~/lib/utils'
 const { grid } = useGrid()
 const { selection, selecting } = useSelection()
 const {
-  editingLitsCode,
+  isEditingLitsCode: editingLitsCode,
   editorFocused,
   setEditorFocused,
   editorText, setEditingCellId, editingCellId } = useEditor()
+const { sidePanelOpen } = useSidePanel()
 
+const forceBlur = ref(false)
 const initialValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 
@@ -22,6 +24,18 @@ const selectionLabel = computed(() => {
     return selection.value.start.id
   }
   return selection.value.id
+})
+
+watch(sidePanelOpen, (open) => {
+  if (open) {
+    cancel()
+  }
+})
+
+watch(editingLitsCode, (editing) => {
+  if (!editing) {
+    grid.value.resetSelection()
+  }
 })
 
 watch(selection, (selection) => {
@@ -43,9 +57,9 @@ watch(selection, (selection) => {
   }
 })
 
-watch(selecting, (selecting) => {
+watch(selecting, (isSelecting) => {
   const inputElement = inputRef.value
-  if (!selecting && inputElement) {
+  if (!isSelecting && inputElement) {
     const pos = inputElement.selectionEnd
     inputElement.setSelectionRange(pos, pos)
   }
@@ -68,20 +82,31 @@ function onFocus() {
   const inputElement = inputRef.value
   if (inputElement) {
     const length = inputElement.value.length
-    inputElement.setSelectionRange(length, length)
+    if (!selecting.value) {
+      inputElement.setSelectionRange(length, length)
+    }
   }
   setEditorFocused(true)
 }
 
 function onBlur() {
-  if (!editingLitsCode.value && !grid.value.position.value.equals(editingCellId.value)) {
+  if (!forceBlur.value && (editingLitsCode.value || grid.value.position.value.equals(editingCellId.value))) {
+    inputRef.value?.focus()
+  }
+  else {
     inputRef.value?.setSelectionRange(0, 0)
     setEditorFocused(false)
     save()
   }
-  else {
-    inputRef.value?.focus()
-  }
+}
+
+function cancel() {
+  forceBlur.value = true
+  editorText.value = initialValue.value
+  inputRef.value?.blur()
+  nextTick(() => {
+    forceBlur.value = false
+  })
 }
 
 function save() {
@@ -106,10 +131,7 @@ defineExpose({
     inputRef.value?.focus()
   },
   save,
-  cancel: () => {
-    editorText.value = initialValue.value
-    inputRef.value?.blur()
-  },
+  cancel,
   update: (input: string) => {
     editorText.value = input
     initialValue.value = input

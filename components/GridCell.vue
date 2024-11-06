@@ -18,12 +18,13 @@ const emit = defineEmits<{
 }>()
 
 const { grid } = useGrid()
-const { editorFocused, editorText, editingCellId, editingLitsCode } = useEditor()
+const { editorFocused, editorText, editingCellId, isEditingLitsCode } = useEditor()
 const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
 const { selection } = useSelection()
+const { hoveredCellId } = useHover()
 
 const { row, col } = toRefs(props)
 
@@ -36,6 +37,8 @@ const isReferenced = computed(() => {
   const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
   return ranges.some(range => range.contains(cellId.value))
 })
+const hoverSelectingCell = computed(() => isEditingLitsCode.value
+  && !isActiveCell.value && hoveredCellId.value && hoveredCellId.value === cellId.value.id)
 
 const isEditingCell = computed(() => editorFocused.value && editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
@@ -94,7 +97,7 @@ const cellStyle = computed(() => {
     style.border = '1px solid var(--current-cell-border-color)'
     style['z-index'] = 10
     if (isEditingCell.value) {
-      if (editingLitsCode.value) {
+      if (isEditingLitsCode.value) {
         style.outline = '3px dashed var(--editing-lits-cell-outline-color)'
         style.outlineOffset = '1px'
       }
@@ -195,13 +198,22 @@ function inspectCell(e: MouseEvent) {
 </script>
 
 <template>
-  <div
-    :id="cellId.id"
-    :style="cellStyle"
-    class="px-1 h-full flex box-border text-sm whitespace-nowrap"
-    @dblclick="emit('cell-dblclick', cellId)"
-    @click="inspectCell"
-  >
-    {{ cellContent }}
+  <div class="h-full relative">
+    <div
+      :id="cellId.id"
+      :style="cellStyle"
+      class="px-1 h-full relative flex box-border text-sm whitespace-nowrap"
+      :class="{
+        'cursor-pointer': hoverSelectingCell,
+      }"
+      @dblclick="emit('cell-dblclick', cellId)"
+      @click="inspectCell"
+    >
+      {{ cellContent }}
+    </div>
+    <div
+      v-if="hoverSelectingCell"
+      class="z-[100] pointer-events-none block absolute top-[1px] right-[1px] bottom-0 left-0 bg-red outline-dotted dark:outline-slate-600 outline-gray-400"
+    />
   </div>
 </template>
