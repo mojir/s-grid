@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { grid } = useGrid()
-const { editorFocused, editorText, editingCellId } = useEditor()
+const { editorFocused, editorText, editingCellId, editingLitsCode } = useEditor()
 const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
@@ -94,9 +94,14 @@ const cellStyle = computed(() => {
     style.border = '1px solid var(--current-cell-border-color)'
     style['z-index'] = 10
     if (isEditingCell.value) {
-      style.outline = '2px solid var(--editing-cell-outline-color)'
-      style.outlineOffset = '1px'
-      style.outlineStyle = 'dashed'
+      if (editingLitsCode.value) {
+        style.outline = '3px dashed var(--editing-lits-cell-outline-color)'
+        style.outlineOffset = '1px'
+      }
+      else {
+        style.outline = '2px dashed var(--editing-cell-outline-color)'
+        style.outlineOffset = '1px'
+      }
     }
     style.overflow = 'visible'
   }

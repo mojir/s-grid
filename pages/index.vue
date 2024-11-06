@@ -116,7 +116,6 @@ function onCellDblclick() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  console.log('key', e.key)
   if (sidePanelHandleKeyDown(e)) {
     return
   }

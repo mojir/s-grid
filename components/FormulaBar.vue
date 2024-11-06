@@ -74,7 +74,7 @@ function onFocus() {
 }
 
 function onBlur() {
-  if (!editingLitsCode.value) {
+  if (!editingLitsCode.value && !grid.value.position.value.equals(editingCellId.value)) {
     inputRef.value?.setSelectionRange(0, 0)
     setEditorFocused(false)
     save()

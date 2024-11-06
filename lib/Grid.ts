@@ -136,10 +136,14 @@ export class Grid {
 
   public movePositionTo(target: CellTarget) {
     const cellId = this.getCellId(target)
-    this.position.value = cellId.clamp(this.gridRange.value)
+    const newPosition = cellId.clamp(this.gridRange.value)
+    if (newPosition.equals(this.position.value)) {
+      return
+    }
+    this.position.value = newPosition
 
-    if (!useSelection().selection.value.contains(this.position.value)) {
-      useSelection().updateSelection(CellRange.fromSingleCellId(this.position.value))
+    if (!useSelection().selection.value.contains(newPosition)) {
+      useSelection().updateSelection(CellRange.fromSingleCellId(newPosition))
     }
   }
 
@@ -193,7 +197,6 @@ export class Grid {
   public setTextColor(color: Color | null, target?: CellOrRangeTarget): void {
     const cells = this.getCells(target)
 
-    console.log('cells', cells)
     cells.forEach((cell) => {
       cell.textColor.value = color
     })
