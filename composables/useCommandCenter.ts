@@ -5,14 +5,16 @@ const builtinCommandNames = [
   'Clear!',
   'ClearAllCells!',
   'ClearRepl!',
+  'CreateNamedFunction!',
   'SetAlias!',
   'ExpandSelection!',
+  'ExpandSelectionTo!',
   'GetCell',
   'GetCells',
   'GetSelection',
   'Help',
-  'MovePosition!',
-  'MovePositionTo!',
+  'Move!',
+  'MoveTo!',
   'ResetSelection!',
   'RestartRepl!',
   'SetInput!',
@@ -52,10 +54,25 @@ function exec(name: BuiltinCommandName, ...args: unknown[]) {
 }
 
 export const useCommandCenter = () => {
+  registerCommands()
+
   return {
     jsFunctions,
     registerCommand,
     exec,
     commands,
   }
+}
+
+function registerCommands() {
+  registerCommand({
+    name: 'CreateNamedFunction!',
+    execute: (alias: string, input: string, target?: string) => {
+      const grid = useGrid().grid.value
+      const cell = grid.getCell(target)
+      useAlias().setAlias(alias, cell)
+      grid.setInput(input, target)
+    },
+    description: 'Clear the current cell',
+  })
 }

@@ -26,6 +26,13 @@ export const useSelection = createSharedComposable(() => {
     updateSelection(CellRange.fromCellIds(start, end))
   }
 
+  function expandSelectionTo(target: CellId | string) {
+    const start = unsortedSelection.value.start
+    const end = CellId.isCellId(target) ? target : CellId.fromId(target)
+
+    updateSelection(CellRange.fromCellIds(start, end))
+  }
+
   function selectAll() {
     updateSelection(gridRange.value)
   }
@@ -56,6 +63,14 @@ export const useSelection = createSharedComposable(() => {
       expandSelection(direction)
     },
     description: 'Expand the selection one step in a specific direction',
+  })
+
+  registerCommand({
+    name: 'ExpandSelectionTo!',
+    execute: (target: CellId | string) => {
+      expandSelectionTo(target)
+    },
+    description: 'Expand the selection to a cell',
   })
 
   registerCommand({

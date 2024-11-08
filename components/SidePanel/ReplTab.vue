@@ -39,9 +39,10 @@ function hasModifierKey(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  if (sidePanelHandleKeyDown(e)) {
-    return
+  if (e.key === 'Control') {
+    sidePanelHandleKeyDown(e)
   }
+
   if (e.key === 'Tab') {
     e.preventDefault()
     if (e.shiftKey) {

@@ -33,7 +33,7 @@ const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
 const insideSelection = computed(() => selection.value.size() > 1 && selection.value.contains(cellId.value))
 const isReferenced = computed(() => {
-  const targets = grid.value.getCell(grid.value.position.value).referencedTargets.value
+  const targets = grid.value.getCell(grid.value.position.value).localReferencedTargets.value
   const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
   return ranges.some(range => range.contains(cellId.value))
 })

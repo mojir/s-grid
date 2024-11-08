@@ -35,14 +35,14 @@ export const useGrid = createSharedComposable(() => {
 const { grid } = useGrid()
 
 registerCommand({
-  name: 'MovePosition!',
+  name: 'Move!',
   execute: (direction: Direction) => {
     grid.value.movePosition(direction)
   },
   description: 'Move the position one step in a specific direction.',
 })
 registerCommand({
-  name: 'MovePositionTo!',
+  name: 'MoveTo!',
   execute: (cell: string) => {
     grid.value.movePositionTo(cell)
   },

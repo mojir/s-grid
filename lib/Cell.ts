@@ -15,13 +15,14 @@ export class Cell {
   public formatter = ref<string | null>(null)
   public style = ref(new CellStyle())
   public backgroundColor = ref<Color | null>(null)
-
   public textColor = ref<Color | null>(null)
 
-  private unresolvedIdentifiers = computed<string[]>(() => {
+  public formula = computed(() => this.input.value.startsWith('=') ? this.input.value.slice(1) : null)
+
+  private localUnresolvedIdentifiers = computed<string[]>(() => {
     const input = this.input.value
 
-    if (input.startsWith('=')) {
+    if (this.formula.value !== null) {
       const program = input.slice(1)
       const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
@@ -30,9 +31,9 @@ export class Cell {
     return []
   })
 
-  public referencedTargets = computed(() => {
+  public localReferencedTargets = computed(() => {
     const alias = useAlias()
-    return this.unresolvedIdentifiers.value.flatMap((identifier) => {
+    return this.localUnresolvedIdentifiers.value.flatMap((identifier) => {
       if (CellId.isCellIdString(identifier)) {
         return CellId.fromId(identifier)
       }
@@ -47,6 +48,17 @@ export class Cell {
     })
   })
 
+  private unresolvedIdentifiers = computed<string[]>(() => {
+    const allTargets = new Set<string>(this.localUnresolvedIdentifiers.value)
+
+    this.localReferencedTargets.value
+      .flatMap(target => this.grid.getCells(target))
+      .flatMap(cell => cell.unresolvedIdentifiers.value)
+      .forEach(identifier => allTargets.add(identifier))
+
+    return Array.from(allTargets)
+  })
+
   public output = computed(() => {
     const input = this.input.value
 
@@ -54,12 +66,10 @@ export class Cell {
       return null
     }
 
-    if (input.startsWith('=')) {
-      const program = input.slice(1)
-
+    if (this.formula.value !== null) {
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
-        const result = lits.run(program, { values, jsFunctions })
+        const result = lits.run(this.formula.value, { values, jsFunctions })
         return result
       }
       catch (error) {
@@ -127,7 +137,8 @@ export class Cell {
       row: this.cellId.rowIndex,
       col: this.cellId.colIndex,
       style: this.style.value.getJson(),
-      references: this.referencedTargets.value.map(target => target.id),
+      localReferences: this.localReferencedTargets.value.map(target => target.id),
+      references: [...this.unresolvedIdentifiers.value],
     }
   }
 
