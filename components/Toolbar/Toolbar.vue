@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { whs } from '~/lib/utils'
-
 const { sidePanelOpen } = useSidePanel()
 </script>
 
@@ -9,7 +7,7 @@ const { sidePanelOpen } = useSidePanel()
     class="gap-2 py-1.5 px-4 w-full flex items-center dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl drop-shadow-md"
   >
     <AppLogo
-      class="w-[72px] h-[72px] -ml-3 -my-4"
+      class="w-[60px] h-[60px] -ml-2 -my-3"
     />
 
     <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
@@ -25,14 +23,12 @@ const { sidePanelOpen } = useSidePanel()
     </div>
 
     <div
-      class="items-center dark:text-slate-400 text-gray-600"
-      :style="whs(40, 40)"
+      class="items-center dark:text-slate-400 text-gray-600 h-7 w-7"
     >
       <Icon
         v-if="!sidePanelOpen"
         name="mdi:menu-open"
-        size="40"
-        class="cursor-pointer dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black  transition-colors"
+        class="cursor-pointer dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black  transition-colors h-7 w-7"
         @click="sidePanelOpen = true"
       />
     </div>

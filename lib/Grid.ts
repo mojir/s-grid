@@ -3,14 +3,10 @@ import { Cell } from './Cell'
 import { CellId } from './CellId'
 import { CellRange } from './CellRange'
 import { CellStyle, getLineHeight, type CellStyleName } from './CellStyle'
-import type { Col } from './Col'
+import { Col, type ColIdString } from './Col'
 import type { Color } from './color'
-import type { Row } from './Row'
-
-const minRowHeight = 16
-
-export type CellOrRangeTarget = string | CellId | CellRange
-export type CellTarget = string | CellId
+import { Row, type RowIdString } from './Row'
+import type { CellOrRangeTarget, CellTarget } from './utils'
 
 export class Grid {
   public readonly cells: Cell[][]
@@ -239,18 +235,9 @@ export class Grid {
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
   }
 
-  public autoSetRowHeight(id?: CellId | string) {
-    const cellIds = id
-      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : useSelection().selection.value.getAllCellIds()
-
-    cellIds.forEach((cellId) => {
-    // No need to auto set row height for cell, if cell is empty
-      if (!this.getCell(cellId)?.display.value) {
-        return
-      }
-
-      const rowIndex = cellId.rowIndex
+  public autoSetRowHeight(rows: RowIdString[]) {
+    rows.forEach((rowId) => {
+      const rowIndex = Row.getRowIndexFromId(rowId)
       const cells = this.getRowCells(rowIndex)
 
       const maxLineHeight = cells.reduce((acc, cell) => {
@@ -261,7 +248,57 @@ export class Grid {
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
-      this.rows.value[rowIndex].height.value = Math.max(maxLineHeight, minRowHeight)
+      this.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
+    })
+  }
+
+  public autoSetRowHeightByTarget(id?: CellId | string) {
+    const cellIds = id
+      ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
+      : useSelection().selection.value.getAllCellIds()
+
+    const rowIds = cellIds
+      .filter(cellId => this.getCell(cellId)?.display.value)
+      .reduce((acc: RowIdString[], cellId) => {
+        const rowIndex = Row.getRowIdFromIndex(cellId.rowIndex)
+        if (!acc.includes(rowIndex)) {
+          acc.push(rowIndex)
+        }
+        return acc
+      }, [])
+    this.autoSetRowHeight(rowIds)
+  }
+
+  public autoSetColWidth(cols: ColIdString[]) {
+    cols.forEach((colId) => {
+      const colIndex = Col.getColIndexFromId(colId)
+      const cells = useRowsAndCols().getCellIdsFromColIndex(colIndex)
+        .map(cellId => this.getCell(cellId))
+
+      const newColWidth = cells.reduce((acc, cell) => {
+        if (!cell.display.value) {
+          return acc
+        }
+        const elem = document.getElementById(cell.cellId.id)
+        if (!elem) {
+          return acc
+        }
+        const context = document.createElement('canvas').getContext('2d')
+        if (!context) {
+          return acc
+        }
+        const computedStyle = window.getComputedStyle(elem)
+        context.font = `${computedStyle.fontWeight} ${computedStyle.fontStyle} ${computedStyle.fontSize} ${computedStyle.fontFamily}`
+        const metrics = context.measureText(cell.display.value)
+        const colWidth = metrics.width + 10 // Adding some padding
+        return colWidth > acc ? colWidth : acc
+      }, 0)
+
+      if (newColWidth === 0) {
+        return
+      }
+
+      this.cols.value[colIndex].width.value = newColWidth
     })
   }
 

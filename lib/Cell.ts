@@ -172,7 +172,7 @@ export class Cell {
   constructor(private readonly grid: Grid, public cellId: CellId) {
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
-        this.grid.autoSetRowHeight(this.cellId)
+        this.grid.autoSetRowHeightByTarget(this.cellId)
       }
     })
   }

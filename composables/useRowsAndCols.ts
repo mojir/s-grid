@@ -1,16 +1,19 @@
+import { CellId } from '~/lib/CellId'
+import { CellRange } from '~/lib/CellRange'
 import { defaultLineHeight } from '~/lib/CellStyle'
 import { Col } from '~/lib/Col'
-import { Row } from '~/lib/Row'
+import { Row, type RowIdString } from '~/lib/Row'
 
 const defaultNbrOfRows = 50
 const defaultNbrOfCols = 26
-const defaultColWidth = 120
+export const defaultColWidth = 120
+export const defaultRowHeight = defaultLineHeight
 
 export const useRowsAndCols = createSharedComposable(() => {
-  const rows = shallowRef<Row[]>(Array.from({ length: defaultNbrOfRows }, (_, rowIndex) => Row.create(rowIndex, defaultLineHeight)))
+  const rows = shallowRef<Row[]>(Array.from({ length: defaultNbrOfRows }, (_, rowIndex) => Row.create(rowIndex, defaultRowHeight)))
   const cols = shallowRef<Col[]>(Array.from({ length: defaultNbrOfCols }, (_, colIndex) => Col.create(colIndex, defaultColWidth)))
 
-  function getRow(id: string): Row {
+  function getRow(id: RowIdString): Row {
     const row = rows.value[Row.getRowIndexFromId(id)]
 
     if (!row) {
@@ -28,6 +31,12 @@ export const useRowsAndCols = createSharedComposable(() => {
     return col
   }
 
+  function getCellIdsFromColIndex(colIndex: number): CellId[] {
+    const startCellId = CellId.fromCoords(0, colIndex)
+    const endCellId = CellId.fromCoords(rows.value.length - 1, colIndex)
+    return CellRange.fromCellIds(startCellId, endCellId).getAllCellIds()
+  }
+
   return {
     rows,
     cols,
@@ -35,5 +44,8 @@ export const useRowsAndCols = createSharedComposable(() => {
     getCol,
     rowHeaderWidth: 50,
     colHeaderHeight: 25,
+    minColHeight: 10,
+    minRowWidth: 10,
+    getCellIdsFromColIndex,
   }
 })

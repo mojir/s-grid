@@ -16,7 +16,7 @@ function onUpdateFontSize(value: string) {
   const numberValue = Number(value)
   fontSize.value = value
   grid.value.setStyle('fontSize', numberValue as StyleFontSize)
-  grid.value.autoSetRowHeight()
+  grid.value.autoSetRowHeightByTarget()
 }
 </script>
 

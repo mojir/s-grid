@@ -1,6 +1,6 @@
 import type { CellRange } from './CellRange'
-import { Col } from './Col'
-import { Row } from './Row'
+import { Col, type ColIdString } from './Col'
+import { Row, type RowIdString } from './Row'
 import type { Direction } from '~/composables/useGrid'
 
 const cellIdStringRegExp = /^([A-Z]+)(\d+)$/
@@ -153,11 +153,11 @@ export class CellId {
     return CellId.fromCoords(this.rowIndex, endCol)
   }
 
-  public getRowId(): string {
+  public getRowId(): RowIdString {
     return Row.getRowIdFromIndex(this.rowIndex)
   }
 
-  public getColId(): string {
+  public getColId(): ColIdString {
     return Col.getColIdFromIndex(this.colIndex)
   }
 }

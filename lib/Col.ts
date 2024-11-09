@@ -1,9 +1,13 @@
-const colStringRegExp = /^[A-Z]+$/
+const colStringIdRegExp = /^[A-Z]+$/
+const colResizeIdRegExp = /^resize-col:([A-Z]+)$/
+
+export type CaptialLetter = `A` | `B` | `C` | `D` | `E` | `F` | `G` | `H` | `I` | `J` | `K` | `L` | `M` | `N` | `O` | `P` | `Q` | `R` | `S` | `T` | `U` | `V` | `W` | `X` | `Y` | `Z`
+export type ColIdString = `${CaptialLetter}` | `${CaptialLetter}${CaptialLetter}`
 
 export class Col {
   private constructor(
     public readonly index: number,
-    public readonly id: string,
+    public readonly id: ColIdString,
     public width: Ref<number>,
   ) {
   }
@@ -12,17 +16,24 @@ export class Col {
     return new Col(index, Col.getColIdFromIndex(index), ref(width))
   }
 
-  static isColString(id: unknown): id is string {
-    return typeof id === 'string' && colStringRegExp.test(id)
+  static isColIdString(id: unknown): id is ColIdString {
+    return typeof id === 'string' && colStringIdRegExp.test(id)
   }
 
-  static getColIdFromIndex(colIndex: number) {
+  static isResizeColId(id: string): boolean {
+    return typeof id === 'string' && colResizeIdRegExp.test(id)
+  }
+
+  static getColIdFromIndex(colIndex: number): ColIdString {
     let result = ''
     while (colIndex >= 0) {
       result = String.fromCharCode((colIndex % 26) + 65) + result
       colIndex = Math.floor(colIndex / 26) - 1
     }
-    return result
+    if (result.length > 2) {
+      throw new Error(`Col index ${colIndex} is out of range`)
+    }
+    return result as ColIdString
   }
 
   static getColIndexFromId(colId: string) {

@@ -36,7 +36,7 @@ const cellStyle = computed(() => {
 <template>
   <div
     :style="cellStyle"
-    class="flex flex-col"
+    class="flex"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
   >
@@ -48,8 +48,9 @@ const cellStyle = computed(() => {
       {{ col.id }}
     </div>
     <div
+      :id="`resize-col:${col.id}`"
       :style="whs(5, colHeaderHeight)"
-      class="absolute bg-transparent top-0 right-[-3px] z-10 cursor-col-resize"
+      class="bg-transparent ml-[-3px] z-10 cursor-col-resize"
     />
   </div>
 </template>

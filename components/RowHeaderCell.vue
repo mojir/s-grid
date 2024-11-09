@@ -43,6 +43,7 @@ const cellStyle = computed(() => {
       {{ row.id }}
     </div>
     <div
+      :id="`resize-row:${row.id}`"
       :style="whs(rowHeaderWidth, 5)"
       class="bg-transparent mt-[-3px] z-10 cursor-row-resize"
     />
