@@ -263,7 +263,9 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
     <div
       class="flex flex-grow flex-col overflow-hidden h-screen dark:bg-slate-900 bg-gray-100 dark:text-slate-300 text-gray-700"
     >
-      <HeaderBar />
+      <div class="m-4">
+        <Toolbar />
+      </div>
       <div
         ref="gridWrapper"
         class="flex flex-grow flex-col overflow-hidden"

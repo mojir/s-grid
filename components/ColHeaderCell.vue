@@ -18,9 +18,9 @@ const isSelected = computed(() => selection.value.containsColIndex(col.value.ind
 const cellStyle = computed(() => {
   const style: CSSProperties = {
     height: `${colHeaderHeight}px`,
-    width: `${col.value.width + 1}px`,
+    width: `${col.value.width.value + 1}px`,
     minHeight: `${colHeaderHeight}px`,
-    minWidth: `${col.value.width + 1}px`,
+    minWidth: `${col.value.width.value + 1}px`,
     marginLeft: '-1px',
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
@@ -42,7 +42,7 @@ const cellStyle = computed(() => {
   >
     <div
       :id="col.id"
-      :style="whs(col.width, colHeaderHeight)"
+      :style="whs(col.width.value, colHeaderHeight)"
       class="flex flex-1 justify-center text-xs items-center select-none"
     >
       {{ col.id }}

@@ -84,7 +84,7 @@ const cellStyle = computed(() => {
   const style: CSSProperties = {
     position: 'relative',
     boxSizing: 'border-box',
-    width: `${col.value.width + 1}px`,
+    width: `${col.value.width.value + 1}px`,
     height: `${row.value.height.value + 1}px`,
     marginLeft: '-1px',
     marginTop: '-1px',

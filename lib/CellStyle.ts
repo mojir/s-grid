@@ -2,14 +2,9 @@ export type StyleJustify = 'left' | 'center' | 'right'
 export type StyleAlign = 'top' | 'middle' | 'bottom'
 export type StyleTextDecoration = 'underline' | 'line-through'
 export const styleFontSizes = [
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
   12,
   14,
+  16,
   18,
   24,
   36,

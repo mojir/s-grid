@@ -22,7 +22,7 @@ function onUpdateLineThrough(value: boolean) {
 </script>
 
 <template>
-  <div class="flex gap-1">
+  <div class="flex gap-0.5">
     <Toggle
       variant="outline"
       :pressed="textDecoration === 'underline'"

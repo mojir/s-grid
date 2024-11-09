@@ -4,7 +4,7 @@ import { Row } from '~/lib/Row'
 
 const defaultNbrOfRows = 50
 const defaultNbrOfCols = 26
-const defaultColWidth = 100
+const defaultColWidth = 120
 
 export const useRowsAndCols = createSharedComposable(() => {
   const rows = shallowRef<Row[]>(Array.from({ length: defaultNbrOfRows }, (_, rowIndex) => Row.create(rowIndex, defaultLineHeight)))
@@ -19,7 +19,7 @@ export const useRowsAndCols = createSharedComposable(() => {
     return row
   }
 
-  function getCol(id: string): Col | undefined {
+  function getCol(id: string): Col {
     const col = cols.value[Col.getColIndexFromId(id)]
 
     if (!col) {

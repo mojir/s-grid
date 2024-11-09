@@ -4,12 +4,12 @@ export class Col {
   private constructor(
     public readonly index: number,
     public readonly id: string,
-    public width: number,
+    public width: Ref<number>,
   ) {
   }
 
   static create(index: number, width: number): Col {
-    return new Col(index, Col.getColIdFromIndex(index), width)
+    return new Col(index, Col.getColIdFromIndex(index), ref(width))
   }
 
   static isColString(id: unknown): id is string {

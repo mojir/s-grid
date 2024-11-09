@@ -22,7 +22,7 @@ function onUpdateFontSize(value: string) {
 
 <template>
   <div
-    class="px-1 h-7  bg-transparent rounded-sm cursor-pointer text-sm"
+    class="px-1 h-6 -mt-2  bg-transparent rounded-sm cursor-pointer text-sm"
   >
     <Select
       :model-value="fontSize"

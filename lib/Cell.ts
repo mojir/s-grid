@@ -4,6 +4,7 @@ import type { Grid } from './Grid'
 import { CellStyle } from './CellStyle'
 import type { Color } from './color'
 import { CellRange } from './CellRange'
+import { defaultFormatter } from './utils'
 
 const lits = new Lits()
 
@@ -12,7 +13,7 @@ const { jsFunctions } = useCommandCenter()
 export class Cell {
   public input = ref('')
   public alias = ref<string | null>(null)
-  public formatter = ref<string | null>(null)
+  public formatter = ref<string | null>(defaultFormatter)
   public style = ref(new CellStyle())
   public backgroundColor = ref<Color | null>(null)
   public textColor = ref<Color | null>(null)
@@ -31,9 +32,11 @@ export class Cell {
     return []
   })
 
-  public localReferencedTargets = computed(() => {
+  public localReferencedTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localUnresolvedIdentifiers.value))
+
+  private getTargetsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     const alias = useAlias()
-    return this.localUnresolvedIdentifiers.value.flatMap((identifier) => {
+    return unresolvedIdentifiers.flatMap((identifier) => {
       if (CellId.isCellIdString(identifier)) {
         return CellId.fromId(identifier)
       }
@@ -46,7 +49,7 @@ export class Cell {
       }
       return []
     })
-  })
+  }
 
   private unresolvedIdentifiers = computed<string[]>(() => {
     const allTargets = new Set<string>(this.localUnresolvedIdentifiers.value)
@@ -85,7 +88,7 @@ export class Cell {
   })
 
   public display = computed<string>(() => {
-    if (this.input.value === '') {
+    if (this.output.value === null) {
       return ''
     }
 
@@ -97,30 +100,54 @@ export class Cell {
       return `${alias ? `${alias} ` : ''}λ`
     }
 
-    const formattedValue = this.formatterFn.value
-      ? lits.apply(this.formatterFn.value, [this.output.value])
-      : this.output.value
+    const formattedOutput = this.formatOutput()
 
-    if (Array.isArray(formattedValue)) {
-      return JSON.stringify(formattedValue)
+    if (Array.isArray(formattedOutput)) {
+      return JSON.stringify(formattedOutput)
     }
 
-    if (typeof formattedValue === 'object' && formattedValue !== null) {
-      return JSON.stringify(formattedValue)
+    if (typeof formattedOutput === 'object' && formattedOutput !== null) {
+      return JSON.stringify(formattedOutput)
     }
 
-    return `${formattedValue}`
+    return `${formattedOutput}`
   })
 
-  private formatterFn = computed(() => {
-    if (this.formatter.value === null) {
-      return null
+  private formatOutput() {
+    if (typeof this.output.value !== 'number') {
+      return this.output.value
     }
-    const tokenStream = lits.tokenize(this.formatter.value)
-    const ast = lits.parse(tokenStream)
-    const fn = lits.evaluate(ast, {})
-    return isLitsFunction(fn) ? fn : null
-  })
+    const formatter = this.formatter.value
+    if (formatter === null) {
+      return this.output.value
+      // return defaultFormatter(this.output.value)
+    }
+
+    const identifiers = Array.from(
+      lits.analyze(formatter, { jsFunctions }).unresolvedIdentifiers,
+    ).map(identifier => identifier.symbol)
+
+    identifiers.push(...this.getTargetsFromUnresolvedIdentifiers(identifiers)
+      .flatMap(target => this.grid.getCells(target))
+      .flatMap(cell => cell.unresolvedIdentifiers.value))
+
+    const uniqueIdentifiers = Array.from(new Set(identifiers))
+
+    try {
+      const values = this.grid.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
+      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions })
+
+      if (!isLitsFunction(fn)) {
+        return this.output.value
+      }
+
+      const result = lits.apply(fn, [this.output.value], { values, jsFunctions })
+      return result
+    }
+    catch (error) {
+      return error
+    }
+  }
 
   public isNumber = computed(() => {
     return typeof this.output.value === 'number'

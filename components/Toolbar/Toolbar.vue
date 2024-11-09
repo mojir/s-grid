@@ -1,16 +1,40 @@
+<script setup lang="ts">
+import { whs } from '~/lib/utils'
+
+const { sidePanelOpen } = useSidePanel()
+</script>
+
 <template>
   <div
-    class="gap-3 py-2 px-3 flex flex-wrap items-center dark:bg-slate-900 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl"
+    class="gap-2 py-1.5 px-4 w-full flex items-center dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl drop-shadow-md"
   >
-    <div class="flex gap-1">
-      <ToolbarFontSizeSelector />
+    <AppLogo
+      class="w-[72px] h-[72px] -ml-3 -my-4"
+    />
+
+    <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
+      <ToolbarFontSizeSelector class="mr-2" />
       <ToolbarBoldButton />
       <ToolbarItalicButton />
-      <ToolbarTextDecorationSwitch />
+      <ToolbarTextDecorationSwitch class="mr-3" />
+      <ToolbarJustifySwitch class="mr-3" />
+      <ToolbarAlignSwitch class="mr-3" />
+      <ToolbarTextColorPicker />
+      <ToolbarBackgroundColorPicker class="mr-3" />
+      <ToolbarNumberFormatterPicker class="mr-1" />
     </div>
-    <ToolbarJustifySwitch />
-    <ToolbarAlignSwitch />
-    <ToolbarTextColorPicker />
-    <ToolbarBackgroundColorPicker />
+
+    <div
+      class="items-center dark:text-slate-400 text-gray-600"
+      :style="whs(40, 40)"
+    >
+      <Icon
+        v-if="!sidePanelOpen"
+        name="mdi:menu-open"
+        size="40"
+        class="cursor-pointer dark:text-gray-400 text-gray-500 hover:dark:text-slate-200 hover:text-black  transition-colors"
+        @click="sidePanelOpen = true"
+      />
+    </div>
   </div>
 </template>

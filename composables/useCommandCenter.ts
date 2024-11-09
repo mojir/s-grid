@@ -1,4 +1,5 @@
-import type { LitsParams } from '@mojir/lits'
+import type { JsFunctions } from '~/lib/litsInterop'
+import { format } from '~/lib/litsInterop/format'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const builtinCommandNames = [
@@ -23,11 +24,11 @@ const builtinCommandNames = [
   'SetBackgroundColor!',
   'SetTextColor!',
   'SetFormatter!',
+  'SetRowHeight!',
+  'SetColWidth!',
 ] as const
 
 type BuiltinCommandName = typeof builtinCommandNames[number]
-
-type JsFunctions = NonNullable<LitsParams['jsFunctions']>
 
 type Command<T extends string> = {
   name: T
@@ -37,7 +38,9 @@ type Command<T extends string> = {
 }
 
 const commands = ref(new Map<string, Command<string>>())
-const jsFunctions: JsFunctions = {}
+const jsFunctions: JsFunctions = {
+  format,
+}
 
 function registerCommand(command: Command<BuiltinCommandName>) {
   commands.value.set(command.name, command)
@@ -74,5 +77,25 @@ function registerCommands() {
       grid.setInput(input, target)
     },
     description: 'Clear the current cell',
+  })
+
+  registerCommand({
+    name: 'SetRowHeight!',
+    execute: (height: number, target?: string) => {
+      const grid = useGrid().grid.value
+      const cell = grid.getCell(target)
+      useRowsAndCols().getRow(cell.cellId.getRowId()).height.value = height
+    },
+    description: 'Set row height',
+  })
+
+  registerCommand({
+    name: 'SetColWidth!',
+    execute: (width: number, target?: string) => {
+      const grid = useGrid().grid.value
+      const cell = grid.getCell(target)
+      useRowsAndCols().getCol(cell.cellId.getColId()).width.value = width
+    },
+    description: 'Set column width',
   })
 }

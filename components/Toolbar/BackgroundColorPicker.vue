@@ -5,10 +5,12 @@ const { grid } = useGrid()
 </script>
 
 <template>
-  <ColorPicker
-    :model-value="grid.getBackgroundColor()"
-    :color-palette="colorPalette"
-    icon="mdi-format-color-fill"
-    @update:model-value="grid.setBackgroundColor($event)"
-  />
+  <div>
+    <ColorPicker
+      :model-value="grid.getBackgroundColor()"
+      :color-palette="colorPalette"
+      icon="mdi-format-color-fill"
+      @update:model-value="grid.setBackgroundColor($event)"
+    />
+  </div>
 </template>
