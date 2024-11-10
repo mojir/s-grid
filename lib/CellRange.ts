@@ -7,7 +7,7 @@ export type StructuredCellIds = {
   array: CellId[]
 } | {
   matrix: CellId[][]
-  flat?: never
+  array?: never
 }
 
 export class CellRange {
@@ -107,6 +107,13 @@ export class CellRange {
       }
       return { array }
     }
+
+    return { matrix: this.getCellIdMatrix() }
+  }
+
+  public getCellIdMatrix(): CellId[][] {
+    const [startRow, startCol, endRow, endCol] = this.toSorted().toCoords()
+
     const matrix: CellId[][] = []
     for (let row = startRow; row <= endRow; row++) {
       const rowArray: CellId[] = []
@@ -115,7 +122,7 @@ export class CellRange {
         rowArray.push(CellId.fromCoords(row, col))
       }
     }
-    return { matrix }
+    return matrix
   }
 
   public contains(cellId: CellId): boolean {

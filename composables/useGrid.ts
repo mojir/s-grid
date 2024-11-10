@@ -72,14 +72,14 @@ registerCommand({
 registerCommand({
   name: 'GetCell',
   execute: (cellId: string) => {
-    return grid.value.getCell(cellId).getJson()
+    return grid.value.getCell(cellId).getDebugInfo()
   },
   description: 'Get a cell. If no target is specified, get the active cell.',
 })
 registerCommand({
   name: 'GetCells',
   execute: (cellId: string) => {
-    return grid.value.getCells(cellId).map(cell => cell.getJson())
+    return grid.value.getCells(cellId).map(cell => cell.getDebugInfo())
   },
   description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
 })

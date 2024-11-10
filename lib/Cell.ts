@@ -1,15 +1,23 @@
-import { isLitsFunction, Lits } from '@mojir/lits'
+import { isLitsFunction } from '@mojir/lits'
 import { CellId } from './CellId'
 import type { Grid } from './Grid'
-import { CellStyle } from './CellStyle'
-import type { Color } from './color'
+import { CellStyle, type CellStyleJson } from './CellStyle'
+import { Color, type ColorJson } from './color'
 import { CellRange } from './CellRange'
 import { defaultFormatter } from './utils'
 
-const lits = new Lits()
-
 const { jsFunctions } = useCommandCenter()
 
+export type CellJson = {
+  input: string
+  output: unknown
+  display: string
+  alias: string | null
+  formatter: string | null
+  style: CellStyleJson
+  backgroundColor?: ColorJson | null
+  textColor?: ColorJson | null
+}
 export class Cell {
   public input = ref('')
   public alias = ref<string | null>(null)
@@ -18,12 +26,43 @@ export class Cell {
   public backgroundColor = ref<Color | null>(null)
   public textColor = ref<Color | null>(null)
 
+  constructor(private readonly grid: Grid, public cellId: CellId) {
+    watch(this.display, (newValue, oldValue) => {
+      if (!oldValue && newValue) {
+        this.grid.autoSetRowHeightByTarget(this.cellId)
+      }
+    })
+  }
+
+  public setJson(json: CellJson) {
+    this.input.value = json.input
+    this.formatter.value = json.formatter
+    this.style.value = CellStyle.fromJson(json.style)
+    this.backgroundColor.value = json.backgroundColor ? Color.fromJson(json.backgroundColor) : null
+    this.textColor.value = json.textColor ? Color.fromJson(json.textColor) : null
+  }
+
+  public getJson(): CellJson {
+    return {
+      input: this.input.value,
+      output: this.output.value,
+      display: this.display.value,
+      alias: this.alias.value,
+      formatter: this.formatter.value,
+      style: this.style.value.getJson(),
+      backgroundColor: this.backgroundColor.value?.getJson(),
+      textColor: this.textColor.value?.getJson(),
+    }
+  }
+
   public formula = computed(() => this.input.value.startsWith('=') ? this.input.value.slice(1) : null)
+  public localReferencedTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localUnresolvedIdentifiers.value))
 
   private localUnresolvedIdentifiers = computed<string[]>(() => {
     const input = this.input.value
 
     if (this.formula.value !== null) {
+      const lits = useLits().value
       const program = input.slice(1)
       const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
@@ -31,8 +70,6 @@ export class Cell {
 
     return []
   })
-
-  public localReferencedTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localUnresolvedIdentifiers.value))
 
   private getTargetsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     const alias = useAlias()
@@ -70,6 +107,7 @@ export class Cell {
     }
 
     if (this.formula.value !== null) {
+      const lits = useLits().value
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
         const result = lits.run(this.formula.value, { values, jsFunctions })
@@ -123,6 +161,8 @@ export class Cell {
       // return defaultFormatter(this.output.value)
     }
 
+    const lits = useLits().value
+
     const identifiers = Array.from(
       lits.analyze(formatter, { jsFunctions }).unresolvedIdentifiers,
     ).map(identifier => identifier.symbol)
@@ -153,7 +193,7 @@ export class Cell {
     return typeof this.output.value === 'number'
   })
 
-  public getJson() {
+  public getDebugInfo() {
     return {
       id: this.cellId.id,
       input: this.input.value,
@@ -167,14 +207,6 @@ export class Cell {
       localReferences: this.localReferencedTargets.value.map(target => target.id),
       references: [...this.unresolvedIdentifiers.value],
     }
-  }
-
-  constructor(private readonly grid: Grid, public cellId: CellId) {
-    watch(this.display, (newValue, oldValue) => {
-      if (!oldValue && newValue) {
-        this.grid.autoSetRowHeightByTarget(this.cellId)
-      }
-    })
   }
 }
 

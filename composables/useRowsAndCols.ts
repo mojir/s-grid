@@ -1,7 +1,7 @@
 import { CellId } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
 import { defaultLineHeight } from '~/lib/CellStyle'
-import { Col } from '~/lib/Col'
+import { Col, type ColIdString } from '~/lib/Col'
 import { Row, type RowIdString } from '~/lib/Row'
 
 const defaultNbrOfRows = 50
@@ -22,7 +22,7 @@ export const useRowsAndCols = createSharedComposable(() => {
     return row
   }
 
-  function getCol(id: string): Col {
+  function getCol(id: ColIdString): Col {
     const col = cols.value[Col.getColIndexFromId(id)]
 
     if (!col) {

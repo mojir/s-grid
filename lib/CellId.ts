@@ -3,8 +3,40 @@ import { Col, type ColIdString } from './Col'
 import { Row, type RowIdString } from './Row'
 import type { Direction } from '~/composables/useGrid'
 
-const cellIdStringRegExp = /^([A-Z]+)(\d+)$/
+export type Movement = {
+  rowDelta: number
+  colDelta: number
+}
 
+const cellIdStringRegExp = /^(\$?)([A-Z]+)(\$?)(\d+)$/
+
+export function getCellIdStrinInfo(cellIdString: string) {
+  const match = cellIdStringRegExp.exec(cellIdString)
+
+  if (!match) {
+    return null
+  }
+
+  const colId = match[2] as ColIdString
+  const rowId = match[4] as RowIdString
+
+  const absoluteCol = !!match[1]
+  const absoluteRow = !!match[3]
+
+  const colIndex = Col.getColIndexFromId(colId)
+  const rowIndex = Row.getRowIndexFromId(rowId)
+
+  return {
+    colPart: absoluteCol ? `$${colId}` : colId,
+    rowPart: absoluteRow ? `$${rowId}` : rowId,
+    colId,
+    rowId,
+    colIndex,
+    rowIndex,
+    absoluteCol,
+    absoluteRow,
+  }
+}
 export class CellId {
   private constructor(
     public readonly rowIndex: number,
@@ -17,7 +49,8 @@ export class CellId {
     if (!match) {
       throw new Error(`Invalid cell id: ${id}`)
     }
-    const [, colId, rowId] = match
+    const colId = match[2] as ColIdString
+    const rowId = match[4] as RowIdString
     return new CellId(Number(rowId) - 1, Col.getColIndexFromId(colId), id)
   }
 
@@ -31,6 +64,13 @@ export class CellId {
 
   static isCellIdString(id: unknown): id is string {
     return typeof id === 'string' && cellIdStringRegExp.test(id)
+  }
+
+  public getMovementTo(cellId: CellId): Movement {
+    return {
+      rowDelta: cellId.rowIndex - this.rowIndex,
+      colDelta: cellId.colIndex - this.colIndex,
+    }
   }
 
   public clamp(range: CellRange): CellId {

@@ -36,7 +36,7 @@ export class Col {
     return result as ColIdString
   }
 
-  static getColIndexFromId(colId: string) {
+  static getColIndexFromId(colId: ColIdString) {
     return colId.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)
   }
 }

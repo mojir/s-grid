@@ -1,7 +1,6 @@
 import {
   isLitsError,
   isLitsFunction,
-  Lits,
   normalExpressionKeys,
   specialExpressionKeys,
   apiReference,
@@ -20,7 +19,6 @@ type HistoryEntry = {
 }
 
 let historyIndex = -1
-const lits = new Lits()
 
 let globalContext: Context = {}
 
@@ -159,6 +157,8 @@ function clearSuggestions() {
 }
 
 function run(program: string) {
+  const lits = useLits().value
+
   let result
   try {
     const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })

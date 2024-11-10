@@ -13,6 +13,7 @@ const { sidePanelHandleKeyDown } = useSidePanel()
 const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
 const { getRow, getCol, minColHeight, minRowWidth } = useRowsAndCols()
 const { hoveredCellId } = useHover()
+const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
 
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -349,6 +350,35 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.movePosition('left')
         resetSelection()
       }
+    }
+    // else if (e.key === 'Home') {
+    //   e.preventDefault()
+    //   grid.value.movePosition('home')
+    //   resetSelection()
+    // }
+    // else if (e.key === 'End') {
+    //   e.preventDefault()
+    //   grid.value.movePosition('end')
+    //   resetSelection()
+    // }
+    // else if (e.key === 'PageDown') {
+    //   e.preventDefault()
+    //   grid.value.movePosition('pagedown')
+    //   resetSelection()
+    // }
+    // else if (e.key === 'PageUp') {
+    //   e.preventDefault()
+    //   grid.value.movePosition('pageup')
+    //   resetSelection()
+    // }
+    else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+      copySelection()
+    }
+    else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
+      cutSelection()
+    }
+    else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+      pasteSelection()
     }
   }
 }
