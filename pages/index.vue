@@ -217,7 +217,10 @@ function onMouseEnter(event: MouseEvent) {
     return
   }
   const target = event.target as HTMLElement | undefined
-  const cellId = CellId.isCellIdString(target?.id) ? target.id : null
+  if (!target) {
+    return
+  }
+  const cellId = CellId.isCellIdString(target.id) ? target.id : null
   if (cellId) {
     hoveredCellId.value = cellId
   }
@@ -225,14 +228,14 @@ function onMouseEnter(event: MouseEvent) {
     if (CellId.isCellIdString(mouseDownStart.value) && cellId) {
       selection.select(`${mouseDownStart.value}-${cellId}`)
     }
-    else if (Col.isColIdString(mouseDownStart.value) && Col.isColIdString(target?.id)) {
+    else if (Col.isColIdString(mouseDownStart.value) && Col.isColIdString(target.id)) {
       const fromCol = getCol(mouseDownStart.value)
       const toCol = getCol(target.id)
       if (fromCol && toCol) {
         selection.selectColRange(fromCol, toCol)
       }
     }
-    else if (Row.isRowIdString(mouseDownStart.value) && Row.isRowIdString(target?.id)) {
+    else if (Row.isRowIdString(mouseDownStart.value) && Row.isRowIdString(target.id)) {
       const fromRow = getRow(mouseDownStart.value)
       const toRow = getRow(target.id)
       if (fromRow && toRow) {

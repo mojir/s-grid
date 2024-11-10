@@ -49,3 +49,5 @@ export const useRowsAndCols = createSharedComposable(() => {
     getCellIdsFromColIndex,
   }
 })
+
+export type RowsAndColsComposable = ReturnType<typeof useRowsAndCols>

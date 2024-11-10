@@ -20,3 +20,5 @@ export const useAlias = createSharedComposable(() => {
     getAlias,
   }
 })
+
+export type AliasComposable = ReturnType<typeof useAlias>

@@ -1,10 +1,11 @@
 import { isLitsFunction } from '@mojir/lits'
 import { CellId } from './CellId'
-import type { Grid } from './Grid'
 import { CellStyle, type CellStyleJson } from './CellStyle'
 import { Color, type ColorJson } from './color'
 import { CellRange } from './CellRange'
 import { defaultFormatter } from './utils'
+import type { Grid } from './Grid'
+import type { LitsComposable } from '~/composables/useLits'
 
 const { jsFunctions } = useCommandCenter()
 
@@ -19,6 +20,9 @@ export type CellJson = {
   textColor?: ColorJson | null
 }
 export class Cell {
+  private grid: Grid
+  private litsComposable: LitsComposable
+
   public input = ref('')
   public alias = ref<string | null>(null)
   public formatter = ref<string | null>(defaultFormatter)
@@ -26,10 +30,21 @@ export class Cell {
   public backgroundColor = ref<Color | null>(null)
   public textColor = ref<Color | null>(null)
 
-  constructor(private readonly grid: Grid, public cellId: CellId) {
+  constructor(
+    public cellId: CellId,
+    {
+      grid,
+      litsComposable,
+    }: {
+      grid: Grid
+      litsComposable: LitsComposable
+    }) {
+    this.grid = grid
+    this.litsComposable = litsComposable
+
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
-        this.grid.autoSetRowHeightByTarget(this.cellId)
+        grid.autoSetRowHeightByTarget(this.cellId)
       }
     })
   }
@@ -62,7 +77,7 @@ export class Cell {
     const input = this.input.value
 
     if (this.formula.value !== null) {
-      const lits = useLits().value
+      const lits = this.litsComposable.value
       const program = input.slice(1)
       const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
@@ -107,7 +122,7 @@ export class Cell {
     }
 
     if (this.formula.value !== null) {
-      const lits = useLits().value
+      const lits = this.litsComposable.value
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
         const result = lits.run(this.formula.value, { values, jsFunctions })
@@ -161,7 +176,7 @@ export class Cell {
       // return defaultFormatter(this.output.value)
     }
 
-    const lits = useLits().value
+    const lits = this.litsComposable.value
 
     const identifiers = Array.from(
       lits.analyze(formatter, { jsFunctions }).unresolvedIdentifiers,

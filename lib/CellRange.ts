@@ -1,7 +1,5 @@
 import { CellId } from './CellId'
 
-const cellRangeRegExp = /^([A-Z]+\d+)-([A-Z]+\d+)$/
-
 export type StructuredCellIds = {
   matrix?: never
   array: CellId[]
@@ -22,8 +20,12 @@ export class CellRange {
     return value instanceof CellRange
   }
 
-  static isCellRangeString(id: unknown): id is string {
-    return typeof id === 'string' && cellRangeRegExp.test(id)
+  static isCellRangeString(id: string): boolean {
+    const parts = id.split('-')
+    if (parts.length !== 2) {
+      return false
+    }
+    return CellId.isCellIdString(parts[0]) && CellId.isCellIdString(parts[1])
   }
 
   static fromSingleCellId(cellId: CellId): CellRange {
@@ -39,13 +41,11 @@ export class CellRange {
   }
 
   static fromId(id: string): CellRange {
-    const match = id.match(cellRangeRegExp)
-
-    if (!match) {
+    if (!CellRange.isCellRangeString(id)) {
       throw new Error(`Invalid cell range id: ${id}`)
     }
 
-    const [, startId, endId] = match
+    const [startId, endId] = id.split('-')
     return new CellRange(CellId.fromId(startId), CellId.fromId(endId))
   }
 

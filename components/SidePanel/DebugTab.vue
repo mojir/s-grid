@@ -8,7 +8,6 @@ enum TypeEnum {
 type SourceRecord = {
   name: string
   description: string
-  example?: string
   fn: string
   inputType?: TypeEnum
 }
@@ -36,41 +35,43 @@ const source: SourceRecord[] = [
   {
     name: 'SUM',
     description: 'Adds all the numbers in a range.',
-    example: '=SUM(A1:A10)',
     fn: '=#(reduce + 0 (AS_FLAT_RANGE %))',
     inputType: TypeEnum.RangeToNumber,
   },
   {
     name: 'COUNT',
     description: 'Counts the number of numeric values in a range.',
-    example: '=COUNT(A1:A10)',
     fn: '=#(count (AS_FLAT_RANGE %))',
     inputType: TypeEnum.RangeToNumber,
   },
   {
     name: 'COUNTA',
     description: 'Counts the number of non-empty cells in a range.',
-    example: '=COUNTA(A1:A10)',
     fn: '=#(count (AS_FLAT_RANGEA %))',
     inputType: TypeEnum.RangeToNumber,
   },
   {
     name: 'AVERAGE',
     description: 'Calculates the average of numbers in a range.',
-    example: '=AVERAGE(A1:A10)',
     fn: '=#(/ (SUM %) (COUNT %))',
     inputType: TypeEnum.RangeToNumber,
   },
   {
     name: 'MEDIAN',
     description: 'Calculates the average of numbers in a range.',
-    example: '=AVERAGE(A1:A10)',
     fn: `=
   #(let [sorted (sort (AS_FLAT_RANGE %))
          cnt (count sorted)
          halfway (quot cnt 2)]
-     (if (odd? cnt)
+     (cond
+       ; empty range, default to 0
+       (zero? cnt)
+       0
+       
+       (odd? cnt)
        (nth sorted halfway)
+       
+       :else
        (let [bottom (dec halfway)
              bottom-val (nth sorted bottom)
              top-val (nth sorted halfway)]
@@ -80,14 +81,12 @@ const source: SourceRecord[] = [
   {
     name: 'MAX',
     description: 'Returns the maximum value in a range.',
-    example: '=MAX(A1:A10)',
     fn: '=#(let [numbers (AS_FLAT_RANGE %)] (if (empty? numbers) 0 (reduce max numbers)))',
     inputType: TypeEnum.RangeToNumber,
   },
   {
     name: 'MIN',
     description: 'Returns the minimum value in a range.',
-    example: '=MIN(A1:A10)',
     fn: '=#(let [numbers (AS_FLAT_RANGE %)] (if (empty? numbers) 0 (reduce min numbers)))',
     inputType: TypeEnum.RangeToNumber,
   },

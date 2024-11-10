@@ -10,7 +10,18 @@ export type Movement = {
 
 const cellIdStringRegExp = /^(\$?)([A-Z]+)(\$?)(\d+)$/
 
-export function getCellIdStrinInfo(cellIdString: string) {
+export type CellIdStringInfo = {
+  colPart: string
+  rowPart: string
+  colId: ColIdString
+  rowId: RowIdString
+  colIndex: number
+  rowIndex: number
+  absoluteCol: boolean
+  absoluteRow: boolean
+}
+
+export function getInfoFromCellIdString(cellIdString: string): CellIdStringInfo | null {
   const match = cellIdStringRegExp.exec(cellIdString)
 
   if (!match) {
@@ -62,8 +73,8 @@ export class CellId {
     return value instanceof CellId
   }
 
-  static isCellIdString(id: unknown): id is string {
-    return typeof id === 'string' && cellIdStringRegExp.test(id)
+  static isCellIdString(id: string): boolean {
+    return cellIdStringRegExp.test(id)
   }
 
   public getMovementTo(cellId: CellId): Movement {

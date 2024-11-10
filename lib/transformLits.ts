@@ -1,7 +1,8 @@
 import { TokenType, type Token } from '@mojir/lits'
-import { getCellIdStrinInfo, type Movement } from './CellId'
+import { getInfoFromCellIdString, type Movement } from './CellId'
 import { Col } from './Col'
 import { Row } from './Row'
+import { CellRange } from './CellRange'
 
 function isNoSpaceNeededBefore(token: Token): boolean {
   switch (token.t) {
@@ -51,18 +52,41 @@ function getValueFromToken(token: Token, movement: Movement): string {
       return `"${token.v}"`
     case TokenType.Name: {
       console.log('token.v', token.v)
-      const info = getCellIdStrinInfo(token.v)
-      if (info) {
-        const newColId = info.absoluteCol ? info.colPart : Col.getColIdFromIndex(info.colIndex + movement.colDelta)
-        const newRowId = info.absoluteRow ? info.rowPart : Row.getRowIdFromIndex(info.rowIndex + movement.rowDelta)
-        return `${newColId}${newRowId}`
+      const movedCellIdString = applyMovementOnCellIdString(token.v, movement)
+      if (movedCellIdString) {
+        return movedCellIdString
       }
 
-      // TODO handle ranges
+      const movedCellRangeStringId = applyMovementOnRangeIdString(token.v, movement)
+      if (movedCellRangeStringId) {
+        return movedCellRangeStringId
+      }
 
       return token.v
     }
     default:
       return token.v
   }
+}
+
+function applyMovementOnCellIdString(cellIdString: string, movement: Movement): string | null {
+  const cellIdStringInfo = getInfoFromCellIdString(cellIdString)
+  if (!cellIdStringInfo) {
+    return null
+  }
+
+  const newColId = cellIdStringInfo.absoluteCol ? cellIdStringInfo.colPart : Col.getColIdFromIndex(cellIdStringInfo.colIndex + movement.colDelta)
+  const newRowId = cellIdStringInfo.absoluteRow ? cellIdStringInfo.rowPart : Row.getRowIdFromIndex(cellIdStringInfo.rowIndex + movement.rowDelta)
+  return `${newColId}${newRowId}`
+}
+
+function applyMovementOnRangeIdString(rangeIdString: string, movement: Movement): string | null {
+  if (!CellRange.isCellRangeString(rangeIdString)) {
+    return null
+  }
+  const [start, end] = rangeIdString.split('-').map(cellIdString => applyMovementOnCellIdString(cellIdString, movement))
+  if (!start || !end) {
+    return null
+  }
+  return `${start}-${end}`
 }

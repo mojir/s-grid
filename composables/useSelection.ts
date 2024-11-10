@@ -84,7 +84,7 @@ export const useSelection = createSharedComposable(() => {
   function select(target: string | CellRange | CellId) {
     const range = CellRange.isCellRange(target)
       ? target
-      : CellRange.isCellRangeString(target)
+      : typeof target === 'string' && CellRange.isCellRangeString(target)
         ? CellRange.fromId(target).clamp(gridRange.value)
         : CellId.isCellId(target)
           ? CellRange.fromSingleCellId(target).clamp(gridRange.value)
@@ -110,3 +110,5 @@ export const useSelection = createSharedComposable(() => {
     selecting,
   }
 })
+
+export type SelectionComposable = ReturnType<typeof useSelection>

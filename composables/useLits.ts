@@ -8,3 +8,5 @@ export default function useLits() {
 
   return computed(() => (debugMode.value ? litsDebug : defaultLits))
 }
+
+export type LitsComposable = ReturnType<typeof useLits>
