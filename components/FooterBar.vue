@@ -31,7 +31,7 @@ const errorMessage = computed(() => {
   >
     <div
       v-if="errorMessage"
-      class="whitespace-pre-wrap flex-1 text-red-500 py-2 max-h-40 overflow-auto"
+      class="whitespace-pre-wrap flex-1 text-red-500 py-2 max-h-40 overflow-auto font-mono"
     >
       {{ errorMessage }}
     </div>

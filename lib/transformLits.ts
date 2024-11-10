@@ -37,7 +37,6 @@ function isNoSpaceNeededAfter(token: Token): boolean {
 export function transformLits(program: string, movement: Movement): string {
   const lits = useLits().value
   const tokenStream = lits.tokenize(program)
-  console.log(tokenStream.tokens, movement)
   let lastToken: Token | undefined
   return tokenStream.tokens.reduce((acc: string, token) => {
     const joiner = !lastToken || isNoSpaceNeededAfter(lastToken) || isNoSpaceNeededBefore(token) ? '' : ' '
@@ -51,7 +50,6 @@ function getValueFromToken(token: Token, movement: Movement): string {
     case TokenType.String:
       return `"${token.v}"`
     case TokenType.Name: {
-      console.log('token.v', token.v)
       const movedCellIdString = applyMovementOnCellIdString(token.v, movement)
       if (movedCellIdString) {
         return movedCellIdString
