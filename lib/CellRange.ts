@@ -1,13 +1,5 @@
 import { CellId } from './CellId'
 
-export type StructuredCellIds = {
-  matrix?: never
-  array: CellId[]
-} | {
-  matrix: CellId[][]
-  array?: never
-}
-
 export class CellRange {
   public readonly id: string
   private constructor(
@@ -87,28 +79,6 @@ export class CellRange {
     }
 
     return cellIds
-  }
-
-  public getStructuredCellIds(): StructuredCellIds {
-    const [startRow, startCol, endRow, endCol] = this.toSorted().toCoords()
-
-    if (startRow === endRow) {
-      const array: CellId[] = []
-      for (let col = startCol; col <= endCol; col++) {
-        array.push(CellId.fromCoords(startRow, col))
-      }
-      return { array }
-    }
-
-    if (startCol === endCol) {
-      const array: CellId[] = []
-      for (let row = startRow; row <= endRow; row++) {
-        array.push(CellId.fromCoords(row, startCol))
-      }
-      return { array }
-    }
-
-    return { matrix: this.getCellIdMatrix() }
   }
 
   public getCellIdMatrix(): CellId[][] {

@@ -6,6 +6,7 @@ import { Col, type ColIdString } from './Col'
 import type { Color } from './color'
 import { Row, type RowIdString } from './Row'
 import type { CellOrRangeTarget, CellTarget } from './utils'
+import { matrixMap } from './matrix'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
 import type { AliasComposable } from '~/composables/useAlias'
@@ -115,31 +116,13 @@ export class Grid {
         acc[target] = aliasCell.output.value
       }
       else if (CellId.isCellIdString(target)) {
-        const cell = this.getCell(target)
-        acc[target] = cell.output.value
+        acc[target] = this.getCell(target).output.value
       }
       else if (CellRange.isCellRangeString(target)) {
-        const data = CellRange.fromId(target).getStructuredCellIds()
-        if (data.matrix) {
-          const matrixValues: unknown[][] = []
-          for (const row of data.matrix) {
-            const rowValues: unknown[] = []
-            matrixValues.push(rowValues)
-            for (const cellId of row) {
-              const cell = this.getCell(cellId)
-              rowValues.push(cell.output.value)
-            }
-          }
-          acc[target] = matrixValues
-        }
-        else {
-          const arrayValues: unknown[] = []
-          for (const cellId of data.array) {
-            const cell = this.getCell(cellId)
-            arrayValues.push(cell.output.value)
-          }
-          acc[target] = arrayValues
-        }
+        acc[target] = matrixMap(
+          CellRange.fromId(target).getCellIdMatrix(),
+          cellId => this.getCell(cellId).output.value,
+        )
       }
       else {
         console.error(`Unknown identifier ${target}`)
