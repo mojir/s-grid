@@ -24,14 +24,16 @@ export class Grid {
   constructor(
     {
       rowsAndCols,
-      selection: selection,
-      alias: alias,
-      lits: lits,
+      selection,
+      alias,
+      lits,
+      commandCenter,
     }: {
       rowsAndCols: RowsAndColsComposable
       selection: SelectionComposable
       alias: AliasComposable
       lits: LitsComposable
+      commandCenter: CommandCenterComposable
     },
   ) {
     this.rowsAndCols = rowsAndCols
@@ -39,7 +41,9 @@ export class Grid {
     this.alias = alias
     this.position = ref(CellId.fromCoords(0, 0))
     this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
-      Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) => new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits: lits })),
+      Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) =>
+        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits, commandCenter }),
+      ),
     )
     this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rowsAndCols.rows.value.length - 1, rowsAndCols.cols.value.length - 1))
   }

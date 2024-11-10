@@ -75,3 +75,20 @@ export function getLineHeight(fontSize?: StyleFontSize): number {
   }
   return fontSize * 1.8
 }
+
+export function validCellStyle(property: CellStyleName, value: unknown): boolean {
+  switch (property) {
+    case 'bold':
+      return typeof value === 'boolean'
+    case 'italic':
+      return typeof value === 'boolean'
+    case 'textDecoration':
+      return ['underline', 'line-through'].includes(value as string)
+    case 'justify':
+      return ['left', 'center', 'right'].includes(value as string)
+    case 'align':
+      return ['top', 'middle', 'bottom'].includes(value as string)
+    case 'fontSize':
+      return styleFontSizes.includes(value as StyleFontSize)
+  }
+}

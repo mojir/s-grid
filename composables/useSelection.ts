@@ -5,7 +5,6 @@ import type { Row } from '~/lib/Row'
 
 export const useSelection = createSharedComposable(() => {
   const { rows, cols } = useRowsAndCols()
-  const { registerCommand } = useCommandCenter()
   const gridRange = computed(() => {
     return CellRange.fromDimensions(0, 0, rows.value.length - 1, cols.value.length - 1)
   })
@@ -51,36 +50,6 @@ export const useSelection = createSharedComposable(() => {
         CellId.fromCoords(toRow.index, gridRange.value.end.colIndex))
   }
 
-  registerCommand({
-    name: 'GetSelection',
-    execute: () => selection.value.getJson(),
-    description: 'Get the current selection.',
-  })
-
-  registerCommand({
-    name: 'ExpandSelection!',
-    execute: (direction: Direction) => {
-      expandSelection(direction)
-    },
-    description: 'Expand the selection one step in a specific direction',
-  })
-
-  registerCommand({
-    name: 'ExpandSelectionTo!',
-    execute: (target: CellId | string) => {
-      expandSelectionTo(target)
-    },
-    description: 'Expand the selection to a cell',
-  })
-
-  registerCommand({
-    name: 'Select!',
-    execute: (target: string) => {
-      select(target)
-    },
-    description: 'Select a cell or a range',
-  })
-
   function select(target: string | CellRange | CellId) {
     const range = CellRange.isCellRange(target)
       ? target
@@ -103,6 +72,7 @@ export const useSelection = createSharedComposable(() => {
     selection,
     updateSelection,
     expandSelection,
+    expandSelectionTo,
     selectColRange,
     selectRowRange,
     select,
