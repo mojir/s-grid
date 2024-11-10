@@ -3,7 +3,7 @@ import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 
-const { grid } = useGrid()
+const grid = useGrid()
 
 const errorMessage = computed(() => {
   const cell = grid.value.getCurrentCell()

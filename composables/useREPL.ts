@@ -23,7 +23,7 @@ let historyIndex = -1
 let globalContext: Context = {}
 
 const { jsFunctions, commands } = useCommandCenter()
-const { grid } = useGrid()
+const grid = useGrid()
 const { registerCommand } = useCommandCenter()
 
 const history = ref<HistoryEntry[]>([])

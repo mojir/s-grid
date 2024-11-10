@@ -17,10 +17,10 @@ export function setColorMode(colorMode: Ref<string>) {
 export const useGrid = createSharedComposable(() => {
   const grid = shallowReadonly(customRef((track) => {
     const gridInstance = new Grid({
-      rowsAndColsComposable: useRowsAndCols(),
-      selectionComposable: useSelection(),
-      aliasComposable: useAlias(),
-      litsComposable: useLits(),
+      rowsAndCols: useRowsAndCols(),
+      selection: useSelection(),
+      alias: useAlias(),
+      lits: useLits(),
     })
     return {
       get() {
@@ -31,14 +31,12 @@ export const useGrid = createSharedComposable(() => {
     }
   }))
 
-  return {
-    grid,
-  }
+  return grid
 })
 
 export type GridComposable = ReturnType<typeof useGrid>
 
-const { grid } = useGrid()
+const grid = useGrid()
 
 registerCommand({
   name: 'Move!',

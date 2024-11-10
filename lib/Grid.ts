@@ -13,9 +13,9 @@ import type { AliasComposable } from '~/composables/useAlias'
 import type { LitsComposable } from '~/composables/useLits'
 
 export class Grid {
-  private readonly rowsAndColsComposable: RowsAndColsComposable
-  private readonly selectionComposable: SelectionComposable
-  private readonly aliasComposable: AliasComposable
+  private readonly rowsAndCols: RowsAndColsComposable
+  private readonly selection: SelectionComposable
+  private readonly alias: AliasComposable
 
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
@@ -23,25 +23,25 @@ export class Grid {
 
   constructor(
     {
-      rowsAndColsComposable,
-      selectionComposable,
-      aliasComposable,
-      litsComposable,
+      rowsAndCols,
+      selection: selection,
+      alias: alias,
+      lits: lits,
     }: {
-      rowsAndColsComposable: RowsAndColsComposable
-      selectionComposable: SelectionComposable
-      aliasComposable: AliasComposable
-      litsComposable: LitsComposable
+      rowsAndCols: RowsAndColsComposable
+      selection: SelectionComposable
+      alias: AliasComposable
+      lits: LitsComposable
     },
   ) {
-    this.rowsAndColsComposable = rowsAndColsComposable
-    this.selectionComposable = selectionComposable
-    this.aliasComposable = aliasComposable
+    this.rowsAndCols = rowsAndCols
+    this.selection = selection
+    this.alias = alias
     this.position = ref(CellId.fromCoords(0, 0))
-    this.cells = Array.from({ length: rowsAndColsComposable.rows.value.length }, (_, rowIndex) =>
-      Array.from({ length: rowsAndColsComposable.cols.value.length }, (_, colIndex) => new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, litsComposable })),
+    this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
+      Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) => new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits: lits })),
     )
-    this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rowsAndColsComposable.rows.value.length - 1, rowsAndColsComposable.cols.value.length - 1))
+    this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rowsAndCols.rows.value.length - 1, rowsAndCols.cols.value.length - 1))
   }
 
   public setInput(input: string, target?: CellOrRangeTarget) {
@@ -52,13 +52,13 @@ export class Grid {
 
   private getCellId(target?: CellTarget): CellId {
     if (target === undefined) {
-      return this.selectionComposable.selection.value.start
+      return this.selection.selection.value.start
     }
 
     if (CellId.isCellId(target)) {
       return target
     }
-    const cell = this.aliasComposable.getAlias(target)
+    const cell = this.alias.getAlias(target)
     return cell ? cell.cellId : CellId.fromId(target)
   }
 
@@ -78,7 +78,7 @@ export class Grid {
 
   public getCells(target?: CellOrRangeTarget): Cell[] {
     if (!target) {
-      return this.selectionComposable.selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
+      return this.selection.selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
     }
     else if (CellRange.isCellRange(target)) {
       return target.getAllCellIds().map(cellId => this.getCell(cellId))
@@ -111,7 +111,7 @@ export class Grid {
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, target) => {
-      const aliasCell = this.aliasComposable.getAlias(target)
+      const aliasCell = this.alias.getAlias(target)
       if (aliasCell) {
         acc[target] = aliasCell.output.value
       }
@@ -139,13 +139,13 @@ export class Grid {
     }
     this.position.value = newPosition
 
-    if (!this.selectionComposable.selection.value.contains(newPosition)) {
-      this.selectionComposable.updateSelection(CellRange.fromSingleCellId(newPosition))
+    if (!this.selection.selection.value.contains(newPosition)) {
+      this.selection.updateSelection(CellRange.fromSingleCellId(newPosition))
     }
   }
 
   public movePosition(dir: Direction, wrap = false) {
-    const selection = this.selectionComposable.selection.value
+    const selection = this.selection.selection.value
     const range = wrap && selection.size() > 1 ? selection : this.gridRange.value
 
     switch (dir) {
@@ -249,14 +249,14 @@ export class Grid {
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
-      this.rowsAndColsComposable.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
+      this.rowsAndCols.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
     })
   }
 
   public autoSetRowHeightByTarget(id?: CellId | string) {
     const cellIds = id
       ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selectionComposable.selection.value.getAllCellIds()
+      : this.selection.selection.value.getAllCellIds()
 
     const rowIds = cellIds
       .filter(cellId => this.getCell(cellId)?.display.value)
@@ -273,7 +273,7 @@ export class Grid {
   public autoSetColWidth(cols: ColIdString[]) {
     cols.forEach((colId) => {
       const colIndex = Col.getColIndexFromId(colId)
-      const cells = this.rowsAndColsComposable.getCellIdsFromColIndex(colIndex)
+      const cells = this.rowsAndCols.getCellIdsFromColIndex(colIndex)
         .map(cellId => this.getCell(cellId))
 
       const newColWidth = cells.reduce((acc, cell) => {
@@ -299,13 +299,13 @@ export class Grid {
         return
       }
 
-      this.rowsAndColsComposable.cols.value[colIndex].width.value = newColWidth
+      this.rowsAndCols.cols.value[colIndex].width.value = newColWidth
     })
   }
 
   public getRowCells(rowIndex: number): Cell[] {
     const startCellId = CellId.fromCoords(rowIndex, 0)
-    const endCellId = CellId.fromCoords(rowIndex, this.rowsAndColsComposable.cols.value.length - 1)
+    const endCellId = CellId.fromCoords(rowIndex, this.rowsAndCols.cols.value.length - 1)
     const range = CellRange.fromCellIds(startCellId, endCellId)
     return range
       .getAllCellIds()
@@ -313,6 +313,6 @@ export class Grid {
   }
 
   public resetSelection() {
-    this.selectionComposable.select(this.position.value)
+    this.selection.select(this.position.value)
   }
 }

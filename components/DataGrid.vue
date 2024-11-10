@@ -9,7 +9,7 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const { grid } = useGrid()
+const grid = useGrid()
 const { rows, cols } = useRowsAndCols()
 
 watch(grid.value.position, (position) => {

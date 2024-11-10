@@ -21,7 +21,7 @@ export type CellJson = {
 }
 export class Cell {
   private grid: Grid
-  private litsComposable: LitsComposable
+  private lits: LitsComposable
 
   public input = ref('')
   public alias = ref<string | null>(null)
@@ -34,13 +34,13 @@ export class Cell {
     public cellId: CellId,
     {
       grid,
-      litsComposable,
+      lits,
     }: {
       grid: Grid
-      litsComposable: LitsComposable
+      lits: LitsComposable
     }) {
     this.grid = grid
-    this.litsComposable = litsComposable
+    this.lits = lits
 
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
@@ -77,7 +77,7 @@ export class Cell {
     const input = this.input.value
 
     if (this.formula.value !== null) {
-      const lits = this.litsComposable.value
+      const lits = this.lits.value
       const program = input.slice(1)
       const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
@@ -122,7 +122,7 @@ export class Cell {
     }
 
     if (this.formula.value !== null) {
-      const lits = this.litsComposable.value
+      const lits = this.lits.value
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
         const result = lits.run(this.formula.value, { values, jsFunctions })
@@ -176,7 +176,7 @@ export class Cell {
       // return defaultFormatter(this.output.value)
     }
 
-    const lits = this.litsComposable.value
+    const lits = this.lits.value
 
     const identifiers = Array.from(
       lits.analyze(formatter, { jsFunctions }).unresolvedIdentifiers,

@@ -6,12 +6,12 @@ import { Col, type ColIdString } from '~/lib/Col'
 import { Row, type RowIdString } from '~/lib/Row'
 import { whs, hs } from '~/lib/utils'
 
-const { grid } = useGrid()
+const grid = useGrid()
 const selection = useSelection()
 const { colHeaderHeight, rowHeaderWidth } = useRowsAndCols()
 const { sidePanelHandleKeyDown } = useSidePanel()
 const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
-const { getRow, getCol, minColHeight, minRowWidth } = useRowsAndCols()
+const rowsAndCols = useRowsAndCols()
 const { hoveredCellId } = useHover()
 const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
 
@@ -112,7 +112,7 @@ function onMouseDown(event: MouseEvent) {
   if (Col.isColIdString(id)) {
     selection.selecting.value = true
     mouseDownStart.value = id
-    const col = getCol(id)
+    const col = rowsAndCols.getCol(id)
     if (col) {
       resetSelection()
       if (!editingLitsCode.value) {
@@ -123,7 +123,7 @@ function onMouseDown(event: MouseEvent) {
   }
   if (Col.isResizeColId(id)) {
     const colId = id.split(':')[1] as ColIdString
-    const col = getCol(colId)
+    const col = rowsAndCols.getCol(colId)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
     colResizing.value = {
@@ -134,8 +134,10 @@ function onMouseDown(event: MouseEvent) {
       top: rect.top,
       height: rect.height,
     }
-    if (colResizeClicked && colResizeClicked.colId === colId && Date.now() - colResizeClicked.time < dbClickTime) {
-      grid.value.autoSetColWidth([colId])
+    if (colResizeClicked?.colId === colId && Date.now() - colResizeClicked.time < dbClickTime) {
+      const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id))
+      cols.add(colId)
+      grid.value.autoSetColWidth(Array.from(cols))
       rowResizing.value = null
     }
     else {
@@ -146,7 +148,7 @@ function onMouseDown(event: MouseEvent) {
   if (Row.isRowIdString(id)) {
     selection.selecting.value = true
     mouseDownStart.value = id
-    const row = getRow(id)
+    const row = rowsAndCols.getRow(id)
     if (row) {
       resetSelection()
       if (!editingLitsCode.value) {
@@ -157,7 +159,7 @@ function onMouseDown(event: MouseEvent) {
   }
   if (Row.isResizeRowId(id)) {
     const rowId = id.split(':')[1] as RowIdString
-    const row = getRow(rowId)
+    const row = rowsAndCols.getRow(rowId)
     const y = event.clientY
     rowResizing.value = {
       rowId,
@@ -165,8 +167,10 @@ function onMouseDown(event: MouseEvent) {
       currentRowHeight: row.height.value,
       y: ref(y),
     }
-    if (rowResizeClicked && rowResizeClicked.rowId === rowId && Date.now() - rowResizeClicked.time < dbClickTime) {
-      grid.value.autoSetRowHeight([rowId])
+    if (rowResizeClicked?.rowId === rowId && Date.now() - rowResizeClicked.time < dbClickTime) {
+      const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id))
+      rows.add(rowId)
+      grid.value.autoSetRowHeight(Array.from(rows))
       rowResizing.value = null
     }
     else {
@@ -179,17 +183,17 @@ function onMouseMove(event: MouseEvent) {
     const { currentRowHeight, startY } = rowResizing.value
     const y = event.clientY
     const newHeight = currentRowHeight + y - startY
-    rowResizing.value.y.value = newHeight > minColHeight
+    rowResizing.value.y.value = newHeight > rowsAndCols.minColHeight
       ? y
-      : rowResizing.value.startY - currentRowHeight + minColHeight
+      : rowResizing.value.startY - currentRowHeight + rowsAndCols.minColHeight
   }
   if (colResizing.value) {
     const { currentColWidth, startX } = colResizing.value
     const x = event.clientX
     const newWidth = currentColWidth + x - startX
-    colResizing.value.x.value = newWidth > minRowWidth
+    colResizing.value.x.value = newWidth > rowsAndCols.minRowWidth
       ? x
-      : colResizing.value.startX - currentColWidth + minRowWidth
+      : colResizing.value.startX - currentColWidth + rowsAndCols.minRowWidth
   }
 }
 function onMouseUp(event: MouseEvent) {
@@ -200,14 +204,29 @@ function onMouseUp(event: MouseEvent) {
   selection.selecting.value = false
   if (rowResizing.value) {
     const { rowId, startY, y } = rowResizing.value
-    const row = getRow(rowId)
-    row.height.value += y.value - startY
+
+    const row = rowsAndCols.getRow(rowId)
+    const height = row.height.value + y.value - startY
+    row.height.value = height
+
+    rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value)
+      .filter(row => row.id !== rowId)
+      .forEach((row) => {
+        row.height.value = height
+      })
     rowResizing.value = null
   }
   if (colResizing.value) {
     const { colId, startX, x } = colResizing.value
-    const col = getCol(colId)
-    col.width.value += x.value - startX
+    const col = rowsAndCols.getCol(colId)
+    const width = col.width.value + x.value - startX
+    col.width.value = width
+
+    rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value)
+      .filter(col => col.id !== colId)
+      .forEach((col) => {
+        col.width.value = width
+      })
     colResizing.value = null
   }
 }
@@ -229,15 +248,15 @@ function onMouseEnter(event: MouseEvent) {
       selection.select(`${mouseDownStart.value}-${cellId}`)
     }
     else if (Col.isColIdString(mouseDownStart.value) && Col.isColIdString(target.id)) {
-      const fromCol = getCol(mouseDownStart.value)
-      const toCol = getCol(target.id)
+      const fromCol = rowsAndCols.getCol(mouseDownStart.value)
+      const toCol = rowsAndCols.getCol(target.id)
       if (fromCol && toCol) {
         selection.selectColRange(fromCol, toCol)
       }
     }
     else if (Row.isRowIdString(mouseDownStart.value) && Row.isRowIdString(target.id)) {
-      const fromRow = getRow(mouseDownStart.value)
-      const toRow = getRow(target.id)
+      const fromRow = rowsAndCols.getRow(mouseDownStart.value)
+      const toRow = rowsAndCols.getRow(target.id)
       if (fromRow && toRow) {
         selection.selectRowRange(fromRow, toRow)
       }

@@ -3,13 +3,9 @@ import { onMounted, ref, watch } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { hs } from '~/lib/utils'
 
-const { grid } = useGrid()
+const grid = useGrid()
 const { selection, selecting } = useSelection()
-const {
-  isEditingLitsCode: editingLitsCode,
-  editorFocused,
-  setEditorFocused,
-  editorText, setEditingCellId, editingCellId } = useEditor()
+const editor = useEditor()
 const { sidePanelOpen } = useSidePanel()
 
 const forceBlur = ref(false)
@@ -17,8 +13,8 @@ const initialValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 
 const selectionLabel = computed(() => {
-  if (editorFocused.value) {
-    return editingCellId.value.id
+  if (editor.editorFocused.value) {
+    return editor.editingCellId.value.id
   }
   if (selection.value.size() === 1) {
     return selection.value.start.id
@@ -32,7 +28,7 @@ watch(sidePanelOpen, (open) => {
   }
 })
 
-watch(editingLitsCode, (editing) => {
+watch(editor.isEditingLitsCode, (editing) => {
   if (!editing) {
     grid.value.resetSelection()
   }
@@ -40,7 +36,7 @@ watch(editingLitsCode, (editing) => {
 
 watch(selection, (selection) => {
   const inputElement = inputRef.value
-  if (editingLitsCode.value && inputElement && editorFocused.value) {
+  if (editor.isEditingLitsCode.value && inputElement && editor.editorFocused.value) {
     const selectionValue = `${selection.size() === 1
       ? selection.start.id
       : selection.id} `
@@ -52,7 +48,7 @@ watch(selection, (selection) => {
       = value.slice(0, start) + selectionValue + value.slice(end)
     const position = start + selectionValue.length
     inputElement.setSelectionRange(start, position)
-    editorText.value = inputElement.value
+    editor.editorText.value = inputElement.value
     inputElement.focus()
   }
 })
@@ -67,15 +63,15 @@ watch(selecting, (isSelecting) => {
 
 watch(grid.value.position, (position) => {
   save()
-  editorText.value = grid.value.getCurrentCell()?.input.value ?? ''
-  initialValue.value = editorText.value
-  setEditingCellId(position)
+  editor.editorText.value = grid.value.getCurrentCell()?.input.value ?? ''
+  initialValue.value = editor.editorText.value
+  editor.setEditingCellId(position)
 })
 
 onMounted(() => {
-  setEditingCellId(grid.value.position.value)
-  editorText.value = grid.value.getCell(editingCellId.value).input.value
-  initialValue.value = editorText.value
+  editor.setEditingCellId(grid.value.position.value)
+  editor.editorText.value = grid.value.getCell(editor.editingCellId.value).input.value
+  initialValue.value = editor.editorText.value
 })
 
 function onFocus() {
@@ -86,23 +82,23 @@ function onFocus() {
       inputElement.setSelectionRange(length, length)
     }
   }
-  setEditorFocused(true)
+  editor.setEditorFocused(true)
 }
 
 function onBlur() {
-  if (!forceBlur.value && (editingLitsCode.value || grid.value.position.value.equals(editingCellId.value))) {
+  if (!forceBlur.value && (editor.isEditingLitsCode.value || grid.value.position.value.equals(editor.editingCellId.value))) {
     inputRef.value?.focus()
   }
   else {
     inputRef.value?.setSelectionRange(0, 0)
-    setEditorFocused(false)
+    editor.setEditorFocused(false)
     save()
   }
 }
 
 function cancel() {
   forceBlur.value = true
-  editorText.value = initialValue.value
+  editor.editorText.value = initialValue.value
   inputRef.value?.blur()
   nextTick(() => {
     forceBlur.value = false
@@ -110,14 +106,14 @@ function cancel() {
 }
 
 function save() {
-  const text = editorText.value.trim()
+  const text = editor.editorText.value.trim()
   if (initialValue.value !== text) {
-    const cell = grid.value.getCell(editingCellId.value)
+    const cell = grid.value.getCell(editor.editingCellId.value)
     cell.input.value = text
     initialValue.value = text
   }
   inputRef.value?.blur()
-  setEditorFocused(false)
+  editor.setEditorFocused(false)
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -133,7 +129,7 @@ defineExpose({
   save,
   cancel,
   update: (input: string) => {
-    editorText.value = input
+    editor.editorText.value = input
     initialValue.value = input
   },
 })
@@ -162,7 +158,7 @@ defineExpose({
       </div>
       <input
         ref="inputRef"
-        v-model="editorText"
+        v-model="editor.editorText.value"
         class="w-full py-1 px-2 bg-transparent dark:text-slate-300 text-gray-700 text-sm border-none focus:outline-none selection:dark:bg-slate-700 selection:bg-gray-300"
         @blur="onBlur"
         @focus="onFocus"

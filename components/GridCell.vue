@@ -17,8 +17,8 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const { grid } = useGrid()
-const { editorFocused, editorText, editingCellId, isEditingLitsCode } = useEditor()
+const grid = useGrid()
+const editor = useEditor()
 const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
@@ -37,13 +37,13 @@ const isReferenced = computed(() => {
   const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
   return ranges.some(range => range.contains(cellId.value))
 })
-const hoverSelectingCell = computed(() => isEditingLitsCode.value
+const hoverSelectingCell = computed(() => editor.isEditingLitsCode.value
   && !isActiveCell.value && hoveredCellId.value && hoveredCellId.value === cellId.value.id)
 
-const isEditingCell = computed(() => editorFocused.value && editingCellId.value.equals(cellId.value))
+const isEditingCell = computed(() => editor.editorFocused.value && editor.editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
   if (isEditingCell.value) {
-    return editorText
+    return editor.editorText
   }
   return grid.value.getCell(cellId.value).display
 })
@@ -97,7 +97,7 @@ const cellStyle = computed(() => {
     style.border = '1px solid var(--current-cell-border-color)'
     style['z-index'] = 10
     if (isEditingCell.value) {
-      if (isEditingLitsCode.value) {
+      if (editor.isEditingLitsCode.value) {
         style.outline = '3px dashed var(--editing-lits-cell-outline-color)'
         style.outlineOffset = '1px'
       }
@@ -164,7 +164,7 @@ const cellStyle = computed(() => {
     style.alignItems = 'flex-end'
   }
 
-  if (editorFocused.value && isReferenced.value) {
+  if (editor.editorFocused.value && isReferenced.value) {
     style.backgroundColor = 'var(--referenced-cell-background-color)'
   }
   else {

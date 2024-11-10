@@ -11,7 +11,7 @@ type Clipboard = {
 
 export default function useGridClipboard() {
   const { selection } = useSelection()
-  const { grid } = useGrid()
+  const grid = useGrid()
   const clipboard = ref<Clipboard | null>(null)
   const cut = ref(false)
   const cutCellIds = ref<CellId[]>([])

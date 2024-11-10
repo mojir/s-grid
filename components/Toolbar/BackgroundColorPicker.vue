@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { colorPalette } from '~/lib/color'
 
-const { grid } = useGrid()
+const grid = useGrid()
 </script>
 
 <template>

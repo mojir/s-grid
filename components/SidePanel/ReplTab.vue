@@ -3,14 +3,7 @@ import { hs } from '~/lib/utils'
 
 const input = ref<string>('')
 const enteredText = ref<string>('')
-const {
-  history,
-  run,
-  getHistory,
-  resetHistoryIndex,
-  getSuggestion,
-  clearSuggestions,
-} = useREPL()
+const repl = useREPL()
 const { exec } = useCommandCenter()
 const { sidePanelHandleKeyDown } = useSidePanel()
 
@@ -21,7 +14,7 @@ const emit = defineEmits<{
 const inputRef = ref<HTMLInputElement>()
 
 watch(enteredText, () => {
-  clearSuggestions()
+  repl.clearSuggestions()
 })
 function onInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
@@ -30,7 +23,7 @@ function onInput(event: Event) {
 }
 
 function runLits() {
-  run(input.value)
+  repl.run(input.value)
   input.value = ''
 }
 
@@ -46,10 +39,10 @@ function onKeyDown(e: KeyboardEvent) {
   if (e.key === 'Tab') {
     e.preventDefault()
     if (e.shiftKey) {
-      input.value = getSuggestion(enteredText.value, 'previous')
+      input.value = repl.getSuggestion(enteredText.value, 'previous')
     }
     else if (!hasModifierKey(e)) {
-      input.value = getSuggestion(enteredText.value, 'next')
+      input.value = repl.getSuggestion(enteredText.value, 'next')
     }
   }
 
@@ -57,8 +50,8 @@ function onKeyDown(e: KeyboardEvent) {
     e.preventDefault()
     exec('ClearRepl!')
     enteredText.value = input.value = ''
-    clearSuggestions()
-    resetHistoryIndex()
+    repl.clearSuggestions()
+    repl.resetHistoryIndex()
   }
 
   if (hasModifierKey(e)) {
@@ -68,28 +61,28 @@ function onKeyDown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
     e.preventDefault()
     enteredText.value = input.value = ''
-    clearSuggestions()
-    resetHistoryIndex()
+    repl.clearSuggestions()
+    repl.resetHistoryIndex()
   }
   if (e.key === 'ArrowUp') {
     e.preventDefault()
     emit('scroll-to-bottom')
-    enteredText.value = input.value = getHistory('previous')
+    enteredText.value = input.value = repl.getHistory('previous')
   }
   else if (e.key === 'ArrowDown') {
     e.preventDefault()
     emit('scroll-to-bottom')
-    enteredText.value = input.value = getHistory('next')
+    enteredText.value = input.value = repl.getHistory('next')
   }
   else if (e.key === 'PageDown') {
     e.preventDefault()
     emit('scroll-to-bottom')
-    enteredText.value = input.value = getHistory('last')
+    enteredText.value = input.value = repl.getHistory('last')
   }
   else if (e.key === 'PageUp') {
     e.preventDefault()
     emit('scroll-to-bottom')
-    enteredText.value = input.value = getHistory('first')
+    enteredText.value = input.value = repl.getHistory('first')
   }
 }
 </script>
@@ -106,7 +99,7 @@ function onKeyDown(e: KeyboardEvent) {
         For help type <b>(Help)</b>
       </div>
       <div
-        v-for="(entry, index) of history"
+        v-for="(entry, index) of repl.history.value"
         :key="index"
         class="flex flex-col"
       >

@@ -3,7 +3,7 @@ import { defaultFormatter } from '~/lib/utils'
 
 const open = ref(false)
 
-const { grid } = useGrid()
+const grid = useGrid()
 const { selection } = useSelection()
 
 const format = ref<string | null>(defaultFormatter)

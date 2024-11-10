@@ -71,7 +71,7 @@ function registerCommands() {
   registerCommand({
     name: 'CreateNamedFunction!',
     execute: (alias: string, input: string, target?: string) => {
-      const grid = useGrid().grid.value
+      const grid = useGrid().value
       const cell = grid.getCell(target)
       useAlias().setAlias(alias, cell)
       grid.setInput(input, target)
@@ -82,7 +82,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetRowHeight!',
     execute: (height: number, target?: string) => {
-      const grid = useGrid().grid.value
+      const grid = useGrid().value
       const cell = grid.getCell(target)
       useRowsAndCols().getRow(cell.cellId.getRowId()).height.value = height
     },
@@ -92,7 +92,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetColWidth!',
     execute: (width: number, target?: string) => {
-      const grid = useGrid().grid.value
+      const grid = useGrid().value
       const cell = grid.getCell(target)
       useRowsAndCols().getCol(cell.cellId.getColId()).width.value = width
     },

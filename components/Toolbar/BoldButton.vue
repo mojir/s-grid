@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { grid } = useGrid()
+const grid = useGrid()
 
 const { selection } = useSelection()
 const bold = ref<boolean>()
