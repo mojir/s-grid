@@ -11,7 +11,6 @@ export type CellJson = {
   input: string
   output: unknown
   display: string
-  alias: string | null
   formatter: string | null
   style: CellStyleJson
   backgroundColor?: ColorJson | null
@@ -21,13 +20,13 @@ export class Cell {
   private grid: Grid
   private lits: LitsComposable
   private commandCenter: CommandCenterComposable
+  private alias: AliasComposable
 
-  public input = ref('')
-  public alias = ref<string | null>(null)
-  public formatter = ref<string | null>(defaultFormatter)
-  public style = ref(new CellStyle())
-  public backgroundColor = ref<Color | null>(null)
-  public textColor = ref<Color | null>(null)
+  public readonly input = ref('')
+  public readonly formatter = ref<string | null>(defaultFormatter)
+  public readonly style = ref(new CellStyle())
+  public readonly backgroundColor = ref<Color | null>(null)
+  public readonly textColor = ref<Color | null>(null)
 
   constructor(
     public cellId: CellId,
@@ -35,14 +34,17 @@ export class Cell {
       grid,
       lits,
       commandCenter,
+      alias,
     }: {
       grid: Grid
       lits: LitsComposable
       commandCenter: CommandCenterComposable
+      alias: AliasComposable
     }) {
     this.grid = grid
     this.lits = lits
     this.commandCenter = commandCenter
+    this.alias = alias
 
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
@@ -64,7 +66,6 @@ export class Cell {
       input: this.input.value,
       output: this.output.value,
       display: this.display.value,
-      alias: this.alias.value,
       formatter: this.formatter.value,
       style: this.style.value.getJson(),
       backgroundColor: this.backgroundColor.value?.getJson(),
@@ -97,7 +98,7 @@ export class Cell {
       if (CellRange.isCellRangeString (identifier)) {
         return CellRange.fromId(identifier)
       }
-      const aliasCell = alias.getAlias(identifier)
+      const aliasCell = alias.getCell(identifier)
       if (aliasCell) {
         return aliasCell.cellId
       }
@@ -151,7 +152,8 @@ export class Cell {
       return 'ERR'
     }
     if (isLitsFunction(this.output.value)) {
-      const alias = this.alias.value
+      const alias = this.alias.getAlias(this)
+
       return `${alias ? `${alias} ` : ''}λ`
     }
 
@@ -216,7 +218,6 @@ export class Cell {
       input: this.input.value,
       output: formatOutputValue(this.output.value),
       display: this.display.value,
-      alias: this.alias.value,
       formatter: this.formatter.value,
       row: this.cellId.rowIndex,
       col: this.cellId.colIndex,

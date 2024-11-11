@@ -171,5 +171,17 @@ function addSampleData() {
     >
       Add sample data
     </button>
+    <button
+      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+      @click="exec('DeleteRow!', '1')"
+    >
+      DeleteRow 1
+    </button>
+    <button
+      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+      @click="exec('InsertRowBefore!', '5', 2)"
+    >
+      InsertRowBefore 5 2
+    </button>
   </div>
 </template>

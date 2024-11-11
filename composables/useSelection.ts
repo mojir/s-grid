@@ -46,8 +46,8 @@ export const useSelection = createSharedComposable(() => {
   function selectRowRange(fromRow: Row, toRow: Row) {
     unsortedSelection.value
       = CellRange.fromCellIds(
-        CellId.fromCoords(fromRow.index, 0),
-        CellId.fromCoords(toRow.index, gridRange.value.end.colIndex))
+        CellId.fromCoords(fromRow.index.value, 0),
+        CellId.fromCoords(toRow.index.value, gridRange.value.end.colIndex))
   }
 
   function select(target: string | CellRange | CellId) {

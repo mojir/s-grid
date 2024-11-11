@@ -16,6 +16,8 @@ const commandNames = [
   'GetCells',
   'GetSelection',
   'Help',
+  'InsertRowAfter!',
+  'InsertRowBefore!',
   'Move!',
   'MoveTo!',
   'ResetSelection!',
@@ -83,7 +85,7 @@ function registerCommands() {
     name: 'CreateNamedFunction!',
     execute: (alias: string, input: string, target?: string) => {
       const cell = grid.value.getCell(target)
-      useAlias().setAlias(alias, cell)
+      useAlias().setCell(alias, cell)
       grid.value.setInput(input, target)
     },
     description: 'Clear the current cell',
@@ -160,7 +162,7 @@ function registerCommands() {
     name: 'SetAlias!',
     execute: (alias: string, id?: string) => {
       const cell = grid.value.getCell(id)
-      useAlias().setAlias(alias, cell)
+      useAlias().setCell(alias, cell)
     },
     description: 'Create an alias for a cell',
   })
@@ -270,8 +272,24 @@ function registerCommands() {
   registerCommand({
     name: 'DeleteRow!',
     description: 'Delete row',
-    execute: (rowId: RowIdString) => {
-      grid.value.deleteRows([rowId])
+    execute: (rowId: RowIdString, count = 1) => {
+      grid.value.deleteRow(rowId, count)
+    },
+  })
+
+  registerCommand({
+    name: 'InsertRowBefore!',
+    description: 'Insert row before',
+    execute: (rowId: RowIdString, count = 1) => {
+      grid.value.insertRowBefore(rowId, count)
+    },
+  })
+
+  registerCommand({
+    name: 'InsertRowAfter!',
+    description: 'Insert row before',
+    execute: (rowId: RowIdString, count = 1) => {
+      grid.value.insertRowAfter(rowId, count)
     },
   })
 

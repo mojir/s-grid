@@ -168,7 +168,7 @@ function onMouseDown(event: MouseEvent) {
       y: ref(y),
     }
     if (rowResizeClicked?.rowId === rowId && Date.now() - rowResizeClicked.time < dbClickTime) {
-      const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id))
+      const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id.value))
       rows.add(rowId)
       grid.value.autoSetRowHeight(Array.from(rows))
       rowResizing.value = null
@@ -210,7 +210,7 @@ function onMouseUp(event: MouseEvent) {
     row.height.value = height
 
     rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value)
-      .filter(row => row.id !== rowId)
+      .filter(row => row.id.value !== rowId)
       .forEach((row) => {
         row.height.value = height
       })

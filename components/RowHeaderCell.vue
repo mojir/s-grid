@@ -12,7 +12,7 @@ const { selection } = useSelection()
 
 const { row } = toRefs(props)
 
-const isSelected = computed(() => selection.value.containsRowIndex(row.value.index))
+const isSelected = computed(() => selection.value.containsRowIndex(row.value.index.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {
@@ -22,7 +22,7 @@ const cellStyle = computed(() => {
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
     borderStyle: 'solid',
-    borderTopWidth: row.value.index !== 0 ? '1px' : '0px',
+    borderTopWidth: row.value.index.value !== 0 ? '1px' : '0px',
     borderBottomWidth: '1px',
     borderRightWidth: '1px',
   }
@@ -36,11 +36,11 @@ const cellStyle = computed(() => {
     class="flex flex-col box-border"
   >
     <div
-      :id="row.id"
+      :id="row.id.value"
       :style="whs(rowHeaderWidth, row.height.value)"
       class="flex justify-center items-center text-xs select-none"
     >
-      {{ row.id }}
+      {{ row.id.value }}
     </div>
     <div
       :id="`resize-row:${row.id}`"

@@ -19,7 +19,7 @@ defineExpose({
   >
     <RowHeaderCell
       v-for="row of rows"
-      :key="row.id"
+      :key="row.id.value"
 
       :row="row"
     />

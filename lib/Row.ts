@@ -5,15 +5,20 @@ export type Number = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 export type RowIdString = `${Number}` | `${Number}${Number}` | `${Number}${Number}${Number}` | `${Number}${Number}${Number}${Number}`
 
 export class Row {
+  public readonly index: Ref<number>
+  public readonly height: Ref<number>
+  public readonly id: ComputedRef<RowIdString>
   private constructor(
-    public readonly index: number,
-    public readonly id: RowIdString,
-    public readonly height: Ref<number>,
+    index: number,
+    height: number,
   ) {
+    this.index = ref(index)
+    this.height = ref(height)
+    this.id = computed(() => Row.getRowIdFromIndex(this.index.value))
   }
 
   static create(index: number, height: number): Row {
-    return new Row(index, Row.getRowIdFromIndex(index), ref(height))
+    return new Row(index, height)
   }
 
   static isRowIdString(id: unknown): id is RowIdString {

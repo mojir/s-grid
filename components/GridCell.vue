@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, watch, type CSSProperties } from 'vue'
+import { computed, toRefs, type CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { CellId } from '~/lib/CellId'
 import { getLineHeight } from '~/lib/CellStyle'
@@ -28,7 +28,7 @@ const { hoveredCellId } = useHover()
 
 const { row, col } = toRefs(props)
 
-const cellId = computed(() => CellId.fromCoords(row.value.index, col.value.index))
+const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index))
 const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
 const insideSelection = computed(() => selection.value.size() > 1 && selection.value.contains(cellId.value))
@@ -70,14 +70,6 @@ const cellTextColor = computed<Color | null>(() => {
     return c.toggleLightness()
   }
   return c
-})
-
-watch(grid.value.position, (position) => {
-  const cellElement = document.getElementById(position.id)
-  cellElement?.scrollIntoView({
-    block: 'nearest',
-    inline: 'nearest',
-  })
 })
 
 const cellStyle = computed(() => {

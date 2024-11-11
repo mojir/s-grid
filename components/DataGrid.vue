@@ -34,7 +34,7 @@ defineExpose({
   >
     <div
       v-for="row of rows"
-      :key="row.id"
+      :key="row.id.value"
       :style="hs(row.height.value)"
       class="flex"
     >

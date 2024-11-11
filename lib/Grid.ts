@@ -7,6 +7,7 @@ import type { Color } from './color'
 import { Row, type RowIdString } from './Row'
 import type { CellOrRangeTarget, CellTarget } from './utils'
 import { matrixMap } from './matrix'
+import { transformLits } from './transformLits'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
 import type { AliasComposable } from '~/composables/useAlias'
@@ -16,6 +17,8 @@ export class Grid {
   private readonly rowsAndCols: RowsAndColsComposable
   private readonly selection: SelectionComposable
   private readonly alias: AliasComposable
+  private readonly lits: LitsComposable
+  private readonly commandCenter: CommandCenterComposable
 
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
@@ -39,10 +42,12 @@ export class Grid {
     this.rowsAndCols = rowsAndCols
     this.selection = selection
     this.alias = alias
+    this.lits = lits
+    this.commandCenter = commandCenter
     this.position = ref(CellId.fromCoords(0, 0))
     this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) =>
-        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits, commandCenter }),
+        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits, commandCenter, alias }),
       ),
     )
     this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rowsAndCols.rows.value.length - 1, rowsAndCols.cols.value.length - 1))
@@ -62,7 +67,7 @@ export class Grid {
     if (CellId.isCellId(target)) {
       return target
     }
-    const cell = this.alias.getAlias(target)
+    const cell = this.alias.getCell(target)
     return cell ? cell.cellId : CellId.fromId(target)
   }
 
@@ -115,7 +120,7 @@ export class Grid {
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, target) => {
-      const aliasCell = this.alias.getAlias(target)
+      const aliasCell = this.alias.getCell(target)
       if (aliasCell) {
         acc[target] = aliasCell.output.value
       }
@@ -320,9 +325,67 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRows(rows: RowIdString[]) {
-    const rowIndices = rows.map(Row.getRowIndexFromId)
-    const newRows = this.rowsAndCols.rows.value.filter((_, index) => !rowIndices.includes(index))
+  public deleteRow(rowId: RowIdString, count = 1) {
+    const rowIndex = Row.getRowIndexFromId(rowId)
+    const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
+
+    this.cells.splice(rowIndex, count)
+
+    for (let index = rowIndex; index < newRows.length; index++) {
+      // const oldIndex = index + count
+      const row = newRows[index]
+      // const oldRow = this.rowsAndCols.rows.value[oldIndex]
+      row.index.value = index
+      // row.height.value = oldRow.height.value
+
+      this.cells[index].forEach((cell, colIndex) => {
+        cell.cellId = CellId.fromCoords(index, colIndex)
+        if (cell.input.value.startsWith('=')) {
+          cell.input.value = `=${transformLits(cell.input.value.slice(1), { colDelta: 0, rowDelta: -count })}`
+        }
+      })
+    }
+
+    this.rowsAndCols.rows.value = newRows
+  }
+
+  public insertRowAfter(rowId: RowIdString, count = 1) {
+    const beforeIndex = Row.getRowIndexFromId(rowId) + 1
+    this.insertRowBefore(Row.getRowIdFromIndex(beforeIndex), count)
+  }
+
+  public insertRowBefore(rowId: RowIdString, count = 1) {
+    const rowIndex = Row.getRowIndexFromId(rowId)
+
+    const createdRows = Array.from({ length: count }, (_, index) => {
+      const row = Row.create(rowIndex + index, defaultRowHeight)
+      this.cells.splice(rowIndex + index, 0, Array.from({ length: this.rowsAndCols.cols.value.length }, (_, colIndex) =>
+        new Cell(
+          CellId.fromCoords(rowIndex + index, colIndex),
+          { grid: this, lits: this.lits, commandCenter: this.commandCenter, alias: this.alias },
+        ),
+      ))
+      return row
+    })
+
+    const newRows = [
+      ...this.rowsAndCols.rows.value.slice(0, rowIndex),
+      ...createdRows,
+      ...this.rowsAndCols.rows.value.slice(rowIndex),
+    ]
+
+    for (let index = rowIndex + count; index < newRows.length; index++) {
+      const row = newRows[index]
+      row.index.value = index
+
+      this.cells[index].forEach((cell, colIndex) => {
+        cell.cellId = CellId.fromCoords(index, colIndex)
+        if (cell.input.value.startsWith('=')) {
+          cell.input.value = `=${transformLits(cell.input.value.slice(1), { colDelta: 0, rowDelta: count })}`
+        }
+      })
+    }
+
     this.rowsAndCols.rows.value = newRows
   }
 }

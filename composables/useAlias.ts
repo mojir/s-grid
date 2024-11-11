@@ -2,21 +2,27 @@ import type { Cell } from '~/lib/Cell'
 
 export const useAlias = createSharedComposable(() => {
   const cellAliases = shallowRef(new Map<string, Cell>())
+  const lookup = shallowRef(new WeakMap<Cell, string>())
 
-  function setAlias(alias: string, cell: Cell) {
+  function setCell(alias: string, cell: Cell) {
     if (cellAliases.value.has(alias)) {
       throw new Error(`Alias ${alias} already exists`)
     }
-    cell.alias.value = alias
+    lookup.value.set(cell, alias)
     cellAliases.value.set(alias, cell)
   }
 
-  function getAlias(alias: string): Cell | undefined {
+  function getCell(alias: string): Cell | undefined {
     return cellAliases.value.get(alias)
   }
 
+  function getAlias(cell: Cell): string | undefined {
+    return lookup.value.get(cell)
+  }
+
   return {
-    setAlias,
+    setCell,
+    getCell,
     getAlias,
   }
 })
