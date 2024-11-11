@@ -319,4 +319,10 @@ export class Grid {
   public resetSelection() {
     this.selection.select(this.position.value)
   }
+
+  public deleteRows(rows: RowIdString[]) {
+    const rowIndices = rows.map(Row.getRowIndexFromId)
+    const newRows = this.rowsAndCols.rows.value.filter((_, index) => !rowIndices.includes(index))
+    this.rowsAndCols.rows.value = newRows
+  }
 }

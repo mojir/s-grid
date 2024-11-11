@@ -3,8 +3,9 @@ import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellSt
 import { Color } from '~/lib/color'
 import type { JsFunctions } from '~/lib/litsInterop'
 import { format } from '~/lib/litsInterop/format'
+import type { RowIdString } from '~/lib/Row'
 
-const builtinCommandNames = [
+const commandNames = [
   'Clear!',
   'ClearAllCells!',
   'ClearRepl!',
@@ -28,9 +29,10 @@ const builtinCommandNames = [
   'SetRowHeight!',
   'SetStyle!',
   'SetTextColor!',
+  'DeleteRow!',
 ] as const
 
-type BuiltinCommandName = typeof builtinCommandNames[number]
+type BuiltinCommandName = typeof commandNames[number]
 
 type Command<T extends string> = {
   name: T
@@ -59,7 +61,9 @@ function exec(name: BuiltinCommandName, ...args: unknown[]) {
 }
 
 export const useCommandCenter = () => {
-  registerCommands()
+  nextTick(() => {
+    registerCommands()
+  })
 
   return {
     jsFunctions,
@@ -263,7 +267,15 @@ function registerCommands() {
     },
   })
 
-  builtinCommandNames.forEach((name) => {
+  registerCommand({
+    name: 'DeleteRow!',
+    description: 'Delete row',
+    execute: (rowId: RowIdString) => {
+      grid.value.deleteRows([rowId])
+    },
+  })
+
+  commandNames.forEach((name) => {
     if (!commands.has(name)) {
       throw Error(`Command ${name} not registered`)
     }

@@ -15,14 +15,14 @@ type HistoryEntry = {
 }
 
 export const useREPL = createSharedComposable(() => {
+  const lits = useLits()
   const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
+  const grid = useGrid()
+  const { jsFunctions, commands } = useCommandCenter()
 
   let historyIndex = -1
 
   let globalContext: Context = {}
-
-  const { jsFunctions, commands } = useCommandCenter()
-  const grid = useGrid()
 
   const history = ref<HistoryEntry[]>([])
 
@@ -142,14 +142,11 @@ ${command.description}`
   }
 
   function run(program: string) {
-    const lits = useLits().value
-
     let result
     try {
-      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions })
+      const { unresolvedIdentifiers } = lits.value.analyze(program, { jsFunctions })
       const values = grid.value.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol))
-
-      result = lits.run(program, { values, jsFunctions, globalContext })
+      result = lits.value.run(program, { values, jsFunctions, globalContext })
     }
     catch (error) {
       result = error

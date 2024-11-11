@@ -1,5 +1,4 @@
 import { createSharedComposable } from '@vueuse/core'
-import { customRef, shallowReadonly } from 'vue'
 import { Grid } from '~/lib/Grid'
 
 export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
@@ -11,24 +10,15 @@ export function setColorMode(colorMode: Ref<string>) {
 }
 
 export const useGrid = createSharedComposable(() => {
-  const grid = shallowReadonly(customRef((track) => {
-    const gridInstance = new Grid({
-      rowsAndCols: useRowsAndCols(),
-      selection: useSelection(),
-      alias: useAlias(),
-      lits: useLits(),
-      commandCenter: useCommandCenter(),
-    })
-    return {
-      get() {
-        track()
-        return gridInstance
-      },
-      set() { },
-    }
-  }))
+  const grid = new Grid({
+    rowsAndCols: useRowsAndCols(),
+    selection: useSelection(),
+    alias: useAlias(),
+    lits: useLits(),
+    commandCenter: useCommandCenter(),
+  })
 
-  return grid
+  return shallowRef(grid)
 })
 
 export type GridComposable = ReturnType<typeof useGrid>
