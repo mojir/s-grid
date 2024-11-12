@@ -47,7 +47,7 @@ export default function useGridClipboard() {
       const cellId = CellId.fromCoords(toPosition.rowIndex + rowIndex, toPosition.colIndex + colIndex)
       const cell = grid.value.getCell(cellId)
       if (cellJson.input.startsWith('=')) {
-        cellJson.input = `=${transformLits(cellJson.input.slice(1), movement)}`
+        cellJson.input = `=${transformLits(cellJson.input.slice(1), { type: 'move', movement })}`
       }
       cell.setJson(cellJson)
     })

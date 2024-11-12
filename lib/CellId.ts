@@ -4,8 +4,8 @@ import { Row, type RowIdString } from './Row'
 import type { Direction } from '~/composables/useGrid'
 
 export type Movement = {
-  rowDelta: number
-  colDelta: number
+  rows: number
+  cols: number
 }
 
 const cellIdStringRegExp = /^(\$?)([A-Z]+)(\$?)(\d+)$/
@@ -21,11 +21,11 @@ export type CellIdStringInfo = {
   absoluteRow: boolean
 }
 
-export function getInfoFromCellIdString(cellIdString: string): CellIdStringInfo | null {
+export function getInfoFromCellIdString(cellIdString: string): CellIdStringInfo {
   const match = cellIdStringRegExp.exec(cellIdString)
 
   if (!match) {
-    return null
+    throw new Error(`Invalid cell id: ${cellIdString}`)
   }
 
   const colId = match[2] as ColIdString
@@ -79,8 +79,8 @@ export class CellId {
 
   public getMovementTo(cellId: CellId): Movement {
     return {
-      rowDelta: cellId.rowIndex - this.rowIndex,
-      colDelta: cellId.colIndex - this.colIndex,
+      rows: cellId.rowIndex - this.rowIndex,
+      cols: cellId.colIndex - this.colIndex,
     }
   }
 

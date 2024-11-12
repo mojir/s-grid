@@ -341,7 +341,10 @@ export class Grid {
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
         if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformLits(cell.input.value.slice(1), { colDelta: 0, rowDelta: -count })}`
+          cell.input.value = `=${transformLits(
+            cell.input.value.slice(1),
+            { type: 'move', movement: { cols: 0, rows: -count } },
+          )}`
         }
       })
     }
@@ -381,7 +384,9 @@ export class Grid {
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
         if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformLits(cell.input.value.slice(1), { colDelta: 0, rowDelta: count })}`
+          cell.input.value = `=${transformLits(
+            cell.input.value.slice(1),
+            { type: 'move', movement: { cols: 0, rows: count } })}`
         }
       })
     }
