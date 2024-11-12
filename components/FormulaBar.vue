@@ -22,6 +22,15 @@ const selectionLabel = computed(() => {
   return selection.value.id
 })
 
+const cellInput = computed(() => {
+  return grid.value.getCurrentCell().input.value
+})
+
+watch(cellInput, (input) => {
+  editor.editorText.value = input
+  initialValue.value = input
+})
+
 watch(sidePanelOpen, (open) => {
   if (open) {
     cancel()
