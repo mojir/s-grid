@@ -58,9 +58,10 @@ const rowResizing = shallowRef<{
   currentRowHeight: number
   y: Ref<number>
 } | null>(null)
-let rowResizeClicked: {
+let rowResizeDblClicked: {
   rowId: RowIdString
   time: number
+  completed: boolean
 } | null = null
 const colResizing = shallowRef<{
   colId: ColIdString
@@ -70,9 +71,10 @@ const colResizing = shallowRef<{
   top: number
   height: number
 } | null>(null)
-let colResizeClicked: {
+let colResizeDblClicked: {
   colId: ColIdString
   time: number
+  completed: boolean
 } | null = null
 
 function onBlur() {
@@ -134,14 +136,11 @@ function onMouseDown(event: MouseEvent) {
       top: rect.top,
       height: rect.height,
     }
-    if (colResizeClicked?.colId === colId && Date.now() - colResizeClicked.time < dbClickTime) {
-      const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id))
-      cols.add(colId)
-      grid.value.autoSetColWidth(Array.from(cols))
-      rowResizing.value = null
+    if (colResizeDblClicked?.colId === colId && Date.now() - colResizeDblClicked.time < dbClickTime) {
+      colResizeDblClicked.completed = true
     }
     else {
-      colResizeClicked = { colId, time: Date.now() }
+      colResizeDblClicked = { colId, time: Date.now(), completed: false }
     }
   }
 
@@ -167,14 +166,11 @@ function onMouseDown(event: MouseEvent) {
       currentRowHeight: row.height.value,
       y: ref(y),
     }
-    if (rowResizeClicked?.rowId === rowId && Date.now() - rowResizeClicked.time < dbClickTime) {
-      const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id.value))
-      rows.add(rowId)
-      grid.value.autoSetRowHeight(Array.from(rows))
-      rowResizing.value = null
+    if (rowResizeDblClicked?.rowId === rowId && Date.now() - rowResizeDblClicked.time < dbClickTime) {
+      rowResizeDblClicked.completed = true
     }
     else {
-      rowResizeClicked = { rowId, time: Date.now() }
+      rowResizeDblClicked = { rowId, time: Date.now(), completed: false }
     }
   }
 }
@@ -202,7 +198,16 @@ function onMouseUp(event: MouseEvent) {
   }
   mouseDownStart.value = ''
   selection.selecting.value = false
-  if (rowResizing.value) {
+
+  if (rowResizeDblClicked?.completed) {
+    const { rowId } = rowResizeDblClicked
+    const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id.value))
+    rows.add(rowId)
+    grid.value.autoSetRowHeight(Array.from(rows))
+    rowResizeDblClicked = null
+    rowResizing.value = null
+  }
+  else if (rowResizing.value) {
     const { rowId, startY, y } = rowResizing.value
 
     const row = rowsAndCols.getRow(rowId)
@@ -216,7 +221,16 @@ function onMouseUp(event: MouseEvent) {
       })
     rowResizing.value = null
   }
-  if (colResizing.value) {
+  else if (colResizeDblClicked?.completed) {
+    const { colId } = colResizeDblClicked
+    const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id))
+    cols.add(colId)
+    grid.value.autoSetColWidth(Array.from(cols))
+    colResizeDblClicked = null
+    colResizing.value = null
+  }
+
+  else if (colResizing.value) {
     const { colId, startX, x } = colResizing.value
     const col = rowsAndCols.getCol(colId)
     const width = col.width.value + x.value - startX
