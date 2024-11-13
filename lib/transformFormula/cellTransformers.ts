@@ -28,7 +28,7 @@ export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }
 
 export function transformRowDeleteOnCell(cellIdInfo: CellIdStringInfo, { rowIndex, count }: RowRange): string {
   if (cellIdInfo.rowIndex >= rowIndex && cellIdInfo.rowIndex < rowIndex + count) {
-    throw new Error(`Cell ${cellIdInfo.id} is in deleted row range`)
+    throw new Error(`Cell ${cellIdInfo.id} was deleted`)
   }
 
   if (cellIdInfo.rowIndex >= rowIndex + count) {

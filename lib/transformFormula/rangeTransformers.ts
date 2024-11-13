@@ -39,14 +39,16 @@ function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex, co
 
   // range is in deleted row range
   if (startInDeletedRange && endInDeletedRange) {
-    throw new Error(`Range ${id} is in deleted row range`)
+    throw new Error(`Range ${id} was deleted`)
   }
 
+  // TODO use transformMoveOnCell, this takes care of absolute references
   // range is below and intersecting deleted row range
   if (startInDeletedRange) {
     return CellId.fromCoords(rowIndex + count, startCol).id + '-' + end.id
   }
 
+  // TODO use transformMoveOnCell, this takes care of absolute references
   // range is above and intersecting deleted row range
   if (endInDeletedRange) {
     return `${start.id}-${CellId.fromCoords(rowIndex - 1, endCol).id}`

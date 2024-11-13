@@ -1,3 +1,4 @@
+import { isLitsError } from '@mojir/lits'
 import { CellId, type Movement } from '../CellId'
 import { CellRange } from '../CellRange'
 import type { RowRange } from '../Row'
@@ -20,11 +21,22 @@ export function transformFormula(program: string, transformation: FormulaTransfo
 }
 
 function transformName(name: string, transformation: FormulaTransformation): string {
-  if (CellId.isCellIdString(name)) {
-    return transformCell(name, transformation)
+  try {
+    if (CellId.isCellIdString(name)) {
+      return transformCell(name, transformation)
+    }
+    else if (CellRange.isCellRangeString(name)) {
+      return transformRange(name, transformation)
+    }
   }
-  else if (CellRange.isCellRangeString(name)) {
-    return transformRange(name, transformation)
+  catch (error) {
+    if (isLitsError(error)) {
+      return `(throw "${error.shortMessage}")`
+    }
+    if (error instanceof Error) {
+      return `(throw "${error.message}")`
+    }
+    return `(throw "Unknown error")`
   }
   return name
 }
