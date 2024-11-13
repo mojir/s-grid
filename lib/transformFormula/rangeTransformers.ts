@@ -55,10 +55,10 @@ function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex, co
   }
 
   const startBelowDeletedRange = start.rowIndex >= rowIndex + count
-  const endAboveDeletedRange = end.rowIndex < rowIndex
+  const endBelowDeletedRange = end.rowIndex >= rowIndex + count
 
   const newStart: string = startBelowDeletedRange ? transformMoveOnCell(start, { cols: 0, rows: -count }) : start.id
-  const newEnd: string = endAboveDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -count }) : end.id
+  const newEnd: string = endBelowDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -count }) : end.id
 
   return `${newStart}-${newEnd}`
 }
