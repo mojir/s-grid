@@ -17,7 +17,7 @@ defineExpose({
   >
     <ColHeaderCell
       v-for="col of cols"
-      :key="col.id"
+      :key="col.id.value"
       :col="col"
     />
   </div>

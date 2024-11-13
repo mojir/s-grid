@@ -1,6 +1,7 @@
 import type { JsFunction } from '@mojir/lits'
 import type { CellId } from '~/lib/CellId'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
+import type { ColIdString } from '~/lib/Col'
 import { Color } from '~/lib/color'
 import { format } from '~/lib/litsInterop/format'
 import type { RowIdString } from '~/lib/Row'
@@ -10,6 +11,8 @@ const commandNames = [
   'ClearAllCells!',
   'ClearRepl!',
   'CreateNamedFunction!',
+  'DeleteCols!',
+  'DeleteRows!',
   'ExpandSelection!',
   'ExpandSelectionTo!',
   'GetCell',
@@ -31,7 +34,6 @@ const commandNames = [
   'SetRowHeight!',
   'SetStyle!',
   'SetTextColor!',
-  'DeleteRows!',
 ] as const
 
 type BuiltinCommandName = typeof commandNames[number]
@@ -271,9 +273,17 @@ function registerCommands() {
 
   registerCommand({
     name: 'DeleteRows!',
-    description: 'Delete row',
+    description: 'Delete rows',
     execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
       grid.value.deleteRows(startRowStringId, endRowStringId)
+    },
+  })
+
+  registerCommand({
+    name: 'DeleteCols!',
+    description: 'Delete cols',
+    execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
+      grid.value.deleteCols(startColStringId, endColStringId)
     },
   })
 

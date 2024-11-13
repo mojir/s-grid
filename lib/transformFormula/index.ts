@@ -2,6 +2,7 @@ import { isLitsError } from '@mojir/lits'
 import { CellId, type Movement } from '../CellId'
 import { CellRange } from '../CellRange'
 import type { RowRange } from '../Row'
+import type { ColRange } from '../Col'
 import { transformCell } from './cellTransformers'
 import { transformRange } from './rangeTransformers'
 
@@ -11,6 +12,9 @@ export type FormulaTransformation = {
 } | {
   type: 'rowDelete'
   rowRange: RowRange
+} | {
+  type: 'colDelete'
+  colRange: ColRange
 }
 
 export function transformGridReference(program: string, transformation: FormulaTransformation): string {

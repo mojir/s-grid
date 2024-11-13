@@ -1,6 +1,6 @@
 import { getInfoFromCellIdString, type CellIdStringInfo, type Movement } from '../CellId'
 import { Row, type RowRange } from '../Row'
-import { Col } from '../Col'
+import { Col, type ColRange } from '../Col'
 import type { FormulaTransformation } from '.'
 
 export function transformCell(cellIdString: string, transformation: FormulaTransformation): string {
@@ -10,6 +10,8 @@ export function transformCell(cellIdString: string, transformation: FormulaTrans
       return transformMoveOnCell(cellInfo, transformation.movement)
     case 'rowDelete':
       return transformRowDeleteOnCell(cellInfo, transformation.rowRange)
+    case 'colDelete':
+      return transformColDeleteOnCell(cellInfo, transformation.colRange)
   }
 }
 
@@ -33,6 +35,17 @@ export function transformRowDeleteOnCell(cellIdInfo: CellIdStringInfo, { rowInde
 
   if (cellIdInfo.rowIndex >= rowIndex + count) {
     return transformMoveOnCell(cellIdInfo, { cols: 0, rows: -count })
+  }
+  return cellIdInfo.id
+}
+
+export function transformColDeleteOnCell(cellIdInfo: CellIdStringInfo, { colIndex, count }: ColRange): string {
+  if (cellIdInfo.colIndex >= colIndex && cellIdInfo.colIndex < colIndex + count) {
+    throw new Error(`Cell ${cellIdInfo.id} was deleted`)
+  }
+
+  if (cellIdInfo.colIndex >= colIndex + count) {
+    return transformMoveOnCell(cellIdInfo, { cols: -count, rows: 0 })
   }
   return cellIdInfo.id
 }

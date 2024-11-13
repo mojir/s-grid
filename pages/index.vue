@@ -118,7 +118,7 @@ function onMouseDown(event: MouseEvent) {
     if (col) {
       resetSelection()
       if (!editingLitsCode.value) {
-        grid.value.movePositionTo(`${col.id}1`)
+        grid.value.movePositionTo(`${col.id.value}1`)
       }
       selection.selectColRange(col, col)
     }
@@ -223,7 +223,7 @@ function onMouseUp(event: MouseEvent) {
   }
   else if (colResizeDblClicked?.completed) {
     const { colId } = colResizeDblClicked
-    const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id))
+    const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id.value))
     cols.add(colId)
     grid.value.autoSetColWidth(Array.from(cols))
     colResizeDblClicked = null
@@ -237,7 +237,7 @@ function onMouseUp(event: MouseEvent) {
     col.width.value = width
 
     rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value)
-      .filter(col => col.id !== colId)
+      .filter(col => col.id.value !== colId)
       .forEach((col) => {
         col.width.value = width
       })

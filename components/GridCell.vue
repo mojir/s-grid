@@ -28,7 +28,7 @@ const { hoveredCellId } = useHover()
 
 const { row, col } = toRefs(props)
 
-const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index))
+const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index.value))
 const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
 const insideSelection = computed(() => selection.value.size() > 1 && selection.value.contains(cellId.value))

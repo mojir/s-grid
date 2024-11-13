@@ -374,6 +374,57 @@ export class Grid {
     })
   }
 
+  public deleteCols(startColIdString: ColIdString, endColIdString?: ColIdString) {
+    const startColIndex = Col.getColIndexFromId(startColIdString)
+    const endColIndex = endColIdString ? Col.getColIndexFromId(endColIdString) : startColIndex
+    const count = endColIdString ? Math.abs(endColIndex - startColIndex) + 1 : 1
+    const colIndex = Math.min(startColIndex, endColIndex)
+
+    const newCols = this.rowsAndCols.cols.value.filter((_, index) => index < colIndex || index >= colIndex + count)
+
+    this.cells.reduce((acc: Cell[], row) => {
+      return [...acc, ...row.splice(colIndex, count)]
+    }, []).forEach((cell) => {
+      const aliasString = this.alias.cellRemoved(cell)
+
+      if (aliasString) {
+        const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+        dependants.forEach((dependantCell) => {
+          const input = dependantCell.input.value
+          dependantCell.input.value = ''
+          dependantCell.input.value = input
+        })
+      }
+    })
+
+    for (let index = colIndex; index < newCols.length; index++) {
+      const col = newCols[index]
+      col.index.value = index
+
+      this.cells[index].forEach((cell, colIndex) => {
+        cell.cellId = CellId.fromCoords(index, colIndex)
+      })
+    }
+
+    this.rowsAndCols.cols.value = newCols
+
+    matrixForEach(this.cells, (cell) => {
+      if (cell.input.value.startsWith('=')) {
+        cell.input.value = `=${transformGridReference(
+          cell.input.value.slice(1),
+          {
+            type: 'colDelete',
+            colRange: {
+              colIndex,
+              count,
+            },
+          },
+        )}`
+      }
+    })
+  }
+
   public insertRowAfter(rowId: RowIdString, count = 1) {
     const beforeIndex = Row.getRowIndexFromId(rowId) + 1
     this.insertRowBefore(Row.getRowIdFromIndex(beforeIndex), count)

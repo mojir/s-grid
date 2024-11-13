@@ -4,16 +4,27 @@ const colResizeIdRegExp = /^resize-col:([A-Z]+)$/
 export type CaptialLetter = `A` | `B` | `C` | `D` | `E` | `F` | `G` | `H` | `I` | `J` | `K` | `L` | `M` | `N` | `O` | `P` | `Q` | `R` | `S` | `T` | `U` | `V` | `W` | `X` | `Y` | `Z`
 export type ColIdString = `${CaptialLetter}` | `${CaptialLetter}${CaptialLetter}`
 
+export type ColRange = {
+  colIndex: number
+  count: number
+}
+
 export class Col {
+  public readonly index: Ref<number>
+  public readonly width: Ref<number>
+  public readonly id: ComputedRef<ColIdString>
+
   private constructor(
-    public readonly index: number,
-    public readonly id: ColIdString,
-    public width: Ref<number>,
+    index: number,
+    width: number,
   ) {
+    this.index = ref(index)
+    this.width = ref(width)
+    this.id = computed(() => Col.getColIdFromIndex(this.index.value))
   }
 
   static create(index: number, width: number): Col {
-    return new Col(index, Col.getColIdFromIndex(index), ref(width))
+    return new Col(index, width)
   }
 
   static isColIdString(id: unknown): id is ColIdString {

@@ -14,7 +14,7 @@ const hover = ref(false)
 
 const { col } = toRefs(props)
 
-const isSelected = computed(() => selection.value.containsColIndex(col.value.index))
+const isSelected = computed(() => selection.value.containsColIndex(col.value.index.value))
 const cellStyle = computed(() => {
   const style: CSSProperties = {
     height: `${colHeaderHeight}px`,
@@ -25,7 +25,7 @@ const cellStyle = computed(() => {
     backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
     borderStyle: 'solid',
-    borderLeftWidth: col.value.index !== 0 ? '1px' : '0px',
+    borderLeftWidth: col.value.index.value !== 0 ? '1px' : '0px',
     borderRightWidth: '1px',
     borderBottomWidth: '1px',
   }
@@ -41,14 +41,14 @@ const cellStyle = computed(() => {
     @mouseleave="hover = false"
   >
     <div
-      :id="col.id"
+      :id="col.id.value"
       :style="whs(col.width.value, colHeaderHeight)"
       class="flex flex-1 justify-center text-xs items-center select-none"
     >
-      {{ col.id }}
+      {{ col.id.value }}
     </div>
     <div
-      :id="`resize-col:${col.id}`"
+      :id="`resize-col:${col.id.value}`"
       :style="whs(5, colHeaderHeight)"
       class="bg-transparent ml-[-3px] z-10 cursor-col-resize"
     />

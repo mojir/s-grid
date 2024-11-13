@@ -40,7 +40,7 @@ defineExpose({
     >
       <div
         v-for="col of cols"
-        :key="col.id"
+        :key="col.id.value"
         class="dark:bg-blue-700 bg-blue-200"
       >
         <GridCell
