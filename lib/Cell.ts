@@ -124,6 +124,10 @@ export class Cell {
       return null
     }
 
+    if (input.startsWith('\'')) {
+      return input.slice(1)
+    }
+
     if (this.formula.value !== null) {
       const lits = this.lits.value
       try {
@@ -151,7 +155,7 @@ export class Cell {
     if (this.output.value instanceof Error) {
       return '#ERR'
     }
-    if (isLitsFunction(this.output.value)) {
+    if (this.isFunction.value) {
       const alias = this.alias.getAlias(this)
 
       return `${alias ? `${alias} ` : ''}λ`
