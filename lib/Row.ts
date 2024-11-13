@@ -3,6 +3,10 @@ const colResizeIdRegExp = /^resize-row:(\d+)$/
 
 export type Number = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 export type RowIdString = `${Number}` | `${Number}${Number}` | `${Number}${Number}${Number}` | `${Number}${Number}${Number}${Number}`
+export type RowRange = {
+  rowIndex: number
+  count: number
+}
 
 export class Row {
   public readonly index: Ref<number>

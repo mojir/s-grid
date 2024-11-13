@@ -1,4 +1,4 @@
-import { isLitsFunction } from '@mojir/lits'
+import { isLitsError, isLitsFunction } from '@mojir/lits'
 import { CellId } from './CellId'
 import { CellStyle, type CellStyleJson } from './CellStyle'
 import { Color, type ColorJson } from './color'

@@ -11,6 +11,7 @@ export type Movement = {
 const cellIdStringRegExp = /^(\$?)([A-Z]+)(\$?)(\d+)$/
 
 export type CellIdStringInfo = {
+  id: string
   colPart: string
   rowPart: string
   colId: ColIdString
@@ -38,6 +39,7 @@ export function getInfoFromCellIdString(cellIdString: string): CellIdStringInfo 
   const rowIndex = Row.getRowIndexFromId(rowId)
 
   return {
+    id: cellIdString,
     colPart: absoluteCol ? `$${colId}` : colId,
     rowPart: absoluteRow ? `$${rowId}` : rowId,
     colId,

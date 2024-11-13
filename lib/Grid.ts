@@ -6,8 +6,8 @@ import { Col, type ColIdString } from './Col'
 import type { Color } from './color'
 import { Row, type RowIdString } from './Row'
 import type { CellOrRangeTarget, CellTarget } from './utils'
-import { matrixMap } from './matrix'
-import { transformLits } from './transformLits'
+import { matrixForEach, matrixMap } from './matrix'
+import { transformFormula } from './transformFormula'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
 import type { AliasComposable } from '~/composables/useAlias'
@@ -325,31 +325,37 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRow(rowId: RowIdString, count = 1) {
-    const rowIndex = Row.getRowIndexFromId(rowId)
+  public deleteRow(rowIdString: RowIdString, count = 1) {
+    const rowIndex = Row.getRowIndexFromId(rowIdString)
     const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
 
     this.cells.splice(rowIndex, count)
 
     for (let index = rowIndex; index < newRows.length; index++) {
-      // const oldIndex = index + count
       const row = newRows[index]
-      // const oldRow = this.rowsAndCols.rows.value[oldIndex]
       row.index.value = index
-      // row.height.value = oldRow.height.value
 
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
-        if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformLits(
-            cell.input.value.slice(1),
-            { type: 'move', movement: { cols: 0, rows: -count } },
-          )}`
-        }
       })
     }
 
     this.rowsAndCols.rows.value = newRows
+
+    matrixForEach(this.cells, (cell) => {
+      if (cell.input.value.startsWith('=')) {
+        cell.input.value = `=${transformFormula(
+          cell.input.value.slice(1),
+          {
+            type: 'rowDelete',
+            rowRange: {
+              rowIndex,
+              count,
+            },
+          },
+        )}`
+      }
+    })
   }
 
   public insertRowAfter(rowId: RowIdString, count = 1) {
@@ -384,7 +390,7 @@ export class Grid {
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
         if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformLits(
+          cell.input.value = `=${transformFormula(
             cell.input.value.slice(1),
             { type: 'move', movement: { cols: 0, rows: count } })}`
         }

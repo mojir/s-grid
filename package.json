@@ -19,7 +19,7 @@
     "clean": "nuxt cleanup"
   },
   "dependencies": {
-    "@mojir/lits": "1.2.2-alpha.2",
+    "@mojir/lits": "1.2.2-alpha.3",
     "@nuxt/icon": "^1.6.1",
     "@nuxthub/core": "^0.8.4",
     "class-variance-authority": "^0.7.0",
