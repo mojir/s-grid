@@ -27,11 +27,11 @@ const errorMessage = computed(() => {
 
 <template>
   <div
-    class="pl-4 flex h-auto items-center text-sm justify-between dark:bg-slate-900 bg-white box-border border-t dark:border-slate-700 border-gray-300"
+    class="px-4 flex h-auto items-center text-sm justify-between dark:bg-slate-900 bg-white box-border border-t dark:border-slate-700 border-gray-300"
   >
     <div
       v-if="errorMessage"
-      class="whitespace-pre-wrap flex-1 text-red-500 py-2 max-h-40 overflow-auto font-mono"
+      class="whitespace-pre flex-1 text-red-500 py-2 max-h-40 overflow-auto font-mono"
     >
       {{ errorMessage }}
     </div>
