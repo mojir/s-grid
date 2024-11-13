@@ -99,7 +99,7 @@ const range = 'B2-B10'
 function addSampleData() {
   exec('ClearAllCells!')
 
-  exec('Select!', 'A1-E1')
+  exec('Select!', 'A1-B1')
   exec('SetBackgroundColor!', '#004400')
   exec('SetTextColor!', '#ffffff')
   exec('SetStyle!', 'bold', true)
@@ -140,7 +140,8 @@ function addSampleData() {
     exec('Move!', 'down')
   })
 
-  exec('MoveTo!', 'D1')
+  // exec('MoveTo!', 'D1')
+  exec('Move!', 'down')
   exec('SetInput!', 'Functions')
   exec('SetColWidth!', 200)
   exec('Move!', 'right')
@@ -173,9 +174,9 @@ function addSampleData() {
     </button>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-      @click="exec('DeleteRow!', '1')"
+      @click="exec('DeleteRow!', '3')"
     >
-      DeleteRow 1
+      DeleteRow 3
     </button>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
