@@ -130,7 +130,7 @@ function addSampleData() {
   exec('Select!', range)
   exec('SetStyle!', 'justify', 'right')
 
-  exec('MoveTo!', 'A12')
+  exec('MoveTo!', 'A15')
 
   rangeToNumberSource.forEach((item) => {
     exec('SetInput!', item.name)
@@ -174,7 +174,7 @@ function addSampleData() {
     </button>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-      @click="exec('DeleteRow!', '3')"
+      @click="exec('DeleteRows!', '3')"
     >
       DeleteRow 3
     </button>

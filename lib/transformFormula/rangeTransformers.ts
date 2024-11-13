@@ -1,5 +1,4 @@
-import { getInfoFromCellIdString, CellId, type CellIdStringInfo } from '../CellId'
-import { Col } from '../Col'
+import { getInfoFromCellIdString, type CellIdStringInfo } from '../CellId'
 import type { RowRange } from '../Row'
 import { transformMoveOnCell } from './cellTransformers'
 import type { FormulaTransformation } from '.'
@@ -30,35 +29,43 @@ export function transformRange(rangeIdString: string, transformation: FormulaTra
   }
 }
 
-function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex, count }: RowRange): string {
-  const startCol = Col.getColIndexFromId(start.colId)
-  const endCol = Col.getColIndexFromId(end.colId)
+function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex: startRowIndexToDelete, count: deleteCount }: RowRange): string {
+  const startIsInDeletedRange
+    = start.rowIndex >= startRowIndexToDelete
+    && start.rowIndex < startRowIndexToDelete + deleteCount
 
-  const startInDeletedRange = start.rowIndex >= rowIndex && start.rowIndex < rowIndex + count
-  const endInDeletedRange = end.rowIndex >= rowIndex && end.rowIndex < rowIndex + count
+  const endIsInDeletedRange
+    = end.rowIndex >= startRowIndexToDelete
+    && end.rowIndex < startRowIndexToDelete + deleteCount
 
-  // range is in deleted row range
-  if (startInDeletedRange && endInDeletedRange) {
+  // range reference is enclosed in deleted row range
+  if (startIsInDeletedRange && endIsInDeletedRange) {
     throw new Error(`Range ${id} was deleted`)
   }
 
-  // TODO use transformMoveOnCell, this takes care of absolute references
-  // range is below and intersecting deleted row range
-  if (startInDeletedRange) {
-    return CellId.fromCoords(rowIndex + count, startCol).id + '-' + end.id
+  // range reference is below and intersecting deleted row range
+  if (startIsInDeletedRange) {
+    const newStart = transformMoveOnCell(start, { cols: 0, rows: startRowIndexToDelete - start.rowIndex })
+    const newEnd = transformMoveOnCell(end, { cols: 0, rows: -deleteCount })
+
+    return `${newStart}-${newEnd}`
   }
 
-  // TODO use transformMoveOnCell, this takes care of absolute references
   // range is above and intersecting deleted row range
-  if (endInDeletedRange) {
-    return `${start.id}-${CellId.fromCoords(rowIndex - 1, endCol).id}`
+  if (endIsInDeletedRange) {
+    const newStart = start.id
+    const newEnd = transformMoveOnCell(end, { cols: 0, rows: (startRowIndexToDelete - end.rowIndex - 1) })
+
+    return `${newStart}-${newEnd}`
   }
 
-  const startBelowDeletedRange = start.rowIndex >= rowIndex + count
-  const endBelowDeletedRange = end.rowIndex >= rowIndex + count
+  // no range reference endpoints (start-end) are inside deleted range
 
-  const newStart: string = startBelowDeletedRange ? transformMoveOnCell(start, { cols: 0, rows: -count }) : start.id
-  const newEnd: string = endBelowDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -count }) : end.id
+  const startIsBelowDeletedRange = start.rowIndex >= startRowIndexToDelete + deleteCount
+  const endIsBelowDeletedRange = end.rowIndex >= startRowIndexToDelete + deleteCount
+
+  const newStart: string = startIsBelowDeletedRange ? transformMoveOnCell(start, { cols: 0, rows: -deleteCount }) : start.id
+  const newEnd: string = endIsBelowDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -deleteCount }) : end.id
 
   return `${newStart}-${newEnd}`
 }

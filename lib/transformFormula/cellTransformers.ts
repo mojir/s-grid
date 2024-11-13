@@ -15,11 +15,11 @@ export function transformCell(cellIdString: string, transformation: FormulaTrans
 
 export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }: Movement): string {
   const newColId = cellIdInfo.absoluteCol ? cellIdInfo.colPart : Col.getColIdFromIndex(cellIdInfo.colIndex + cols)
-  if (!Col.isColIdString(newColId)) {
+  if (!cellIdInfo.absoluteCol && !Col.isColIdString(newColId)) {
     throw new Error(`Invalid column id: ${newColId}`)
   }
   const newRowId = cellIdInfo.absoluteRow ? cellIdInfo.rowPart : Row.getRowIdFromIndex(cellIdInfo.rowIndex + rows)
-  if (!Row.isRowIdString(newRowId)) {
+  if (!cellIdInfo.absoluteRow && !Row.isRowIdString(newRowId)) {
     throw new Error(`Invalid row id: ${newRowId}`)
   }
 

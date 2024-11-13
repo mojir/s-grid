@@ -31,7 +31,7 @@ const commandNames = [
   'SetRowHeight!',
   'SetStyle!',
   'SetTextColor!',
-  'DeleteRow!',
+  'DeleteRows!',
 ] as const
 
 type BuiltinCommandName = typeof commandNames[number]
@@ -270,10 +270,10 @@ function registerCommands() {
   })
 
   registerCommand({
-    name: 'DeleteRow!',
+    name: 'DeleteRows!',
     description: 'Delete row',
-    execute: (rowId: RowIdString, count = 1) => {
-      grid.value.deleteRow(rowId, count)
+    execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
+      grid.value.deleteRows(startRowStringId, endRowStringId)
     },
   })
 

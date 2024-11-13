@@ -325,8 +325,12 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRow(rowIdString: RowIdString, count = 1) {
-    const rowIndex = Row.getRowIndexFromId(rowIdString)
+  public deleteRows(startRowIdString: RowIdString, endRowIdString?: RowIdString) {
+    const startRowIndex = Row.getRowIndexFromId(startRowIdString)
+    const endRowIndex = endRowIdString ? Row.getRowIndexFromId(endRowIdString) : startRowIndex
+    const count = endRowIdString ? Math.abs(endRowIndex - startRowIndex) + 1 : 1
+    const rowIndex = Math.min(startRowIndex, endRowIndex)
+
     const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
 
     this.cells.splice(rowIndex, count)
