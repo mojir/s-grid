@@ -138,7 +138,11 @@ const cellStyle = computed(() => {
     }
   }
   else {
-    style.justifyContent = cell.value.isNumber.value ? 'right' : 'left'
+    style.justifyContent = cell.value.isNumber.value
+      ? 'right'
+      : cell.value.isError.value
+        ? 'center'
+        : 'left'
   }
 
   if (cellStyle.align) {
@@ -169,6 +173,9 @@ const cellStyle = computed(() => {
     }
     if (cellTextColor.value) {
       style.color = cellTextColor.value.getStyleString()
+    }
+    else if (cell.value.isError.value) {
+      style.color = 'var(--error-color)'
     }
   }
 

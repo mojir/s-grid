@@ -149,7 +149,7 @@ export class Cell {
     }
 
     if (this.output.value instanceof Error) {
-      return 'ERR'
+      return '#ERR'
     }
     if (isLitsFunction(this.output.value)) {
       const alias = this.alias.getAlias(this)
@@ -210,6 +210,14 @@ export class Cell {
 
   public isNumber = computed(() => {
     return typeof this.output.value === 'number'
+  })
+
+  public isError = computed(() => {
+    return isLitsError(this.output.value)
+  })
+
+  public isFunction = computed(() => {
+    return isLitsFunction(this.output.value)
   })
 
   public getDebugInfo() {

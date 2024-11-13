@@ -19,6 +19,8 @@
     --editing-cell-outline-color: theme('colors.gray.400');
     --editing-lits-cell-outline-color: theme('colors.blue.400');
 
+    --error-color: theme('colors.red.500');
+
     --background: theme('colors.white');
     --foreground: 222.2 84% 4.9%;
 
@@ -67,6 +69,8 @@
     --editing-cell-outline-color: theme('colors.slate.600');
     --editing-lits-cell-outline-color: theme('colors.blue.600');
   
+    --error-color: theme('colors.red.500');
+
     --background: theme('colors.slate.900');
     --foreground: 210 40% 98%;
 
