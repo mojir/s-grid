@@ -1,5 +1,5 @@
+import type { JsFunction } from '@mojir/lits'
 import { format as d3format } from 'd3-format'
-import type { JsFunction } from '.'
 
 const formatCache = new Map<string, ReturnType<typeof d3format>>()
 

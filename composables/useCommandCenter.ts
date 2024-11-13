@@ -1,7 +1,7 @@
+import type { JsFunction } from '@mojir/lits'
 import type { CellId } from '~/lib/CellId'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
-import type { JsFunctions } from '~/lib/litsInterop'
 import { format } from '~/lib/litsInterop/format'
 import type { RowIdString } from '~/lib/Row'
 
@@ -44,7 +44,7 @@ type Command<T extends string> = {
 }
 
 const commands = new Map<string, Command<string>>()
-const jsFunctions: JsFunctions = {
+const jsFunctions: Record<string, JsFunction> = {
   format,
 }
 
