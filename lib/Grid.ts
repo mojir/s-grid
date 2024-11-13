@@ -4,14 +4,14 @@ import { CellRange } from './CellRange'
 import { CellStyle, getLineHeight, type CellStyleName } from './CellStyle'
 import { Col, type ColIdString } from './Col'
 import type { Color } from './color'
+import { matrixFilter, matrixForEach, matrixMap } from './matrix'
 import { Row, type RowIdString } from './Row'
+import { transformGridReference } from './transformFormula'
 import type { CellOrRangeTarget, CellTarget } from './utils'
-import { matrixForEach, matrixMap } from './matrix'
-import { transformFormula } from './transformFormula'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
-import type { AliasComposable } from '~/composables/useAlias'
 import type { LitsComposable } from '~/composables/useLits'
+import type { AliasComposable } from '~/composables/useAlias'
 
 export class Grid {
   private readonly rowsAndCols: RowsAndColsComposable
@@ -333,7 +333,19 @@ export class Grid {
 
     const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
 
-    this.cells.splice(rowIndex, count)
+    this.cells.splice(rowIndex, count).flat().forEach((cell) => {
+      const aliasString = this.alias.cellRemoved(cell)
+
+      if (aliasString) {
+        const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+        dependants.forEach((dependantCell) => {
+          const input = dependantCell.input.value
+          dependantCell.input.value = ''
+          dependantCell.input.value = input
+        })
+      }
+    })
 
     for (let index = rowIndex; index < newRows.length; index++) {
       const row = newRows[index]
@@ -348,7 +360,7 @@ export class Grid {
 
     matrixForEach(this.cells, (cell) => {
       if (cell.input.value.startsWith('=')) {
-        cell.input.value = `=${transformFormula(
+        cell.input.value = `=${transformGridReference(
           cell.input.value.slice(1),
           {
             type: 'rowDelete',
@@ -394,7 +406,7 @@ export class Grid {
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
         if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformFormula(
+          cell.input.value = `=${transformGridReference(
             cell.input.value.slice(1),
             { type: 'move', movement: { cols: 0, rows: count } })}`
         }

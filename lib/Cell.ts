@@ -74,9 +74,9 @@ export class Cell {
   }
 
   public formula = computed(() => this.input.value.startsWith('=') ? this.input.value.slice(1) : null)
-  public localReferencedTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localUnresolvedIdentifiers.value))
+  public localReferenceTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localReferences.value))
 
-  private localUnresolvedIdentifiers = computed<string[]>(() => {
+  public localReferences = computed<string[]>(() => {
     const input = this.input.value
 
     if (this.formula.value !== null) {
@@ -106,12 +106,12 @@ export class Cell {
     })
   }
 
-  private unresolvedIdentifiers = computed<string[]>(() => {
-    const allTargets = new Set<string>(this.localUnresolvedIdentifiers.value)
+  private references = computed<string[]>(() => {
+    const allTargets = new Set<string>(this.localReferences.value)
 
-    this.localReferencedTargets.value
+    this.localReferenceTargets.value
       .flatMap(target => this.grid.getCells(target))
-      .flatMap(cell => cell.unresolvedIdentifiers.value)
+      .flatMap(cell => cell.references.value)
       .forEach(identifier => allTargets.add(identifier))
 
     return Array.from(allTargets)
@@ -127,7 +127,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       try {
-        const values = this.grid.getValuesFromUndefinedIdentifiers(this.unresolvedIdentifiers.value)
+        const values = this.grid.getValuesFromUndefinedIdentifiers(this.references.value)
         const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
         return result
       }
@@ -188,7 +188,7 @@ export class Cell {
 
     identifiers.push(...this.getTargetsFromUnresolvedIdentifiers(identifiers)
       .flatMap(target => this.grid.getCells(target))
-      .flatMap(cell => cell.unresolvedIdentifiers.value))
+      .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))
 
@@ -230,8 +230,8 @@ export class Cell {
       row: this.cellId.rowIndex,
       col: this.cellId.colIndex,
       style: this.style.value.getJson(),
-      localReferences: this.localReferencedTargets.value.map(target => target.id),
-      references: [...this.unresolvedIdentifiers.value],
+      localReferences: [...this.localReferences.value],
+      references: [...this.references.value],
     }
   }
 }

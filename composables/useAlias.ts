@@ -20,10 +20,21 @@ export const useAlias = createSharedComposable(() => {
     return lookup.value.get(cell)
   }
 
+  function cellRemoved(cell: Cell): string | undefined {
+    const aliasString = lookup.value.get(cell)
+    if (!aliasString) {
+      return
+    }
+    cellAliases.value.delete(aliasString)
+    lookup.value.delete(cell)
+    return aliasString
+  }
+
   return {
     setCell,
     getCell,
     getAlias,
+    cellRemoved,
   }
 })
 

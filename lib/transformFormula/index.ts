@@ -13,7 +13,7 @@ export type FormulaTransformation = {
   rowRange: RowRange
 }
 
-export function transformFormula(program: string, transformation: FormulaTransformation): string {
+export function transformGridReference(program: string, transformation: FormulaTransformation): string {
   const lits = useLits().value
   const tokenStream = lits.tokenize(program)
   const transformedTokenStream = lits.transform(tokenStream, name => transformName(name, transformation))

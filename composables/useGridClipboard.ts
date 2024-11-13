@@ -2,7 +2,7 @@ import type { CellJson } from '~/lib/Cell'
 import { CellId } from '~/lib/CellId'
 import type { CellRange } from '~/lib/CellRange'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
-import { transformFormula } from '~/lib/transformFormula'
+import { transformGridReference } from '~/lib/transformFormula'
 
 type Clipboard = {
   range: CellRange
@@ -47,7 +47,7 @@ export default function useGridClipboard() {
       const cellId = CellId.fromCoords(toPosition.rowIndex + rowIndex, toPosition.colIndex + colIndex)
       const cell = grid.value.getCell(cellId)
       if (cellJson.input.startsWith('=')) {
-        cellJson.input = `=${transformFormula(cellJson.input.slice(1), { type: 'move', movement })}`
+        cellJson.input = `=${transformGridReference(cellJson.input.slice(1), { type: 'move', movement })}`
       }
       cell.setJson(cellJson)
     })
