@@ -1,11 +1,11 @@
 import type { CellJson } from '~/lib/Cell'
 import { CellId } from '~/lib/CellId'
-import type { CellRange } from '~/lib/CellRange'
+import { CellRange } from '~/lib/CellRange'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
 import { transformGridReference } from '~/lib/transformFormula'
 
 type Clipboard = {
-  range: CellRange
+  rangeId: string
   cells: CellJson[][]
 }
 
@@ -23,7 +23,7 @@ export default function useGridClipboard() {
     }
 
     clipboard.value = {
-      range: selection.value,
+      rangeId: selection.value.id,
       cells: matrixMap(selection.value.getCellIdMatrix(), cellId => grid.value.getCell(cellId).getJson()),
     }
   }
@@ -39,17 +39,19 @@ export default function useGridClipboard() {
       return
     }
 
-    const fromPosition = clipboard.value.range.start
+    const range = CellRange.fromId(clipboard.value.rangeId)
+    const fromPosition = range.start
     const toPosition = selection.value.start
     const movement = fromPosition.getMovementTo(toPosition)
 
     matrixForEach(clipboard.value.cells, (cellJson, [rowIndex, colIndex]) => {
       const cellId = CellId.fromCoords(toPosition.rowIndex + rowIndex, toPosition.colIndex + colIndex)
       const cell = grid.value.getCell(cellId)
-      if (cellJson.input.startsWith('=')) {
-        cellJson.input = `=${transformGridReference(cellJson.input.slice(1), { type: 'move', movement })}`
+      let input = cellJson.input
+      if (input.startsWith('=')) {
+        input = `=${transformGridReference(cellJson.input.slice(1), { type: 'move', movement })}`
       }
-      cell.setJson(cellJson)
+      cell.setJson({ ...cellJson, input })
     })
 
     if (cut.value) {
