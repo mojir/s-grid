@@ -151,7 +151,7 @@ function onMouseDown(event: MouseEvent) {
     if (row) {
       resetSelection()
       if (!editingLitsCode.value) {
-        grid.value.movePositionTo(`A${row.id}`)
+        grid.value.movePositionTo(`A${row.id.value}`)
       }
       selection.selectRowRange(row, row)
     }
