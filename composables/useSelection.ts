@@ -1,7 +1,7 @@
 import { CellId } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
-import type { Col } from '~/lib/Col'
-import type { Row } from '~/lib/Row'
+import { Col, type ColIdString, type ColRange } from '~/lib/Col'
+import { Row, type RowIdString, type RowRange } from '~/lib/Row'
 
 export const useSelection = createSharedComposable(() => {
   const { rows, cols } = useRowsAndCols()
@@ -10,6 +10,37 @@ export const useSelection = createSharedComposable(() => {
   })
   const unsortedSelection = ref(CellRange.fromSingleCellId(CellId.fromCoords(0, 0)))
   const selection = computed(() => unsortedSelection.value.toSorted())
+  const selectedRows = computed<null | RowRange>(() => {
+    if (selection.value.start.colIndex === 0 && selection.value.end.colIndex === cols.value.length - 1) {
+      return {
+        rowIndex: selection.value.start.rowIndex,
+        count: selection.value.end.rowIndex - selection.value.start.rowIndex + 1,
+      }
+    }
+    return null
+  })
+  const selectedCols = computed<null | ColRange>(() => {
+    if (selection.value.start.rowIndex === 0 && selection.value.end.rowIndex === rows.value.length - 1) {
+      return {
+        colIndex: selection.value.start.colIndex,
+        count: selection.value.end.colIndex - selection.value.start.colIndex + 1,
+      }
+    }
+    return null
+  })
+  function isRowSelected(row: RowIdString) {
+    const rowIndex = Row.getRowIndexFromId(row)
+    return selectedRows.value
+      && selectedRows.value.rowIndex <= rowIndex
+      && rowIndex < selectedRows.value.rowIndex + selectedRows.value.count
+  }
+  function isColSelected(col: ColIdString) {
+    const colIndex = Col.getColIndexFromId(col)
+    return selectedCols.value
+      && selectedCols.value.colIndex <= colIndex
+      && colIndex < selectedCols.value.colIndex + selectedCols.value.count
+  }
+
   const selecting = ref(false)
 
   function updateSelection(newSelection: CellRange) {
@@ -78,6 +109,10 @@ export const useSelection = createSharedComposable(() => {
     select,
     selectAll,
     selecting,
+    isRowSelected,
+    isColSelected,
+    selectedRows,
+    selectedCols,
   }
 })
 
