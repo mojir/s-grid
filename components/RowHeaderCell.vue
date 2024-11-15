@@ -39,14 +39,20 @@ function removeRow() {
   grid.value.deleteRows(start, end)
 }
 
-const isSelected = computed(() => selection.value.containsRowIndex(row.value.index.value))
+const hasSelectedCell = computed(() => selection.value.containsRowIndex(row.value.index.value))
+const isSelected = computed(() => isRowSelected(row.value.id.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {
     width: `${rowHeaderWidth}px`,
     height: `${row.value.height.value + 1}px`,
     marginTop: '-1px',
-    backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
+    color: isSelected.value ? 'var(--background)' : 'hsl(var(--foreground))',
+    backgroundColor: isSelected.value
+      ? 'var(--is-selected-header-background-color)'
+      : hasSelectedCell.value
+        ? 'var(--has-selected-cell-header-background-color)'
+        : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
     borderStyle: 'solid',
     borderTopWidth: row.value.index.value !== 0 ? '1px' : '0px',

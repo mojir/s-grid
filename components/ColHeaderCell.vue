@@ -40,7 +40,9 @@ function removeCol() {
   grid.value.deleteCols(start, end)
 }
 
-const isSelected = computed(() => selection.value.containsColIndex(col.value.index.value))
+const hasSelectedCell = computed(() => selection.value.containsColIndex(col.value.index.value))
+const isSelected = computed(() => isColSelected(col.value.id.value))
+
 const cellStyle = computed(() => {
   const style: CSSProperties = {
     height: `${colHeaderHeight}px`,
@@ -48,7 +50,12 @@ const cellStyle = computed(() => {
     minHeight: `${colHeaderHeight}px`,
     minWidth: `${col.value.width.value + 1}px`,
     marginLeft: '-1px',
-    backgroundColor: isSelected.value ? 'var(--selected-header-background-color)' : 'var(--header-background-color)',
+    color: isSelected.value ? 'var(--background)' : 'hsl(var(--foreground))',
+    backgroundColor: isSelected.value
+      ? 'var(--is-selected-header-background-color)'
+      : hasSelectedCell.value
+        ? 'var(--has-selected-cell-header-background-color)'
+        : 'var(--header-background-color)',
     borderColor: 'var(--header-border-color)',
     borderStyle: 'solid',
     borderLeftWidth: col.value.index.value !== 0 ? '1px' : '0px',
