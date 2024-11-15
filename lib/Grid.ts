@@ -22,7 +22,7 @@ export class Grid {
 
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
-  private readonly gridRange: ComputedRef<CellRange>
+  public readonly gridRange: ComputedRef<CellRange>
 
   constructor(
     {
@@ -326,9 +326,18 @@ export class Grid {
   }
 
   public deleteRows(startRowIdString: RowIdString, endRowIdString?: RowIdString) {
-    const startRowIndex = Row.getRowIndexFromId(startRowIdString)
-    const endRowIndex = endRowIdString ? Row.getRowIndexFromId(endRowIdString) : startRowIndex
+    const startRowIndex = Math.min(
+      Row.getRowIndexFromId(startRowIdString),
+      this.rowsAndCols.rows.value.length - 1,
+    )
+    const endRowIndex = Math.min(
+      endRowIdString ? Row.getRowIndexFromId(endRowIdString) : startRowIndex,
+      this.rowsAndCols.rows.value.length - 1,
+    )
     const count = endRowIdString ? Math.abs(endRowIndex - startRowIndex) + 1 : 1
+    if (count === this.rowsAndCols.rows.value.length) {
+      throw new Error('Cannot delete all rows')
+    }
     const rowIndex = Math.min(startRowIndex, endRowIndex)
 
     const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
@@ -372,12 +381,25 @@ export class Grid {
         )}`
       }
     })
+
+    this.selection.clampSelection(this.gridRange.value)
+    this.position.value = this.selection.selection.value.start
   }
 
   public deleteCols(startColIdString: ColIdString, endColIdString?: ColIdString) {
-    const startColIndex = Col.getColIndexFromId(startColIdString)
-    const endColIndex = endColIdString ? Col.getColIndexFromId(endColIdString) : startColIndex
+    const startColIndex = Math.min(
+      Col.getColIndexFromId(startColIdString),
+      this.rowsAndCols.cols.value.length - 1,
+    )
+    const endColIndex = Math.min(
+      endColIdString ? Col.getColIndexFromId(endColIdString) : startColIndex,
+      this.rowsAndCols.cols.value.length - 1,
+    )
     const count = endColIdString ? Math.abs(endColIndex - startColIndex) + 1 : 1
+    if (count === this.rowsAndCols.cols.value.length) {
+      throw new Error('Cannot delete all columns')
+    }
+
     const colIndex = Math.min(startColIndex, endColIndex)
 
     const newCols = this.rowsAndCols.cols.value.filter((_, index) => index < colIndex || index >= colIndex + count)
@@ -423,6 +445,8 @@ export class Grid {
         )}`
       }
     })
+    this.selection.clampSelection(this.gridRange.value)
+    this.position.value = this.selection.selection.value.start
   }
 
   public insertRowAfter(rowId: RowIdString, count = 1) {
@@ -456,14 +480,80 @@ export class Grid {
 
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
-        if (cell.input.value.startsWith('=')) {
-          cell.input.value = `=${transformGridReference(
-            cell.input.value.slice(1),
-            { type: 'move', movement: { cols: 0, rows: count } })}`
-        }
       })
     }
 
+    matrixForEach(this.cells, (cell) => {
+      if (cell.input.value.startsWith('=')) {
+        cell.input.value = `=${transformGridReference(
+          cell.input.value.slice(1),
+          {
+            type: 'rowInsertBefore',
+            rowRange: {
+              rowIndex,
+              count,
+            },
+          },
+        )}`
+      }
+    })
+
     this.rowsAndCols.rows.value = newRows
+  }
+
+  public insertColAfter(rowId: ColIdString, count = 1) {
+    const beforeIndex = Col.getColIndexFromId(rowId) + 1
+    this.insertColBefore(Col.getColIdFromIndex(beforeIndex), count)
+  }
+
+  public insertColBefore(colId: ColIdString, count = 1) {
+    const colIndex = Col.getColIndexFromId(colId)
+
+    const createdCols = Array.from({ length: count }, (_, index) => {
+      return Col.create(colIndex + index, defaultColWidth)
+    })
+
+    const newCols = [
+      ...this.rowsAndCols.cols.value.slice(0, colIndex),
+      ...createdCols,
+      ...this.rowsAndCols.cols.value.slice(colIndex),
+    ]
+
+    this.cells.forEach((cellRow, rowIndex) => {
+      cellRow.splice(colIndex, 0, ...Array.from({ length: count }, (_, index) =>
+        new Cell(
+          CellId.fromCoords(rowIndex, colIndex + index),
+          { grid: this, lits: this.lits, commandCenter: this.commandCenter, alias: this.alias },
+        ),
+      ))
+    })
+
+    for (let index = colIndex + count; index < newCols.length; index++) {
+      const col = newCols[index]
+      col.index.value = index
+    }
+
+    for (let rowIndex = 0; rowIndex < this.cells.length; rowIndex++) {
+      for (let index = colIndex + count; index < newCols.length; index++) {
+        this.cells[rowIndex][index].cellId = CellId.fromCoords(rowIndex, index)
+      }
+    }
+
+    matrixForEach(this.cells, (cell) => {
+      if (cell.input.value.startsWith('=')) {
+        cell.input.value = `=${transformGridReference(
+          cell.input.value.slice(1),
+          {
+            type: 'rowInsertBefore',
+            rowRange: {
+              rowIndex: colIndex,
+              count,
+            },
+          },
+        )}`
+      }
+    })
+
+    this.rowsAndCols.cols.value = newCols
   }
 }

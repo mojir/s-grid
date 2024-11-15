@@ -130,35 +130,35 @@ function addSampleData() {
   exec('Select!', range)
   exec('SetStyle!', 'justify', 'right')
 
-  exec('MoveTo!', 'A15')
+  exec('MovePositionTo!', 'A15')
 
   rangeToNumberSource.forEach((item) => {
     exec('SetInput!', item.name)
-    exec('Move!', 'right')
+    exec('MovePosition!', 'right')
     exec('SetInput!', `=(${item.name} ${range})`)
-    exec('Move!', 'left')
-    exec('Move!', 'down')
+    exec('MovePosition!', 'left')
+    exec('MovePosition!', 'down')
   })
 
-  // exec('MoveTo!', 'D1')
-  exec('Move!', 'down')
+  // exec('MovePositionTo!', 'D1')
+  exec('MovePosition!', 'down')
   exec('SetInput!', 'Functions')
   exec('SetColWidth!', 200)
-  exec('Move!', 'right')
+  exec('MovePosition!', 'right')
   exec('SetColWidth!', 600)
-  exec('Move!', 'left')
+  exec('MovePosition!', 'left')
   source.forEach((item) => {
-    exec('Move!', 'down')
+    exec('MovePosition!', 'down')
     exec('CreateNamedFunction!', item.name, item.fn)
-    exec('Move!', 'right')
+    exec('MovePosition!', 'right')
     exec('SetInput!', item.description)
-    exec('Move!', 'left')
+    exec('MovePosition!', 'left')
   })
-  exec('Move!', 'right')
+  exec('MovePosition!', 'right')
   exec('ExpandSelectionTo!', 'E2')
   exec('SetStyle!', 'italic', true)
 
-  exec('MoveTo!', 'A1')
+  exec('MovePositionTo!', 'A1')
 }
 </script>
 

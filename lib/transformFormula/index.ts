@@ -15,6 +15,12 @@ export type FormulaTransformation = {
 } | {
   type: 'colDelete'
   colRange: ColRange
+} | {
+  type: 'rowInsertBefore'
+  rowRange: RowRange
+} | {
+  type: 'colInsertBefore'
+  colRange: ColRange
 }
 
 export function transformGridReference(program: string, transformation: FormulaTransformation): string {

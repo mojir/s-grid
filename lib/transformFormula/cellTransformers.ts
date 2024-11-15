@@ -12,6 +12,10 @@ export function transformCell(cellIdString: string, transformation: FormulaTrans
       return transformRowDeleteOnCell(cellInfo, transformation.rowRange)
     case 'colDelete':
       return transformColDeleteOnCell(cellInfo, transformation.colRange)
+    case 'rowInsertBefore':
+      return transformRowInsertBeforeOnCell(cellInfo, transformation.rowRange)
+    case 'colInsertBefore':
+      return transformColInsertBeforeOnCell(cellInfo, transformation.colRange)
   }
 }
 
@@ -46,6 +50,20 @@ export function transformColDeleteOnCell(cellIdInfo: CellIdStringInfo, { colInde
 
   if (cellIdInfo.colIndex >= colIndex + count) {
     return transformMoveOnCell(cellIdInfo, { cols: -count, rows: 0 })
+  }
+  return cellIdInfo.id
+}
+
+export function transformRowInsertBeforeOnCell(cellIdInfo: CellIdStringInfo, { rowIndex, count }: RowRange): string {
+  if (cellIdInfo.rowIndex >= rowIndex) {
+    return transformMoveOnCell(cellIdInfo, { cols: 0, rows: count })
+  }
+  return cellIdInfo.id
+}
+
+export function transformColInsertBeforeOnCell(cellIdInfo: CellIdStringInfo, { colIndex, count }: ColRange): string {
+  if (cellIdInfo.colIndex >= colIndex) {
+    return transformMoveOnCell(cellIdInfo, { cols: count, rows: 0 })
   }
   return cellIdInfo.id
 }

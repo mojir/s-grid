@@ -1,4 +1,4 @@
-import { CellId } from '~/lib/CellId'
+import { CellId, type Movement } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
 import { Col, type ColIdString, type ColRange } from '~/lib/Col'
 import { Row, type RowIdString, type RowRange } from '~/lib/Row'
@@ -42,6 +42,12 @@ export const useSelection = createSharedComposable(() => {
   }
 
   const selecting = ref(false)
+
+  function moveSelection(movement: Movement) {
+    const newStart = CellId.fromCoords(selection.value.start.rowIndex + movement.rows, selection.value.start.colIndex + movement.cols)
+    const newEnd = CellId.fromCoords(selection.value.end.rowIndex + movement.rows, selection.value.end.colIndex + movement.cols)
+    updateSelection(CellRange.fromCellIds(newStart, newEnd))
+  }
 
   function updateSelection(newSelection: CellRange) {
     if (!newSelection.equals(unsortedSelection.value)) {
@@ -99,6 +105,10 @@ export const useSelection = createSharedComposable(() => {
     updateSelection(range)
   }
 
+  function clampSelection(range: CellRange) {
+    updateSelection(selection.value.clamp(range))
+  }
+
   return {
     selection,
     updateSelection,
@@ -113,6 +123,8 @@ export const useSelection = createSharedComposable(() => {
     isColSelected,
     selectedRows,
     selectedCols,
+    moveSelection,
+    clampSelection,
   }
 })
 

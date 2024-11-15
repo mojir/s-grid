@@ -1,7 +1,7 @@
 import { getInfoFromCellIdString, type CellIdStringInfo } from '../CellId'
 import type { RowRange } from '../Row'
 import type { ColRange } from '../Col'
-import { transformMoveOnCell } from './cellTransformers'
+import { transformColDeleteOnCell, transformMoveOnCell, transformRowInsertBeforeOnCell } from './cellTransformers'
 import type { FormulaTransformation } from '.'
 
 type RangeInfo = {
@@ -29,6 +29,10 @@ export function transformRange(rangeIdString: string, transformation: FormulaTra
       return transformRowDeleteOnRange(rangeInfo, transformation.rowRange)
     case 'colDelete':
       return transformColDeleteOnRange(rangeInfo, transformation.colRange)
+    case 'rowInsertBefore':
+      return transformRowInsertBeforeOnRange(rangeInfo, transformation.rowRange)
+    case 'colInsertBefore':
+      return transformColInsertBeforeOnRange(rangeInfo, transformation.colRange)
   }
 }
 
@@ -111,5 +115,17 @@ function transformColDeleteOnRange({ start, end, id }: RangeInfo, { colIndex: st
   const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(start, { cols: -deleteCount, rows: 0 }) : start.id
   const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(end, { cols: -deleteCount, rows: 0 }) : end.id
 
+  return `${newStart}-${newEnd}`
+}
+
+function transformRowInsertBeforeOnRange({ start, end }: RangeInfo, { rowIndex: startRowIndexToDelete, count: deleteCount }: RowRange): string {
+  const newStart = transformRowInsertBeforeOnCell(start, { rowIndex: startRowIndexToDelete, count: deleteCount })
+  const newEnd = transformRowInsertBeforeOnCell(end, { rowIndex: startRowIndexToDelete, count: deleteCount })
+  return `${newStart}-${newEnd}`
+}
+
+function transformColInsertBeforeOnRange({ start, end }: RangeInfo, { colIndex: startRowIndexToDelete, count: deleteCount }: ColRange): string {
+  const newStart = transformColDeleteOnCell(start, { colIndex: startRowIndexToDelete, count: deleteCount })
+  const newEnd = transformColDeleteOnCell(end, { colIndex: startRowIndexToDelete, count: deleteCount })
   return `${newStart}-${newEnd}`
 }

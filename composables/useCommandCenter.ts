@@ -19,10 +19,12 @@ const commandNames = [
   'GetCells',
   'GetSelection',
   'Help',
+  'InsertColAfter!',
+  'InsertColBefore!',
   'InsertRowAfter!',
   'InsertRowBefore!',
-  'Move!',
-  'MoveTo!',
+  'MovePosition!',
+  'MovePositionTo!',
   'ResetSelection!',
   'RestartRepl!',
   'Select!',
@@ -112,14 +114,14 @@ function registerCommands() {
   })
 
   registerCommand({
-    name: 'Move!',
+    name: 'MovePosition!',
     execute: (direction: Direction) => {
       grid.value.movePosition(direction)
     },
     description: 'Move the position one step in a specific direction.',
   })
   registerCommand({
-    name: 'MoveTo!',
+    name: 'MovePositionTo!',
     execute: (cell: string) => {
       grid.value.movePositionTo(cell)
     },
@@ -300,6 +302,22 @@ function registerCommands() {
     description: 'Insert row before',
     execute: (rowId: RowIdString, count = 1) => {
       grid.value.insertRowAfter(rowId, count)
+    },
+  })
+
+  registerCommand({
+    name: 'InsertColBefore!',
+    description: 'Insert column before',
+    execute: (colId: ColIdString, count = 1) => {
+      grid.value.insertColBefore(colId, count)
+    },
+  })
+
+  registerCommand({
+    name: 'InsertColAfter!',
+    description: 'Insert column before',
+    execute: (colId: ColIdString, count = 1) => {
+      grid.value.insertColAfter(colId, count)
     },
   })
 

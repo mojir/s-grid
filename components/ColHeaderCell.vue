@@ -9,10 +9,10 @@ const props = defineProps<{
 
 const { col } = toRefs(props)
 
-const { selection, isColSelected, selectedCols } = useSelection()
+const { selection, isColSelected, selectedCols, moveSelection } = useSelection()
 const { colHeaderHeight } = useRowsAndCols()
-
 const grid = useGrid()
+const everthingSelected = computed(() => selection.value.equals(grid.value.gridRange.value))
 
 function getAffectedCols() {
   const range = selectedCols.value
@@ -35,9 +35,39 @@ const deleteColLabel = computed(() => {
   return `Remove columns ${start} - ${end}`
 })
 
+const insertBeforeColLabel = computed(() => {
+  const affextedCols = getAffectedCols()
+  if (affextedCols.count === 1) {
+    return 'Insert 1 column before'
+  }
+
+  return `Insert ${affextedCols.count} columns before`
+})
+
+const insertAfterColLabel = computed(() => {
+  const affextedCols = getAffectedCols()
+  if (affextedCols.count === 1) {
+    return 'Insert 1 column after'
+  }
+
+  return `Insert ${affextedCols.count} columns after`
+})
+
 function removeCol() {
   const { start, end } = getAffectedCols()
   grid.value.deleteCols(start, end)
+}
+
+function insertBeforeCol() {
+  const { start, count } = getAffectedCols()
+  grid.value.insertColBefore(start, count)
+}
+
+function insertAfterCol() {
+  const { end, count } = getAffectedCols()
+  grid.value.insertColAfter(end, count)
+  moveSelection({ rows: 0, cols: count })
+  grid.value.position.value = selection.value.start
 }
 
 const hasSelectedCell = computed(() => selection.value.containsColIndex(col.value.index.value))
@@ -89,6 +119,7 @@ const cellStyle = computed(() => {
     <ContextMenuContent>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
+        :disabled="everthingSelected"
         @click="removeCol"
       >
         <Icon
@@ -96,6 +127,26 @@ const cellStyle = computed(() => {
           class="w-4 h-4"
         />
         {{ deleteColLabel }}
+      </ContextMenuItem>
+      <ContextMenuItem
+        class="flex gap-2 cursor-pointer"
+        @click="insertBeforeCol"
+      >
+        <Icon
+          name="mdi-plus"
+          class="w-4 h-4"
+        />
+        {{ insertBeforeColLabel }}
+      </ContextMenuItem>
+      <ContextMenuItem
+        class="flex gap-2 cursor-pointer"
+        @click="insertAfterCol"
+      >
+        <Icon
+          name="mdi-plus"
+          class="w-4 h-4"
+        />
+        {{ insertAfterColLabel }}
       </ContextMenuItem>
     </ContextMenuContent>
   </ContextMenu>
