@@ -1,7 +1,7 @@
 import { getInfoFromCellIdString, type CellIdStringInfo } from '../CellId'
 import type { RowRange } from '../Row'
 import type { ColRange } from '../Col'
-import { transformColDeleteOnCell, transformMoveOnCell, transformRowInsertBeforeOnCell } from './cellTransformers'
+import { transformColInsertBeforeOnCell, transformMoveOnCell, transformRowInsertBeforeOnCell } from './cellTransformers'
 import type { FormulaTransformation } from '.'
 
 type RangeInfo = {
@@ -124,8 +124,8 @@ function transformRowInsertBeforeOnRange({ start, end }: RangeInfo, { rowIndex: 
   return `${newStart}-${newEnd}`
 }
 
-function transformColInsertBeforeOnRange({ start, end }: RangeInfo, { colIndex: startRowIndexToDelete, count: deleteCount }: ColRange): string {
-  const newStart = transformColDeleteOnCell(start, { colIndex: startRowIndexToDelete, count: deleteCount })
-  const newEnd = transformColDeleteOnCell(end, { colIndex: startRowIndexToDelete, count: deleteCount })
+function transformColInsertBeforeOnRange({ start, end }: RangeInfo, { colIndex: startColIndexToDelete, count: deleteCount }: ColRange): string {
+  const newStart = transformColInsertBeforeOnCell(start, { colIndex: startColIndexToDelete, count: deleteCount })
+  const newEnd = transformColInsertBeforeOnCell(end, { colIndex: startColIndexToDelete, count: deleteCount })
   return `${newStart}-${newEnd}`
 }

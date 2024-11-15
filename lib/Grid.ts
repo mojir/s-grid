@@ -362,6 +362,17 @@ export class Grid {
 
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
+        const aliasString = this.alias.getAlias(cell)
+
+        if (aliasString) {
+          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+          dependants.forEach((dependantCell) => {
+            const input = dependantCell.input.value
+            dependantCell.input.value = ''
+            dependantCell.input.value = input
+          })
+        }
       })
     }
 
@@ -426,6 +437,18 @@ export class Grid {
 
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
+
+        const aliasString = this.alias.getAlias(cell)
+
+        if (aliasString) {
+          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+          dependants.forEach((dependantCell) => {
+            const input = dependantCell.input.value
+            dependantCell.input.value = ''
+            dependantCell.input.value = input
+          })
+        }
       })
     }
 
@@ -480,6 +503,17 @@ export class Grid {
 
       this.cells[index].forEach((cell, colIndex) => {
         cell.cellId = CellId.fromCoords(index, colIndex)
+        const aliasString = this.alias.getAlias(cell)
+
+        if (aliasString) {
+          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+          dependants.forEach((dependantCell) => {
+            const input = dependantCell.input.value
+            dependantCell.input.value = ''
+            dependantCell.input.value = input
+          })
+        }
       })
     }
 
@@ -535,7 +569,19 @@ export class Grid {
 
     for (let rowIndex = 0; rowIndex < this.cells.length; rowIndex++) {
       for (let index = colIndex + count; index < newCols.length; index++) {
-        this.cells[rowIndex][index].cellId = CellId.fromCoords(rowIndex, index)
+        const cell = this.cells[rowIndex][index]
+        cell.cellId = CellId.fromCoords(rowIndex, index)
+        const aliasString = this.alias.getAlias(cell)
+
+        if (aliasString) {
+          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
+
+          dependants.forEach((dependantCell) => {
+            const input = dependantCell.input.value
+            dependantCell.input.value = ''
+            dependantCell.input.value = input
+          })
+        }
       }
     }
 
@@ -544,9 +590,9 @@ export class Grid {
         cell.input.value = `=${transformGridReference(
           cell.input.value.slice(1),
           {
-            type: 'rowInsertBefore',
-            rowRange: {
-              rowIndex: colIndex,
+            type: 'colInsertBefore',
+            colRange: {
+              colIndex,
               count,
             },
           },
