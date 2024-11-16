@@ -22,6 +22,7 @@ const colHeaderRef = ref()
 const formulaBarRef = ref()
 
 onMounted(() => {
+  window.addEventListener('contextmenu', onContextMenu, true)
   window.addEventListener('mousedown', onMouseDown)
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
@@ -34,6 +35,7 @@ onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 onUnmounted(() => {
+  window.removeEventListener('contextmenu', onContextMenu, true)
   window.removeEventListener('mousedown', onMouseDown)
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('mouseup', onMouseUp)
@@ -91,16 +93,34 @@ const handleVisibilityChange = () => {
   }
 }
 
+function onContextMenu(event: MouseEvent) {
+  if (editorFocused.value) {
+    event.preventDefault()
+  }
+}
+
 function onMouseDown(event: MouseEvent) {
-  if (event.button !== 0) {
+  const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
+
+  if (editorFocused.value && isRightClick) {
+    event.preventDefault()
     return
   }
+  // Ignore middle mouse button
+  if (event.button !== 0 && !isRightClick) {
+    return
+  }
+
   const target = event.target as HTMLElement | undefined
   const id = target?.id
   if (!id) {
     return
   }
   if (CellId.isCellIdString(id)) {
+    if (isRightClick && selection.selection.value.contains(CellId.fromId(id))) {
+      return
+    }
+
     selection.selecting.value = true
     mouseDownStart.value = id
     if (editingLitsCode.value) {
@@ -111,6 +131,12 @@ function onMouseDown(event: MouseEvent) {
       grid.value.movePositionTo(id)
     }
   }
+
+  // Until this is handled in each case below.
+  if (isRightClick) {
+    return
+  }
+
   if (Col.isColIdString(id)) {
     selection.selecting.value = true
     mouseDownStart.value = id
