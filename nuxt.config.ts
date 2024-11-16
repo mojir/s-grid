@@ -9,6 +9,8 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
     '@nuxthub/core',
+    '@vueuse/nuxt',
+    '@nuxtjs/device',
   ],
   devtools: { enabled: true },
   app: {
