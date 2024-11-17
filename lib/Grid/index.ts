@@ -1,13 +1,14 @@
-import { Cell } from './Cell'
-import { CellId } from './CellId'
-import { CellRange } from './CellRange'
-import { CellStyle, getLineHeight, type CellStyleName } from './CellStyle'
-import { Col, type ColIdString } from './Col'
-import type { Color } from './color'
-import { matrixFilter, matrixForEach, matrixMap } from './matrix'
-import { Row, type RowIdString } from './Row'
-import { transformGridReference } from './transformFormula'
-import type { CellOrRangeTarget, CellTarget } from './utils'
+import { Cell } from '../Cell'
+import { CellId, type Movement } from '../CellId'
+import { CellRange } from '../CellRange'
+import { CellStyle, getLineHeight, type CellStyleName } from '../CellStyle'
+import { Col, type ColIdString, type ColRange } from '../Col'
+import type { Color } from '../color'
+import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
+import { Row, type RowIdString, type RowRange } from '../Row'
+import { transformGridReference } from '../transformFormula'
+import type { CellOrRangeTarget, CellTarget } from '../utils'
+import { createGridClipboard, type GridClipboard } from './createGridClipboard'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
 import type { LitsComposable } from '~/composables/useLits'
@@ -20,6 +21,7 @@ export class Grid {
   private readonly lits: LitsComposable
   private readonly commandCenter: CommandCenterComposable
 
+  public readonly clipboard: GridClipboard
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
   public readonly gridRange: ComputedRef<CellRange>
@@ -44,6 +46,7 @@ export class Grid {
     this.alias = alias
     this.lits = lits
     this.commandCenter = commandCenter
+    this.clipboard = createGridClipboard(this)
     this.position = ref(CellId.fromCoords(0, 0))
     this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) =>
@@ -472,14 +475,25 @@ export class Grid {
     this.position.value = this.selection.selection.value.start
   }
 
-  public insertRowAfter(rowId: RowIdString, count = 1) {
-    const beforeIndex = Row.getRowIndexFromId(rowId) + 1
-    this.insertRowBefore(Row.getRowIdFromIndex(beforeIndex), count)
+  public insertRowsBefore(rowRange: RowRange) {
+    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.rowsAndCols.cols.value.length - 1)
+    this.clipboard.copyStyleSelection(range)
+    this.insertRows(rowRange.rowIndex, rowRange.count)
+    this.clipboard.pasteStyleSelection(range)
   }
 
-  public insertRowBefore(rowId: RowIdString, count = 1) {
-    const rowIndex = Row.getRowIndexFromId(rowId)
+  public insertRowsAfter(rowRange: RowRange) {
+    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.rowsAndCols.cols.value.length - 1)
+    this.clipboard.copyStyleSelection(range)
+    const beforeIndex = rowRange.rowIndex + rowRange.count + 1
+    this.insertRows(beforeIndex, rowRange.count)
+    const movement: Movement = { rows: rowRange.count, cols: 0 }
+    this.selection.moveSelection(movement)
+    this.position.value = this.selection.selection.value.start
+    this.clipboard.pasteStyleSelection(range.move(movement))
+  }
 
+  private insertRows(rowIndex: number, count = 1) {
     const createdRows = Array.from({ length: count }, (_, index) => {
       const row = Row.create(rowIndex + index, defaultRowHeight)
       this.cells.splice(rowIndex + index, 0, Array.from({ length: this.rowsAndCols.cols.value.length }, (_, colIndex) =>
@@ -535,14 +549,25 @@ export class Grid {
     this.rowsAndCols.rows.value = newRows
   }
 
-  public insertColAfter(rowId: ColIdString, count = 1) {
-    const beforeIndex = Col.getColIndexFromId(rowId) + 1
-    this.insertColBefore(Col.getColIdFromIndex(beforeIndex), count)
+  public insertColsBefore(colRange: ColRange) {
+    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rowsAndCols.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
+    this.clipboard.copyStyleSelection(range)
+    this.insertCols(colRange.colIndex, colRange.count)
+    this.clipboard.pasteStyleSelection(range)
   }
 
-  public insertColBefore(colId: ColIdString, count = 1) {
-    const colIndex = Col.getColIndexFromId(colId)
+  public insertColsAfter(colRange: ColRange) {
+    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rowsAndCols.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
+    this.clipboard.copyStyleSelection(range)
+    const beforeIndex = colRange.colIndex + colRange.count + 1
+    this.insertCols(beforeIndex, colRange.count)
+    const movement: Movement = { rows: 0, cols: colRange.count }
+    this.selection.moveSelection(movement)
+    this.position.value = this.selection.selection.value.start
+    this.clipboard.pasteStyleSelection(range.move(movement))
+  }
 
+  private insertCols(colIndex: number, count = 1) {
     const createdCols = Array.from({ length: count }, (_, index) => {
       return Col.create(colIndex + index, defaultColWidth)
     })

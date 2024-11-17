@@ -1,4 +1,4 @@
-import { CellId } from './CellId'
+import { CellId, type Movement } from './CellId'
 
 export class CellRange {
   public readonly id: string
@@ -131,6 +131,10 @@ export class CellRange {
 
   public equals(other: CellRange): boolean {
     return this.start.equals(other.start) && this.end.equals(other.end)
+  }
+
+  public move(movement: Movement): CellRange {
+    return CellRange.fromCellIds(this.start.move(movement), this.end.move(movement))
   }
 
   public getJson() {

@@ -53,12 +53,22 @@ export class Cell {
     })
   }
 
-  public setJson(json: CellJson) {
-    this.input.value = json.input
-    this.formatter.value = json.formatter
-    this.style.value = CellStyle.fromJson(json.style)
-    this.backgroundColor.value = json.backgroundColor ? Color.fromJson(json.backgroundColor) : null
-    this.textColor.value = json.textColor ? Color.fromJson(json.textColor) : null
+  public setJson(json: Partial<CellJson>) {
+    if (json.input !== undefined && json.input !== this.input.value) {
+      this.input.value = json.input
+    }
+    if (json.formatter !== undefined && json.formatter !== this.formatter.value) {
+      this.formatter.value = json.formatter
+    }
+    if (json.style !== undefined) {
+      this.style.value = CellStyle.fromJson(json.style)
+    }
+    if (json.backgroundColor !== undefined) {
+      this.backgroundColor.value = json.backgroundColor ? Color.fromJson(json.backgroundColor) : null
+    }
+    if (json.textColor !== undefined) {
+      this.textColor.value = json.textColor ? Color.fromJson(json.textColor) : null
+    }
   }
 
   public getJson(): CellJson {

@@ -97,6 +97,10 @@ export class CellId {
     return this.id === cellId.id
   }
 
+  public move(movement: Movement): CellId {
+    return CellId.fromCoords(this.rowIndex + movement.rows, this.colIndex + movement.cols)
+  }
+
   public cellMove(dir: Direction, range: CellRange, wrap: boolean): CellId {
     switch (dir) {
       case 'up': return this.cellUp(range, wrap)

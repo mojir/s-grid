@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import { whs } from '~/lib/utils'
-import { Col } from '~/lib/Col'
+import { Col, type ColIdString, type ColRange } from '~/lib/Col'
+import { CellRange } from '~/lib/CellRange'
 
 const props = defineProps<{
   col: Col
@@ -9,48 +10,60 @@ const props = defineProps<{
 
 const { col } = toRefs(props)
 
-const { selection, isColSelected, selectedCols, moveSelection } = useSelection()
-const { colHeaderHeight } = useRowsAndCols()
+const { selection, isColSelected, selectedCols } = useSelection()
+const { colHeaderHeight, rows } = useRowsAndCols()
 const grid = useGrid()
 const everthingSelected = computed(() => selection.value.equals(grid.value.gridRange.value))
 
+function getAffectedRange(): ColRange {
+  const selectedRange = selectedCols.value
+  if (!selectedRange || !isColSelected(col.value.id.value)) {
+    return { colIndex: col.value.index.value, count: 1 }
+  }
+  return selectedRange
+}
+
+function getAffectedColIds(): { start: ColIdString, end: ColIdString } {
+  const { colIndex, count } = getAffectedRange()
+  const start = Col.getColIdFromIndex(colIndex)
+  const end = Col.getColIdFromIndex(colIndex + count - 1)
+  return { start, end }
+}
+
 function getAffectedCols() {
-  const range = selectedCols.value
-  if (!range || range.count === 1 || !isColSelected(col.value.id.value)) {
-    return { start: col.value.id.value, end: col.value.id.value, count: 1 }
+  const selectedRange = selectedCols.value
+  if (!selectedRange || selectedRange.count === 1 || !isColSelected(col.value.id.value)) {
+    const range = CellRange.fromDimensions(0, col.value.index.value, rows.value.length - 1, col.value.index.value)
+    return { start: col.value.id.value, end: col.value.id.value, count: 1, range }
   }
 
-  const start = Col.getColIdFromIndex(range.colIndex)
-  const end = Col.getColIdFromIndex(range.colIndex + range.count - 1)
-  return { start: start, end: end, count: range.count }
+  const start = Col.getColIdFromIndex(selectedRange.colIndex)
+  const end = Col.getColIdFromIndex(selectedRange.colIndex + selectedRange.count - 1)
+  const range = CellRange.fromDimensions(0, selectedRange.colIndex, rows.value.length - 1, selectedRange.colIndex + selectedRange.count - 1)
+  return { start: start, end: end, count: selectedRange.count, range }
 }
 
 const deleteColLabel = computed(() => {
-  const affextedCols = getAffectedCols()
-  if (affextedCols.count === 1) {
-    return 'Remove column'
-  }
-
-  const { start, end } = affextedCols
-  return `Remove columns ${start} - ${end}`
+  const { start, end } = getAffectedColIds()
+  return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
 })
 
 const insertBeforeColLabel = computed(() => {
-  const affextedCols = getAffectedCols()
-  if (affextedCols.count === 1) {
+  const { count } = getAffectedRange()
+  if (count === 1) {
     return 'Insert 1 column before'
   }
 
-  return `Insert ${affextedCols.count} columns before`
+  return `Insert ${count} columns before`
 })
 
 const insertAfterColLabel = computed(() => {
-  const affextedCols = getAffectedCols()
-  if (affextedCols.count === 1) {
+  const { count } = getAffectedRange()
+  if (count === 1) {
     return 'Insert 1 column after'
   }
 
-  return `Insert ${affextedCols.count} columns after`
+  return `Insert ${count} columns after`
 })
 
 function removeCol() {
@@ -59,15 +72,11 @@ function removeCol() {
 }
 
 function insertBeforeCol() {
-  const { start, count } = getAffectedCols()
-  grid.value.insertColBefore(start, count)
+  grid.value.insertColsBefore(getAffectedRange())
 }
 
 function insertAfterCol() {
-  const { end, count } = getAffectedCols()
-  grid.value.insertColAfter(end, count)
-  moveSelection({ rows: 0, cols: count })
-  grid.value.position.value = selection.value.start
+  grid.value.insertColsAfter(getAffectedRange())
 }
 
 const hasSelectedCell = computed(() => selection.value.containsColIndex(col.value.index.value))

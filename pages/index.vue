@@ -13,7 +13,6 @@ const { sidePanelHandleKeyDown } = useSidePanel()
 const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
 const rowsAndCols = useRowsAndCols()
 const { hoveredCellId } = useHover()
-const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
 
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -223,6 +222,13 @@ function onMouseUp(event: MouseEvent) {
     return
   }
   mouseDownStart.value = ''
+
+  const target = event.target as HTMLElement | undefined
+  const id = target?.id
+
+  if (selection.selecting.value || (id && CellId.isCellIdString(id))) {
+    grid.value.clipboard.pasteStyleSelection()
+  }
   selection.selecting.value = false
 
   if (rowResizeDblClicked?.completed) {
@@ -434,13 +440,13 @@ function onKeyDown(e: KeyboardEvent) {
     //   resetSelection()
     // }
     else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-      copySelection()
+      grid.value.clipboard.copySelection()
     }
     else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
-      cutSelection()
+      grid.value.clipboard.cutSelection()
     }
     else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-      pasteSelection()
+      grid.value.clipboard.pasteSelection()
     }
   }
 }

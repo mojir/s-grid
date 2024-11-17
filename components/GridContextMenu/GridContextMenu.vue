@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
+const grid = useGrid()
 </script>
 
 <template>
@@ -10,7 +10,7 @@ const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
     <ContextMenuContent>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="cutSelection"
+        @click="grid.clipboard.cutSelection"
       >
         <Icon
           name="mdi-content-cut"
@@ -26,7 +26,7 @@ const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="copySelection"
+        @click="grid.clipboard.copySelection"
       >
         <Icon
           name="mdi-content-copy"
@@ -42,7 +42,7 @@ const { copySelection, cutSelection, pasteSelection } = useGridClipboard()
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="pasteSelection"
+        @click="grid.clipboard.pasteSelection"
       >
         <Icon
           name="mdi-content-paste"

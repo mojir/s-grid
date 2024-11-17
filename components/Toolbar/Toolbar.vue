@@ -11,6 +11,7 @@ const { sidePanelOpen } = useSidePanel()
     />
 
     <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
+      <ToolbarPaintButton class="mr-2" />
       <ToolbarFontSizeSelector class="mr-2" />
       <ToolbarBoldButton />
       <ToolbarItalicButton />

@@ -1,10 +1,10 @@
 import type { JsFunction } from '@mojir/lits'
 import type { CellId } from '~/lib/CellId'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
-import type { ColIdString } from '~/lib/Col'
+import { Col, type ColIdString, type ColRange } from '~/lib/Col'
 import { Color } from '~/lib/color'
 import { format } from '~/lib/litsInterop/format'
-import type { RowIdString } from '~/lib/Row'
+import { Row, type RowIdString, type RowRange } from '~/lib/Row'
 
 const commandNames = [
   'Clear!',
@@ -19,10 +19,10 @@ const commandNames = [
   'GetCells',
   'GetSelection',
   'Help',
-  'InsertColAfter!',
-  'InsertColBefore!',
-  'InsertRowAfter!',
-  'InsertRowBefore!',
+  'InsertColsAfter!',
+  'InsertColsBefore!',
+  'InsertRowsAfter!',
+  'InsertRowsBefore!',
   'MovePosition!',
   'MovePositionTo!',
   'ResetSelection!',
@@ -290,34 +290,66 @@ function registerCommands() {
   })
 
   registerCommand({
-    name: 'InsertRowBefore!',
-    description: 'Insert row before',
-    execute: (rowId: RowIdString, count = 1) => {
-      grid.value.insertRowBefore(rowId, count)
+    name: 'InsertRowsBefore!',
+    description: 'Insert rows before',
+    execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
+      const startRowIndex = Row.getRowIndexFromId(startRowStringId)
+      const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      const rowIndex = Math.min(startRowIndex, endRowIndex)
+      const count = Math.abs(endRowIndex - startRowIndex) + 1
+      const rowRange: RowRange = {
+        rowIndex,
+        count,
+      }
+      grid.value.insertRowsBefore(rowRange)
     },
   })
 
   registerCommand({
-    name: 'InsertRowAfter!',
-    description: 'Insert row before',
-    execute: (rowId: RowIdString, count = 1) => {
-      grid.value.insertRowAfter(rowId, count)
+    name: 'InsertRowsAfter!',
+    description: 'Insert rows before',
+    execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
+      const startRowIndex = Row.getRowIndexFromId(startRowStringId)
+      const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      const rowIndex = Math.min(startRowIndex, endRowIndex)
+      const count = Math.abs(endRowIndex - startRowIndex) + 1
+      const rowRange: RowRange = {
+        rowIndex,
+        count,
+      }
+      grid.value.insertRowsAfter(rowRange)
     },
   })
 
   registerCommand({
-    name: 'InsertColBefore!',
-    description: 'Insert column before',
-    execute: (colId: ColIdString, count = 1) => {
-      grid.value.insertColBefore(colId, count)
+    name: 'InsertColsBefore!',
+    description: 'Insert columns before',
+    execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
+      const startColIndex = Col.getColIndexFromId(startColStringId)
+      const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      const colIndex = Math.min(startColIndex, endColIndex)
+      const count = Math.abs(endColIndex - startColIndex) + 1
+      const colRange: ColRange = {
+        colIndex: colIndex,
+        count,
+      }
+      grid.value.insertColsBefore(colRange)
     },
   })
 
   registerCommand({
-    name: 'InsertColAfter!',
-    description: 'Insert column before',
-    execute: (colId: ColIdString, count = 1) => {
-      grid.value.insertColAfter(colId, count)
+    name: 'InsertColsAfter!',
+    description: 'Insert columns before',
+    execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
+      const startColIndex = Col.getColIndexFromId(startColStringId)
+      const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      const colIndex = Math.min(startColIndex, endColIndex)
+      const count = Math.abs(endColIndex - startColIndex) + 1
+      const colRange: ColRange = {
+        colIndex: colIndex,
+        count,
+      }
+      grid.value.insertColsAfter(colRange)
     },
   })
 
