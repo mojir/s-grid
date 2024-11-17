@@ -28,32 +28,29 @@ defineExpose({
 </script>
 
 <template>
-  <!-- <GridContextMenu
-    ref="el"
-    class="pl-[1px] pt-[1px] overflow-auto"
-  > -->
   <div
     ref="el"
     class="pl-[1px] pt-[1px] overflow-auto"
   >
-    <div
-      v-for="row of rows"
-      :key="row.id.value"
-      :style="hs(row.height.value)"
-      class="flex"
-    >
+    <GridContextMenu>
       <div
-        v-for="col of cols"
-        :key="col.id.value"
-        class="dark:bg-blue-700 bg-blue-200"
+        v-for="row of rows"
+        :key="row.id.value"
+        :style="hs(row.height.value)"
+        class="flex"
       >
-        <GridCell
-          :row="row"
-          :col="col"
-          @cell-dblclick="emit('cell-dblclick', $event)"
-        />
+        <div
+          v-for="col of cols"
+          :key="col.id.value"
+          class="dark:bg-blue-700 bg-blue-200"
+        >
+          <GridCell
+            :row="row"
+            :col="col"
+            @cell-dblclick="emit('cell-dblclick', $event)"
+          />
+        </div>
       </div>
-    </div>
+    </GridContextMenu>
   </div>
-  <!-- </GridContextMenu> -->
 </template>
