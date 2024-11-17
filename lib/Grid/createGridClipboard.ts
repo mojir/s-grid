@@ -14,7 +14,6 @@ export type GridClipboard = ReturnType<typeof createGridClipboard>
 
 export function createGridClipboard(grid: Grid) {
   const { selection } = useSelection()
-  // const grid = useGrid()
   const clipboard = ref<InternalClipboard<CellJson> | null>(null)
   const styleClipboard = ref<InternalClipboard<Pick<CellJson, 'style' | 'backgroundColor' | 'textColor' | 'formatter'>> | null>(null)
   const cut = ref(false)
@@ -63,10 +62,6 @@ export function createGridClipboard(grid: Grid) {
   function getPastePositions(sourceRange: CellRange, targetRange?: CellRange): CellId[] {
     targetRange ??= selection.value
 
-    if (cut.value) {
-      return [targetRange.start]
-    }
-
     const selectionWidth = targetRange.end.colIndex - targetRange.start.colIndex + 1
     const selectionHeight = targetRange.end.rowIndex - targetRange.start.rowIndex + 1
 
@@ -92,14 +87,45 @@ export function createGridClipboard(grid: Grid) {
   }
 
   function pasteSelection() {
+    if (cut.value) {
+      cutPasteSelection()
+    }
+    else {
+      copyPasteSelection()
+    }
+  }
+
+  function cutPasteSelection() {
+    cutCellIds.value.forEach((cellId) => {
+      grid.clear(cellId)
+    })
+
+    pasteToPosition(selection.value.start)
+
+    // TODO, this is not finished issue: https://github.com/mojir/s-grid/issues/6
+    // Need to update all cells that reference the cut cells
+
+    clipboard.value = null
+    cut.value = false
+    cutCellIds.value = []
+  }
+
+  function copyPasteSelection() {
+    if (!clipboard.value) {
+      return
+    }
+    getPastePositions(clipboard.value.range).forEach(pasteToPosition)
+  }
+
+  function pasteToPosition(toPosition: CellId) {
     if (!clipboard.value) {
       return
     }
     const clipboardCells = clipboard.value.cells
     const fromPosition = clipboard.value.range.start
-    getPastePositions(clipboard.value?.range).forEach((toPosition) => {
-      const movement = fromPosition.getMovementTo(toPosition)
+    const movement = fromPosition.getMovementTo(toPosition)
 
+    getPastePositions(clipboard.value.range).forEach((toPosition) => {
       matrixForEach(clipboardCells, (cellJson, [rowIndex, colIndex]) => {
         const cellId = CellId.fromCoords(toPosition.rowIndex + rowIndex, toPosition.colIndex + colIndex)
         const cell = grid.getCell(cellId)
@@ -110,16 +136,6 @@ export function createGridClipboard(grid: Grid) {
         cell.setJson({ ...cellJson, input })
       })
     })
-
-    // TODO, this logic is not ready yet
-    if (cut.value) {
-      cutCellIds.value.forEach((cellId) => {
-        grid.clear(cellId)
-      })
-    }
-
-    cut.value = false
-    cutCellIds.value = []
   }
 
   function pasteStyleSelection(targetRange?: CellRange) {

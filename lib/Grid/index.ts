@@ -466,7 +466,7 @@ export class Grid {
   public insertRowsAfter(rowRange: RowRange) {
     const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.rowsAndCols.cols.value.length - 1)
     this.clipboard.copyStyleSelection(range)
-    const beforeIndex = rowRange.rowIndex + rowRange.count + 1
+    const beforeIndex = rowRange.rowIndex + rowRange.count
     this.insertRows(beforeIndex, rowRange.count)
     const movement: Movement = { rows: rowRange.count, cols: 0 }
     this.selection.moveSelection(movement)
@@ -540,7 +540,7 @@ export class Grid {
   public insertColsAfter(colRange: ColRange) {
     const range = CellRange.fromDimensions(0, colRange.colIndex, this.rowsAndCols.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
     this.clipboard.copyStyleSelection(range)
-    const beforeIndex = colRange.colIndex + colRange.count + 1
+    const beforeIndex = colRange.colIndex + colRange.count
     this.insertCols(beforeIndex, colRange.count)
     const movement: Movement = { rows: 0, cols: colRange.count }
     this.selection.moveSelection(movement)
