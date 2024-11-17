@@ -277,7 +277,15 @@ function registerCommands() {
     name: 'DeleteRows!',
     description: 'Delete rows',
     execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
-      grid.value.deleteRows(startRowStringId, endRowStringId)
+      const startRowIndex = Row.getRowIndexFromId(startRowStringId)
+      const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      const rowIndex = Math.min(startRowIndex, endRowIndex)
+      const count = Math.abs(endRowIndex - startRowIndex) + 1
+      const rowRange: RowRange = {
+        rowIndex,
+        count,
+      }
+      grid.value.deleteRows(rowRange)
     },
   })
 
@@ -285,7 +293,15 @@ function registerCommands() {
     name: 'DeleteCols!',
     description: 'Delete cols',
     execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
-      grid.value.deleteCols(startColStringId, endColStringId)
+      const startColIndex = Col.getColIndexFromId(startColStringId)
+      const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      const colIndex = Math.min(startColIndex, endColIndex)
+      const count = Math.abs(endColIndex - startColIndex) + 1
+      const colRange: ColRange = {
+        colIndex: colIndex,
+        count,
+      }
+      grid.value.deleteCols(colRange)
     },
   })
 

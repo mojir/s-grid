@@ -328,20 +328,11 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRows(startRowIdString: RowIdString, endRowIdString?: RowIdString) {
-    const startRowIndex = Math.min(
-      Row.getRowIndexFromId(startRowIdString),
-      this.rowsAndCols.rows.value.length - 1,
-    )
-    const endRowIndex = Math.min(
-      endRowIdString ? Row.getRowIndexFromId(endRowIdString) : startRowIndex,
-      this.rowsAndCols.rows.value.length - 1,
-    )
-    const count = endRowIdString ? Math.abs(endRowIndex - startRowIndex) + 1 : 1
+  public deleteRows(rowRange: RowRange) {
+    const { rowIndex, count } = rowRange
     if (count === this.rowsAndCols.rows.value.length) {
       throw new Error('Cannot delete all rows')
     }
-    const rowIndex = Math.min(startRowIndex, endRowIndex)
 
     const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
 
@@ -400,21 +391,11 @@ export class Grid {
     this.position.value = this.selection.selection.value.start
   }
 
-  public deleteCols(startColIdString: ColIdString, endColIdString?: ColIdString) {
-    const startColIndex = Math.min(
-      Col.getColIndexFromId(startColIdString),
-      this.rowsAndCols.cols.value.length - 1,
-    )
-    const endColIndex = Math.min(
-      endColIdString ? Col.getColIndexFromId(endColIdString) : startColIndex,
-      this.rowsAndCols.cols.value.length - 1,
-    )
-    const count = endColIdString ? Math.abs(endColIndex - startColIndex) + 1 : 1
+  public deleteCols(colRange: ColRange) {
+    const { colIndex, count } = colRange
     if (count === this.rowsAndCols.cols.value.length) {
       throw new Error('Cannot delete all columns')
     }
-
-    const colIndex = Math.min(startColIndex, endColIndex)
 
     const newCols = this.rowsAndCols.cols.value.filter((_, index) => index < colIndex || index >= colIndex + count)
 

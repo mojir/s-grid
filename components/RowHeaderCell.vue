@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { Row, type RowIdString, type RowRange } from '~/lib/Row'
+import { Row, type RowRange } from '~/lib/Row'
 import { whs } from '~/lib/utils'
 
 const props = defineProps<{
@@ -17,21 +17,15 @@ const everthingSelected = computed(() => selection.value.equals(grid.value.gridR
 function getAffectedRange(): RowRange {
   const selectedRange = selectedRows.value
   if (!selectedRange || !isRowSelected(row.value.id.value)) {
-    // const range = CellRange.fromDimensions(row.value.index.value, 0, row.value.index.value, cols.value.length - 1)
     return { rowIndex: row.value.index.value, count: 1 }
   }
   return selectedRange
 }
 
-function getAffectedRowIds(): { start: RowIdString, end: RowIdString } {
+const deleteRowLabel = computed(() => {
   const { rowIndex, count } = getAffectedRange()
   const start = Row.getRowIdFromIndex(rowIndex)
   const end = Row.getRowIdFromIndex(rowIndex + count - 1)
-  return { start, end }
-}
-
-const deleteRowLabel = computed(() => {
-  const { start, end } = getAffectedRowIds()
   return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
 })
 
@@ -54,8 +48,7 @@ const insertAfterRowLabel = computed(() => {
 })
 
 function removeRow() {
-  const { start, end } = getAffectedRowIds()
-  grid.value.deleteRows(start, end)
+  grid.value.deleteRows(getAffectedRange())
 }
 
 function insertBeforeRow() {

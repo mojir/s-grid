@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import { whs } from '~/lib/utils'
-import { Col, type ColIdString, type ColRange } from '~/lib/Col'
-import { CellRange } from '~/lib/CellRange'
+import { Col, type ColRange } from '~/lib/Col'
 
 const props = defineProps<{
   col: Col
@@ -11,7 +10,7 @@ const props = defineProps<{
 const { col } = toRefs(props)
 
 const { selection, isColSelected, selectedCols } = useSelection()
-const { colHeaderHeight, rows } = useRowsAndCols()
+const { colHeaderHeight } = useRowsAndCols()
 const grid = useGrid()
 const everthingSelected = computed(() => selection.value.equals(grid.value.gridRange.value))
 
@@ -23,28 +22,10 @@ function getAffectedRange(): ColRange {
   return selectedRange
 }
 
-function getAffectedColIds(): { start: ColIdString, end: ColIdString } {
+const deleteColLabel = computed(() => {
   const { colIndex, count } = getAffectedRange()
   const start = Col.getColIdFromIndex(colIndex)
   const end = Col.getColIdFromIndex(colIndex + count - 1)
-  return { start, end }
-}
-
-function getAffectedCols() {
-  const selectedRange = selectedCols.value
-  if (!selectedRange || selectedRange.count === 1 || !isColSelected(col.value.id.value)) {
-    const range = CellRange.fromDimensions(0, col.value.index.value, rows.value.length - 1, col.value.index.value)
-    return { start: col.value.id.value, end: col.value.id.value, count: 1, range }
-  }
-
-  const start = Col.getColIdFromIndex(selectedRange.colIndex)
-  const end = Col.getColIdFromIndex(selectedRange.colIndex + selectedRange.count - 1)
-  const range = CellRange.fromDimensions(0, selectedRange.colIndex, rows.value.length - 1, selectedRange.colIndex + selectedRange.count - 1)
-  return { start: start, end: end, count: selectedRange.count, range }
-}
-
-const deleteColLabel = computed(() => {
-  const { start, end } = getAffectedColIds()
   return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
 })
 
@@ -67,8 +48,7 @@ const insertAfterColLabel = computed(() => {
 })
 
 function removeCol() {
-  const { start, end } = getAffectedCols()
-  grid.value.deleteCols(start, end)
+  grid.value.deleteCols(getAffectedRange())
 }
 
 function insertBeforeCol() {
