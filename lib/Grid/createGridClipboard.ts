@@ -16,8 +16,7 @@ export function createGridClipboard(grid: Grid) {
   const { selection } = useSelection()
   const clipboard = ref<InternalClipboard<CellJson> | null>(null)
   const styleClipboard = ref<InternalClipboard<Pick<CellJson, 'style' | 'backgroundColor' | 'textColor' | 'formatter'>> | null>(null)
-  const cut = ref(false)
-  const cutCellIds = ref<CellId[]>([])
+  const cutCellIds = ref<CellId[] | null>(null)
 
   const hasStyleData = computed(() => !!styleClipboard.value)
 
@@ -26,9 +25,8 @@ export function createGridClipboard(grid: Grid) {
   }
 
   function copySelection() {
-    cut.value = false
-    if (cutCellIds.value.length > 0) {
-      cutCellIds.value = []
+    if (cutCellIds.value !== null) {
+      cutCellIds.value = null
     }
 
     clipboard.value = {
@@ -55,7 +53,6 @@ export function createGridClipboard(grid: Grid) {
 
   function cutSelection() {
     copySelection()
-    cut.value = true
     cutCellIds.value = selection.value.getAllCellIds()
   }
 
@@ -73,7 +70,7 @@ export function createGridClipboard(grid: Grid) {
     const startCol = targetRange.start.colIndex
     let row = startRow
     let col = startCol
-    // Populate result arrays with the positions to paste the clipboard
+    // Populate result array with the positions (CellId) to paste the clipboard
     do {
       do {
         result.push(CellId.fromCoords(row, col))
@@ -87,7 +84,7 @@ export function createGridClipboard(grid: Grid) {
   }
 
   function pasteSelection() {
-    if (cut.value) {
+    if (cutCellIds.value) {
       cutPasteSelection()
     }
     else {
@@ -96,6 +93,10 @@ export function createGridClipboard(grid: Grid) {
   }
 
   function cutPasteSelection() {
+    if (!cutCellIds.value) {
+      return
+    }
+
     cutCellIds.value.forEach((cellId) => {
       grid.clear(cellId)
     })
@@ -106,8 +107,7 @@ export function createGridClipboard(grid: Grid) {
     // Need to update all cells that reference the cut cells
 
     clipboard.value = null
-    cut.value = false
-    cutCellIds.value = []
+    cutCellIds.value = null
   }
 
   function copyPasteSelection() {
