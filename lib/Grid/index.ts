@@ -8,7 +8,7 @@ import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
 import { Row, type RowIdString, type RowRange } from '../Row'
 import { transformGridReference } from '../transformFormula'
 import type { CellOrRangeTarget, CellTarget } from '../utils'
-import { createGridClipboard, type GridClipboard } from './createGridClipboard'
+import { GridClipboard } from './GridClipboard'
 import type { SelectionComposable } from '~/composables/useSelection'
 import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
 import type { LitsComposable } from '~/composables/useLits'
@@ -46,7 +46,7 @@ export class Grid {
     this.alias = alias
     this.lits = lits
     this.commandCenter = commandCenter
-    this.clipboard = createGridClipboard(this)
+    this.clipboard = new GridClipboard(this)
     this.position = ref(CellId.fromCoords(0, 0))
     this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) =>
