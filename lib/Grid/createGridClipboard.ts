@@ -93,7 +93,7 @@ export function createGridClipboard(grid: Grid) {
   }
 
   function cutPasteSelection() {
-    if (!cutCellIds.value) {
+    if (!cutCellIds.value || !clipboard.value) {
       return
     }
 
@@ -101,10 +101,30 @@ export function createGridClipboard(grid: Grid) {
       grid.clear(cellId)
     })
 
-    pasteToPosition(selection.value.start)
+    const toPosition = selection.value.start
 
-    // TODO, this is not finished issue: https://github.com/mojir/s-grid/issues/6
-    // Need to update all cells that reference the cut cells
+    const clipboardCells = clipboard.value.cells
+    matrixForEach(clipboardCells, (cellJson, [rowIndex, colIndex]) => {
+      const cellId = CellId.fromCoords(toPosition.rowIndex + rowIndex, toPosition.colIndex + colIndex)
+      const cell = grid.getCell(cellId)
+      cell.setJson(cellJson)
+    })
+
+    const fromRange = clipboard.value.range
+    const fromPosition = fromRange.start
+    const movement = fromPosition.getMovementTo(toPosition)
+    grid.gridRange.value.getAllCellIds()
+      .filter(cellId => !cutCellIds.value!.includes(cellId))
+      .forEach((cellId) => {
+        const cell = grid.getCell(cellId)
+        let input = cell.input.value
+        if (input.startsWith('=')) {
+          input = `=${transformGridReference(input.slice(1), { type: 'move', movement, range: fromRange })}`
+        }
+        if (input !== cell.input.value) {
+          cell.input.value = input
+        }
+      })
 
     clipboard.value = null
     cutCellIds.value = null

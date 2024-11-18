@@ -1,13 +1,14 @@
-import { getInfoFromCellIdString, type CellIdStringInfo, type Movement } from '../CellId'
+import { CellId, getInfoFromCellIdString, type CellIdStringInfo, type Movement } from '../CellId'
 import { Row, type RowRange } from '../Row'
 import { Col, type ColRange } from '../Col'
+import type { CellRange } from '../CellRange'
 import type { FormulaTransformation } from '.'
 
 export function transformCell(cellIdString: string, transformation: FormulaTransformation): string {
   const cellInfo = getInfoFromCellIdString(cellIdString)
   switch (transformation.type) {
     case 'move':
-      return transformMoveOnCell(cellInfo, transformation.movement)
+      return transformMoveOnCell(cellInfo, transformation.movement, transformation.range)
     case 'rowDelete':
       return transformRowDeleteOnCell(cellInfo, transformation.rowRange)
     case 'colDelete':
@@ -19,7 +20,11 @@ export function transformCell(cellIdString: string, transformation: FormulaTrans
   }
 }
 
-export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }: Movement): string {
+export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }: Movement, range?: CellRange): string {
+  console.log('transformMoveOnCell', cellIdInfo, { cols, rows }, range, CellId.fromId(cellIdInfo.id), range && range.contains(CellId.fromId(cellIdInfo.id)))
+  if (range && !range.contains(CellId.fromId(cellIdInfo.id))) {
+    return cellIdInfo.id
+  }
   const newColId = cellIdInfo.absoluteCol ? cellIdInfo.colPart : Col.getColIdFromIndex(cellIdInfo.colIndex + cols)
   if (!cellIdInfo.absoluteCol && !Col.isColIdString(newColId)) {
     throw new Error(`Invalid column id: ${newColId}`)
@@ -28,7 +33,6 @@ export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }
   if (!cellIdInfo.absoluteRow && !Row.isRowIdString(newRowId)) {
     throw new Error(`Invalid row id: ${newRowId}`)
   }
-
   return `${newColId}${newRowId}`
 }
 

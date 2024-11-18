@@ -8,6 +8,7 @@ import { transformRange } from './rangeTransformers'
 
 export type FormulaTransformation = {
   type: 'move'
+  range?: CellRange
   movement: Movement
 } | {
   type: 'rowDelete'
