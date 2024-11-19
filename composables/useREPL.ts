@@ -17,7 +17,7 @@ type HistoryEntry = {
 export const useREPL = createSharedComposable(() => {
   const lits = useLits()
   const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
-  const grid = useGrid()
+  const grid = useCurrentGrid()
   const { jsFunctions, commands } = useCommandCenter()
 
   let historyIndex = -1

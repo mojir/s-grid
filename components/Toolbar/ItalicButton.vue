@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const italic = ref<boolean>()
 

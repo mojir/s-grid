@@ -7,10 +7,9 @@ import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/li
 import { Row, type RowIdString } from '~/lib/Row'
 import { whs, hs } from '~/lib/utils'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
-const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
 const { hoveredCellId } = useHover()
 
 const gridWrapper = ref<HTMLDivElement>()
@@ -92,7 +91,7 @@ const handleVisibilityChange = () => {
 }
 
 function onContextMenu(event: MouseEvent) {
-  if (editorFocused.value) {
+  if (grid.value.editor.editorFocused.value) {
     event.preventDefault()
   }
 }
@@ -100,7 +99,7 @@ function onContextMenu(event: MouseEvent) {
 function onMouseDown(event: MouseEvent) {
   const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
 
-  if (editorFocused.value && isRightClick) {
+  if (grid.value.editor.editorFocused.value && isRightClick) {
     event.preventDefault()
     return
   }
@@ -121,7 +120,7 @@ function onMouseDown(event: MouseEvent) {
 
     selection.value.selecting.value = true
     mouseDownStart.value = id
-    if (editingLitsCode.value) {
+    if (grid.value.editor.isEditingLitsCode.value) {
       selection.value.select(id)
     }
     else {
@@ -141,7 +140,7 @@ function onMouseDown(event: MouseEvent) {
     const col = grid.value.getCol(id)
     if (col) {
       resetSelection()
-      if (!editingLitsCode.value) {
+      if (!grid.value.editor.isEditingLitsCode.value) {
         grid.value.movePositionTo(`${col.id.value}1`)
       }
       selection.value.selectColRange(col, col)
@@ -174,7 +173,7 @@ function onMouseDown(event: MouseEvent) {
     const row = grid.value.getRow(id)
     if (row) {
       resetSelection()
-      if (!editingLitsCode.value) {
+      if (!grid.value.editor.isEditingLitsCode.value) {
         grid.value.movePositionTo(`A${row.id.value}`)
       }
       selection.value.selectRowRange(row, row)
@@ -322,12 +321,10 @@ function onKeyDown(e: KeyboardEvent) {
     return
   }
 
-  if (editorFocused.value) {
+  if (grid.value.editor.editorFocused.value) {
     if (e.key === 'Enter') {
       e.preventDefault()
-      if (editorFocused.value) {
-        formulaBarRef.value.save()
-      }
+      formulaBarRef.value.save()
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }

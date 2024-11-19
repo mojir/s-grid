@@ -11,15 +11,11 @@ import type { CellOrRangeTarget, CellTarget } from '../utils'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import { GridClipboard } from './GridClipboard'
 import { GridSelection } from './GridSelection'
-import type { LitsComposable } from '~/composables/useLits'
-import type { AliasComposable } from '~/composables/useAlias'
+import { GridAlias } from '~/lib/Grid/GridAlias'
+import { CellEditor } from '~/lib/Grid/CellEditor'
 
 export class Grid {
-  // private readonly rowsAndCols: RowsAndColsComposable
-  private readonly alias: AliasComposable
-  private readonly lits: LitsComposable
-  private readonly commandCenter: CommandCenterComposable
-
+  public readonly alias: GridAlias
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
   public cols: Ref<Col[]>
@@ -27,29 +23,19 @@ export class Grid {
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
   public readonly gridRange: ComputedRef<CellRange>
+  public readonly editor: CellEditor
 
-  constructor(
-    {
-      alias,
-      lits,
-      commandCenter,
-    }: {
-      alias: AliasComposable
-      lits: LitsComposable
-      commandCenter: CommandCenterComposable
-    },
-  ) {
+  constructor() {
     this.rows = shallowRef(Array.from({ length: 50 }, (_, rowIndex) => Row.create(rowIndex, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: 26 }, (_, colIndex) => Col.create(colIndex, defaultColWidth)))
+    this.editor = new CellEditor()
     this.selection = new GridSelection(this)
-    this.alias = alias
-    this.lits = lits
-    this.commandCenter = commandCenter
+    this.alias = new GridAlias()
     this.clipboard = new GridClipboard(this)
     this.position = ref(CellId.fromCoords(0, 0))
     this.cells = Array.from({ length: this.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: this.cols.value.length }, (_, colIndex) =>
-        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits, commandCenter, alias }),
+        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this }),
       ),
     )
     this.gridRange = computed(() => CellRange.fromDimensions(0, 0, this.rows.value.length - 1, this.cols.value.length - 1))
@@ -523,7 +509,7 @@ export class Grid {
       this.cells.splice(rowIndex + index, 0, Array.from({ length: this.cols.value.length }, (_, colIndex) =>
         new Cell(
           CellId.fromCoords(rowIndex + index, colIndex),
-          { grid: this, lits: this.lits, commandCenter: this.commandCenter, alias: this.alias },
+          { grid: this },
         ),
       ))
       return row
@@ -606,7 +592,7 @@ export class Grid {
       cellRow.splice(colIndex, 0, ...Array.from({ length: count }, (_, index) =>
         new Cell(
           CellId.fromCoords(rowIndex, colIndex + index),
-          { grid: this, lits: this.lits, commandCenter: this.commandCenter, alias: this.alias },
+          { grid: this },
         ),
       ))
     })

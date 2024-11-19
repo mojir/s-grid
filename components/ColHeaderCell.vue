@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const { col } = toRefs(props)
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 function getAffectedRange(): ColRange {

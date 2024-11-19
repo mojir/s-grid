@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const el = ref<HTMLDivElement>()
 

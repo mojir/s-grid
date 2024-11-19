@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StyleTextDecoration } from '~/lib/CellStyle'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const textDecoration = ref<StyleTextDecoration>()
 

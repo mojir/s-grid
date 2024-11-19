@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useGrid } from '@/composables/useGrid'
+import { useCurrentGrid } from '~/composables/useCurrentGrid'
 import { hs } from '~/lib/utils'
 
-const grid = useGrid()
-const editor = useEditor()
+const grid = useCurrentGrid()
 const { sidePanelOpen } = useSidePanel()
 
 const forceBlur = ref(false)
@@ -12,8 +11,8 @@ const initialValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 
 const selectionLabel = computed(() => {
-  if (editor.editorFocused.value) {
-    return editor.editingCellId.value.id
+  if (grid.value.editor.editorFocused.value) {
+    return grid.value.editor.editingCellId.value.id
   }
   if (grid.value.selection.selectedRange.value.size() === 1) {
     return grid.value.selection.selectedRange.value.start.id
@@ -26,7 +25,7 @@ const cellInput = computed(() => {
 })
 
 watch(cellInput, (input) => {
-  editor.editorText.value = input
+  grid.value.editor.editorText.value = input
   initialValue.value = input
 })
 
@@ -36,15 +35,17 @@ watch(sidePanelOpen, (open) => {
   }
 })
 
-watch(editor.isEditingLitsCode, (editing) => {
+const isEditingLitsCode = computed(() => grid.value.editor.isEditingLitsCode.value)
+watch(isEditingLitsCode, (editing) => {
   if (!editing) {
     grid.value.resetSelection()
   }
 })
 
-watch(grid.value.selection.selectedRange, (selection) => {
+const selectedRange = computed(() => grid.value.selection.selectedRange.value)
+watch(selectedRange, (selection) => {
   const inputElement = inputRef.value
-  if (editor.isEditingLitsCode.value && inputElement && editor.editorFocused.value) {
+  if (grid.value.editor.isEditingLitsCode.value && inputElement && grid.value.editor.editorFocused.value) {
     const selectionValue = `${selection.size() === 1
       ? selection.start.id
       : selection.id} `
@@ -56,12 +57,13 @@ watch(grid.value.selection.selectedRange, (selection) => {
       = value.slice(0, start) + selectionValue + value.slice(end)
     const position = start + selectionValue.length
     inputElement.setSelectionRange(start, position)
-    editor.editorText.value = inputElement.value
+    grid.value.editor.editorText.value = inputElement.value
     inputElement.focus()
   }
 })
 
-watch(grid.value.selection.selecting, (isSelecting) => {
+const selecting = computed(() => grid.value.selection.selecting.value)
+watch(selecting, (isSelecting) => {
   const inputElement = inputRef.value
   if (!isSelecting && inputElement) {
     const pos = inputElement.selectionEnd
@@ -69,17 +71,18 @@ watch(grid.value.selection.selecting, (isSelecting) => {
   }
 })
 
-watch(grid.value.position, (position) => {
+const position = computed(() => grid.value.position.value)
+watch(position, (position) => {
   save()
-  editor.editorText.value = grid.value.getCurrentCell()?.input.value ?? ''
-  initialValue.value = editor.editorText.value
-  editor.setEditingCellId(position)
+  grid.value.editor.editorText.value = grid.value.getCurrentCell()?.input.value ?? ''
+  initialValue.value = grid.value.editor.editorText.value
+  grid.value.editor.setEditingCellId(position)
 })
 
 onMounted(() => {
-  editor.setEditingCellId(grid.value.position.value)
-  editor.editorText.value = grid.value.getCell(editor.editingCellId.value).input.value
-  initialValue.value = editor.editorText.value
+  grid.value.editor.setEditingCellId(grid.value.position.value)
+  grid.value.editor.editorText.value = grid.value.getCell(grid.value.editor.editingCellId.value).input.value
+  initialValue.value = grid.value.editor.editorText.value
 })
 
 function onFocus() {
@@ -90,23 +93,23 @@ function onFocus() {
       inputElement.setSelectionRange(length, length)
     }
   }
-  editor.setEditorFocused(true)
+  grid.value.editor.setEditorFocused(true)
 }
 
 function onBlur() {
-  if (!forceBlur.value && (editor.isEditingLitsCode.value || grid.value.position.value.equals(editor.editingCellId.value))) {
+  if (!forceBlur.value && (grid.value.editor.isEditingLitsCode.value || grid.value.position.value.equals(grid.value.editor.editingCellId.value))) {
     inputRef.value?.focus()
   }
   else {
     inputRef.value?.setSelectionRange(0, 0)
-    editor.setEditorFocused(false)
+    grid.value.editor.setEditorFocused(false)
     save()
   }
 }
 
 function cancel() {
   forceBlur.value = true
-  editor.editorText.value = initialValue.value
+  grid.value.editor.editorText.value = initialValue.value
   inputRef.value?.blur()
   nextTick(() => {
     forceBlur.value = false
@@ -114,14 +117,14 @@ function cancel() {
 }
 
 function save() {
-  const text = editor.editorText.value.trim()
+  const text = grid.value.editor.editorText.value.trim()
   if (initialValue.value !== text) {
-    const cell = grid.value.getCell(editor.editingCellId.value)
+    const cell = grid.value.getCell(grid.value.editor.editingCellId.value)
     cell.input.value = text
     initialValue.value = text
   }
   inputRef.value?.blur()
-  editor.setEditorFocused(false)
+  grid.value.editor.setEditorFocused(false)
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -137,7 +140,7 @@ defineExpose({
   save,
   cancel,
   update: (input: string) => {
-    editor.editorText.value = input
+    grid.value.editor.editorText.value = input
     initialValue.value = input
   },
 })
@@ -166,12 +169,13 @@ defineExpose({
       </div>
       <input
         ref="inputRef"
-        v-model="editor.editorText.value"
+        v-model="grid.editor.editorText.value"
         class="w-full py-1 px-2 bg-transparent dark:text-slate-300 text-gray-700 text-sm border-none focus:outline-none selection:dark:bg-slate-700 selection:bg-gray-300"
         @blur="onBlur"
         @focus="onFocus"
         @keydown="onKeyDown"
       >
+      {{ grid.editor.editingCellId.value.id }}
     </div>
   </div>
 </template>

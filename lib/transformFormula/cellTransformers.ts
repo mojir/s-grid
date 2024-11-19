@@ -21,7 +21,6 @@ export function transformCell(cellIdString: string, transformation: FormulaTrans
 }
 
 export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }: Movement, range?: CellRange): string {
-  console.log('transformMoveOnCell', cellIdInfo, { cols, rows }, range, CellId.fromId(cellIdInfo.id), range && range.contains(CellId.fromId(cellIdInfo.id)))
   if (range && !range.contains(CellId.fromId(cellIdInfo.id))) {
     return cellIdInfo.id
   }

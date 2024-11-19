@@ -3,7 +3,7 @@ import { defaultFormatter } from '~/lib/utils'
 
 const open = ref(false)
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const format = ref<string | null>(defaultFormatter)
 const floatFormatter = '#(format ".4~f" %)'

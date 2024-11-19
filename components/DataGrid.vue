@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import GridCell from './GridCell.vue'
-import { useGrid } from '@/composables/useGrid'
+import { useCurrentGrid } from '~/composables/useCurrentGrid'
 import { hs } from '~/lib/utils'
 import type { CellId } from '~/lib/CellId'
 
@@ -9,7 +9,7 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 watch(grid.value.position, (position) => {
   const cellElement = document.getElementById(position.id)

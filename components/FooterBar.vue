@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
-import { useGrid } from '@/composables/useGrid'
+import { useCurrentGrid } from '~/composables/useCurrentGrid'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const errorMessage = computed(() => {
   const cell = grid.value.getCurrentCell()

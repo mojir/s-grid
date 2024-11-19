@@ -36,6 +36,7 @@ const commandNames = [
   'SetRowHeight!',
   'SetStyle!',
   'SetTextColor!',
+  'SwitchGrid!',
 ] as const
 
 type BuiltinCommandName = typeof commandNames[number]
@@ -81,14 +82,14 @@ export const useCommandCenter = () => {
 export type CommandCenterComposable = ReturnType<typeof useCommandCenter>
 
 function registerCommands() {
-  const grid = useGrid()
   const repl = useREPL()
 
   registerCommand({
     name: 'CreateNamedFunction!',
     execute: (alias: string, input: string, target?: string) => {
+      const grid = useCurrentGrid()
       const cell = grid.value.getCell(target)
-      useAlias().setCell(alias, cell)
+      grid.value.alias.setCell(alias, cell)
       grid.value.setInput(input, target)
     },
     description: 'Clear the current cell',
@@ -97,6 +98,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetRowHeight!',
     execute: (height: number, target?: string) => {
+      const grid = useCurrentGrid()
       const cell = grid.value.getCell(target)
       grid.value.getRow(cell.cellId.getRowId()).height.value = height
     },
@@ -106,6 +108,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetColWidth!',
     execute: (width: number, target?: string) => {
+      const grid = useCurrentGrid()
       const cell = grid.value.getCell(target)
       grid.value.getCol(cell.cellId.getColId()).width.value = width
     },
@@ -115,6 +118,7 @@ function registerCommands() {
   registerCommand({
     name: 'MovePosition!',
     execute: (direction: Direction) => {
+      const grid = useCurrentGrid()
       grid.value.movePosition(direction)
     },
     description: 'Move the position one step in a specific direction.',
@@ -122,6 +126,7 @@ function registerCommands() {
   registerCommand({
     name: 'MovePositionTo!',
     execute: (cell: string) => {
+      const grid = useCurrentGrid()
       grid.value.movePositionTo(cell)
     },
     description: 'Move the position to a specific cell',
@@ -129,6 +134,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetInput!',
     execute: (input: string, target?: string) => {
+      const grid = useCurrentGrid()
       grid.value.setInput(input, target)
     },
     description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
@@ -136,6 +142,7 @@ function registerCommands() {
   registerCommand({
     name: 'Clear!',
     execute: (target?: string) => {
+      const grid = useCurrentGrid()
       grid.value.clear(target)
     },
     description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
@@ -143,6 +150,7 @@ function registerCommands() {
   registerCommand({
     name: 'ClearAllCells!',
     execute: () => {
+      const grid = useCurrentGrid()
       grid.value.clearAllCells()
     },
     description: 'Clear all cells',
@@ -150,6 +158,7 @@ function registerCommands() {
   registerCommand({
     name: 'GetCell',
     execute: (cellId: string) => {
+      const grid = useCurrentGrid()
       return grid.value.getCell(cellId).getDebugInfo()
     },
     description: 'Get a cell. If no target is specified, get the active cell.',
@@ -157,6 +166,7 @@ function registerCommands() {
   registerCommand({
     name: 'GetCells',
     execute: (cellId: string) => {
+      const grid = useCurrentGrid()
       return grid.value.getCells(cellId).map(cell => cell.getDebugInfo())
     },
     description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
@@ -164,8 +174,9 @@ function registerCommands() {
   registerCommand({
     name: 'SetAlias!',
     execute: (alias: string, id?: string) => {
+      const grid = useCurrentGrid()
       const cell = grid.value.getCell(id)
-      useAlias().setCell(alias, cell)
+      grid.value.alias.setCell(alias, cell)
     },
     description: 'Create an alias for a cell',
   })
@@ -174,6 +185,7 @@ function registerCommands() {
     name: 'SetStyle!',
     execute: <T extends CellStyleName>(property: T, value: CellStyle[T], cellId?: string) => {
       if (validCellStyle(property, value)) {
+        const grid = useCurrentGrid()
         grid.value.setStyle(property, value, cellId)
       }
       else {
@@ -187,6 +199,7 @@ function registerCommands() {
     name: 'SetBackgroundColor!',
     execute: (hexCode: string, target?: string) => {
       const color = Color.fromHex(hexCode)
+      const grid = useCurrentGrid()
       grid.value.setBackgroundColor(color, target)
     },
     description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
@@ -196,6 +209,7 @@ function registerCommands() {
     name: 'SetTextColor!',
     execute: (hexCode: string, target?: string) => {
       const color = Color.fromHex(hexCode)
+      const grid = useCurrentGrid()
       grid.value.setTextColor(color, target)
     },
     description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
@@ -204,6 +218,7 @@ function registerCommands() {
   registerCommand({
     name: 'SetFormatter!',
     execute: (formatter: string, target?: string) => {
+      const grid = useCurrentGrid()
       grid.value.setFormatter(formatter, target)
     },
     description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
@@ -212,6 +227,7 @@ function registerCommands() {
   registerCommand({
     name: 'ResetSelection!',
     execute: () => {
+      const grid = useCurrentGrid()
       grid.value.resetSelection()
     },
     description: 'Reset the selection',
@@ -219,13 +235,14 @@ function registerCommands() {
 
   registerCommand({
     name: 'GetSelection',
-    execute: () => grid.value.selection.selectedRange.value.getJson(),
+    execute: () => useCurrentGrid().value.selection.selectedRange.value.getJson(),
     description: 'Get the current selection.',
   })
 
   registerCommand({
     name: 'ExpandSelection!',
     execute: (direction: Direction) => {
+      const grid = useCurrentGrid()
       grid.value.selection.expandSelection(direction)
     },
     description: 'Expand the selection one step in a specific direction',
@@ -234,6 +251,7 @@ function registerCommands() {
   registerCommand({
     name: 'ExpandSelectionTo!',
     execute: (target: CellId | string) => {
+      const grid = useCurrentGrid()
       grid.value.selection.expandSelectionTo(target)
     },
     description: 'Expand the selection to a cell',
@@ -242,6 +260,7 @@ function registerCommands() {
   registerCommand({
     name: 'Select!',
     execute: (target: string) => {
+      const grid = useCurrentGrid()
       grid.value.selection.select(target)
     },
     description: 'Select a cell or a range',
@@ -284,6 +303,7 @@ function registerCommands() {
         rowIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.deleteRows(rowRange)
     },
   })
@@ -300,6 +320,7 @@ function registerCommands() {
         colIndex: colIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.deleteCols(colRange)
     },
   })
@@ -316,6 +337,7 @@ function registerCommands() {
         rowIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.insertRowsBefore(rowRange)
     },
   })
@@ -332,6 +354,7 @@ function registerCommands() {
         rowIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.insertRowsAfter(rowRange)
     },
   })
@@ -348,6 +371,7 @@ function registerCommands() {
         colIndex: colIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.insertColsBefore(colRange)
     },
   })
@@ -364,7 +388,16 @@ function registerCommands() {
         colIndex: colIndex,
         count,
       }
+      const grid = useCurrentGrid()
       grid.value.insertColsAfter(colRange)
+    },
+  })
+
+  registerCommand({
+    name: 'SwitchGrid!',
+    description: 'Switch to another grid',
+    execute: () => {
+      switchGrid()
     },
   })
 

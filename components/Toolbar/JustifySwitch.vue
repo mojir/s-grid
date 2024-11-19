@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StyleJustify } from '~/lib/CellStyle'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const justify = ref<StyleJustify>()
 

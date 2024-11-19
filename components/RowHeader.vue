@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
 import { ws } from '~/lib/utils'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const el = ref<HTMLDivElement>()
 

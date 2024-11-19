@@ -19,8 +19,6 @@ export type CellJson = {
 export class Cell {
   private grid: Grid
   private lits: LitsComposable
-  private commandCenter: CommandCenterComposable
-  private alias: AliasComposable
 
   public readonly input = ref('')
   public readonly formatter = ref<string | null>(defaultFormatter)
@@ -32,19 +30,11 @@ export class Cell {
     public cellId: CellId,
     {
       grid,
-      lits,
-      commandCenter,
-      alias,
     }: {
       grid: Grid
-      lits: LitsComposable
-      commandCenter: CommandCenterComposable
-      alias: AliasComposable
     }) {
     this.grid = grid
-    this.lits = lits
-    this.commandCenter = commandCenter
-    this.alias = alias
+    this.lits = useLits()
 
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
@@ -92,7 +82,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       const program = input.slice(1)
-      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions: this.commandCenter.jsFunctions })
+      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions: useCommandCenter().jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
     }
 
@@ -100,7 +90,6 @@ export class Cell {
   })
 
   private getTargetsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
-    const alias = useAlias()
     return unresolvedIdentifiers.flatMap((identifier) => {
       if (CellId.isCellIdString(identifier)) {
         return CellId.fromId(identifier)
@@ -108,7 +97,7 @@ export class Cell {
       if (CellRange.isCellRangeString (identifier)) {
         return CellRange.fromId(identifier)
       }
-      const aliasCell = alias.getCell(identifier)
+      const aliasCell = this.grid.alias.getCell(identifier)
       if (aliasCell) {
         return aliasCell.cellId
       }
@@ -142,7 +131,7 @@ export class Cell {
       const lits = this.lits.value
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.references.value)
-        const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
+        const result = lits.run(this.formula.value, { values, jsFunctions: useCommandCenter().jsFunctions })
         return result
       }
       catch (error) {
@@ -166,7 +155,7 @@ export class Cell {
       return '#ERR'
     }
     if (this.isFunction.value) {
-      const alias = this.alias.getAlias(this)
+      const alias = this.grid.alias.getAlias(this)
 
       return `${alias ? `${alias} ` : ''}λ`
     }
@@ -197,7 +186,7 @@ export class Cell {
     const lits = this.lits.value
 
     const identifiers = Array.from(
-      lits.analyze(formatter, { jsFunctions: this.commandCenter.jsFunctions }).unresolvedIdentifiers,
+      lits.analyze(formatter, { jsFunctions: useCommandCenter().jsFunctions }).unresolvedIdentifiers,
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getTargetsFromUnresolvedIdentifiers(identifiers)
@@ -208,13 +197,13 @@ export class Cell {
 
     try {
       const values = this.grid.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
-      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
+      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: useCommandCenter().jsFunctions })
 
       if (!isLitsFunction(fn)) {
         return this.output.value
       }
 
-      const result = lits.apply(fn, [this.output.value], { values, jsFunctions: this.commandCenter.jsFunctions })
+      const result = lits.apply(fn, [this.output.value], { values, jsFunctions: useCommandCenter().jsFunctions })
       return result
     }
     catch (error) {

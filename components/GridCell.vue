@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, type CSSProperties } from 'vue'
-import { useGrid } from '@/composables/useGrid'
+import { useCurrentGrid } from '~/composables/useCurrentGrid'
 import { CellId } from '~/lib/CellId'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
@@ -17,8 +17,7 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const grid = useGrid()
-const editor = useEditor()
+const grid = useCurrentGrid()
 const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
@@ -36,13 +35,13 @@ const isReferenced = computed(() => {
   const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
   return ranges.some(range => range.contains(cellId.value))
 })
-const hoverSelectingCell = computed(() => editor.isEditingLitsCode.value
+const hoverSelectingCell = computed(() => grid.value.editor.isEditingLitsCode.value
   && !isActiveCell.value && hoveredCellId.value && hoveredCellId.value === cellId.value.id)
 
-const isEditingCell = computed(() => editor.editorFocused.value && editor.editingCellId.value.equals(cellId.value))
+const isEditingCell = computed(() => grid.value.editor.editorFocused.value && grid.value.editor.editingCellId.value.equals(cellId.value))
 const cellContent = computed(() => {
   if (isEditingCell.value) {
-    return editor.editorText
+    return grid.value.editor.editorText
   }
   return grid.value.getCell(cellId.value).display
 })
@@ -88,7 +87,7 @@ const cellStyle = computed(() => {
     style.border = '1px solid var(--current-cell-border-color)'
     style['z-index'] = 10
     if (isEditingCell.value) {
-      if (editor.isEditingLitsCode.value) {
+      if (grid.value.editor.isEditingLitsCode.value) {
         style.outline = '3px dashed var(--editing-lits-cell-outline-color)'
         style.outlineOffset = '1px'
       }
@@ -159,7 +158,7 @@ const cellStyle = computed(() => {
     style.alignItems = 'flex-end'
   }
 
-  if (editor.editorFocused.value && isReferenced.value) {
+  if (grid.value.editor.editorFocused.value && isReferenced.value) {
     style.backgroundColor = 'var(--referenced-cell-background-color)'
   }
   else {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StyleAlign } from '~/lib/CellStyle'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 
 const align = ref<StyleAlign>()
 

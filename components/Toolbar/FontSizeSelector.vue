@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { styleFontSizes, type StyleFontSize } from '~/lib/CellStyle'
 
-const grid = useGrid()
+const grid = useCurrentGrid()
 const fontSize = ref<string | undefined>()
 watch(grid.value.selection.selectedRange, (newSelection) => {
   const selectedFontSize = grid.value.getStyle('fontSize', newSelection)
