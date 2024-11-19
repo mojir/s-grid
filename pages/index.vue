@@ -3,15 +3,14 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { CellId } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
 import { Col, type ColIdString } from '~/lib/Col'
+import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Row, type RowIdString } from '~/lib/Row'
 import { whs, hs } from '~/lib/utils'
 
 const grid = useGrid()
-const selection = useSelection()
-const { colHeaderHeight, rowHeaderWidth } = useRowsAndCols()
+const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
 const { isEditingLitsCode: editingLitsCode, editorFocused } = useEditor()
-const rowsAndCols = useRowsAndCols()
 const { hoveredCellId } = useHover()
 
 const gridWrapper = ref<HTMLDivElement>()
@@ -47,7 +46,7 @@ onUnmounted(() => {
 })
 
 function resetSelection() {
-  selection.updateSelection(CellRange.fromSingleCellId(grid.value.position.value))
+  selection.value.updateSelection(CellRange.fromSingleCellId(grid.value.position.value))
 }
 
 const dbClickTime: number = 300
@@ -116,14 +115,14 @@ function onMouseDown(event: MouseEvent) {
     return
   }
   if (CellId.isCellIdString(id)) {
-    if (isRightClick && selection.selection.value.contains(CellId.fromId(id))) {
+    if (isRightClick && selection.value.selectedRange.value.contains(CellId.fromId(id))) {
       return
     }
 
-    selection.selecting.value = true
+    selection.value.selecting.value = true
     mouseDownStart.value = id
     if (editingLitsCode.value) {
-      selection.select(id)
+      selection.value.select(id)
     }
     else {
       resetSelection()
@@ -137,20 +136,20 @@ function onMouseDown(event: MouseEvent) {
   }
 
   if (Col.isColIdString(id)) {
-    selection.selecting.value = true
+    selection.value.selecting.value = true
     mouseDownStart.value = id
-    const col = rowsAndCols.getCol(id)
+    const col = grid.value.getCol(id)
     if (col) {
       resetSelection()
       if (!editingLitsCode.value) {
         grid.value.movePositionTo(`${col.id.value}1`)
       }
-      selection.selectColRange(col, col)
+      selection.value.selectColRange(col, col)
     }
   }
   if (Col.isResizeColId(id)) {
     const colId = id.split(':')[1] as ColIdString
-    const col = rowsAndCols.getCol(colId)
+    const col = grid.value.getCol(colId)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
     colResizing.value = {
@@ -170,20 +169,20 @@ function onMouseDown(event: MouseEvent) {
   }
 
   if (Row.isRowIdString(id)) {
-    selection.selecting.value = true
+    selection.value.selecting.value = true
     mouseDownStart.value = id
-    const row = rowsAndCols.getRow(id)
+    const row = grid.value.getRow(id)
     if (row) {
       resetSelection()
       if (!editingLitsCode.value) {
         grid.value.movePositionTo(`A${row.id.value}`)
       }
-      selection.selectRowRange(row, row)
+      selection.value.selectRowRange(row, row)
     }
   }
   if (Row.isResizeRowId(id)) {
     const rowId = id.split(':')[1] as RowIdString
-    const row = rowsAndCols.getRow(rowId)
+    const row = grid.value.getRow(rowId)
     const y = event.clientY
     rowResizing.value = {
       rowId,
@@ -204,17 +203,17 @@ function onMouseMove(event: MouseEvent) {
     const { currentRowHeight, startY } = rowResizing.value
     const y = event.clientY
     const newHeight = currentRowHeight + y - startY
-    rowResizing.value.y.value = newHeight > rowsAndCols.minColHeight
+    rowResizing.value.y.value = newHeight > minColHeight
       ? y
-      : rowResizing.value.startY - currentRowHeight + rowsAndCols.minColHeight
+      : rowResizing.value.startY - currentRowHeight + minColHeight
   }
   if (colResizing.value) {
     const { currentColWidth, startX } = colResizing.value
     const x = event.clientX
     const newWidth = currentColWidth + x - startX
-    colResizing.value.x.value = newWidth > rowsAndCols.minRowWidth
+    colResizing.value.x.value = newWidth > minRowWidth
       ? x
-      : colResizing.value.startX - currentColWidth + rowsAndCols.minRowWidth
+      : colResizing.value.startX - currentColWidth + minRowWidth
   }
 }
 function onMouseUp(event: MouseEvent) {
@@ -226,14 +225,14 @@ function onMouseUp(event: MouseEvent) {
   const target = event.target as HTMLElement | undefined
   const id = target?.id
 
-  if (selection.selecting.value || (id && CellId.isCellIdString(id))) {
+  if (selection.value.selecting.value || (id && CellId.isCellIdString(id))) {
     grid.value.clipboard.pasteStyleSelection()
   }
-  selection.selecting.value = false
+  selection.value.selecting.value = false
 
   if (rowResizeDblClicked?.completed) {
     const { rowId } = rowResizeDblClicked
-    const rows = new Set(rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value).map(row => row.id.value))
+    const rows = new Set(grid.value.getSelectedRowsWithRowId(rowId, selection.value.selectedRange.value).map(row => row.id.value))
     rows.add(rowId)
     grid.value.autoSetRowHeight(Array.from(rows))
     rowResizeDblClicked = null
@@ -242,11 +241,11 @@ function onMouseUp(event: MouseEvent) {
   else if (rowResizing.value) {
     const { rowId, startY, y } = rowResizing.value
 
-    const row = rowsAndCols.getRow(rowId)
+    const row = grid.value.getRow(rowId)
     const height = row.height.value + y.value - startY
     row.height.value = height
 
-    rowsAndCols.getSelectedRowsWithRowId(rowId, selection.selection.value)
+    grid.value.getSelectedRowsWithRowId(rowId, selection.value.selectedRange.value)
       .filter(row => row.id.value !== rowId)
       .forEach((row) => {
         row.height.value = height
@@ -255,7 +254,7 @@ function onMouseUp(event: MouseEvent) {
   }
   else if (colResizeDblClicked?.completed) {
     const { colId } = colResizeDblClicked
-    const cols = new Set(rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value).map(col => col.id.value))
+    const cols = new Set(grid.value.getSelectedColsWithColId(colId, selection.value.selectedRange.value).map(col => col.id.value))
     cols.add(colId)
     grid.value.autoSetColWidth(Array.from(cols))
     colResizeDblClicked = null
@@ -264,11 +263,11 @@ function onMouseUp(event: MouseEvent) {
 
   else if (colResizing.value) {
     const { colId, startX, x } = colResizing.value
-    const col = rowsAndCols.getCol(colId)
+    const col = grid.value.getCol(colId)
     const width = col.width.value + x.value - startX
     col.width.value = width
 
-    rowsAndCols.getSelectedColsWithColId(colId, selection.selection.value)
+    grid.value.getSelectedColsWithColId(colId, selection.value.selectedRange.value)
       .filter(col => col.id.value !== colId)
       .forEach((col) => {
         col.width.value = width
@@ -291,20 +290,20 @@ function onMouseEnter(event: MouseEvent) {
   }
   if (mouseDownStart.value) {
     if (CellId.isCellIdString(mouseDownStart.value) && cellId) {
-      selection.select(`${mouseDownStart.value}-${cellId}`)
+      selection.value.select(`${mouseDownStart.value}-${cellId}`)
     }
     else if (Col.isColIdString(mouseDownStart.value) && Col.isColIdString(target.id)) {
-      const fromCol = rowsAndCols.getCol(mouseDownStart.value)
-      const toCol = rowsAndCols.getCol(target.id)
+      const fromCol = grid.value.getCol(mouseDownStart.value)
+      const toCol = grid.value.getCol(target.id)
       if (fromCol && toCol) {
-        selection.selectColRange(fromCol, toCol)
+        selection.value.selectColRange(fromCol, toCol)
       }
     }
     else if (Row.isRowIdString(mouseDownStart.value) && Row.isRowIdString(target.id)) {
-      const fromRow = rowsAndCols.getRow(mouseDownStart.value)
-      const toRow = rowsAndCols.getRow(target.id)
+      const fromRow = grid.value.getRow(mouseDownStart.value)
+      const toRow = grid.value.getRow(target.id)
       if (fromRow && toRow) {
-        selection.selectRowRange(fromRow, toRow)
+        selection.value.selectRowRange(fromRow, toRow)
       }
     }
   }
@@ -369,7 +368,7 @@ function onKeyDown(e: KeyboardEvent) {
       }
     }
     else if (e.key === 'Backspace' || e.key === 'Delete') {
-      grid.value.clear(selection.selection.value)
+      grid.value.clear(selection.value.selectedRange.value)
       formulaBarRef.value.update('')
     }
     else if (e.key === 'F2') {
@@ -379,7 +378,7 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        selection.expandSelection('down')
+        selection.value.expandSelection('down')
       }
       else {
         grid.value.movePosition('down')
@@ -390,7 +389,7 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        selection.expandSelection('up')
+        selection.value.expandSelection('up')
       }
       else {
         grid.value.movePosition('up')
@@ -401,7 +400,7 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        selection.expandSelection('right')
+        selection.value.expandSelection('right')
       }
       else {
         grid.value.movePosition('right')
@@ -412,7 +411,7 @@ function onKeyDown(e: KeyboardEvent) {
       e.preventDefault()
       formulaBarRef.value.save()
       if (e.shiftKey) {
-        selection.expandSelection('left')
+        selection.value.expandSelection('left')
       }
       else {
         grid.value.movePosition('left')

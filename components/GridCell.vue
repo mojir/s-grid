@@ -2,11 +2,11 @@
 import { computed, toRefs, type CSSProperties } from 'vue'
 import { useGrid } from '@/composables/useGrid'
 import { CellId } from '~/lib/CellId'
-import { getLineHeight } from '~/lib/CellStyle'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
 import { CellRange } from '~/lib/CellRange'
+import { getLineHeight } from '~/lib/constants'
 
 const props = defineProps<{
   row: Row
@@ -23,7 +23,6 @@ const { currentTab, sidePanelOpen } = useSidePanel()
 const { run } = useREPL()
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
-const { selection } = useSelection()
 const { hoveredCellId } = useHover()
 
 const { row, col } = toRefs(props)
@@ -31,7 +30,7 @@ const { row, col } = toRefs(props)
 const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index.value))
 const cell = computed(() => grid.value.getCell(cellId.value))
 const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
-const insideSelection = computed(() => selection.value.size() > 1 && selection.value.contains(cellId.value))
+const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.contains(cellId.value))
 const isReferenced = computed(() => {
   const targets = grid.value.getCell(grid.value.position.value).localReferenceTargets.value
   const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))

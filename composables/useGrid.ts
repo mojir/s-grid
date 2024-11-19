@@ -11,8 +11,6 @@ export function setColorMode(colorMode: Ref<string>) {
 
 export const useGrid = createSharedComposable(() => {
   const grid = new Grid({
-    rowsAndCols: useRowsAndCols(),
-    selection: useSelection(),
     alias: useAlias(),
     lits: useLits(),
     commandCenter: useCommandCenter(),

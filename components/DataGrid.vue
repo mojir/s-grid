@@ -10,7 +10,6 @@ const emit = defineEmits<{
 }>()
 
 const grid = useGrid()
-const { rows, cols } = useRowsAndCols()
 
 watch(grid.value.position, (position) => {
   const cellElement = document.getElementById(position.id)
@@ -34,13 +33,13 @@ defineExpose({
   >
     <GridContextMenu>
       <div
-        v-for="row of rows"
+        v-for="row of grid.rows.value"
         :key="row.id.value"
         :style="hs(row.height.value)"
         class="flex"
       >
         <div
-          v-for="col of cols"
+          v-for="col of grid.cols.value"
           :key="col.id.value"
           class="dark:bg-blue-700 bg-blue-200"
         >

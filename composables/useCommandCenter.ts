@@ -82,7 +82,6 @@ export type CommandCenterComposable = ReturnType<typeof useCommandCenter>
 
 function registerCommands() {
   const grid = useGrid()
-  const selection = useSelection()
   const repl = useREPL()
 
   registerCommand({
@@ -99,7 +98,7 @@ function registerCommands() {
     name: 'SetRowHeight!',
     execute: (height: number, target?: string) => {
       const cell = grid.value.getCell(target)
-      useRowsAndCols().getRow(cell.cellId.getRowId()).height.value = height
+      grid.value.getRow(cell.cellId.getRowId()).height.value = height
     },
     description: 'Set row height',
   })
@@ -108,7 +107,7 @@ function registerCommands() {
     name: 'SetColWidth!',
     execute: (width: number, target?: string) => {
       const cell = grid.value.getCell(target)
-      useRowsAndCols().getCol(cell.cellId.getColId()).width.value = width
+      grid.value.getCol(cell.cellId.getColId()).width.value = width
     },
     description: 'Set column width',
   })
@@ -220,14 +219,14 @@ function registerCommands() {
 
   registerCommand({
     name: 'GetSelection',
-    execute: () => selection.selection.value.getJson(),
+    execute: () => grid.value.selection.selectedRange.value.getJson(),
     description: 'Get the current selection.',
   })
 
   registerCommand({
     name: 'ExpandSelection!',
     execute: (direction: Direction) => {
-      selection.expandSelection(direction)
+      grid.value.selection.expandSelection(direction)
     },
     description: 'Expand the selection one step in a specific direction',
   })
@@ -235,7 +234,7 @@ function registerCommands() {
   registerCommand({
     name: 'ExpandSelectionTo!',
     execute: (target: CellId | string) => {
-      selection.expandSelectionTo(target)
+      grid.value.selection.expandSelectionTo(target)
     },
     description: 'Expand the selection to a cell',
   })
@@ -243,7 +242,7 @@ function registerCommands() {
   registerCommand({
     name: 'Select!',
     execute: (target: string) => {
-      selection.select(target)
+      grid.value.selection.select(target)
     },
     description: 'Select a cell or a range',
   })

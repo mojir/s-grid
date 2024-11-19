@@ -4,7 +4,6 @@ import { defaultFormatter } from '~/lib/utils'
 const open = ref(false)
 
 const grid = useGrid()
-const { selection } = useSelection()
 
 const format = ref<string | null>(defaultFormatter)
 const floatFormatter = '#(format ".4~f" %)'
@@ -21,7 +20,7 @@ const percent = computed(() => format.value === percentFormatter)
 const sek = computed(() => format.value === sekFormatter)
 const usd = computed(() => format.value === usdFormatter)
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   format.value = grid.value.getFormatter(newSelection)
 }, { immediate: true })
 

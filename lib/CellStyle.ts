@@ -1,3 +1,5 @@
+import { defaultFontSize } from './constants'
+
 export type StyleJustify = 'left' | 'center' | 'right'
 export type StyleAlign = 'top' | 'middle' | 'bottom'
 export type StyleTextDecoration = 'underline' | 'line-through'
@@ -15,9 +17,6 @@ export const styleFontSizes = [
 ] as const
 
 export type StyleFontSize = typeof styleFontSizes[number]
-
-export const defaultFontSize: StyleFontSize = 14
-export const defaultLineHeight = getLineHeight(defaultFontSize)
 
 export type CellStyleName = keyof Omit<CellStyle, 'getJson'>
 
@@ -58,22 +57,6 @@ export class CellStyle {
       align: this.align,
     }
   }
-}
-
-export function getLineHeight(fontSize?: StyleFontSize): number {
-  if (fontSize === undefined) {
-    return defaultLineHeight
-  }
-  if (fontSize <= 10) {
-    return fontSize * 1.2
-  }
-  if (fontSize <= 12) {
-    return fontSize * 1.4
-  }
-  if (fontSize <= 18) {
-    return fontSize * 1.6
-  }
-  return fontSize * 1.8
 }
 
 export function validCellStyle(property: CellStyleName, value: unknown): boolean {

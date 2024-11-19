@@ -11,14 +11,14 @@ type InternalClipboard<T> = {
 }
 
 export class GridClipboard {
-  private readonly selection: Ref<CellRange>
+  private readonly selectedRange: Ref<CellRange>
   private clipboard = ref<InternalClipboard<CellJson> | null>(null)
   private styleClipboard = ref<InternalClipboard<Pick<CellJson, 'style' | 'backgroundColor' | 'textColor' | 'formatter'>> | null>(null)
   private cutCellIds = ref<CellId[] | null>(null)
   public hasStyleData = computed(() => !!this.styleClipboard.value)
 
   constructor(private grid: Grid) {
-    this.selection = useSelection().selection
+    this.selectedRange = grid.selection.selectedRange
   }
 
   public clearStyleClipboard() {
@@ -31,13 +31,13 @@ export class GridClipboard {
     }
 
     this.clipboard.value = {
-      range: this.selection.value,
-      cells: matrixMap(this.selection.value.getCellIdMatrix(), cellId => this.grid.getCell(cellId).getJson()),
+      range: this.selectedRange.value,
+      cells: matrixMap(this.selectedRange.value.getCellIdMatrix(), cellId => this.grid.getCell(cellId).getJson()),
     }
   }
 
   public copyStyleSelection(range?: CellRange) {
-    range ??= this.selection.value
+    range ??= this.selectedRange.value
     this.styleClipboard.value = {
       range,
       cells: matrixMap(range.getCellIdMatrix(), (cellId) => {
@@ -54,7 +54,7 @@ export class GridClipboard {
 
   public cutSelection() {
     this.copySelection()
-    this.cutCellIds.value = this.selection.value.getAllCellIds()
+    this.cutCellIds.value = this.selectedRange.value.getAllCellIds()
   }
 
   public pasteSelection() {
@@ -82,7 +82,7 @@ export class GridClipboard {
   }
 
   private getPastePositions(sourceRange: CellRange, targetRange?: CellRange): CellId[] {
-    targetRange ??= this.selection.value
+    targetRange ??= this.selectedRange.value
 
     const selectionWidth = targetRange.end.colIndex - targetRange.start.colIndex + 1
     const selectionHeight = targetRange.end.rowIndex - targetRange.start.rowIndex + 1
@@ -117,7 +117,7 @@ export class GridClipboard {
       this.grid.clear(cellId)
     })
 
-    const toPosition = this.selection.value.start
+    const toPosition = this.selectedRange.value.start
 
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellJson, [rowIndex, colIndex]) => {

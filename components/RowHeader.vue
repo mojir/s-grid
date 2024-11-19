@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { rowHeaderWidth } from '~/lib/constants'
 import { ws } from '~/lib/utils'
 
-const { rows, rowHeaderWidth } = useRowsAndCols()
+const grid = useGrid()
 
 const el = ref<HTMLDivElement>()
 
@@ -18,7 +19,7 @@ defineExpose({
     :style="ws(rowHeaderWidth)"
   >
     <RowHeaderCell
-      v-for="row of rows"
+      v-for="row of grid.rows.value"
       :key="row.id.value"
 
       :row="row"

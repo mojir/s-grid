@@ -3,11 +3,9 @@ import type { StyleAlign } from '~/lib/CellStyle'
 
 const grid = useGrid()
 
-const { selection } = useSelection()
-
 const align = ref<StyleAlign>()
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   align.value = grid.value.getStyle('align', newSelection)
 }, { immediate: true })
 

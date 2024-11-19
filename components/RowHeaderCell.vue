@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
+import { rowHeaderWidth } from '~/lib/constants'
 import { Row, type RowRange } from '~/lib/Row'
 import { whs } from '~/lib/utils'
 
@@ -9,14 +10,12 @@ const props = defineProps<{
 
 const { row } = toRefs(props)
 
-const { rowHeaderWidth } = useRowsAndCols()
-const { selection, isRowSelected, selectedRows } = useSelection()
 const grid = useGrid()
-const everthingSelected = computed(() => selection.value.equals(grid.value.gridRange.value))
+const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 function getAffectedRange(): RowRange {
-  const selectedRange = selectedRows.value
-  if (!selectedRange || !isRowSelected(row.value.id.value)) {
+  const selectedRange = grid.value.selection.selectedRows.value
+  if (!selectedRange || !grid.value.selection.isRowSelected(row.value.id.value)) {
     return { rowIndex: row.value.index.value, count: 1 }
   }
   return selectedRange
@@ -59,8 +58,8 @@ function insertAfterRow() {
   grid.value.insertRowsAfter(getAffectedRange())
 }
 
-const hasSelectedCell = computed(() => selection.value.containsRowIndex(row.value.index.value))
-const isSelected = computed(() => isRowSelected(row.value.id.value))
+const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRowIndex(row.value.index.value))
+const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.id.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {

@@ -3,8 +3,7 @@ import { styleFontSizes, type StyleFontSize } from '~/lib/CellStyle'
 
 const grid = useGrid()
 const fontSize = ref<string | undefined>()
-const { selection } = useSelection()
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   const selectedFontSize = grid.value.getStyle('fontSize', newSelection)
   fontSize.value = selectedFontSize ? String(selectedFontSize) : undefined
 }, { immediate: true })

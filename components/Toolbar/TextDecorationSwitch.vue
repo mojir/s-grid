@@ -3,10 +3,9 @@ import type { StyleTextDecoration } from '~/lib/CellStyle'
 
 const grid = useGrid()
 
-const { selection } = useSelection()
 const textDecoration = ref<StyleTextDecoration>()
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   textDecoration.value = grid.value.getStyle('textDecoration', newSelection)
 }, { immediate: true })
 

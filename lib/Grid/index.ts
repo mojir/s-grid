@@ -1,26 +1,28 @@
 import { Cell } from '../Cell'
 import { CellId, type Movement } from '../CellId'
 import { CellRange } from '../CellRange'
-import { CellStyle, getLineHeight, type CellStyleName } from '../CellStyle'
+import { CellStyle, type CellStyleName } from '../CellStyle'
 import { Col, type ColIdString, type ColRange } from '../Col'
 import type { Color } from '../color'
 import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
 import { Row, type RowIdString, type RowRange } from '../Row'
 import { transformGridReference } from '../transformFormula'
 import type { CellOrRangeTarget, CellTarget } from '../utils'
+import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import { GridClipboard } from './GridClipboard'
-import type { SelectionComposable } from '~/composables/useSelection'
-import type { RowsAndColsComposable } from '~/composables/useRowsAndCols'
+import { GridSelection } from './GridSelection'
 import type { LitsComposable } from '~/composables/useLits'
 import type { AliasComposable } from '~/composables/useAlias'
 
 export class Grid {
-  private readonly rowsAndCols: RowsAndColsComposable
-  private readonly selection: SelectionComposable
+  // private readonly rowsAndCols: RowsAndColsComposable
   private readonly alias: AliasComposable
   private readonly lits: LitsComposable
   private readonly commandCenter: CommandCenterComposable
 
+  public readonly selection: GridSelection
+  public rows: Ref<Row[]>
+  public cols: Ref<Col[]>
   public readonly clipboard: GridClipboard
   public readonly cells: Cell[][]
   public readonly position: Ref<CellId>
@@ -28,32 +30,29 @@ export class Grid {
 
   constructor(
     {
-      rowsAndCols,
-      selection,
       alias,
       lits,
       commandCenter,
     }: {
-      rowsAndCols: RowsAndColsComposable
-      selection: SelectionComposable
       alias: AliasComposable
       lits: LitsComposable
       commandCenter: CommandCenterComposable
     },
   ) {
-    this.rowsAndCols = rowsAndCols
-    this.selection = selection
+    this.rows = shallowRef(Array.from({ length: 50 }, (_, rowIndex) => Row.create(rowIndex, defaultRowHeight)))
+    this.cols = shallowRef(Array.from({ length: 26 }, (_, colIndex) => Col.create(colIndex, defaultColWidth)))
+    this.selection = new GridSelection(this)
     this.alias = alias
     this.lits = lits
     this.commandCenter = commandCenter
     this.clipboard = new GridClipboard(this)
     this.position = ref(CellId.fromCoords(0, 0))
-    this.cells = Array.from({ length: rowsAndCols.rows.value.length }, (_, rowIndex) =>
-      Array.from({ length: rowsAndCols.cols.value.length }, (_, colIndex) =>
+    this.cells = Array.from({ length: this.rows.value.length }, (_, rowIndex) =>
+      Array.from({ length: this.cols.value.length }, (_, colIndex) =>
         new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this, lits, commandCenter, alias }),
       ),
     )
-    this.gridRange = computed(() => CellRange.fromDimensions(0, 0, rowsAndCols.rows.value.length - 1, rowsAndCols.cols.value.length - 1))
+    this.gridRange = computed(() => CellRange.fromDimensions(0, 0, this.rows.value.length - 1, this.cols.value.length - 1))
   }
 
   public setInput(input: string, target?: CellOrRangeTarget) {
@@ -64,7 +63,7 @@ export class Grid {
 
   private getCellId(target?: CellTarget): CellId {
     if (target === undefined) {
-      return this.selection.selection.value.start
+      return this.selection.selectedRange.value.start
     }
 
     if (CellId.isCellId(target)) {
@@ -90,7 +89,7 @@ export class Grid {
 
   public getCells(target?: CellOrRangeTarget): Cell[] {
     if (!target) {
-      return this.selection.selection.value.getAllCellIds().map(cellId => this.getCell(cellId))
+      return this.selection.selectedRange.value.getAllCellIds().map(cellId => this.getCell(cellId))
     }
     else if (CellRange.isCellRange(target)) {
       return target.getAllCellIds().map(cellId => this.getCell(cellId))
@@ -151,13 +150,13 @@ export class Grid {
     }
     this.position.value = newPosition
 
-    if (!this.selection.selection.value.contains(newPosition)) {
+    if (!this.selection.selectedRange.value.contains(newPosition)) {
       this.selection.updateSelection(CellRange.fromSingleCellId(newPosition))
     }
   }
 
   public movePosition(dir: Direction, wrap = false) {
-    const selection = this.selection.selection.value
+    const selection = this.selection.selectedRange.value
     const range = wrap && selection.size() > 1 ? selection : this.gridRange.value
 
     switch (dir) {
@@ -248,6 +247,44 @@ export class Grid {
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
   }
 
+  public getRow(id: RowIdString): Row {
+    const row = this.rows.value[Row.getRowIndexFromId(id)]
+
+    if (!row) {
+      throw new Error(`Row ${id} not found`)
+    }
+    return row
+  }
+
+  public getCol(id: ColIdString): Col {
+    const col = this.cols.value[Col.getColIndexFromId(id)]
+
+    if (!col) {
+      throw new Error(`Col ${id} not found`)
+    }
+    return col
+  }
+
+  public getSelectedRowsWithRowId(id: RowIdString, selection: CellRange): Row[] {
+    if (selection.start.colIndex === 0 && selection.end.colIndex === this.cols.value.length - 1) {
+      const rowIndex = Row.getRowIndexFromId(id)
+      if (rowIndex >= selection.start.rowIndex && rowIndex <= selection.end.rowIndex) {
+        return this.rows.value.slice(selection.start.rowIndex, selection.end.rowIndex + 1)
+      }
+    }
+    return []
+  }
+
+  public getSelectedColsWithColId(id: ColIdString, selection: CellRange): Col[] {
+    if (selection.start.rowIndex === 0 && selection.end.rowIndex === this.rows.value.length - 1) {
+      const colIndex = Col.getColIndexFromId(id)
+      if (colIndex >= selection.start.colIndex && colIndex <= selection.end.colIndex) {
+        return this.cols.value.slice(selection.start.colIndex, selection.end.colIndex + 1)
+      }
+    }
+    return []
+  }
+
   public autoSetRowHeight(rows: RowIdString[]) {
     rows.forEach((rowId) => {
       const rowIndex = Row.getRowIndexFromId(rowId)
@@ -261,14 +298,14 @@ export class Grid {
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
-      this.rowsAndCols.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
+      this.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
     })
   }
 
   public autoSetRowHeightByTarget(id?: CellId | string) {
     const cellIds = id
       ? [CellId.isCellId(id) ? id : CellId.fromId(id)]
-      : this.selection.selection.value.getAllCellIds()
+      : this.selection.selectedRange.value.getAllCellIds()
 
     const rowIds = cellIds
       .filter(cellId => this.getCell(cellId)?.display.value)
@@ -285,7 +322,7 @@ export class Grid {
   public autoSetColWidth(cols: ColIdString[]) {
     cols.forEach((colId) => {
       const colIndex = Col.getColIndexFromId(colId)
-      const cells = this.rowsAndCols.getCellIdsFromColIndex(colIndex)
+      const cells = this.getCellIdsFromColIndex(colIndex)
         .map(cellId => this.getCell(cellId))
 
       const newColWidth = cells.reduce((acc, cell) => {
@@ -311,13 +348,13 @@ export class Grid {
         return
       }
 
-      this.rowsAndCols.cols.value[colIndex].width.value = newColWidth
+      this.cols.value[colIndex].width.value = newColWidth
     })
   }
 
   public getRowCells(rowIndex: number): Cell[] {
     const startCellId = CellId.fromCoords(rowIndex, 0)
-    const endCellId = CellId.fromCoords(rowIndex, this.rowsAndCols.cols.value.length - 1)
+    const endCellId = CellId.fromCoords(rowIndex, this.cols.value.length - 1)
     const range = CellRange.fromCellIds(startCellId, endCellId)
     return range
       .getAllCellIds()
@@ -330,11 +367,11 @@ export class Grid {
 
   public deleteRows(rowRange: RowRange) {
     const { rowIndex, count } = rowRange
-    if (count === this.rowsAndCols.rows.value.length) {
+    if (count === this.rows.value.length) {
       throw new Error('Cannot delete all rows')
     }
 
-    const newRows = this.rowsAndCols.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
+    const newRows = this.rows.value.filter((_, index) => index < rowIndex || index >= rowIndex + count)
 
     this.cells.splice(rowIndex, count).flat().forEach((cell) => {
       const aliasString = this.alias.cellRemoved(cell)
@@ -370,7 +407,7 @@ export class Grid {
       })
     }
 
-    this.rowsAndCols.rows.value = newRows
+    this.rows.value = newRows
 
     matrixForEach(this.cells, (cell) => {
       if (cell.input.value.startsWith('=')) {
@@ -388,16 +425,16 @@ export class Grid {
     })
 
     this.selection.clampSelection(this.gridRange.value)
-    this.position.value = this.selection.selection.value.start
+    this.position.value = this.selection.selectedRange.value.start
   }
 
   public deleteCols(colRange: ColRange) {
     const { colIndex, count } = colRange
-    if (count === this.rowsAndCols.cols.value.length) {
+    if (count === this.cols.value.length) {
       throw new Error('Cannot delete all columns')
     }
 
-    const newCols = this.rowsAndCols.cols.value.filter((_, index) => index < colIndex || index >= colIndex + count)
+    const newCols = this.cols.value.filter((_, index) => index < colIndex || index >= colIndex + count)
 
     this.cells.reduce((acc: Cell[], row) => {
       return [...acc, ...row.splice(colIndex, count)]
@@ -436,7 +473,7 @@ export class Grid {
       })
     }
 
-    this.rowsAndCols.cols.value = newCols
+    this.cols.value = newCols
 
     matrixForEach(this.cells, (cell) => {
       if (cell.input.value.startsWith('=')) {
@@ -453,31 +490,37 @@ export class Grid {
       }
     })
     this.selection.clampSelection(this.gridRange.value)
-    this.position.value = this.selection.selection.value.start
+    this.position.value = this.selection.selectedRange.value.start
   }
 
   public insertRowsBefore(rowRange: RowRange) {
-    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.rowsAndCols.cols.value.length - 1)
+    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.cols.value.length - 1)
     this.clipboard.copyStyleSelection(range)
     this.insertRows(rowRange.rowIndex, rowRange.count)
     this.clipboard.pasteStyleSelection(range)
   }
 
   public insertRowsAfter(rowRange: RowRange) {
-    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.rowsAndCols.cols.value.length - 1)
+    const range = CellRange.fromDimensions(rowRange.rowIndex, 0, rowRange.rowIndex + rowRange.count - 1, this.cols.value.length - 1)
     this.clipboard.copyStyleSelection(range)
     const beforeIndex = rowRange.rowIndex + rowRange.count
     this.insertRows(beforeIndex, rowRange.count)
     const movement: Movement = { rows: rowRange.count, cols: 0 }
     this.selection.moveSelection(movement)
-    this.position.value = this.selection.selection.value.start
+    this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))
+  }
+
+  private getCellIdsFromColIndex(colIndex: number): CellId[] {
+    const startCellId = CellId.fromCoords(0, colIndex)
+    const endCellId = CellId.fromCoords(this.rows.value.length - 1, colIndex)
+    return CellRange.fromCellIds(startCellId, endCellId).getAllCellIds()
   }
 
   private insertRows(rowIndex: number, count = 1) {
     const createdRows = Array.from({ length: count }, (_, index) => {
       const row = Row.create(rowIndex + index, defaultRowHeight)
-      this.cells.splice(rowIndex + index, 0, Array.from({ length: this.rowsAndCols.cols.value.length }, (_, colIndex) =>
+      this.cells.splice(rowIndex + index, 0, Array.from({ length: this.cols.value.length }, (_, colIndex) =>
         new Cell(
           CellId.fromCoords(rowIndex + index, colIndex),
           { grid: this, lits: this.lits, commandCenter: this.commandCenter, alias: this.alias },
@@ -487,9 +530,9 @@ export class Grid {
     })
 
     const newRows = [
-      ...this.rowsAndCols.rows.value.slice(0, rowIndex),
+      ...this.rows.value.slice(0, rowIndex),
       ...createdRows,
-      ...this.rowsAndCols.rows.value.slice(rowIndex),
+      ...this.rows.value.slice(rowIndex),
     ]
 
     for (let index = rowIndex + count; index < newRows.length; index++) {
@@ -527,24 +570,24 @@ export class Grid {
       }
     })
 
-    this.rowsAndCols.rows.value = newRows
+    this.rows.value = newRows
   }
 
   public insertColsBefore(colRange: ColRange) {
-    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rowsAndCols.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
+    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
     this.clipboard.copyStyleSelection(range)
     this.insertCols(colRange.colIndex, colRange.count)
     this.clipboard.pasteStyleSelection(range)
   }
 
   public insertColsAfter(colRange: ColRange) {
-    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rowsAndCols.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
+    const range = CellRange.fromDimensions(0, colRange.colIndex, this.rows.value.length - 1, colRange.colIndex + colRange.count - 1)
     this.clipboard.copyStyleSelection(range)
     const beforeIndex = colRange.colIndex + colRange.count
     this.insertCols(beforeIndex, colRange.count)
     const movement: Movement = { rows: 0, cols: colRange.count }
     this.selection.moveSelection(movement)
-    this.position.value = this.selection.selection.value.start
+    this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))
   }
 
@@ -554,9 +597,9 @@ export class Grid {
     })
 
     const newCols = [
-      ...this.rowsAndCols.cols.value.slice(0, colIndex),
+      ...this.cols.value.slice(0, colIndex),
       ...createdCols,
-      ...this.rowsAndCols.cols.value.slice(colIndex),
+      ...this.cols.value.slice(colIndex),
     ]
 
     this.cells.forEach((cellRow, rowIndex) => {
@@ -606,6 +649,6 @@ export class Grid {
       }
     })
 
-    this.rowsAndCols.cols.value = newCols
+    this.cols.value = newCols
   }
 }

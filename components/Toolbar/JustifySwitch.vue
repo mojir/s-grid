@@ -3,10 +3,9 @@ import type { StyleJustify } from '~/lib/CellStyle'
 
 const grid = useGrid()
 
-const { selection } = useSelection()
 const justify = ref<StyleJustify>()
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   justify.value = grid.value.getStyle('justify', newSelection)
 }, { immediate: true })
 

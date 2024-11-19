@@ -1,10 +1,9 @@
 <script setup lang="ts">
 const grid = useGrid()
 
-const { selection } = useSelection()
 const italic = ref<boolean>()
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   italic.value = grid.value.getStyle('italic', newSelection) ?? undefined
 }, { immediate: true })
 

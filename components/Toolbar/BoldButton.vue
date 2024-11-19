@@ -1,10 +1,9 @@
 <script setup lang="ts">
 const grid = useGrid()
 
-const { selection } = useSelection()
 const bold = ref<boolean>()
 
-watch(selection, (newSelection) => {
+watch(grid.value.selection.selectedRange, (newSelection) => {
   bold.value = grid.value.getStyle('bold', newSelection)
 }, { immediate: true })
 

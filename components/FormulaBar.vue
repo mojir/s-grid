@@ -4,7 +4,6 @@ import { useGrid } from '@/composables/useGrid'
 import { hs } from '~/lib/utils'
 
 const grid = useGrid()
-const { selection, selecting } = useSelection()
 const editor = useEditor()
 const { sidePanelOpen } = useSidePanel()
 
@@ -16,10 +15,10 @@ const selectionLabel = computed(() => {
   if (editor.editorFocused.value) {
     return editor.editingCellId.value.id
   }
-  if (selection.value.size() === 1) {
-    return selection.value.start.id
+  if (grid.value.selection.selectedRange.value.size() === 1) {
+    return grid.value.selection.selectedRange.value.start.id
   }
-  return selection.value.id
+  return grid.value.selection.selectedRange.value.id
 })
 
 const cellInput = computed(() => {
@@ -43,7 +42,7 @@ watch(editor.isEditingLitsCode, (editing) => {
   }
 })
 
-watch(selection, (selection) => {
+watch(grid.value.selection.selectedRange, (selection) => {
   const inputElement = inputRef.value
   if (editor.isEditingLitsCode.value && inputElement && editor.editorFocused.value) {
     const selectionValue = `${selection.size() === 1
@@ -62,7 +61,7 @@ watch(selection, (selection) => {
   }
 })
 
-watch(selecting, (isSelecting) => {
+watch(grid.value.selection.selecting, (isSelecting) => {
   const inputElement = inputRef.value
   if (!isSelecting && inputElement) {
     const pos = inputElement.selectionEnd
@@ -87,7 +86,7 @@ function onFocus() {
   const inputElement = inputRef.value
   if (inputElement) {
     const length = inputElement.value.length
-    if (!selecting.value) {
+    if (!grid.value.selection.selecting.value) {
       inputElement.setSelectionRange(length, length)
     }
   }
