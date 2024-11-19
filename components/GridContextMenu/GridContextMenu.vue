@@ -10,7 +10,7 @@ const grid = useCurrentGrid()
     <ContextMenuContent>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.cutSelection"
+        @click="grid.clipboard.cutSelection()"
       >
         <Icon
           name="mdi-content-cut"
@@ -26,7 +26,7 @@ const grid = useCurrentGrid()
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.copySelection"
+        @click="grid.clipboard.copySelection()"
       >
         <Icon
           name="mdi-content-copy"
@@ -42,7 +42,7 @@ const grid = useCurrentGrid()
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.pasteSelection"
+        @click="grid.clipboard.pasteSelection()"
       >
         <Icon
           name="mdi-content-paste"

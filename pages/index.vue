@@ -124,6 +124,7 @@ function onMouseDown(event: MouseEvent) {
       selection.value.select(id)
     }
     else {
+      formulaBarRef.value.save()
       resetSelection()
       grid.value.movePositionTo(id)
     }
