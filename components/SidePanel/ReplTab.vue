@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { hs } from '~/lib/utils'
 
+import type { GridProject } from '~/lib/GridProject'
+
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+
+const commandCenter = gridProject.value.commandCenter
+
 const input = ref<string>('')
 const enteredText = ref<string>('')
-const repl = useREPL()
-const { exec } = useCommandCenter()
+const repl = gridProject.value.repl
 const { sidePanelHandleKeyDown } = useSidePanel()
 
 const emit = defineEmits<{
@@ -48,7 +57,7 @@ function onKeyDown(e: KeyboardEvent) {
 
   if (e.ctrlKey && e.key === 'l') {
     e.preventDefault()
-    exec('ClearRepl!')
+    commandCenter.exec('ClearRepl!')
     enteredText.value = input.value = ''
     repl.clearSuggestions()
     repl.resetHistoryIndex()

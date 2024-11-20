@@ -3,14 +3,16 @@ import type { CSSProperties } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
 import { Row, type RowRange } from '~/lib/Row'
 import { whs } from '~/lib/utils'
+import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{
+  gridProject: GridProject
   row: Row
 }>()
 
-const { row } = toRefs(props)
+const { row, gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
-const grid = useCurrentGrid()
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 function getAffectedRange(): RowRange {

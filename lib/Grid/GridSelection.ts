@@ -1,3 +1,4 @@
+import type { Direction } from '../utils'
 import { CellId, type Movement } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
 import { Col, type ColIdString, type ColRange } from '~/lib/Col'

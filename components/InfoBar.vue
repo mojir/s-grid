@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
-import { useCurrentGrid } from '~/composables/useCurrentGrid'
+import type { GridProject } from '~/lib/GridProject'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
 const errorMessage = computed(() => {
   const cell = grid.value.getCurrentCell()
@@ -23,10 +28,13 @@ const errorMessage = computed(() => {
   }
   return null
 })
+
+const hasContent = computed(() => !!errorMessage.value)
 </script>
 
 <template>
   <div
+    v-if="hasContent"
     class="px-4 flex h-auto items-center text-sm justify-between dark:bg-slate-900 bg-white box-border border-t dark:border-slate-700 border-gray-300"
   >
     <div

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import type { GridProject } from '~/lib/GridProject'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
 const el = ref<HTMLDivElement>()
 
@@ -18,6 +24,7 @@ defineExpose({
     <ColHeaderCell
       v-for="col of grid.cols.value"
       :key="col.id.value"
+      :grid-project="gridProject"
       :col="col"
     />
   </div>

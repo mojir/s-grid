@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { StyleJustify } from '~/lib/CellStyle'
+import type { GridProject } from '~/lib/GridProject'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
 
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 const justify = ref<StyleJustify>()
 
 watch(grid.value.selection.selectedRange, (newSelection) => {

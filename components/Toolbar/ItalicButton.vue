@@ -1,6 +1,12 @@
 <script setup lang="ts">
-const grid = useCurrentGrid()
+import type { GridProject } from '~/lib/GridProject'
 
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 const italic = ref<boolean>()
 
 watch(grid.value.selection.selectedRange, (newSelection) => {

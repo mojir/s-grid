@@ -1,5 +1,13 @@
 <script setup lang="ts">
-const { exec } = useCommandCenter()
+import type { GridProject } from '~/lib/GridProject'
+
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+
+const commandCenter = gridProject.value.commandCenter
 
 enum TypeEnum {
   RangeToNumber = 'RangeToNumber',
@@ -97,68 +105,68 @@ const rangeToNumberSource = source.filter(item => item.inputType === TypeEnum.Ra
 const range = 'B2-B10'
 
 function addSampleData() {
-  exec('ClearAllCells!')
+  commandCenter.exec('ClearAllCells!')
 
-  exec('Select!', 'A1-B1')
-  exec('SetBackgroundColor!', '#004400')
-  exec('SetTextColor!', '#ffffff')
-  exec('SetStyle!', 'bold', true)
-  exec('SetStyle!', 'fontSize', 18)
+  commandCenter.exec('Select!', 'A1-B1')
+  commandCenter.exec('SetBackgroundColor!', '#004400')
+  commandCenter.exec('SetTextColor!', '#ffffff')
+  commandCenter.exec('SetStyle!', 'bold', true)
+  commandCenter.exec('SetStyle!', 'fontSize', 18)
 
-  exec('SetInput!', 'Name', 'A1')
-  exec('SetInput!', 'Albert', 'A2')
-  exec('SetInput!', 'Bob', 'A3')
-  exec('SetInput!', 'Charlie', 'A4')
-  exec('SetInput!', 'David', 'A5')
-  exec('SetInput!', 'Eve', 'A6')
-  exec('SetInput!', 'Frank', 'A7')
-  exec('SetInput!', 'Grace', 'A8')
-  exec('SetInput!', 'Hank', 'A9')
-  exec('SetInput!', 'Ivy', 'A10')
+  commandCenter.exec('SetInput!', 'Name', 'A1')
+  commandCenter.exec('SetInput!', 'Albert', 'A2')
+  commandCenter.exec('SetInput!', 'Bob', 'A3')
+  commandCenter.exec('SetInput!', 'Charlie', 'A4')
+  commandCenter.exec('SetInput!', 'David', 'A5')
+  commandCenter.exec('SetInput!', 'Eve', 'A6')
+  commandCenter.exec('SetInput!', 'Frank', 'A7')
+  commandCenter.exec('SetInput!', 'Grace', 'A8')
+  commandCenter.exec('SetInput!', 'Hank', 'A9')
+  commandCenter.exec('SetInput!', 'Ivy', 'A10')
 
-  exec('SetInput!', 'Age', 'B1')
-  exec('SetStyle!', 'justify', 'right', 'B1')
-  exec('SetInput!', '25', 'B2')
-  exec('SetInput!', '30', 'B3')
-  exec('SetInput!', '?', 'B4')
-  exec('SetInput!', '40', 'B6')
-  exec('SetInput!', '?', 'B7')
-  exec('SetInput!', '50', 'B8')
-  exec('SetInput!', '22', 'B9')
-  exec('SetInput!', '33', 'B10')
+  commandCenter.exec('SetInput!', 'Age', 'B1')
+  commandCenter.exec('SetStyle!', 'justify', 'right', 'B1')
+  commandCenter.exec('SetInput!', '25', 'B2')
+  commandCenter.exec('SetInput!', '30', 'B3')
+  commandCenter.exec('SetInput!', '?', 'B4')
+  commandCenter.exec('SetInput!', '40', 'B6')
+  commandCenter.exec('SetInput!', '?', 'B7')
+  commandCenter.exec('SetInput!', '50', 'B8')
+  commandCenter.exec('SetInput!', '22', 'B9')
+  commandCenter.exec('SetInput!', '33', 'B10')
 
-  exec('Select!', range)
-  exec('SetStyle!', 'justify', 'right')
+  commandCenter.exec('Select!', range)
+  commandCenter.exec('SetStyle!', 'justify', 'right')
 
-  exec('MovePositionTo!', 'A15')
+  commandCenter.exec('MovePositionTo!', 'A15')
 
   rangeToNumberSource.forEach((item) => {
-    exec('SetInput!', item.name)
-    exec('MovePosition!', 'right')
-    exec('SetInput!', `=(${item.name} ${range})`)
-    exec('MovePosition!', 'left')
-    exec('MovePosition!', 'down')
+    commandCenter.exec('SetInput!', item.name)
+    commandCenter.exec('MovePosition!', 'right')
+    commandCenter.exec('SetInput!', `=(${item.name} ${range})`)
+    commandCenter.exec('MovePosition!', 'left')
+    commandCenter.exec('MovePosition!', 'down')
   })
 
   // exec('MovePositionTo!', 'D1')
-  exec('MovePosition!', 'down')
-  exec('SetInput!', 'Functions')
-  exec('SetColWidth!', 200)
-  exec('MovePosition!', 'right')
-  exec('SetColWidth!', 600)
-  exec('MovePosition!', 'left')
+  commandCenter.exec('MovePosition!', 'down')
+  commandCenter.exec('SetInput!', 'Functions')
+  commandCenter.exec('SetColWidth!', 200)
+  commandCenter.exec('MovePosition!', 'right')
+  commandCenter.exec('SetColWidth!', 600)
+  commandCenter.exec('MovePosition!', 'left')
   source.forEach((item) => {
-    exec('MovePosition!', 'down')
-    exec('CreateNamedFunction!', item.name, item.fn)
-    exec('MovePosition!', 'right')
-    exec('SetInput!', item.description)
-    exec('MovePosition!', 'left')
+    commandCenter.exec('MovePosition!', 'down')
+    commandCenter.exec('CreateNamedFunction!', item.name, item.fn)
+    commandCenter.exec('MovePosition!', 'right')
+    commandCenter.exec('SetInput!', item.description)
+    commandCenter.exec('MovePosition!', 'left')
   })
-  exec('MovePosition!', 'right')
-  exec('ExpandSelectionTo!', 'E2')
-  exec('SetStyle!', 'italic', true)
+  commandCenter.exec('MovePosition!', 'right')
+  commandCenter.exec('ExpandSelectionTo!', 'E2')
+  commandCenter.exec('SetStyle!', 'italic', true)
 
-  exec('MovePositionTo!', 'A1')
+  commandCenter.exec('MovePositionTo!', 'A1')
 }
 </script>
 
@@ -174,13 +182,13 @@ function addSampleData() {
     </button>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-      @click="exec('DeleteRows!', '3')"
+      @click="commandCenter.exec('DeleteRows!', '3')"
     >
       DeleteRow 3
     </button>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-      @click="exec('InsertRowsBefore!', '5', 2)"
+      @click="commandCenter.exec('InsertRowsBefore!', '5', 2)"
     >
       InsertRowBefore 5 2
     </button>

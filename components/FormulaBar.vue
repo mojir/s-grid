@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useCurrentGrid } from '~/composables/useCurrentGrid'
+import type { GridProject } from '~/lib/GridProject'
 import { hs } from '~/lib/utils'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
+
 const { sidePanelOpen } = useSidePanel()
 
 const forceBlur = ref(false)
@@ -175,7 +181,6 @@ defineExpose({
         @focus="onFocus"
         @keydown="onKeyDown"
       >
-      {{ grid.editor.editingCellId.value.id }}
     </div>
   </div>
 </template>

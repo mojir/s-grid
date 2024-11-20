@@ -7,14 +7,16 @@ import type { Color } from '../color'
 import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
 import { Row, type RowIdString, type RowRange } from '../Row'
 import { transformGridReference } from '../transformFormula'
-import type { CellOrRangeTarget, CellTarget } from '../utils'
+import type { CellOrRangeTarget, CellTarget, Direction } from '../utils'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
+import type { GridProject } from '../GridProject'
 import { GridClipboard } from './GridClipboard'
 import { GridSelection } from './GridSelection'
 import { GridAlias } from '~/lib/Grid/GridAlias'
 import { CellEditor } from '~/lib/Grid/CellEditor'
 
 export class Grid {
+  private gridProject: GridProject
   public readonly alias: GridAlias
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
@@ -24,8 +26,11 @@ export class Grid {
   public readonly position: Ref<CellId>
   public readonly gridRange: ComputedRef<CellRange>
   public readonly editor: CellEditor
+  public hoveredCellId = ref<string | null>(null)
+  private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
-  constructor() {
+  constructor(gridProject: GridProject) {
+    this.gridProject = gridProject
     this.rows = shallowRef(Array.from({ length: 50 }, (_, rowIndex) => Row.create(rowIndex, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: 26 }, (_, colIndex) => Col.create(colIndex, defaultColWidth)))
     this.editor = new CellEditor()
@@ -33,12 +38,35 @@ export class Grid {
     this.alias = new GridAlias()
     this.clipboard = new GridClipboard(this)
     this.position = ref(CellId.fromCoords(0, 0))
+
     this.cells = Array.from({ length: this.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: this.cols.value.length }, (_, colIndex) =>
-        new Cell(CellId.fromCoords(rowIndex, colIndex), { grid: this }),
+        new Cell(CellId.fromCoords(rowIndex, colIndex),
+          {
+            grid: this,
+            commandCenter: this.gridProject.commandCenter,
+          },
+        ),
       ),
     )
     this.gridRange = computed(() => CellRange.fromDimensions(0, 0, this.rows.value.length - 1, this.cols.value.length - 1))
+  }
+
+  public setScrollPosition(value: { scrollTop?: number, scrollLeft?: number }) {
+    if (value.scrollTop !== undefined) {
+      this.scrollPosition.scrollTop = value.scrollTop
+    }
+    if (value.scrollLeft !== undefined) {
+      this.scrollPosition.scrollLeft = value.scrollLeft
+    }
+  }
+
+  public getScrollPosition() {
+    return this.scrollPosition
+  }
+
+  public setScrollLeft(scrollLeft: number) {
+    this.scrollPosition.scrollLeft = scrollLeft
   }
 
   public setInput(input: string, target?: CellOrRangeTarget) {
@@ -509,7 +537,10 @@ export class Grid {
       this.cells.splice(rowIndex + index, 0, Array.from({ length: this.cols.value.length }, (_, colIndex) =>
         new Cell(
           CellId.fromCoords(rowIndex + index, colIndex),
-          { grid: this },
+          {
+            grid: this,
+            commandCenter: this.gridProject.commandCenter,
+          },
         ),
       ))
       return row
@@ -592,7 +623,10 @@ export class Grid {
       cellRow.splice(colIndex, 0, ...Array.from({ length: count }, (_, index) =>
         new Cell(
           CellId.fromCoords(rowIndex, colIndex + index),
-          { grid: this },
+          {
+            grid: this,
+            commandCenter: this.gridProject.commandCenter,
+          },
         ),
       ))
     })

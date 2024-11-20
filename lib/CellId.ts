@@ -1,7 +1,7 @@
 import type { CellRange } from './CellRange'
 import { Col, type ColIdString } from './Col'
 import { Row, type RowIdString } from './Row'
-import type { Direction } from '~/composables/useCurrentGrid'
+import type { Direction } from './utils'
 
 export type Movement = {
   rows: number

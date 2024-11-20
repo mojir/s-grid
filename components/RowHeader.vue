@@ -2,8 +2,14 @@
 import { ref } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
 import { ws } from '~/lib/utils'
+import type { GridProject } from '~/lib/GridProject'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
 const el = ref<HTMLDivElement>()
 
@@ -21,7 +27,7 @@ defineExpose({
     <RowHeaderCell
       v-for="row of grid.rows.value"
       :key="row.id.value"
-
+      :grid-project="gridProject"
       :row="row"
     />
   </div>

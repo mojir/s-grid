@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import type { GridProject } from '~/lib/GridProject'
 import { defaultFormatter } from '~/lib/utils'
 
-const open = ref(false)
+const props = defineProps<{
+  gridProject: GridProject
+}>()
 
-const grid = useCurrentGrid()
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
+const open = ref(false)
 
 const format = ref<string | null>(defaultFormatter)
 const floatFormatter = '#(format ".4~f" %)'

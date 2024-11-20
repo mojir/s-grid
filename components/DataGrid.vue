@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import GridCell from './GridCell.vue'
-import { useCurrentGrid } from '~/composables/useCurrentGrid'
 import { hs } from '~/lib/utils'
 import type { CellId } from '~/lib/CellId'
+import type { GridProject } from '~/lib/GridProject'
+
+const props = defineProps<{
+  gridProject: GridProject
+}>()
 
 const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const grid = useCurrentGrid()
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
 watch(grid.value.position, (position) => {
   const cellElement = document.getElementById(position.id)
@@ -31,7 +36,7 @@ defineExpose({
     ref="el"
     class="pl-[1px] pt-[1px] overflow-auto"
   >
-    <GridContextMenu>
+    <GridContextMenu :grid-project="gridProject">
       <div
         v-for="row of grid.rows.value"
         :key="row.id.value"
@@ -46,6 +51,7 @@ defineExpose({
           <GridCell
             :row="row"
             :col="col"
+            :grid-project="gridProject"
             @cell-dblclick="emit('cell-dblclick', $event)"
           />
         </div>

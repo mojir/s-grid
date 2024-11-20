@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import type { GridProject } from '~/lib/GridProject'
+
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+
 const { sidePanelOpen } = useSidePanel()
 </script>
 
@@ -11,16 +19,37 @@ const { sidePanelOpen } = useSidePanel()
     />
 
     <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
-      <ToolbarPaintButton class="mr-2" />
-      <ToolbarFontSizeSelector class="mr-2" />
-      <ToolbarBoldButton />
-      <ToolbarItalicButton />
-      <ToolbarTextDecorationSwitch class="mr-3" />
-      <ToolbarJustifySwitch class="mr-3" />
-      <ToolbarAlignSwitch class="mr-3" />
-      <ToolbarTextColorPicker />
-      <ToolbarBackgroundColorPicker class="mr-3" />
-      <ToolbarNumberFormatterPicker class="mr-1" />
+      <ToolbarPaintButton
+        :grid-project="gridProject"
+        class="mr-2"
+      />
+      <ToolbarFontSizeSelector
+        :grid-project="gridProject"
+        class="mr-2"
+      />
+      <ToolbarBoldButton :grid-project="gridProject" />
+      <ToolbarItalicButton :grid-project="gridProject" />
+      <ToolbarTextDecorationSwitch
+        :grid-project="gridProject"
+        class="mr-3"
+      />
+      <ToolbarJustifySwitch
+        :grid-project="gridProject"
+        class="mr-3"
+      />
+      <ToolbarAlignSwitch
+        :grid-project="gridProject"
+        class="mr-3"
+      />
+      <ToolbarTextColorPicker :grid-project="gridProject" />
+      <ToolbarBackgroundColorPicker
+        :grid-project="gridProject"
+        class="mr-3"
+      />
+      <ToolbarNumberFormatterPicker
+        :grid-project="gridProject"
+        class="mr-1"
+      />
     </div>
 
     <div

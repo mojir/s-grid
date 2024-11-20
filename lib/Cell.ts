@@ -5,6 +5,7 @@ import { Color, type ColorJson } from './color'
 import { CellRange } from './CellRange'
 import { defaultFormatter } from './utils'
 import type { Grid } from './Grid'
+import type { CommandCenter } from './CommandCenter'
 import type { LitsComposable } from '~/composables/useLits'
 
 export type CellJson = {
@@ -18,6 +19,7 @@ export type CellJson = {
 }
 export class Cell {
   private grid: Grid
+  private commandCenter: CommandCenter
   private lits: LitsComposable
 
   public readonly input = ref('')
@@ -30,10 +32,13 @@ export class Cell {
     public cellId: CellId,
     {
       grid,
+      commandCenter,
     }: {
       grid: Grid
+      commandCenter: CommandCenter
     }) {
     this.grid = grid
+    this.commandCenter = commandCenter
     this.lits = useLits()
 
     watch(this.display, (newValue, oldValue) => {
@@ -82,7 +87,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       const program = input.slice(1)
-      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions: useCommandCenter().jsFunctions })
+      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions: this.commandCenter.jsFunctions })
       return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
     }
 
@@ -131,7 +136,7 @@ export class Cell {
       const lits = this.lits.value
       try {
         const values = this.grid.getValuesFromUndefinedIdentifiers(this.references.value)
-        const result = lits.run(this.formula.value, { values, jsFunctions: useCommandCenter().jsFunctions })
+        const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
         return result
       }
       catch (error) {
@@ -186,7 +191,7 @@ export class Cell {
     const lits = this.lits.value
 
     const identifiers = Array.from(
-      lits.analyze(formatter, { jsFunctions: useCommandCenter().jsFunctions }).unresolvedIdentifiers,
+      lits.analyze(formatter, { jsFunctions: this.commandCenter.jsFunctions }).unresolvedIdentifiers,
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getTargetsFromUnresolvedIdentifiers(identifiers)
@@ -197,13 +202,13 @@ export class Cell {
 
     try {
       const values = this.grid.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
-      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: useCommandCenter().jsFunctions })
+      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {
         return this.output.value
       }
 
-      const result = lits.apply(fn, [this.output.value], { values, jsFunctions: useCommandCenter().jsFunctions })
+      const result = lits.apply(fn, [this.output.value], { values, jsFunctions: this.commandCenter.jsFunctions })
       return result
     }
     catch (error) {

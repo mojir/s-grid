@@ -4,13 +4,15 @@ import { CellId } from '~/lib/CellId'
 import { CellRange } from '~/lib/CellRange'
 import { Col, type ColIdString } from '~/lib/Col'
 import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
+import { GridProject } from '~/lib/GridProject'
 import { Row, type RowIdString } from '~/lib/Row'
 import { whs, hs } from '~/lib/utils'
 
-const grid = useCurrentGrid()
+const gridProject = new GridProject()
+const grid = gridProject.currentGrid
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
-const { hoveredCellId } = useHover()
+const hoveredCellId = grid.value.hoveredCellId
 
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -448,7 +450,13 @@ function onKeyDown(e: KeyboardEvent) {
   }
 }
 
-const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
+const { syncScroll, setScrollPosition } = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef, (value) => {
+  grid.value.setScrollPosition(value)
+})
+
+watch(grid, () => {
+  setScrollPosition(grid.value.getScrollPosition())
+}, { immediate: true })
 </script>
 
 <template>
@@ -464,9 +472,12 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
       class="flex flex-col overflow-hidden"
     >
       <div class="m-4">
-        <Toolbar />
+        <Toolbar :grid-project="gridProject" />
       </div>
-      <FormulaBar ref="formulaBarRef" />
+      <FormulaBar
+        ref="formulaBarRef"
+        :grid-project="gridProject"
+      />
       <div
         ref="gridWrapper"
         class="flex flex-grow flex-col overflow-hidden"
@@ -482,16 +493,19 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           />
           <ColHeader
             ref="colHeaderRef"
+            :grid-project="gridProject"
             @scroll="syncScroll"
           />
         </div>
         <div class="flex overflow-hidden">
           <RowHeader
             ref="rowHeaderRef"
+            :grid-project="gridProject"
             @scroll="syncScroll"
           />
           <DataGrid
             ref="dataGridRef"
+            :grid-project="gridProject"
             @scroll="syncScroll"
             @cell-dblclick="onCellDblclick"
           />
@@ -511,9 +525,10 @@ const syncScroll = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef)
           />
         </div>
       </div>
-      <FooterBar />
+      <InfoBar :grid-project="gridProject" />
+      <FooterBar :grid-project="gridProject" />
     </div>
-    <SidePanel />
+    <SidePanel :grid-project="gridProject" />
   </div>
 </template>
 

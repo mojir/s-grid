@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const colorMode = useColorMode()
-setColorMode(colorMode as unknown as Ref<string>)
+// const colorMode = useColorMode()
+// setColorMode(colorMode as unknown as Ref<string>)
 </script>
 
 <template>

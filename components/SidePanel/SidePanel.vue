@@ -1,6 +1,14 @@
 <script setup lang="ts">
+import type { GridProject } from '~/lib/GridProject'
+
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+
 const { sidePanelOpen, currentTab } = useSidePanel()
-const { history } = useREPL()
+const repl = gridProject.value.repl
 const tabsRef = ref()
 
 watch(sidePanelOpen, () => {
@@ -9,7 +17,7 @@ watch(sidePanelOpen, () => {
   }
 })
 
-watch(history, () => {
+watch(repl.history, () => {
   if (sidePanelOpen.value && currentTab.value === 'repl') {
     scrollToBottom()
   }
@@ -41,10 +49,14 @@ function scrollToBottom() {
     <SidePanelTabs ref="tabsRef">
       <SidePanelReplTab
         v-if="currentTab === 'repl'"
+        :grid-project="gridProject"
         @scroll-to-bottom="scrollToBottom"
       />
       <SidePanelSettingsTab v-if="currentTab === 'settings'" />
-      <SidePanelDebugTab v-if="currentTab === 'debug'" />
+      <SidePanelDebugTab
+        v-if="currentTab === 'debug'"
+        :grid-project="gridProject"
+      />
     </SidePanelTabs>
   </div>
 </template>

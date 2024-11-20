@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, toRefs, type CSSProperties } from 'vue'
-import { useCurrentGrid } from '~/composables/useCurrentGrid'
 import { CellId } from '~/lib/CellId'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
 import { CellRange } from '~/lib/CellRange'
 import { getLineHeight } from '~/lib/constants'
+import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{
+  gridProject: GridProject
   row: Row
   col: Col
 }>()
@@ -17,14 +18,13 @@ const emit = defineEmits<{
   (e: 'cell-dblclick', cellId: CellId): void
 }>()
 
-const grid = useCurrentGrid()
+const { gridProject, row, col } = toRefs(props)
+const grid = gridProject.value.currentGrid
 const { currentTab, sidePanelOpen } = useSidePanel()
-const { run } = useREPL()
+const repl = gridProject.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
-const { hoveredCellId } = useHover()
-
-const { row, col } = toRefs(props)
+const hoveredCellId = grid.value.hoveredCellId
 
 const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index.value))
 const cell = computed(() => grid.value.getCell(cellId.value))
@@ -189,7 +189,7 @@ function inspectCell(e: MouseEvent) {
     e.preventDefault()
     sidePanelOpen.value = true
     currentTab.value = 'repl'
-    run(`(GetCell "${cellId.value.id}") ;; Inspecting Cell`)
+    repl.run(`(GetCell "${cellId.value.id}") ;; Inspecting Cell`)
   }
 }
 </script>

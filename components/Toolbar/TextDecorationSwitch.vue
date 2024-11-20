@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type { StyleTextDecoration } from '~/lib/CellStyle'
+import type { GridProject } from '~/lib/GridProject'
 
-const grid = useCurrentGrid()
+const props = defineProps<{
+  gridProject: GridProject
+}>()
+
+const { gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 
 const textDecoration = ref<StyleTextDecoration>()
 

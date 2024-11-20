@@ -3,14 +3,15 @@ import type { CSSProperties } from 'vue'
 import { whs } from '~/lib/utils'
 import { Col, type ColRange } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
+import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{
+  gridProject: GridProject
   col: Col
 }>()
 
-const { col } = toRefs(props)
-
-const grid = useCurrentGrid()
+const { col, gridProject } = toRefs(props)
+const grid = gridProject.value.currentGrid
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 function getAffectedRange(): ColRange {

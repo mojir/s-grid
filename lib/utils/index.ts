@@ -7,3 +7,5 @@ export { defaultFormatter } from './defaultFormatter'
 
 export type CellOrRangeTarget = string | CellId | CellRange
 export type CellTarget = string | CellId
+
+export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
