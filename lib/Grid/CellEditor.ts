@@ -1,16 +1,16 @@
-import { CellId } from '~/lib/CellId'
+import { CellLocator } from '../locator/CellLocator'
 
 export class CellEditor {
   public readonly editorText = ref<string>('')
-  public readonly editingCellId = ref<CellId>(CellId.fromId('A1'))
+  public readonly editingCellId = ref<CellLocator>(CellLocator.fromString('A1'))
   public readonly editorFocused = ref(false)
 
   public setEditorFocused(value: boolean) {
     this.editorFocused.value = value
   }
 
-  public setEditingCellId(cellId: CellId) {
-    this.editingCellId.value = cellId
+  public setEditingCellId(cellLocator: CellLocator) {
+    this.editingCellId.value = cellLocator
   }
 
   public isEditingLitsCode = computed<boolean>(() => {

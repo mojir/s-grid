@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { CellId } from '~/lib/CellId'
-import { CellRange } from '~/lib/CellRange'
-import { Col, type ColIdString } from '~/lib/Col'
+import { RangeLocator } from '~/lib/locator/RangeLocator'
 import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { GridProject } from '~/lib/GridProject'
-import { Row, type RowIdString } from '~/lib/Row'
 import { whs, hs } from '~/lib/utils'
+import { RowLocator } from '~/lib/locator/RowLocator'
+import { DocumetIdType as DocumentIdType } from '~/lib/locator/utils'
+import { CellLocator, isCellLocatorString } from '~/lib/locator/CellLocator'
+import { ColLocator } from '~/lib/locator/ColLocator'
 
 const gridProject = new GridProject()
 const grid = gridProject.currentGrid
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
-const hoveredCellId = grid.value.hoveredCellId
+const hoveredCell = grid.value.hoveredCell
 
 const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
@@ -47,25 +48,25 @@ onUnmounted(() => {
 })
 
 function resetSelection() {
-  selection.value.updateSelection(CellRange.fromSingleCellId(grid.value.position.value))
+  selection.value.updateSelection(RangeLocator.fromCellLocator(grid.value.position.value))
 }
 
 const dbClickTime: number = 300
 
-const mouseDownStart = ref('')
+const mouseDownStart = ref<CellLocator | RowLocator | ColLocator | null>(null)
 const rowResizing = shallowRef<{
-  rowId: RowIdString
+  rowLocator: RowLocator
   startY: number
   currentRowHeight: number
   y: Ref<number>
 } | null>(null)
 let rowResizeDblClicked: {
-  rowId: RowIdString
+  rowLocator: RowLocator
   time: number
   completed: boolean
 } | null = null
 const colResizing = shallowRef<{
-  colId: ColIdString
+  colLocator: ColLocator
   startX: number
   currentColWidth: number
   x: Ref<number>
@@ -73,20 +74,20 @@ const colResizing = shallowRef<{
   height: number
 } | null>(null)
 let colResizeDblClicked: {
-  colId: ColIdString
+  colLocator: ColLocator
   time: number
   completed: boolean
 } | null = null
 
 function onBlur() {
-  hoveredCellId.value = null
+  hoveredCell.value = null
 }
 
 // Handle cases when user switches tabs
 const handleVisibilityChange = () => {
   if (document.hidden) {
-    hoveredCellId.value = null
-    mouseDownStart.value = ''
+    hoveredCell.value = null
+    mouseDownStart.value = null
     colResizing.value = null
     rowResizing.value = null
   }
@@ -111,24 +112,27 @@ function onMouseDown(event: MouseEvent) {
   }
 
   const target = event.target as HTMLElement | undefined
-  const id = target?.id
-  if (!id) {
+  const targetId = target?.id
+  if (!targetId) {
     return
   }
-  if (CellId.isCellIdString(id)) {
-    if (isRightClick && selection.value.selectedRange.value.contains(CellId.fromId(id))) {
+
+  const [type, , locatorString] = targetId.split(':')
+  if (type === DocumentIdType.Cell) {
+    const cellLocator = CellLocator.fromString(locatorString)
+    if (isRightClick && selection.value.selectedRange.value.containsCell(cellLocator)) {
       return
     }
 
     selection.value.selecting.value = true
-    mouseDownStart.value = id
+    mouseDownStart.value = cellLocator
     if (grid.value.editor.isEditingLitsCode.value) {
-      selection.value.select(id)
+      selection.value.select(cellLocator)
     }
     else {
       formulaBarRef.value.save()
       resetSelection()
-      grid.value.movePositionTo(id)
+      grid.value.movePositionTo(cellLocator)
     }
   }
 
@@ -137,66 +141,76 @@ function onMouseDown(event: MouseEvent) {
     return
   }
 
-  if (Col.isColIdString(id)) {
+  if (type === DocumentIdType.Col) {
     selection.value.selecting.value = true
-    mouseDownStart.value = id
-    const col = grid.value.getCol(id)
+    const colLocator = ColLocator.fromString(locatorString)
+    mouseDownStart.value = colLocator
+    const col = grid.value.getCol(colLocator)
     if (col) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(`${col.id.value}1`)
+        grid.value.movePositionTo(`${col.label.value}1`)
       }
       selection.value.selectColRange(col, col)
     }
   }
-  if (Col.isResizeColId(id)) {
-    const colId = id.split(':')[1] as ColIdString
-    const col = grid.value.getCol(colId)
+  if (type === DocumentIdType.ResizeCol) {
+    const col = grid.value.getCol(locatorString)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
+    const colLocator = ColLocator.fromString(locatorString)
     colResizing.value = {
-      colId,
+      colLocator,
       startX: x,
       currentColWidth: col.width.value,
       x: ref(x),
       top: rect.top,
       height: rect.height,
     }
-    if (colResizeDblClicked?.colId === colId && Date.now() - colResizeDblClicked.time < dbClickTime) {
+    if (
+      colResizeDblClicked
+      && colLocator.isSameCol(colResizeDblClicked.colLocator)
+      && Date.now() - colResizeDblClicked.time < dbClickTime
+    ) {
       colResizeDblClicked.completed = true
     }
     else {
-      colResizeDblClicked = { colId, time: Date.now(), completed: false }
+      colResizeDblClicked = { colLocator, time: Date.now(), completed: false }
     }
   }
 
-  if (Row.isRowIdString(id)) {
+  if (type === DocumentIdType.Row) {
     selection.value.selecting.value = true
-    mouseDownStart.value = id
-    const row = grid.value.getRow(id)
+    const rowLocator = RowLocator.fromString(locatorString)
+    mouseDownStart.value = rowLocator
+    const row = grid.value.getRow(rowLocator)
     if (row) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(`A${row.id.value}`)
+        grid.value.movePositionTo(`A${row.label.value}`)
       }
       selection.value.selectRowRange(row, row)
     }
   }
-  if (Row.isResizeRowId(id)) {
-    const rowId = id.split(':')[1] as RowIdString
-    const row = grid.value.getRow(rowId)
+  if (type === DocumentIdType.ResizeRow) {
+    const row = grid.value.getRow(locatorString)
     const y = event.clientY
+    const rowLocator = RowLocator.fromString(locatorString)
     rowResizing.value = {
-      rowId,
+      rowLocator,
       startY: y,
       currentRowHeight: row.height.value,
       y: ref(y),
     }
-    if (rowResizeDblClicked?.rowId === rowId && Date.now() - rowResizeDblClicked.time < dbClickTime) {
+    if (
+      rowResizeDblClicked
+      && rowLocator.isSameRow(rowResizeDblClicked.rowLocator)
+      && Date.now() - rowResizeDblClicked.time < dbClickTime
+    ) {
       rowResizeDblClicked.completed = true
     }
     else {
-      rowResizeDblClicked = { rowId, time: Date.now(), completed: false }
+      rowResizeDblClicked = { rowLocator, time: Date.now(), completed: false }
     }
   }
 }
@@ -222,55 +236,55 @@ function onMouseUp(event: MouseEvent) {
   if (event.button !== 0) {
     return
   }
-  mouseDownStart.value = ''
+  mouseDownStart.value = null
 
   const target = event.target as HTMLElement | undefined
   const id = target?.id
 
-  if (selection.value.selecting.value || (id && CellId.isCellIdString(id))) {
+  if (selection.value.selecting.value || (id && isCellLocatorString(id))) {
     grid.value.clipboard.pasteStyleSelection()
   }
   selection.value.selecting.value = false
 
   if (rowResizeDblClicked?.completed) {
-    const { rowId } = rowResizeDblClicked
-    const rows = new Set(grid.value.getSelectedRowsWithRowId(rowId, selection.value.selectedRange.value).map(row => row.id.value))
-    rows.add(rowId)
+    const { rowLocator } = rowResizeDblClicked
+    const rows = new Set(grid.value.getSelectedRowsWithRowId(rowLocator, selection.value.selectedRange.value).map(row => row.index.value))
+    rows.add(rowLocator.row)
     grid.value.autoSetRowHeight(Array.from(rows))
     rowResizeDblClicked = null
     rowResizing.value = null
   }
   else if (rowResizing.value) {
-    const { rowId, startY, y } = rowResizing.value
+    const { rowLocator, startY, y } = rowResizing.value
 
-    const row = grid.value.getRow(rowId)
+    const row = grid.value.getRow(rowLocator)
     const height = row.height.value + y.value - startY
     row.height.value = height
 
-    grid.value.getSelectedRowsWithRowId(rowId, selection.value.selectedRange.value)
-      .filter(row => row.id.value !== rowId)
+    grid.value.getSelectedRowsWithRowId(rowLocator, selection.value.selectedRange.value)
+      .filter(row => row.index.value !== rowLocator.row)
       .forEach((row) => {
         row.height.value = height
       })
     rowResizing.value = null
   }
   else if (colResizeDblClicked?.completed) {
-    const { colId } = colResizeDblClicked
-    const cols = new Set(grid.value.getSelectedColsWithColId(colId, selection.value.selectedRange.value).map(col => col.id.value))
-    cols.add(colId)
+    const { colLocator } = colResizeDblClicked
+    const cols = new Set(grid.value.getSelectedColsWithColId(colLocator, selection.value.selectedRange.value).map(col => col.index.value))
+    cols.add(colLocator.col)
     grid.value.autoSetColWidth(Array.from(cols))
     colResizeDblClicked = null
     colResizing.value = null
   }
 
   else if (colResizing.value) {
-    const { colId, startX, x } = colResizing.value
-    const col = grid.value.getCol(colId)
+    const { colLocator, startX, x } = colResizing.value
+    const col = grid.value.getCol(colLocator)
     const width = col.width.value + x.value - startX
     col.width.value = width
 
-    grid.value.getSelectedColsWithColId(colId, selection.value.selectedRange.value)
-      .filter(col => col.id.value !== colId)
+    grid.value.getSelectedColsWithColId(colLocator, selection.value.selectedRange.value)
+      .filter(col => col.index.value !== colLocator.col)
       .forEach((col) => {
         col.width.value = width
       })
@@ -283,27 +297,32 @@ function onMouseEnter(event: MouseEvent) {
     return
   }
   const target = event.target as HTMLElement | undefined
-  if (!target) {
+
+  const targetId = target?.id
+  if (!targetId) {
     return
   }
-  const cellId = CellId.isCellIdString(target.id) ? target.id : null
-  if (cellId) {
-    hoveredCellId.value = cellId
+
+  const [type, , locatorString] = targetId.split(':')
+
+  const cellLocator = type === DocumentIdType.Cell ? CellLocator.fromString(locatorString) : null
+  if (cellLocator) {
+    hoveredCell.value = cellLocator
   }
   if (mouseDownStart.value) {
-    if (CellId.isCellIdString(mouseDownStart.value) && cellId) {
-      selection.value.select(`${mouseDownStart.value}-${cellId}`)
+    if (mouseDownStart.value instanceof CellLocator && cellLocator) {
+      selection.value.select(RangeLocator.fromCellLocators(mouseDownStart.value, cellLocator))
     }
-    else if (Col.isColIdString(mouseDownStart.value) && Col.isColIdString(target.id)) {
+    else if (mouseDownStart.value instanceof ColLocator && type === DocumentIdType.Col) {
       const fromCol = grid.value.getCol(mouseDownStart.value)
-      const toCol = grid.value.getCol(target.id)
+      const toCol = grid.value.getCol(locatorString)
       if (fromCol && toCol) {
         selection.value.selectColRange(fromCol, toCol)
       }
     }
-    else if (Row.isRowIdString(mouseDownStart.value) && Row.isRowIdString(target.id)) {
+    else if (mouseDownStart.value instanceof RowLocator && type === DocumentIdType.Row) {
       const fromRow = grid.value.getRow(mouseDownStart.value)
-      const toRow = grid.value.getRow(target.id)
+      const toRow = grid.value.getRow(locatorString)
       if (fromRow && toRow) {
         selection.value.selectRowRange(fromRow, toRow)
       }
@@ -312,7 +331,7 @@ function onMouseEnter(event: MouseEvent) {
 }
 
 function onMouseLeave() {
-  hoveredCellId.value = null
+  hoveredCell.value = null
 }
 
 function onCellDblclick() {

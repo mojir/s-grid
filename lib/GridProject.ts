@@ -22,13 +22,13 @@ export class GridProject {
     this.grids.value = [
       ...this.grids.value, {
         name: 'Grid1',
-        grid: new Grid(this),
+        grid: new Grid(this, 'Grid1'),
       }, {
         name: 'Grid2',
-        grid: new Grid(this),
+        grid: new Grid(this, 'Grid2'),
       }, {
         name: 'Grid3',
-        grid: new Grid(this),
+        grid: new Grid(this, 'Grid3'),
       }]
 
     this.currentGrid = computed(() => {
@@ -64,7 +64,7 @@ export class GridProject {
     this.grids.value = [
       ...this.grids.value, {
         name: gridName,
-        grid: new Grid(this),
+        grid: new Grid(this, gridName),
       }]
   }
 }

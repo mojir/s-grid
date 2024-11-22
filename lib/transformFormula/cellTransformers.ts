@@ -1,72 +1,90 @@
-import { CellId, getInfoFromCellIdString, type CellIdStringInfo, type Movement } from '../CellId'
-import { Row, type RowRange } from '../Row'
-import { Col, type ColRange } from '../Col'
-import type { CellRange } from '../CellRange'
+import type { RangeLocator } from '../locator/RangeLocator'
+import { CellLocator } from '../locator/CellLocator'
+import type { Movement } from '../locator/utils'
+import type { RowRange } from '../locator/RowLocator'
+import type { ColRange } from '../locator/ColLocator'
 import type { FormulaTransformation } from '.'
 
-export function transformCell(cellIdString: string, transformation: FormulaTransformation): string {
-  const cellInfo = getInfoFromCellIdString(cellIdString)
+export function transformCell(cellLocatorString: string, transformation: FormulaTransformation): string {
+  const cellLocator = CellLocator.fromString(cellLocatorString)
   switch (transformation.type) {
     case 'move':
-      return transformMoveOnCell(cellInfo, transformation.movement, transformation.range)
+      return transformMoveOnCell(cellLocator, transformation.movement, transformation.range)
     case 'rowDelete':
-      return transformRowDeleteOnCell(cellInfo, transformation.rowRange)
+      return transformRowDeleteOnCell(cellLocator, transformation.rowRange)
     case 'colDelete':
-      return transformColDeleteOnCell(cellInfo, transformation.colRange)
+      return transformColDeleteOnCell(cellLocator, transformation.colRange)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnCell(cellInfo, transformation.rowRange)
+      return transformRowInsertBeforeOnCell(cellLocator, transformation.rowRange)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnCell(cellInfo, transformation.colRange)
+      return transformColInsertBeforeOnCell(cellLocator, transformation.colRange)
   }
 }
 
-export function transformMoveOnCell(cellIdInfo: CellIdStringInfo, { cols, rows }: Movement, range?: CellRange): string {
-  if (range && !range.contains(CellId.fromId(cellIdInfo.id))) {
-    return cellIdInfo.id
+export function transformMoveOnCell(cellLocator: CellLocator, { cols, rows }: Movement, maskRange?: RangeLocator): string {
+  if (cellLocator.externalGrid) {
+    return cellLocator.toString()
   }
-  const newColId = cellIdInfo.absoluteCol ? cellIdInfo.colPart : Col.getColIdFromIndex(cellIdInfo.colIndex + cols)
-  if (!cellIdInfo.absoluteCol && !Col.isColIdString(newColId)) {
-    throw new Error(`Invalid column id: ${newColId}`)
+
+  if (maskRange && !maskRange.containsCell(cellLocator)) {
+    return cellLocator.toString()
   }
-  const newRowId = cellIdInfo.absoluteRow ? cellIdInfo.rowPart : Row.getRowIdFromIndex(cellIdInfo.rowIndex + rows)
-  if (!cellIdInfo.absoluteRow && !Row.isRowIdString(newRowId)) {
-    throw new Error(`Invalid row id: ${newRowId}`)
-  }
-  return `${newColId}${newRowId}`
+
+  const rowLocator = cellLocator.absRow
+    ? cellLocator.getRowLocator()
+    : cellLocator.move({ rows }).getRowLocator()
+
+  const colLocator = cellLocator.absCol
+    ? cellLocator.getColLocator()
+    : cellLocator.move({ cols }).getColLocator()
+
+  return CellLocator.fromRowCol({ rowLocator, colLocator }).toString()
 }
 
-export function transformRowDeleteOnCell(cellIdInfo: CellIdStringInfo, { rowIndex, count }: RowRange): string {
-  if (cellIdInfo.rowIndex >= rowIndex && cellIdInfo.rowIndex < rowIndex + count) {
-    throw new Error(`Cell ${cellIdInfo.id} was deleted`)
+export function transformRowDeleteOnCell(cellLocator: CellLocator, { row, count }: RowRange): string {
+  if (cellLocator.externalGrid) {
+    return cellLocator.toString()
+  }
+  if (cellLocator.row >= row && cellLocator.row < row + count) {
+    throw new Error(`Cell ${cellLocator.toString()} was deleted`)
   }
 
-  if (cellIdInfo.rowIndex >= rowIndex + count) {
-    return transformMoveOnCell(cellIdInfo, { cols: 0, rows: -count })
+  if (cellLocator.row >= row + count) {
+    return transformMoveOnCell(cellLocator, { cols: 0, rows: -count })
   }
-  return cellIdInfo.id
+  return cellLocator.toString()
 }
 
-export function transformColDeleteOnCell(cellIdInfo: CellIdStringInfo, { colIndex, count }: ColRange): string {
-  if (cellIdInfo.colIndex >= colIndex && cellIdInfo.colIndex < colIndex + count) {
-    throw new Error(`Cell ${cellIdInfo.id} was deleted`)
+export function transformColDeleteOnCell(cellLocator: CellLocator, { col, count }: ColRange): string {
+  if (cellLocator.externalGrid) {
+    return cellLocator.toString()
+  }
+  if (cellLocator.col >= col && cellLocator.col < col + count) {
+    throw new Error(`Cell ${cellLocator.toString()} was deleted`)
   }
 
-  if (cellIdInfo.colIndex >= colIndex + count) {
-    return transformMoveOnCell(cellIdInfo, { cols: -count, rows: 0 })
+  if (cellLocator.col >= col + count) {
+    return transformMoveOnCell(cellLocator, { cols: -count, rows: 0 })
   }
-  return cellIdInfo.id
+  return cellLocator.toString()
 }
 
-export function transformRowInsertBeforeOnCell(cellIdInfo: CellIdStringInfo, { rowIndex, count }: RowRange): string {
-  if (cellIdInfo.rowIndex >= rowIndex) {
-    return transformMoveOnCell(cellIdInfo, { cols: 0, rows: count })
+export function transformRowInsertBeforeOnCell(cellLocator: CellLocator, { row, count }: RowRange): string {
+  if (cellLocator.externalGrid) {
+    return cellLocator.toString()
   }
-  return cellIdInfo.id
+  if (cellLocator.row >= row) {
+    return transformMoveOnCell(cellLocator, { cols: 0, rows: count })
+  }
+  return cellLocator.toString()
 }
 
-export function transformColInsertBeforeOnCell(cellIdInfo: CellIdStringInfo, { colIndex, count }: ColRange): string {
-  if (cellIdInfo.colIndex >= colIndex) {
-    return transformMoveOnCell(cellIdInfo, { cols: count, rows: 0 })
+export function transformColInsertBeforeOnCell(cellLocator: CellLocator, { col, count }: ColRange): string {
+  if (cellLocator.externalGrid) {
+    return cellLocator.toString()
   }
-  return cellIdInfo.id
+  if (cellLocator.col >= col) {
+    return transformMoveOnCell(cellLocator, { cols: count, rows: 0 })
+  }
+  return cellLocator.toString()
 }

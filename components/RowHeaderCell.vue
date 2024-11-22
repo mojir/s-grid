@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
-import { Row, type RowRange } from '~/lib/Row'
+import type { Row } from '~/lib/Row'
 import { whs } from '~/lib/utils'
 import type { GridProject } from '~/lib/GridProject'
+import { getRowId, RowLocator, type RowRange } from '~/lib/locator/RowLocator'
+import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locator/utils'
 
 const props = defineProps<{
   gridProject: GridProject
@@ -15,18 +17,14 @@ const grid = gridProject.value.currentGrid
 
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-function getAffectedRange(): RowRange {
-  const selectedRange = grid.value.selection.selectedRows.value
-  if (!selectedRange || !grid.value.selection.isRowSelected(row.value.id.value)) {
-    return { rowIndex: row.value.index.value, count: 1 }
-  }
-  return selectedRange
-}
+const rowLocator = computed(() => RowLocator.fromNumber(row.value.index.value))
+const rowId = computed(() => getDocumentRowId(rowLocator.value, grid.value.name.value))
+const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value, grid.value.name.value))
 
 const deleteRowLabel = computed(() => {
-  const { rowIndex, count } = getAffectedRange()
-  const start = Row.getRowIdFromIndex(rowIndex)
-  const end = Row.getRowIdFromIndex(rowIndex + count - 1)
+  const { row, count } = getAffectedRange()
+  const start = getRowId(row)
+  const end = getRowId(row + count - 1)
   return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
 })
 
@@ -48,6 +46,14 @@ const insertAfterRowLabel = computed(() => {
   return `Insert ${count} rows after`
 })
 
+function getAffectedRange(): RowRange {
+  const selectedRange = grid.value.selection.selectedRows.value
+  if (!selectedRange || !grid.value.selection.isRowSelected(row.value.label.value)) {
+    return { row: row.value.index.value, count: 1 }
+  }
+  return selectedRange
+}
+
 function removeRow() {
   grid.value.deleteRows(getAffectedRange())
 }
@@ -60,8 +66,8 @@ function insertAfterRow() {
   grid.value.insertRowsAfter(getAffectedRange())
 }
 
-const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRowIndex(row.value.index.value))
-const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.id.value))
+const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRow(row.value.index.value))
+const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.label.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {
@@ -91,14 +97,14 @@ const cellStyle = computed(() => {
       class="flex flex-col box-border"
     >
       <div
-        :id="row.id.value"
+        :id="rowId"
         :style="whs(rowHeaderWidth, row.height.value)"
         class="flex justify-center items-center text-xs select-none"
       >
-        {{ row.id.value }}
+        {{ row.label.value }}
       </div>
       <div
-        :id="`resize-row:${row.id.value}`"
+        :id="resizeRowId"
         :style="whs(rowHeaderWidth, 5)"
         class="bg-transparent mt-[-3px] z-10 cursor-row-resize"
       />

@@ -1,58 +1,47 @@
-import { getInfoFromCellIdString, type CellIdStringInfo } from '../CellId'
-import type { RowRange } from '../Row'
-import type { ColRange } from '../Col'
+import { RangeLocator } from '../locator/RangeLocator'
+import { CellLocator } from '../locator/CellLocator'
+import type { RowRange } from '../locator/RowLocator'
+import type { ColRange } from '../locator/ColLocator'
 import { transformColInsertBeforeOnCell, transformMoveOnCell, transformRowInsertBeforeOnCell } from './cellTransformers'
 import type { FormulaTransformation } from '.'
 
-type RangeInfo = {
-  start: CellIdStringInfo
-  end: CellIdStringInfo
-  id: string
-}
-
-function getRangeInfo(rangeIdString: string): RangeInfo {
-  const [start, end] = rangeIdString.split('-').map(getInfoFromCellIdString)
-  return {
-    start,
-    end,
-    id: rangeIdString,
-  }
-}
-
-export function transformRange(rangeIdString: string, transformation: FormulaTransformation): string {
-  const rangeInfo: RangeInfo = getRangeInfo(rangeIdString)
+export function transformRange(rangeLocatorString: string, transformation: FormulaTransformation): string {
+  const rangeLocator = RangeLocator.fromString(rangeLocatorString)
   switch (transformation.type) {
     case 'move':
-      return rangeIdString.split('-').map(cellIdString =>
-        transformMoveOnCell(getInfoFromCellIdString(cellIdString), transformation.movement)).join('-')
+      return RangeLocator.fromCellLocators(
+        CellLocator.fromString(transformMoveOnCell(rangeLocator.start, transformation.movement)),
+        CellLocator.fromString(transformMoveOnCell(rangeLocator.end, transformation.movement)),
+      ).toString()
     case 'rowDelete':
-      return transformRowDeleteOnRange(rangeInfo, transformation.rowRange)
+      return transformRowDeleteOnRange(rangeLocator, transformation.rowRange)
     case 'colDelete':
-      return transformColDeleteOnRange(rangeInfo, transformation.colRange)
+      return transformColDeleteOnRange(rangeLocator, transformation.colRange)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnRange(rangeInfo, transformation.rowRange)
+      return transformRowInsertBeforeOnRange(rangeLocator, transformation.rowRange)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnRange(rangeInfo, transformation.colRange)
+      return transformColInsertBeforeOnRange(rangeLocator, transformation.colRange)
   }
 }
 
-function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex: startRowIndexToDelete, count: deleteCount }: RowRange): string {
+function transformRowDeleteOnRange(range: RangeLocator, { row: startRowIndexToDelete, count: deleteCount }: RowRange): string {
+  const { start, end } = range
   const startIsInDeletedRange
-    = start.rowIndex >= startRowIndexToDelete
-    && start.rowIndex < startRowIndexToDelete + deleteCount
+    = start.row >= startRowIndexToDelete
+    && start.row < startRowIndexToDelete + deleteCount
 
   const endIsInDeletedRange
-    = end.rowIndex >= startRowIndexToDelete
-    && end.rowIndex < startRowIndexToDelete + deleteCount
+    = end.row >= startRowIndexToDelete
+    && end.row < startRowIndexToDelete + deleteCount
 
   // range reference is enclosed in deleted row range
   if (startIsInDeletedRange && endIsInDeletedRange) {
-    throw new Error(`Range ${id} was deleted`)
+    throw new Error(`Range ${range.toString()} was deleted`)
   }
 
   // range reference is below and intersecting deleted row range
   if (startIsInDeletedRange) {
-    const newStart = transformMoveOnCell(start, { cols: 0, rows: startRowIndexToDelete - start.rowIndex })
+    const newStart = transformMoveOnCell(start, { cols: 0, rows: startRowIndexToDelete - start.row })
     const newEnd = transformMoveOnCell(end, { cols: 0, rows: -deleteCount })
 
     return `${newStart}-${newEnd}`
@@ -60,40 +49,42 @@ function transformRowDeleteOnRange({ start, end, id }: RangeInfo, { rowIndex: st
 
   // range is above and intersecting deleted row range
   if (endIsInDeletedRange) {
-    const newStart = start.id
-    const newEnd = transformMoveOnCell(end, { cols: 0, rows: startRowIndexToDelete - end.rowIndex - 1 })
+    const newStart = start.toString()
+    const newEnd = transformMoveOnCell(end, { cols: 0, rows: startRowIndexToDelete - end.row - 1 })
 
     return `${newStart}-${newEnd}`
   }
 
   // no range reference endpoints (start-end) are inside deleted row range
 
-  const startIsBelowDeletedRange = start.rowIndex >= startRowIndexToDelete + deleteCount
-  const endIsBelowDeletedRange = end.rowIndex >= startRowIndexToDelete + deleteCount
+  const startIsBelowDeletedRange = start.row >= startRowIndexToDelete + deleteCount
+  const endIsBelowDeletedRange = end.row >= startRowIndexToDelete + deleteCount
 
-  const newStart: string = startIsBelowDeletedRange ? transformMoveOnCell(start, { cols: 0, rows: -deleteCount }) : start.id
-  const newEnd: string = endIsBelowDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -deleteCount }) : end.id
+  const newStart: string = startIsBelowDeletedRange ? transformMoveOnCell(start, { cols: 0, rows: -deleteCount }) : start.toString()
+  const newEnd: string = endIsBelowDeletedRange ? transformMoveOnCell(end, { cols: 0, rows: -deleteCount }) : end.toString()
 
   return `${newStart}-${newEnd}`
 }
 
-function transformColDeleteOnRange({ start, end, id }: RangeInfo, { colIndex: startColIndexToDelete, count: deleteCount }: ColRange): string {
+function transformColDeleteOnRange(range: RangeLocator, { col: startColIndexToDelete, count: deleteCount }: ColRange): string {
+  const { start, end } = range
+
   const startIsInDeletedRange
-    = start.colIndex >= startColIndexToDelete
-    && start.colIndex < startColIndexToDelete + deleteCount
+    = start.col >= startColIndexToDelete
+    && start.col < startColIndexToDelete + deleteCount
 
   const endIsInDeletedRange
-    = end.colIndex >= startColIndexToDelete
-    && end.colIndex < startColIndexToDelete + deleteCount
+    = end.col >= startColIndexToDelete
+    && end.col < startColIndexToDelete + deleteCount
 
   // range reference is enclosed in deleted col range
   if (startIsInDeletedRange && endIsInDeletedRange) {
-    throw new Error(`Range ${id} was deleted`)
+    throw new Error(`Range ${range.toString()} was deleted`)
   }
 
   // range reference is to the right and intersecting deleted col range
   if (startIsInDeletedRange) {
-    const newStart = transformMoveOnCell(start, { cols: startColIndexToDelete - start.colIndex, rows: 0 })
+    const newStart = transformMoveOnCell(start, { cols: startColIndexToDelete - start.col, rows: 0 })
     const newEnd = transformMoveOnCell(end, { cols: -deleteCount, rows: 0 })
 
     return `${newStart}-${newEnd}`
@@ -101,31 +92,31 @@ function transformColDeleteOnRange({ start, end, id }: RangeInfo, { colIndex: st
 
   // range is to the right and intersecting deleted col range
   if (endIsInDeletedRange) {
-    const newStart = start.id
-    const newEnd = transformMoveOnCell(end, { cols: startColIndexToDelete - end.colIndex - 1, rows: 0 })
+    const newStart = start.toString()
+    const newEnd = transformMoveOnCell(end, { cols: startColIndexToDelete - end.col - 1, rows: 0 })
 
     return `${newStart}-${newEnd}`
   }
 
   // no range reference endpoints (start-end) are inside deleted col range
 
-  const startIsRightOfDeletedRange = start.colIndex >= startColIndexToDelete + deleteCount
-  const endIsRightOfDeletedRange = end.colIndex >= startColIndexToDelete + deleteCount
+  const startIsRightOfDeletedRange = start.col >= startColIndexToDelete + deleteCount
+  const endIsRightOfDeletedRange = end.col >= startColIndexToDelete + deleteCount
 
-  const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(start, { cols: -deleteCount, rows: 0 }) : start.id
-  const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(end, { cols: -deleteCount, rows: 0 }) : end.id
+  const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(start, { cols: -deleteCount, rows: 0 }) : start.toString()
+  const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(end, { cols: -deleteCount, rows: 0 }) : end.toString()
 
   return `${newStart}-${newEnd}`
 }
 
-function transformRowInsertBeforeOnRange({ start, end }: RangeInfo, { rowIndex: startRowIndexToDelete, count: deleteCount }: RowRange): string {
-  const newStart = transformRowInsertBeforeOnCell(start, { rowIndex: startRowIndexToDelete, count: deleteCount })
-  const newEnd = transformRowInsertBeforeOnCell(end, { rowIndex: startRowIndexToDelete, count: deleteCount })
+function transformRowInsertBeforeOnRange({ start, end }: RangeLocator, { row: startRowIndexToDelete, count: deleteCount }: RowRange): string {
+  const newStart = transformRowInsertBeforeOnCell(start, { row: startRowIndexToDelete, count: deleteCount })
+  const newEnd = transformRowInsertBeforeOnCell(end, { row: startRowIndexToDelete, count: deleteCount })
   return `${newStart}-${newEnd}`
 }
 
-function transformColInsertBeforeOnRange({ start, end }: RangeInfo, { colIndex: startColIndexToDelete, count: deleteCount }: ColRange): string {
-  const newStart = transformColInsertBeforeOnCell(start, { colIndex: startColIndexToDelete, count: deleteCount })
-  const newEnd = transformColInsertBeforeOnCell(end, { colIndex: startColIndexToDelete, count: deleteCount })
+function transformColInsertBeforeOnRange({ start, end }: RangeLocator, { col: startColIndexToDelete, count: deleteCount }: ColRange): string {
+  const newStart = transformColInsertBeforeOnCell(start, { col: startColIndexToDelete, count: deleteCount })
+  const newEnd = transformColInsertBeforeOnCell(end, { col: startColIndexToDelete, count: deleteCount })
   return `${newStart}-${newEnd}`
 }

@@ -2,22 +2,23 @@
 import { ref, watch } from 'vue'
 import GridCell from './GridCell.vue'
 import { hs } from '~/lib/utils'
-import type { CellId } from '~/lib/CellId'
 import type { GridProject } from '~/lib/GridProject'
+import type { CellLocator } from '~/lib/locator/CellLocator'
+import { getDocumentCellId } from '~/lib/locator/utils'
 
 const props = defineProps<{
   gridProject: GridProject
 }>()
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', cellId: CellId): void
+  (e: 'cell-dblclick', cellLocator: CellLocator): void
 }>()
 
 const { gridProject } = toRefs(props)
 const grid = gridProject.value.currentGrid
 
 watch(grid.value.position, (position) => {
-  const cellElement = document.getElementById(position.id)
+  const cellElement = document.getElementById(getDocumentCellId(position, grid.value.name.value))
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',
@@ -39,13 +40,13 @@ defineExpose({
     <GridContextMenu :grid-project="gridProject">
       <div
         v-for="row of grid.rows.value"
-        :key="row.id.value"
+        :key="row.index.value"
         :style="hs(row.height.value)"
         class="flex"
       >
         <div
           v-for="col of grid.cols.value"
-          :key="col.id.value"
+          :key="col.index.value"
           class="dark:bg-blue-700 bg-blue-200"
         >
           <GridCell

@@ -18,12 +18,12 @@ const inputRef = ref<HTMLInputElement>()
 
 const selectionLabel = computed(() => {
   if (grid.value.editor.editorFocused.value) {
-    return grid.value.editor.editingCellId.value.id
+    return grid.value.editor.editingCellId.value.toString()
   }
   if (grid.value.selection.selectedRange.value.size() === 1) {
-    return grid.value.selection.selectedRange.value.start.id
+    return grid.value.selection.selectedRange.value.start.toString()
   }
-  return grid.value.selection.selectedRange.value.id
+  return grid.value.selection.selectedRange.value.toString()
 })
 
 const cellInput = computed(() => {
@@ -53,8 +53,8 @@ watch(selectedRange, (selection) => {
   const inputElement = inputRef.value
   if (grid.value.editor.isEditingLitsCode.value && inputElement && grid.value.editor.editorFocused.value) {
     const selectionValue = `${selection.size() === 1
-      ? selection.start.id
-      : selection.id} `
+      ? selection.start.toString()
+      : selection.toSorted().toString()} `
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
@@ -103,7 +103,7 @@ function onFocus() {
 }
 
 function onBlur() {
-  if (!forceBlur.value && (grid.value.editor.isEditingLitsCode.value || grid.value.position.value.equals(grid.value.editor.editingCellId.value))) {
+  if (!forceBlur.value && (grid.value.editor.isEditingLitsCode.value || grid.value.position.value.isSameCell(grid.value.editor.editingCellId.value))) {
     inputRef.value?.focus()
   }
   else {

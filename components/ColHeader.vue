@@ -23,7 +23,7 @@ defineExpose({
   >
     <ColHeaderCell
       v-for="col of grid.cols.value"
-      :key="col.id.value"
+      :key="col.index.value"
       :grid-project="gridProject"
       :col="col"
     />

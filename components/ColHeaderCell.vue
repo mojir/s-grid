@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
 import { whs } from '~/lib/utils'
-import { Col, type ColRange } from '~/lib/Col'
+import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
+import { ColLocator, getColId, type ColRange } from '~/lib/locator/ColLocator'
+import { getDocumentColId, getDocumentResizeColId } from '~/lib/locator/utils'
 
 const props = defineProps<{
   gridProject: GridProject
@@ -14,18 +16,22 @@ const { col, gridProject } = toRefs(props)
 const grid = gridProject.value.currentGrid
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
+const colLocator = computed(() => ColLocator.fromNumber(col.value.index.value))
+const colId = computed(() => getDocumentColId(colLocator.value, grid.value.name.value))
+const resizeColId = computed(() => getDocumentResizeColId(colLocator.value, grid.value.name.value))
+
 function getAffectedRange(): ColRange {
   const selectedRange = grid.value.selection.selectedCols.value
-  if (!selectedRange || !grid.value.selection.isColSelected(col.value.id.value)) {
-    return { colIndex: col.value.index.value, count: 1 }
+  if (!selectedRange || !grid.value.selection.isColSelected(col.value.label.value)) {
+    return { col: col.value.index.value, count: 1 }
   }
   return selectedRange
 }
 
 const deleteColLabel = computed(() => {
-  const { colIndex, count } = getAffectedRange()
-  const start = Col.getColIdFromIndex(colIndex)
-  const end = Col.getColIdFromIndex(colIndex + count - 1)
+  const { col, count } = getAffectedRange()
+  const start = getColId(col)
+  const end = getColId(col + count - 1)
   return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
 })
 
@@ -59,8 +65,8 @@ function insertAfterCol() {
   grid.value.insertColsAfter(getAffectedRange())
 }
 
-const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsColIndex(col.value.index.value))
-const isSelected = computed(() => grid.value.selection.isColSelected(col.value.id.value))
+const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsCol(col.value.index.value))
+const isSelected = computed(() => grid.value.selection.isColSelected(col.value.label.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {
@@ -92,14 +98,14 @@ const cellStyle = computed(() => {
       class="flex"
     >
       <div
-        :id="col.id.value"
+        :id="colId"
         :style="whs(col.width.value, colHeaderHeight)"
         class="flex flex-1 justify-center text-xs items-center select-none"
       >
-        {{ col.id.value }}
+        {{ col.label.value }}
       </div>
       <div
-        :id="`resize-col:${col.id.value}`"
+        :id="resizeColId"
         :style="whs(5, colHeaderHeight)"
         class="bg-transparent ml-[-3px] z-10 cursor-col-resize"
       />

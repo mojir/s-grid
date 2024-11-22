@@ -1,9 +1,11 @@
-import type { Direction } from '../utils'
-import { CellId, type Movement } from '~/lib/CellId'
-import { CellRange } from '~/lib/CellRange'
-import { Col, type ColIdString, type ColRange } from '~/lib/Col'
+import { CellLocator, isCellLocatorString } from '../locator/CellLocator'
+import { getRowNumber, type RowRange } from '../locator/RowLocator'
+import { getColNumber, type ColRange } from '../locator/ColLocator'
+import type { Direction, Movement } from '../locator/utils'
+import { isRangeLocatorString, RangeLocator } from '~/lib/locator/RangeLocator'
+import type { Col } from '~/lib/Col'
 import type { Grid } from '~/lib/Grid'
-import { Row, type RowIdString, type RowRange } from '~/lib/Row'
+import type { Row } from '~/lib/Row'
 
 export class GridSelection {
   public selecting = ref(false)
@@ -11,52 +13,61 @@ export class GridSelection {
   constructor(private grid: Grid) {}
 
   private readonly gridRange = computed(() => {
-    return CellRange.fromDimensions(0, 0, this.grid.rows.value.length - 1, this.grid.cols.value.length - 1)
+    return RangeLocator.fromCellLocators(
+      CellLocator.fromCoords({ row: 0, col: 0 }),
+      CellLocator.fromCoords({ row: this.grid.rows.value.length - 1, col: this.grid.cols.value.length - 1 }),
+    )
   })
 
-  private readonly unsortedSelectedRange = ref(CellRange.fromSingleCellId(CellId.fromCoords(0, 0)))
+  private readonly unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords({ row: 0, col: 0 })))
   public readonly selectedRange = computed(() => this.unsortedSelectedRange.value.toSorted())
-  public selectedRows = computed<null | RowRange>(() => {
-    if (this.selectedRange.value.start.colIndex === 0 && this.selectedRange.value.end.colIndex === this.grid.cols.value.length - 1) {
+  public selectedRows = computed<RowRange | null>(() => {
+    if (this.selectedRange.value.start.col === 0 && this.selectedRange.value.end.col === this.grid.cols.value.length - 1) {
       return {
-        rowIndex: this.selectedRange.value.start.rowIndex,
-        count: this.selectedRange.value.end.rowIndex - this.selectedRange.value.start.rowIndex + 1,
+        row: this.selectedRange.value.start.row,
+        count: this.selectedRange.value.end.row - this.selectedRange.value.start.row + 1,
       }
     }
     return null
   })
 
-  public selectedCols = computed<null | ColRange>(() => {
-    if (this.selectedRange.value.start.rowIndex === 0 && this.selectedRange.value.end.rowIndex === this.grid.rows.value.length - 1) {
+  public selectedCols = computed<ColRange | null>(() => {
+    if (this.selectedRange.value.start.row === 0 && this.selectedRange.value.end.row === this.grid.rows.value.length - 1) {
       return {
-        colIndex: this.selectedRange.value.start.colIndex,
-        count: this.selectedRange.value.end.colIndex - this.selectedRange.value.start.colIndex + 1,
+        col: this.selectedRange.value.start.col,
+        count: this.selectedRange.value.end.col - this.selectedRange.value.start.col + 1,
       }
     }
     return null
   })
 
-  public isRowSelected(row: RowIdString) {
-    const rowIndex = Row.getRowIndexFromId(row)
+  public isRowSelected(rowLocator: string) {
+    const row = getRowNumber(rowLocator)
     return this.selectedRows.value
-      && this.selectedRows.value.rowIndex <= rowIndex
-      && rowIndex < this.selectedRows.value.rowIndex + this.selectedRows.value.count
+      && this.selectedRows.value.row <= row
+      && row < this.selectedRows.value.row + this.selectedRows.value.count
   }
 
-  public isColSelected(col: ColIdString) {
-    const colIndex = Col.getColIndexFromId(col)
+  public isColSelected(colLocator: string) {
+    const col = getColNumber(colLocator)
     return this.selectedCols.value
-      && this.selectedCols.value.colIndex <= colIndex
-      && colIndex < this.selectedCols.value.colIndex + this.selectedCols.value.count
+      && this.selectedCols.value.col <= col
+      && col < this.selectedCols.value.col + this.selectedCols.value.count
   }
 
   public moveSelection(movement: Movement) {
-    const newStart = CellId.fromCoords(this.selectedRange.value.start.rowIndex + movement.rows, this.selectedRange.value.start.colIndex + movement.cols)
-    const newEnd = CellId.fromCoords(this.selectedRange.value.end.rowIndex + movement.rows, this.selectedRange.value.end.colIndex + movement.cols)
-    this.updateSelection(CellRange.fromCellIds(newStart, newEnd))
+    const newStart = CellLocator.fromCoords({
+      row: this.selectedRange.value.start.row + (movement.rows ?? 0),
+      col: this.selectedRange.value.start.col + (movement.cols ?? 0),
+    })
+    const newEnd = CellLocator.fromCoords({
+      row: this.selectedRange.value.end.row + (movement.rows ?? 0),
+      col: this.selectedRange.value.end.col + (movement.cols ?? 0),
+    })
+    this.updateSelection(RangeLocator.fromCellLocators(newStart, newEnd))
   }
 
-  public updateSelection(newSelection: CellRange) {
+  public updateSelection(newSelection: RangeLocator) {
     if (!newSelection.equals(this.unsortedSelectedRange.value)) {
       this.unsortedSelectedRange.value = newSelection
     }
@@ -66,14 +77,14 @@ export class GridSelection {
     const start = this.unsortedSelectedRange.value.start
     const end = this.unsortedSelectedRange.value.end.cellMove(dir, this.gridRange.value, false)
 
-    this.updateSelection(CellRange.fromCellIds(start, end))
+    this.updateSelection(RangeLocator.fromCellLocators(start, end))
   }
 
-  public expandSelectionTo(target: CellId | string) {
+  public expandSelectionTo(target: CellLocator | string) {
     const start = this.unsortedSelectedRange.value.start
-    const end = CellId.isCellId(target) ? target : CellId.fromId(target)
+    const end = target instanceof CellLocator ? target : CellLocator.fromString(target)
 
-    this.updateSelection(CellRange.fromCellIds(start, end))
+    this.updateSelection(RangeLocator.fromCellLocators(start, end))
   }
 
   public selectAll() {
@@ -82,27 +93,27 @@ export class GridSelection {
 
   public selectColRange(fromCol: Col, toCol: Col) {
     this.unsortedSelectedRange.value
-      = CellRange.fromCellIds(
-        CellId.fromCoords(0, fromCol.index.value),
-        CellId.fromCoords(this.gridRange.value.end.rowIndex, toCol.index.value))
+      = RangeLocator.fromCellLocators(
+        CellLocator.fromCoords({ row: 0, col: fromCol.index.value }),
+        CellLocator.fromCoords({ row: this.gridRange.value.end.row, col: toCol.index.value }))
   }
 
   public selectRowRange(fromRow: Row, toRow: Row) {
     this.unsortedSelectedRange.value
-      = CellRange.fromCellIds(
-        CellId.fromCoords(fromRow.index.value, 0),
-        CellId.fromCoords(toRow.index.value, this.gridRange.value.end.colIndex))
+      = RangeLocator.fromCellLocators(
+        CellLocator.fromCoords({ row: fromRow.index.value, col: 0 }),
+        CellLocator.fromCoords({ row: toRow.index.value, col: this.gridRange.value.end.col }))
   }
 
-  public select(target: string | CellRange | CellId) {
-    const range = CellRange.isCellRange(target)
+  public select(target: string | RangeLocator | CellLocator) {
+    const range = target instanceof RangeLocator
       ? target
-      : typeof target === 'string' && CellRange.isCellRangeString(target)
-        ? CellRange.fromId(target).clamp(this.gridRange.value)
-        : CellId.isCellId(target)
-          ? CellRange.fromSingleCellId(target).clamp(this.gridRange.value)
-          : CellId.isCellIdString(target)
-            ? CellRange.fromSingleCellId(CellId.fromId(target)).clamp(this.gridRange.value)
+      : typeof target === 'string' && isRangeLocatorString(target)
+        ? RangeLocator.fromString(target).clamp(this.gridRange.value)
+        : target instanceof CellLocator
+          ? RangeLocator.fromCellLocator(target)
+          : isCellLocatorString(target)
+            ? RangeLocator.fromCellLocator(CellLocator.fromString(target)).clamp(this.gridRange.value)
             : null
 
     if (!range) {
@@ -112,7 +123,7 @@ export class GridSelection {
     this.updateSelection(range)
   }
 
-  public clampSelection(range: CellRange) {
+  public clampSelection(range: RangeLocator) {
     this.updateSelection(this.selectedRange.value.clamp(range))
   }
 }

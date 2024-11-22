@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, toRefs, type CSSProperties } from 'vue'
-import { CellId } from '~/lib/CellId'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
-import { CellRange } from '~/lib/CellRange'
+import { RangeLocator } from '~/lib/locator/RangeLocator'
 import { getLineHeight } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
+import { CellLocator } from '~/lib/locator/CellLocator'
+import { getDocumentCellId } from '~/lib/locator/utils'
 
 const props = defineProps<{
   gridProject: GridProject
@@ -15,7 +16,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', cellId: CellId): void
+  (e: 'cell-dblclick', cellLocator: CellLocator): void
 }>()
 
 const { gridProject, row, col } = toRefs(props)
@@ -24,27 +25,29 @@ const { currentTab, sidePanelOpen } = useSidePanel()
 const repl = gridProject.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
-const hoveredCellId = grid.value.hoveredCellId
+const hoveredCell = grid.value.hoveredCell
 
-const cellId = computed(() => CellId.fromCoords(row.value.index.value, col.value.index.value))
-const cell = computed(() => grid.value.getCell(cellId.value))
-const isActiveCell = computed(() => grid.value.position.value.equals(cellId.value))
-const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.contains(cellId.value))
+const cellLocator = computed(() => CellLocator.fromCoords({ row: row.value.index.value, col: col.value.index.value }))
+const cell = computed(() => grid.value.getCell(cellLocator.value))
+const isActiveCell = computed(() => grid.value.position.value.isSameCell(cellLocator.value))
+const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.containsCell(cellLocator.value))
 const isReferenced = computed(() => {
   const targets = grid.value.getCell(grid.value.position.value).localReferenceTargets.value
-  const ranges = targets.map(target => CellRange.isCellRange(target) ? target : CellRange.fromSingleCellId(target))
-  return ranges.some(range => range.contains(cellId.value))
+  const ranges = targets.map(target => target instanceof RangeLocator ? target : RangeLocator.fromCellLocator(target))
+  return ranges.some(range => range.containsCell(cellLocator.value))
 })
 const hoverSelectingCell = computed(() => grid.value.editor.isEditingLitsCode.value
-  && !isActiveCell.value && hoveredCellId.value && hoveredCellId.value === cellId.value.id)
+  && !isActiveCell.value && hoveredCell.value && hoveredCell.value.isSameCell(cellLocator.value))
 
-const isEditingCell = computed(() => grid.value.editor.editorFocused.value && grid.value.editor.editingCellId.value.equals(cellId.value))
+const isEditingCell = computed(() => grid.value.editor.editorFocused.value && grid.value.editor.editingCellId.value.isSameCell(cellLocator.value))
 const cellContent = computed(() => {
   if (isEditingCell.value) {
     return grid.value.editor.editorText
   }
-  return grid.value.getCell(cellId.value).display
+  return grid.value.getCell(cellLocator.value).display
 })
+
+const cellId = computed(() => getDocumentCellId(cellLocator.value, grid.value.name.value))
 
 const cellBackgroundColor = computed<Color | null>(() => {
   const bg = cell.value.backgroundColor.value
@@ -189,7 +192,7 @@ function inspectCell(e: MouseEvent) {
     e.preventDefault()
     sidePanelOpen.value = true
     currentTab.value = 'repl'
-    repl.run(`(GetCell "${cellId.value.id}") ;; Inspecting Cell`)
+    repl.run(`(GetCell "${cellLocator.value.toString()}") ;; Inspecting Cell`)
   }
 }
 </script>
@@ -197,13 +200,13 @@ function inspectCell(e: MouseEvent) {
 <template>
   <div class="h-full relative">
     <div
-      :id="cellId.id"
+      :id="cellId"
       :style="cellStyle"
       class="px-1 h-full relative flex box-border text-sm whitespace-nowrap"
       :class="{
         'cursor-pointer': hoverSelectingCell,
       }"
-      @dblclick="emit('cell-dblclick', cellId)"
+      @dblclick="emit('cell-dblclick', cellLocator)"
       @click="inspectCell"
     >
       {{ cellContent }}

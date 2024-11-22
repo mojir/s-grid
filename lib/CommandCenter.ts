@@ -1,12 +1,12 @@
 import type { JsFunction } from '@mojir/lits'
-import type { CellId } from '~/lib/CellId'
+import type { CellLocator } from './locator/CellLocator'
+import { getColNumber, type ColRange } from './locator/ColLocator'
+import { getRowNumber, type RowRange } from './locator/RowLocator'
+import type { Direction } from './locator/utils'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
-import { Col, type ColIdString, type ColRange } from '~/lib/Col'
 import { Color } from '~/lib/color'
 import type { GridProject } from '~/lib/GridProject'
 import { format } from '~/lib/litsInterop/format'
-import { Row, type RowIdString, type RowRange } from '~/lib/Row'
-import type { Direction } from '~/lib/utils'
 
 const commandNames = [
   'Clear!',
@@ -97,7 +97,7 @@ export class CommandCenter {
       execute: (height: number, target?: string) => {
         const grid = this.gridProject.currentGrid
         const cell = grid.value.getCell(target)
-        grid.value.getRow(cell.cellId.getRowId()).height.value = height
+        grid.value.getRow(cell.cellLocator.getRowLocator()).height.value = height
       },
       description: 'Set row height',
     })
@@ -107,7 +107,7 @@ export class CommandCenter {
       execute: (width: number, target?: string) => {
         const grid = this.gridProject.currentGrid
         const cell = grid.value.getCell(target)
-        grid.value.getCol(cell.cellId.getColId()).width.value = width
+        grid.value.getCol(cell.cellLocator.getColLocator()).width.value = width
       },
       description: 'Set column width',
     })
@@ -154,17 +154,17 @@ export class CommandCenter {
     })
     this.registerCommand({
       name: 'GetCell',
-      execute: (cellId: string) => {
+      execute: (cellLocator: string) => {
         const grid = this.gridProject.currentGrid
-        return grid.value.getCell(cellId).getDebugInfo()
+        return grid.value.getCell(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
       name: 'GetCells',
-      execute: (cellId: string) => {
+      execute: (cellLocator: string) => {
         const grid = this.gridProject.currentGrid
-        return grid.value.getCells(cellId).map(cell => cell.getDebugInfo())
+        return grid.value.getCells(cellLocator).map(cell => cell.getDebugInfo())
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
@@ -180,10 +180,10 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetStyle!',
-      execute: <T extends CellStyleName>(property: T, value: CellStyle[T], cellId?: string) => {
+      execute: <T extends CellStyleName>(property: T, value: CellStyle[T], cellLocator?: string) => {
         if (validCellStyle(property, value)) {
           const grid = this.gridProject.currentGrid
-          grid.value.setStyle(property, value, cellId)
+          grid.value.setStyle(property, value, cellLocator)
         }
         else {
           throw new Error(`Invalid cell style property: ${property}`)
@@ -232,7 +232,7 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'GetSelection',
-      execute: () => this.gridProject.currentGrid.value.selection.selectedRange.value.getJson(),
+      execute: () => this.gridProject.currentGrid.value.selection.selectedRange.value.toString(),
       description: 'Get the current selection.',
     })
 
@@ -247,7 +247,7 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'ExpandSelectionTo!',
-      execute: (target: CellId | string) => {
+      execute: (target: CellLocator | string) => {
         const grid = this.gridProject.currentGrid
         grid.value.selection.expandSelectionTo(target)
       },
@@ -291,13 +291,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'DeleteRows!',
       description: 'Delete rows',
-      execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
-        const startRowIndex = Row.getRowIndexFromId(startRowStringId)
-        const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      execute: (startRowStringId: string, endRowStringId?: string) => {
+        const startRowIndex = getRowNumber(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const rowIndex = Math.min(startRowIndex, endRowIndex)
         const count = Math.abs(endRowIndex - startRowIndex) + 1
         const rowRange: RowRange = {
-          rowIndex,
+          row: rowIndex,
           count,
         }
         const grid = this.gridProject.currentGrid
@@ -308,13 +308,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'DeleteCols!',
       description: 'Delete cols',
-      execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
-        const startColIndex = Col.getColIndexFromId(startColStringId)
-        const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      execute: (startColStringId: string, endColStringId?: string) => {
+        const startColIndex = getColNumber(startColStringId)
+        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const colIndex = Math.min(startColIndex, endColIndex)
         const count = Math.abs(endColIndex - startColIndex) + 1
         const colRange: ColRange = {
-          colIndex: colIndex,
+          col: colIndex,
           count,
         }
         const grid = this.gridProject.currentGrid
@@ -325,13 +325,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'InsertRowsBefore!',
       description: 'Insert rows before',
-      execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
-        const startRowIndex = Row.getRowIndexFromId(startRowStringId)
-        const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      execute: (startRowStringId: string, endRowStringId?: string) => {
+        const startRowIndex = getRowNumber(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const rowIndex = Math.min(startRowIndex, endRowIndex)
         const count = Math.abs(endRowIndex - startRowIndex) + 1
         const rowRange: RowRange = {
-          rowIndex,
+          row: rowIndex,
           count,
         }
         const grid = this.gridProject.currentGrid
@@ -342,13 +342,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'InsertRowsAfter!',
       description: 'Insert rows before',
-      execute: (startRowStringId: RowIdString, endRowStringId?: RowIdString) => {
-        const startRowIndex = Row.getRowIndexFromId(startRowStringId)
-        const endRowIndex = endRowStringId ? Row.getRowIndexFromId(endRowStringId) : startRowIndex
+      execute: (startRowStringId: string, endRowStringId?: string) => {
+        const startRowIndex = getRowNumber(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const rowIndex = Math.min(startRowIndex, endRowIndex)
         const count = Math.abs(endRowIndex - startRowIndex) + 1
         const rowRange: RowRange = {
-          rowIndex,
+          row: rowIndex,
           count,
         }
         const grid = this.gridProject.currentGrid
@@ -359,13 +359,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'InsertColsBefore!',
       description: 'Insert columns before',
-      execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
-        const startColIndex = Col.getColIndexFromId(startColStringId)
-        const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      execute: (startColStringId: string, endColStringId?: string) => {
+        const startColIndex = getColNumber(startColStringId)
+        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const colIndex = Math.min(startColIndex, endColIndex)
         const count = Math.abs(endColIndex - startColIndex) + 1
         const colRange: ColRange = {
-          colIndex: colIndex,
+          col: colIndex,
           count,
         }
         const grid = this.gridProject.currentGrid
@@ -376,13 +376,13 @@ export class CommandCenter {
     this.registerCommand({
       name: 'InsertColsAfter!',
       description: 'Insert columns before',
-      execute: (startColStringId: ColIdString, endColStringId?: ColIdString) => {
-        const startColIndex = Col.getColIndexFromId(startColStringId)
-        const endColIndex = endColStringId ? Col.getColIndexFromId(endColStringId) : startColIndex
+      execute: (startColStringId: string, endColStringId?: string) => {
+        const startColIndex = getColNumber(startColStringId)
+        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const colIndex = Math.min(startColIndex, endColIndex)
         const count = Math.abs(endColIndex - startColIndex) + 1
         const colRange: ColRange = {
-          colIndex: colIndex,
+          col: colIndex,
           count,
         }
         const grid = this.gridProject.currentGrid

@@ -1,11 +1,11 @@
 import { isLitsError, isLitsFunction } from '@mojir/lits'
-import { CellId } from './CellId'
 import { CellStyle, type CellStyleJson } from './CellStyle'
 import { Color, type ColorJson } from './color'
-import { CellRange } from './CellRange'
+import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
 import { defaultFormatter } from './utils'
 import type { Grid } from './Grid'
 import type { CommandCenter } from './CommandCenter'
+import { CellLocator, isCellLocatorString } from './locator/CellLocator'
 import type { LitsComposable } from '~/composables/useLits'
 
 export type CellJson = {
@@ -29,7 +29,7 @@ export class Cell {
   public readonly textColor = ref<Color | null>(null)
 
   constructor(
-    public cellId: CellId,
+    public cellLocator: CellLocator,
     {
       grid,
       commandCenter,
@@ -43,7 +43,7 @@ export class Cell {
 
     watch(this.display, (newValue, oldValue) => {
       if (!oldValue && newValue) {
-        grid.autoSetRowHeightByTarget(this.cellId)
+        grid.autoSetRowHeightByTarget(this.cellLocator)
       }
     })
   }
@@ -96,15 +96,15 @@ export class Cell {
 
   private getTargetsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     return unresolvedIdentifiers.flatMap((identifier) => {
-      if (CellId.isCellIdString(identifier)) {
-        return CellId.fromId(identifier)
+      if (isCellLocatorString(identifier)) {
+        return CellLocator.fromString(identifier)
       }
-      if (CellRange.isCellRangeString (identifier)) {
-        return CellRange.fromId(identifier)
+      if (isRangeLocatorString(identifier)) {
+        return RangeLocator.fromString(identifier)
       }
       const aliasCell = this.grid.alias.getCell(identifier)
       if (aliasCell) {
-        return aliasCell.cellId
+        return aliasCell.cellLocator
       }
       return []
     })
@@ -230,13 +230,13 @@ export class Cell {
 
   public getDebugInfo() {
     return {
-      id: this.cellId.id,
+      id: this.cellLocator.toString(),
       input: this.input.value,
       output: formatOutputValue(this.output.value),
       display: this.display.value,
       formatter: this.formatter.value,
-      row: this.cellId.rowIndex,
-      col: this.cellId.colIndex,
+      row: this.cellLocator.row,
+      col: this.cellLocator.col,
       style: this.style.value.getJson(),
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],

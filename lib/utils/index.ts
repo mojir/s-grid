@@ -1,11 +1,10 @@
-import type { CellId } from '../CellId'
-import type { CellRange } from '../CellRange'
+import type { CellLocator } from '../locator/CellLocator'
+import type { RangeLocator } from '../locator/RangeLocator'
 
 export { cn } from './cn'
 export { hs, whs, ws } from './cssUtils'
 export { defaultFormatter } from './defaultFormatter'
 
-export type CellOrRangeTarget = string | CellId | CellRange
-export type CellTarget = string | CellId
+export type CellOrRangeTarget = string | CellLocator | RangeLocator
+export type CellTarget = string | CellLocator
 
-export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
