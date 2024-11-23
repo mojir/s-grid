@@ -48,12 +48,13 @@ export function useSyncScroll(
   }
 
   function setScrollPosition({ scrollLeft, scrollTop }: { scrollTop: number, scrollLeft: number }) {
-    nextTick(() => {
-      dataGridRef.value.el.scrollTop = scrollTop
-      dataGridRef.value.el.scrollLeft = scrollLeft
-      rowHeaderRef.value.el.scrollTop = scrollTop
-      colHeaderRef.value.el.scrollLeft = scrollLeft
-    })
+    if (!dataGridRef.value || !rowHeaderRef.value || !colHeaderRef.value) {
+      return
+    }
+    dataGridRef.value.el.scrollTop = scrollTop
+    dataGridRef.value.el.scrollLeft = scrollLeft
+    rowHeaderRef.value.el.scrollTop = scrollTop
+    colHeaderRef.value.el.scrollLeft = scrollLeft
   }
 
   return {
