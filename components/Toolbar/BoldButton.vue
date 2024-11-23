@@ -14,7 +14,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 }, { immediate: true })
 
 function onUpdateBold(value: boolean) {
-  grid.value.setStyle('bold', value)
+  grid.value.setStyle('bold', value, null)
   bold.value = value
 }
 </script>

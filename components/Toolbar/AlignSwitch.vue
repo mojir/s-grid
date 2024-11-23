@@ -17,17 +17,17 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
 function onUpdateTop(value: boolean) {
   align.value = value ? 'top' : undefined
-  grid.value.setStyle('align', align.value)
+  grid.value.setStyle('align', align.value, null)
 }
 
 function onUpdateMiddle(value: boolean) {
   align.value = value ? 'middle' : undefined
-  grid.value.setStyle('align', align.value)
+  grid.value.setStyle('align', align.value, null)
 }
 
 function onUpdateBottom(value: boolean) {
   align.value = value ? 'bottom' : undefined
-  grid.value.setStyle('align', align.value)
+  grid.value.setStyle('align', align.value, null)
 }
 </script>
 

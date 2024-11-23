@@ -31,36 +31,36 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
 function setFloat() {
   format.value = floatFormatter
-  grid.value.setFormatter(floatFormatter)
+  grid.value.setFormatter(floatFormatter, null)
 }
 
 function setFixed2() {
   format.value = fixed2Formatter
-  grid.value.setFormatter(fixed2Formatter)
+  grid.value.setFormatter(fixed2Formatter, null)
 }
 
 function setInteger() {
   format.value = integerFormatter
-  grid.value.setFormatter(integerFormatter)
+  grid.value.setFormatter(integerFormatter, null)
 }
 
 function setPercent() {
   format.value = percentFormatter
-  grid.value.setFormatter(percentFormatter)
+  grid.value.setFormatter(percentFormatter, null)
 }
 
 function setSek() {
   format.value = sekFormatter
-  grid.value.setFormatter(sekFormatter)
+  grid.value.setFormatter(sekFormatter, null)
 }
 
 function setUsd() {
   format.value = usdFormatter
-  grid.value.setFormatter(usdFormatter)
+  grid.value.setFormatter(usdFormatter, null)
 }
 
 function save() {
-  grid.value.setFormatter(format.value ?? defaultFormatter)
+  grid.value.setFormatter(format.value ?? defaultFormatter, null)
   open.value = false
 }
 </script>

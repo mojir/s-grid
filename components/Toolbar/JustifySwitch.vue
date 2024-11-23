@@ -16,17 +16,17 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
 function onUpdateLeft(value: boolean) {
   justify.value = value ? 'left' : undefined
-  grid.value.setStyle('justify', justify.value)
+  grid.value.setStyle('justify', justify.value, null)
 }
 
 function onUpdateCenter(value: boolean) {
   justify.value = value ? 'center' : undefined
-  grid.value.setStyle('justify', justify.value)
+  grid.value.setStyle('justify', justify.value, null)
 }
 
 function onUpdateRight(value: boolean) {
   justify.value = value ? 'right' : undefined
-  grid.value.setStyle('justify', justify.value)
+  grid.value.setStyle('justify', justify.value, null)
 }
 </script>
 

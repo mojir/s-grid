@@ -33,7 +33,7 @@ export class GridClipboard {
 
     this.clipboard.value = {
       range: this.selectedRange.value,
-      cells: matrixMap(this.selectedRange.value.getCellIdMatrix(), cellLocator => this.grid.getCell(cellLocator).getJson()),
+      cells: matrixMap(this.selectedRange.value.getCellIdMatrix(), cellLocator => this.grid.getCellFromLocator(cellLocator).getJson()),
     }
   }
 
@@ -42,7 +42,7 @@ export class GridClipboard {
     this.styleClipboard.value = {
       range,
       cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
-        const cellJson = this.grid.getCell(cellLocator).getJson()
+        const cellJson = this.grid.getCellFromLocator(cellLocator).getJson()
         return {
           style: cellJson.style,
           backgroundColor: cellJson.backgroundColor,
@@ -76,7 +76,7 @@ export class GridClipboard {
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
       matrixForEach(styleClipboardValue.cells, (cellJson, [row, col]) => {
         const cellLocator = CellLocator.fromCoords({ row: toPosition.row + row, col: toPosition.col + col })
-        const cell = this.grid.getCell(cellLocator)
+        const cell = this.grid.getCellFromLocator(cellLocator)
         cell.setJson(cellJson)
       })
     })
@@ -123,7 +123,7 @@ export class GridClipboard {
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellJson, [row, col]) => {
       const cellLocator = CellLocator.fromCoords({ row: toPosition.row + row, col: toPosition.col + col })
-      const cell = this.grid.getCell(cellLocator)
+      const cell = this.grid.getCellFromLocator(cellLocator)
       cell.setJson(cellJson)
     })
 
@@ -133,7 +133,7 @@ export class GridClipboard {
     this.grid.gridRange.value.getAllCellLocators()
       .filter(cellLocator => !this.cutCellIds.value!.includes(cellLocator))
       .forEach((cellLocator) => {
-        const cell = this.grid.getCell(cellLocator)
+        const cell = this.grid.getCellFromLocator(cellLocator)
         let input = cell.input.value
         if (input.startsWith('=')) {
           input = `=${transformGridReference(input.slice(1), { type: 'move', movement, range: fromRange })}`
@@ -165,7 +165,7 @@ export class GridClipboard {
     this.getPastePositions(this.clipboard.value.range).forEach((toPosition) => {
       matrixForEach(clipboardCells, (cellJson, [row, col]) => {
         const cellLocator = CellLocator.fromCoords({ row: toPosition.row + row, col: toPosition.col + col })
-        const cell = this.grid.getCell(cellLocator)
+        const cell = this.grid.getCellFromLocator(cellLocator)
         let input = cellJson.input
         if (input.startsWith('=')) {
           input = `=${transformGridReference(cellJson.input.slice(1), { type: 'move', movement })}`

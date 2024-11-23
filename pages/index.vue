@@ -149,7 +149,7 @@ function onMouseDown(event: MouseEvent) {
     if (col) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(`${col.label.value}1`)
+        grid.value.movePositionTo(CellLocator.fromString(`${col.label.value}1`))
       }
       selection.value.selectColRange(col, col)
     }
@@ -187,7 +187,7 @@ function onMouseDown(event: MouseEvent) {
     if (row) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(`A${row.label.value}`)
+        grid.value.movePositionTo(CellLocator.fromString(`A${row.label.value}`))
       }
       selection.value.selectRowRange(row, row)
     }

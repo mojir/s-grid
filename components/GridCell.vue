@@ -28,11 +28,11 @@ const colorMode = useColorMode()
 const hoveredCell = grid.value.hoveredCell
 
 const cellLocator = computed(() => CellLocator.fromCoords({ row: row.value.index.value, col: col.value.index.value }))
-const cell = computed(() => grid.value.getCell(cellLocator.value))
+const cell = computed(() => grid.value.getCellFromLocator(cellLocator.value))
 const isActiveCell = computed(() => grid.value.position.value.isSameCell(cellLocator.value))
 const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.containsCell(cellLocator.value))
 const isReferenced = computed(() => {
-  const targets = grid.value.getCell(grid.value.position.value).localReferenceTargets.value
+  const targets = grid.value.getCellFromLocator(grid.value.position.value).localReferenceLocators.value
   const ranges = targets.map(target => target instanceof RangeLocator ? target : RangeLocator.fromCellLocator(target))
   return ranges.some(range => range.containsCell(cellLocator.value))
 })
@@ -44,7 +44,7 @@ const cellContent = computed(() => {
   if (isEditingCell.value) {
     return grid.value.editor.editorText
   }
-  return grid.value.getCell(cellLocator.value).display
+  return grid.value.getCellFromLocator(cellLocator.value).display
 })
 
 const cellId = computed(() => getDocumentCellId(cellLocator.value, grid.value.name.value))

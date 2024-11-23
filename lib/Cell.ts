@@ -78,8 +78,16 @@ export class Cell {
     }
   }
 
+  public clear() {
+    this.input.value = ''
+    this.formatter.value = defaultFormatter
+    this.backgroundColor.value = null
+    this.textColor.value = null
+    this.style.value = new CellStyle()
+  }
+
   public formula = computed(() => this.input.value.startsWith('=') ? this.input.value.slice(1) : null)
-  public localReferenceTargets = computed(() => this.getTargetsFromUnresolvedIdentifiers(this.localReferences.value))
+  public localReferenceLocators = computed(() => this.getLocatorsFromUnresolvedIdentifiers(this.localReferences.value))
 
   public localReferences = computed<string[]>(() => {
     const input = this.input.value
@@ -94,7 +102,7 @@ export class Cell {
     return []
   })
 
-  private getTargetsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
+  private getLocatorsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     return unresolvedIdentifiers.flatMap((identifier) => {
       if (isCellLocatorString(identifier)) {
         return CellLocator.fromString(identifier)
@@ -111,14 +119,14 @@ export class Cell {
   }
 
   private references = computed<string[]>(() => {
-    const allTargets = new Set<string>(this.localReferences.value)
+    const allLocatorStrings = new Set<string>(this.localReferences.value)
 
-    this.localReferenceTargets.value
-      .flatMap(target => this.grid.getCells(target))
+    this.localReferenceLocators.value
+      .flatMap(locator => this.grid.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value)
-      .forEach(identifier => allTargets.add(identifier))
+      .forEach(identifier => allLocatorStrings.add(identifier))
 
-    return Array.from(allTargets)
+    return Array.from(allLocatorStrings)
   })
 
   public output = computed(() => {
@@ -194,8 +202,8 @@ export class Cell {
       lits.analyze(formatter, { jsFunctions: this.commandCenter.jsFunctions }).unresolvedIdentifiers,
     ).map(identifier => identifier.symbol)
 
-    identifiers.push(...this.getTargetsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(target => this.grid.getCells(target))
+    identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
+      .flatMap(locator => this.grid.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))

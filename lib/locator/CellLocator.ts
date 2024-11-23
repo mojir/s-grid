@@ -96,6 +96,19 @@ export class CellLocator {
     return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
+  public withExternalGrid(externalGrid: string | null): CellLocator {
+    if (this.externalGrid === externalGrid) {
+      return this
+    }
+    return new CellLocator({
+      externalGrid,
+      absCol: this.absCol,
+      col: this.col,
+      absRow: this.absRow,
+      row: this.row,
+    })
+  }
+
   public getRowLocator(): RowLocator {
     return new RowLocator({
       externalGrid: this.externalGrid,

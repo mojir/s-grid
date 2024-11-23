@@ -13,10 +13,10 @@ const grid = gridProject.value.currentGrid
 <template>
   <div>
     <ColorPicker
-      :model-value="grid.getTextColor()"
+      :model-value="grid.getTextColor(null)"
       :color-palette="colorPalette"
       icon="mdi-format-color-text"
-      @update:model-value="grid.setTextColor($event)"
+      @update:model-value="grid.setTextColor($event, null)"
     />
   </div>
 </template>

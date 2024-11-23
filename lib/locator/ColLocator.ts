@@ -1,3 +1,4 @@
+import { CellLocator } from './CellLocator'
 import { colLocatorRegExp } from './utils'
 
 export type ColRange = {
@@ -80,12 +81,31 @@ export class ColLocator {
     return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}`
   }
 
+  public toLocal(): ColLocator {
+    return new ColLocator({
+      externalGrid: null,
+      absCol: this.absCol,
+      col: this.col,
+    })
+  }
+
   public toLocalNonAbsolute(): ColLocator {
     return new ColLocator({
       externalGrid: null,
       absCol: false,
       col: this.col,
     })
+  }
+
+  public getAllCellLocators(rowCount: number): CellLocator[] {
+    return Array.from({ length: rowCount }, (_, row) =>
+      new CellLocator({
+        externalGrid: this.externalGrid,
+        absCol: this.absCol,
+        col: this.col,
+        absRow: this.absCol,
+        row: row,
+      }))
   }
 
   public isSameCol(other: ColLocator): boolean {

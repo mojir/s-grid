@@ -1,4 +1,6 @@
 import { CellLocator } from './CellLocator'
+import { ColLocator } from './ColLocator'
+import { RowLocator } from './RowLocator'
 import { rangeLocatorRegExp, type Movement } from './utils'
 
 export function isRangeLocatorString(value: string): boolean {
@@ -56,12 +58,19 @@ export class RangeLocator {
     return `${externalGrid}${this.start.toLocal().toString()}-${this.end.toLocal().toString()}`
   }
 
+  public withExternalGrid(externalGrid: string | null): RangeLocator {
+    if (this.getExternalGrid() === externalGrid) {
+      return this
+    }
+    return new RangeLocator(this.start.withExternalGrid(externalGrid), this.end.withExternalGrid(externalGrid))
+  }
+
   public getExternalGrid(): string | null {
     return this.start.externalGrid
   }
 
   public size(): number {
-    return (this.end.row - this.start.row + 1) * (this.end.col - this.start.col + 1)
+    return Math.abs((this.end.row - this.start.row + 1) * (this.end.col - this.start.col + 1))
   }
 
   public toSorted(): RangeLocator {
@@ -148,14 +157,14 @@ export class RangeLocator {
   }
 
   public getAllCellLocators(): CellLocator[] {
-    const cellIds: CellLocator[] = []
+    const cellLocators: CellLocator[] = []
     const externalGrid = this.start.externalGrid
 
     const { startRow, startCol, endRow, endCol } = this.toSorted().getCoords()
 
     for (let row = startRow; row <= endRow; row += 1) {
       for (let col = startCol; col <= endCol; col += 1) {
-        cellIds.push(new CellLocator({
+        cellLocators.push(new CellLocator({
           externalGrid,
           absCol: false,
           col,
@@ -165,7 +174,41 @@ export class RangeLocator {
       }
     }
 
-    return cellIds
+    return cellLocators
+  }
+
+  public getAllRowLocators(): RowLocator[] {
+    const rowLocators: RowLocator[] = []
+    const externalGrid = this.start.externalGrid
+
+    const { startRow, endRow } = this.toSorted().getCoords()
+
+    for (let row = startRow; row <= endRow; row += 1) {
+      rowLocators.push(new RowLocator({
+        externalGrid,
+        absRow: false,
+        row,
+      }))
+    }
+
+    return rowLocators
+  }
+
+  public getAllColLocators(): ColLocator[] {
+    const rowLocators: ColLocator[] = []
+    const externalGrid = this.start.externalGrid
+
+    const { startCol, endCol } = this.toSorted().getCoords()
+
+    for (let col = startCol; col <= endCol; col += 1) {
+      rowLocators.push(new ColLocator({
+        externalGrid,
+        absCol: false,
+        col,
+      }))
+    }
+
+    return rowLocators
   }
 
   public getCellIdMatrix(): CellLocator[][] {

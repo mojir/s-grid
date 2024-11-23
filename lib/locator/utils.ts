@@ -15,10 +15,12 @@ const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups
 const cellPart = `${colPart}${rowPart}` // Four groups
 const gridPart = `(?:(?<grid>${nameCharacterClass}+)!)?` // One group
 
-export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${cellPart})-(?<end>${cellPart})`)
-export const cellLocatorRegExp = new RegExp(`^${gridPart}${cellPart}`)
-export const rowLocatorRegExp = new RegExp(`^${gridPart}${rowPart}`)
-export const colLocatorRegExp = new RegExp(`^${gridPart}${colPart}`)
+export const cellLocatorRegExp = new RegExp(`^${gridPart}${cellPart}$`)
+export const rowLocatorRegExp = new RegExp(`^${gridPart}@?${rowPart}$`)
+export const colLocatorRegExp = new RegExp(`^${gridPart}${colPart}$`)
+export const rowRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${rowPart})-(?<end>${rowPart})$`)
+export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart})-(?<end>${colPart})$`)
+export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${cellPart})-(?<end>${cellPart})$`)
 
 export function getMovement(from: CellLocator, to: CellLocator): Movement {
   if (from.externalGrid !== to.externalGrid) {

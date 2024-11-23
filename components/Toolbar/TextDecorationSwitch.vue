@@ -17,12 +17,12 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
 function onUpdateUnderline(value: boolean) {
   textDecoration.value = value ? 'underline' : undefined
-  grid.value.setStyle('textDecoration', textDecoration.value)
+  grid.value.setStyle('textDecoration', textDecoration.value, null)
 }
 
 function onUpdateLineThrough(value: boolean) {
   textDecoration.value = value ? 'line-through' : undefined
-  grid.value.setStyle('textDecoration', textDecoration.value)
+  grid.value.setStyle('textDecoration', textDecoration.value, null)
 }
 </script>
 

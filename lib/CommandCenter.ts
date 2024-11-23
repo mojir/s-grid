@@ -1,8 +1,9 @@
 import type { JsFunction } from '@mojir/lits'
-import type { CellLocator } from './locator/CellLocator'
+import { CellLocator } from './locator/CellLocator'
 import { getColNumber, type ColRange } from './locator/ColLocator'
 import { getRowNumber, type RowRange } from './locator/RowLocator'
 import type { Direction } from './locator/utils'
+import { getLocatorFromString } from './locator/Locator'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
 import type { GridProject } from '~/lib/GridProject'
@@ -18,7 +19,7 @@ const commandNames = [
   'ExpandSelection!',
   'ExpandSelectionTo!',
   'GetCell',
-  'GetCells',
+  'GetCell',
   'GetSelection',
   'Help',
   'InsertColsAfter!',
@@ -83,31 +84,32 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'CreateNamedFunction!',
-      execute: (alias: string, input: string, target?: string) => {
+      execute: (alias: string, input: string, cellLocatorString?: string) => {
+        const locator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || null
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCell(target)
+        const cell = grid.value.getCellFromLocator(locator)
         grid.value.alias.setCell(alias, cell)
-        grid.value.setInput(input, target)
+        grid.value.setInput(input, locator)
       },
       description: 'Clear the current cell',
     })
 
     this.registerCommand({
       name: 'SetRowHeight!',
-      execute: (height: number, target?: string) => {
+      execute: (height: number, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCell(target)
-        grid.value.getRow(cell.cellLocator.getRowLocator()).height.value = height
+        grid.value.setRowHeight(height, locator)
       },
       description: 'Set row height',
     })
 
     this.registerCommand({
       name: 'SetColWidth!',
-      execute: (width: number, target?: string) => {
+      execute: (width: number, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCell(target)
-        grid.value.getCol(cell.cellLocator.getColLocator()).width.value = width
+        grid.value.setColWidth(width, locator)
       },
       description: 'Set column width',
     })
@@ -122,25 +124,28 @@ export class CommandCenter {
     })
     this.registerCommand({
       name: 'MovePositionTo!',
-      execute: (cell: string) => {
+      execute: (cellLocatorString: string) => {
+        const cellLocator = CellLocator.fromString(cellLocatorString)
         const grid = this.gridProject.currentGrid
-        grid.value.movePositionTo(cell)
+        grid.value.movePositionTo(cellLocator)
       },
       description: 'Move the position to a specific cell',
     })
     this.registerCommand({
       name: 'SetInput!',
-      execute: (input: string, target?: string) => {
+      execute: (input: string, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const grid = this.gridProject.currentGrid
-        grid.value.setInput(input, target)
+        grid.value.setInput(input, locator)
       },
       description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
     })
     this.registerCommand({
       name: 'Clear!',
-      execute: (target?: string) => {
+      execute: (locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const grid = this.gridProject.currentGrid
-        grid.value.clear(target)
+        grid.value.clear(locator)
       },
       description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
     })
@@ -154,25 +159,28 @@ export class CommandCenter {
     })
     this.registerCommand({
       name: 'GetCell',
-      execute: (cellLocator: string) => {
+      execute: (cellLocatorString: string) => {
+        const cellLocator = CellLocator.fromString(cellLocatorString)
         const grid = this.gridProject.currentGrid
-        return grid.value.getCell(cellLocator).getDebugInfo()
+        return grid.value.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
-      name: 'GetCells',
-      execute: (cellLocator: string) => {
+      name: 'GetCell',
+      execute: (cellLocatorString: string) => {
+        const cellLocator = CellLocator.fromString(cellLocatorString)
         const grid = this.gridProject.currentGrid
-        return grid.value.getCells(cellLocator).map(cell => cell.getDebugInfo())
+        return grid.value.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
       name: 'SetAlias!',
-      execute: (alias: string, id?: string) => {
+      execute: (alias: string, cellLocatorString?: string) => {
+        const cellLocator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || null
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCell(id)
+        const cell = grid.value.getCellFromLocator(cellLocator)
         grid.value.alias.setCell(alias, cell)
       },
       description: 'Create an alias for a cell',
@@ -180,10 +188,11 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetStyle!',
-      execute: <T extends CellStyleName>(property: T, value: CellStyle[T], cellLocator?: string) => {
+      execute: <T extends CellStyleName>(property: T, value: CellStyle[T], locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         if (validCellStyle(property, value)) {
           const grid = this.gridProject.currentGrid
-          grid.value.setStyle(property, value, cellLocator)
+          grid.value.setStyle(property, value, locator)
         }
         else {
           throw new Error(`Invalid cell style property: ${property}`)
@@ -194,29 +203,32 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetBackgroundColor!',
-      execute: (hexCode: string, target?: string) => {
+      execute: (hexCode: string, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const color = Color.fromHex(hexCode)
         const grid = this.gridProject.currentGrid
-        grid.value.setBackgroundColor(color, target)
+        grid.value.setBackgroundColor(color, locator)
       },
       description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetTextColor!',
-      execute: (hexCode: string, target?: string) => {
+      execute: (hexCode: string, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const color = Color.fromHex(hexCode)
         const grid = this.gridProject.currentGrid
-        grid.value.setTextColor(color, target)
+        grid.value.setTextColor(color, locator)
       },
       description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetFormatter!',
-      execute: (formatter: string, target?: string) => {
+      execute: (formatter: string, locatorString?: string) => {
+        const locator = getLocatorFromString(locatorString)
         const grid = this.gridProject.currentGrid
-        grid.value.setFormatter(formatter, target)
+        grid.value.setFormatter(formatter, locator)
       },
       description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
     })

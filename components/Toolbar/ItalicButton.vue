@@ -14,7 +14,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 }, { immediate: true })
 
 function onUpdateItalic(value: boolean) {
-  grid.value.setStyle('italic', value)
+  grid.value.setStyle('italic', value, null)
   italic.value = value
 }
 </script>
