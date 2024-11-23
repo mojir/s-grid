@@ -2,13 +2,13 @@ import type { RangeLocator } from './RangeLocator'
 import { ColLocator, getColNumber, getColId } from './ColLocator'
 import { getRowNumber, getRowId, RowLocator } from './RowLocator'
 import { cellLocatorRegExp, type Direction, type Movement } from './utils'
+import { CommonLocator } from './CommonLocator'
 
 export function isCellLocatorString(id: string): boolean {
   return cellLocatorRegExp.test(id)
 }
 
-export class CellLocator {
-  public readonly externalGrid: string | null
+export class CellLocator extends CommonLocator {
   public readonly absCol: boolean
   public readonly col: number
   public readonly absRow: boolean
@@ -40,7 +40,8 @@ export class CellLocator {
     if (row > 9999) {
       throw new Error(`Row ${row} is out of range`)
     }
-    this.externalGrid = externalGrid
+
+    super(externalGrid)
     this.absCol = absCol
     this.col = col
     this.absRow = absRow
@@ -96,12 +97,25 @@ export class CellLocator {
     return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
-  public withExternalGrid(externalGrid: string | null): CellLocator {
+  public override withExternalGrid(externalGrid: string | null): CellLocator {
     if (this.externalGrid === externalGrid) {
       return this
     }
     return new CellLocator({
       externalGrid,
+      absCol: this.absCol,
+      col: this.col,
+      absRow: this.absRow,
+      row: this.row,
+    })
+  }
+
+  public override withoutExternalGrid(): CellLocator {
+    if (!this.externalGrid) {
+      return this
+    }
+    return new CellLocator({
+      externalGrid: null,
       absCol: this.absCol,
       col: this.col,
       absRow: this.absRow,

@@ -2,6 +2,7 @@ import type { CellLocator } from './CellLocator'
 import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
 import { colRangeLocatorRegExp } from './utils'
+import { CommonLocator } from './CommonLocator'
 
 export function isColRangeLocatorString(value: string): boolean {
   return colRangeLocatorRegExp.test(value)
@@ -12,7 +13,7 @@ type Coords = {
   endCol: number
 }
 
-export class ColRangeLocator {
+export class ColRangeLocator extends CommonLocator {
   public readonly start: ColLocator
   public readonly end: ColLocator
 
@@ -20,6 +21,7 @@ export class ColRangeLocator {
     if (start.externalGrid !== end.externalGrid) {
       throw new Error(`Cannot create col range from different grids: ${start.toString()} - ${end.toString()}`)
     }
+    super(start.externalGrid)
     this.start = start
     this.end = end
   }
@@ -35,6 +37,36 @@ export class ColRangeLocator {
     return new ColRangeLocator(ColLocator.fromString(startString), ColLocator.fromString(endString))
   }
 
+  public override withExternalGrid(externalGrid: string): ColRangeLocator {
+    if (this.externalGrid === externalGrid) {
+      return this
+    }
+    return new ColRangeLocator(new ColLocator({
+      externalGrid,
+      absCol: this.start.absCol,
+      col: this.start.col,
+    }), new ColLocator({
+      externalGrid,
+      absCol: this.end.absCol,
+      col: this.end.col,
+    }))
+  }
+
+  public override withoutExternalGrid(): ColRangeLocator {
+    if (!this.externalGrid) {
+      return this
+    }
+    return new ColRangeLocator(new ColLocator({
+      externalGrid: null,
+      absCol: this.start.absCol,
+      col: this.start.col,
+    }), new ColLocator({
+      externalGrid: null,
+      absCol: this.end.absCol,
+      col: this.end.col,
+    }))
+  }
+
   static fromRowLocator(rowLocator: ColLocator): ColRangeLocator {
     return new ColRangeLocator(rowLocator, rowLocator)
   }
@@ -46,10 +78,6 @@ export class ColRangeLocator {
   public toString(): string {
     const externalGrid = this.start.externalGrid ? `${this.start.externalGrid}!` : ''
     return `${externalGrid}${this.start.toLocal().toString()}-${this.end.toLocal().toString()}`
-  }
-
-  public getExternalGrid(): string | null {
-    return this.start.externalGrid
   }
 
   public size(): number {
@@ -90,12 +118,12 @@ export class ColRangeLocator {
   public getAllCellLocators(rowCount: number): CellLocator[] {
     return RangeLocator
       .fromCoords({ ...this.toSorted().getCoords(), startRow: 0, endRow: rowCount - 1 })
-      .withExternalGrid(this.getExternalGrid())
+      .withExternalGrid(this.externalGrid)
       .getAllCellLocators()
   }
 
   public getAllColLocators(): ColLocator[] {
-    const externalGrid = this.getExternalGrid()
+    const externalGrid = this.externalGrid
     const { startCol, endCol } = this.toSorted().getCoords()
     const colLocators: ColLocator[] = []
     for (let col = startCol; col <= endCol; col += 1) {
@@ -111,7 +139,7 @@ export class ColRangeLocator {
   public getCellIdMatrix(rowCount: number): CellLocator[][] {
     return RangeLocator
       .fromCoords({ ...this.toSorted().getCoords(), startRow: 0, endRow: rowCount - 1 })
-      .withExternalGrid(this.getExternalGrid())
+      .withExternalGrid(this.externalGrid)
       .getCellIdMatrix()
   }
 

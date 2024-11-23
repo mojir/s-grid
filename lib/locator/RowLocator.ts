@@ -1,4 +1,6 @@
 import { CellLocator } from './CellLocator'
+import { CommonLocator } from './CommonLocator'
+
 import { rowLocatorRegExp } from './utils'
 
 export type RowRange = {
@@ -25,8 +27,7 @@ export function getRowNumber(rowLocator: string): number {
   return Number(match[3]) - 1
 }
 
-export class RowLocator {
-  public readonly externalGrid: string | null
+export class RowLocator extends CommonLocator {
   public readonly absRow: boolean
   public readonly row: number
 
@@ -41,7 +42,7 @@ export class RowLocator {
       row: number
     },
   ) {
-    this.externalGrid = externalGrid
+    super(externalGrid)
     this.absRow = absRow
     this.row = row
   }
@@ -73,6 +74,28 @@ export class RowLocator {
 
   public toString(): string {
     return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absRow ? '$' : ''}${getRowId(this.row)}`
+  }
+
+  public override withExternalGrid(externalGrid: string): RowLocator {
+    if (this.externalGrid === externalGrid) {
+      return this
+    }
+    return new RowLocator({
+      externalGrid,
+      absRow: this.absRow,
+      row: this.row,
+    })
+  }
+
+  public override withoutExternalGrid(): RowLocator {
+    if (!this.externalGrid) {
+      return this
+    }
+    return new RowLocator({
+      externalGrid: null,
+      absRow: this.absRow,
+      row: this.row,
+    })
   }
 
   public toLocal(): RowLocator {

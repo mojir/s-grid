@@ -6,6 +6,7 @@ import { defaultFormatter } from './utils'
 import type { Grid } from './Grid'
 import type { CommandCenter } from './CommandCenter'
 import { CellLocator, isCellLocatorString } from './locator/CellLocator'
+import type { GridProject } from './GridProject'
 import type { LitsComposable } from '~/composables/useLits'
 
 export type CellJson = {
@@ -18,6 +19,7 @@ export type CellJson = {
   textColor?: ColorJson | null
 }
 export class Cell {
+  private gridProject: GridProject
   private grid: Grid
   private commandCenter: CommandCenter
   private lits: LitsComposable
@@ -31,12 +33,15 @@ export class Cell {
   constructor(
     public cellLocator: CellLocator,
     {
+      gridProject,
       grid,
       commandCenter,
     }: {
+      gridProject: GridProject
       grid: Grid
       commandCenter: CommandCenter
     }) {
+    this.gridProject = gridProject
     this.grid = grid
     this.commandCenter = commandCenter
     this.lits = useLits()
@@ -143,7 +148,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       try {
-        const values = this.grid.getValuesFromUndefinedIdentifiers(this.references.value)
+        const values = this.gridProject.getValuesFromUndefinedIdentifiers(this.references.value)
         const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
         return result
       }
@@ -209,7 +214,7 @@ export class Cell {
     const uniqueIdentifiers = Array.from(new Set(identifiers))
 
     try {
-      const values = this.grid.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
+      const values = this.gridProject.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
       const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {

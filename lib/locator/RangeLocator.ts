@@ -1,5 +1,7 @@
 import { CellLocator } from './CellLocator'
 import { ColLocator } from './ColLocator'
+import { CommonLocator } from './CommonLocator'
+
 import { RowLocator } from './RowLocator'
 import { rangeLocatorRegExp, type Movement } from './utils'
 
@@ -14,11 +16,12 @@ type Coords = {
   endCol: number
 }
 
-export class RangeLocator {
+export class RangeLocator extends CommonLocator {
   public readonly start: CellLocator
   public readonly end: CellLocator
 
   private constructor(start: CellLocator, end: CellLocator) {
+    super(start.externalGrid)
     if (start.externalGrid !== end.externalGrid) {
       throw new Error(`Cannot create cell range from different grids: ${start.toString()} - ${end.toString()}`)
     }
@@ -58,15 +61,21 @@ export class RangeLocator {
     return `${externalGrid}${this.start.toLocal().toString()}-${this.end.toLocal().toString()}`
   }
 
-  public withExternalGrid(externalGrid: string | null): RangeLocator {
-    if (this.getExternalGrid() === externalGrid) {
+  public override withExternalGrid(externalGrid: string | null): RangeLocator {
+    if (this.externalGrid === externalGrid) {
+      return this
+    }
+    if (this.externalGrid === externalGrid) {
       return this
     }
     return new RangeLocator(this.start.withExternalGrid(externalGrid), this.end.withExternalGrid(externalGrid))
   }
 
-  public getExternalGrid(): string | null {
-    return this.start.externalGrid
+  public override withoutExternalGrid(): RangeLocator {
+    if (!this.externalGrid) {
+      return this
+    }
+    return new RangeLocator(this.start.withoutExternalGrid(), this.end.withoutExternalGrid())
   }
 
   public size(): number {
@@ -146,7 +155,7 @@ export class RangeLocator {
   }
 
   public clamp(range: RangeLocator): RangeLocator {
-    if (this.getExternalGrid() !== range.getExternalGrid()) {
+    if (this.externalGrid !== range.externalGrid) {
       throw new Error(`Cannot clamp cell range from different grids: ${this.toString()} and ${range.toString()}`)
     }
     const sorted = this.toSorted()
@@ -233,7 +242,7 @@ export class RangeLocator {
   }
 
   public containsCell(cellLocator: CellLocator): boolean {
-    if (this.getExternalGrid() !== cellLocator.externalGrid) {
+    if (this.externalGrid !== cellLocator.externalGrid) {
       return false
     }
     const sorted = this.toSorted()
@@ -254,28 +263,28 @@ export class RangeLocator {
   }
 
   public isCellInTopRow(cellLocator: CellLocator): boolean {
-    if (this.getExternalGrid() !== cellLocator.externalGrid) {
+    if (this.externalGrid !== cellLocator.externalGrid) {
       return false
     }
     return cellLocator.row === this.toSorted().start.row
   }
 
   public isCellBottomRow(cellLocator: CellLocator): boolean {
-    if (this.getExternalGrid() !== cellLocator.externalGrid) {
+    if (this.externalGrid !== cellLocator.externalGrid) {
       return false
     }
     return cellLocator.row === this.toSorted().end.row
   }
 
   public isCellIdLeftColumn(cellLocator: CellLocator): boolean {
-    if (this.getExternalGrid() !== cellLocator.externalGrid) {
+    if (this.externalGrid !== cellLocator.externalGrid) {
       return false
     }
     return cellLocator.col === this.toSorted().start.col
   }
 
   public isCellIdRightColumn(cellLocator: CellLocator): boolean {
-    if (this.getExternalGrid() !== cellLocator.externalGrid) {
+    if (this.externalGrid !== cellLocator.externalGrid) {
       return false
     }
     return cellLocator.col === this.toSorted().end.col

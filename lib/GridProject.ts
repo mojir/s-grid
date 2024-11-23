@@ -1,4 +1,5 @@
 import { Grid } from './Grid'
+import { getLocatorFromString } from './locator/Locator'
 import { REPL } from './REPL'
 import { CommandCenter } from '~/lib/CommandCenter'
 
@@ -13,24 +14,18 @@ export class GridProject {
   public readonly currentGrid: ComputedRef<Grid>
 
   public readonly gridIndex = ref(0)
-  public grids: Ref<GridEntry[]> = shallowRef([])
+  public grids: Ref<GridEntry[]>
 
   constructor() {
     this.repl = new REPL(this)
     this.commandCenter = new CommandCenter(this)
 
-    this.grids.value = [
-      ...this.grids.value, {
+    this.grids = shallowRef([
+      {
         name: 'Grid1',
         grid: new Grid(this, 'Grid1'),
-      }, {
-        name: 'Grid2',
-        grid: new Grid(this, 'Grid2'),
-      }, {
-        name: 'Grid3',
-        grid: new Grid(this, 'Grid3'),
-      }]
-
+      },
+    ])
     this.currentGrid = computed(() => {
       return this.grids.value[this.gridIndex.value]!.grid
     })
@@ -66,5 +61,36 @@ export class GridProject {
         name: gridName,
         grid: new Grid(this, gridName),
       }]
+  }
+
+  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
+    return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
+      const locator = getLocatorFromString(value)
+      if (locator) {
+        if (!locator.externalGrid) {
+          acc[value] = this.currentGrid.value.getValueFromLocator(locator)
+        }
+        else {
+          const grid = this.grids.value.find(g => g.name === locator.externalGrid)?.grid
+          if (grid) {
+            acc[value] = grid.getValueFromLocator(locator.withoutExternalGrid())
+          }
+          else {
+            acc[value] = new Error(`Grid ${locator.externalGrid} does not exist`)
+          }
+        }
+      }
+      else {
+        const aliasCell = this.currentGrid.value.alias.getCell(value)
+        if (aliasCell) {
+          acc[value] = aliasCell.output.value
+        }
+        else {
+          acc[value] = new Error(`Invalid identifier: ${value}`)
+        }
+      }
+
+      return acc
+    }, {})
   }
 }

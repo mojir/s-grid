@@ -5,16 +5,16 @@ import type { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { GridProject } from '../GridProject'
 import { CellLocator, isCellLocatorString } from '../locator/CellLocator'
-import { ColLocator, isColLocatorString, type ColRange } from '../locator/ColLocator'
+import { ColLocator, type ColRange } from '../locator/ColLocator'
+import { ColRangeLocator } from '../locator/ColRangeLocator'
 import type { Locator } from '../locator/Locator'
-import { isRangeLocatorString, RangeLocator } from '../locator/RangeLocator'
-import { isRowLocatorString, RowLocator, type RowRange } from '../locator/RowLocator'
+import { RangeLocator } from '../locator/RangeLocator'
+import { RowLocator, type RowRange } from '../locator/RowLocator'
+import { RowRangeLocator } from '../locator/RowRangeLocator'
 import { getDocumentCellId, type Direction, type Movement } from '../locator/utils'
 import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
 import { Row } from '../Row'
 import { transformGridReference } from '../transformFormula'
-import { isRowRangeLocatorString, RowRangeLocator } from '../locator/RowRangeLocator'
-import { ColRangeLocator, isColRangeLocatorString } from '../locator/ColRangeLocator'
 import { GridClipboard } from './GridClipboard'
 import { GridSelection } from './GridSelection'
 import { GridAlias } from '~/lib/Grid/GridAlias'
@@ -50,6 +50,7 @@ export class Grid {
       Array.from({ length: this.cols.value.length }, (_, col) =>
         new Cell(CellLocator.fromCoords({ row, col }),
           {
+            gridProject: this.gridProject,
             grid: this,
             commandCenter: this.gridProject.commandCenter,
           },
@@ -182,58 +183,38 @@ export class Grid {
     })
   }
 
-  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
-    return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, locator) => {
-      if (isRangeLocatorString(locator)) {
-        acc[locator] = matrixMap(
-          RangeLocator
-            .fromString(locator)
-            .getCellIdMatrix(),
-          cellLocator => this.getCellFromLocator(cellLocator).output.value,
-        )
-      }
-      else if (isRowLocatorString(locator)) {
-        acc[locator] = RowLocator
-          .fromString(locator)
-          .getAllCellLocators(this.cols.value.length)
-          .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-      }
-      else if (isColLocatorString(locator)) {
-        acc[locator] = ColLocator
-          .fromString(locator)
-          .getAllCellLocators(this.cols.value.length)
-          .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-      }
-      else if (isRowRangeLocatorString(locator)) {
-        acc[locator] = matrixMap(
-          RowRangeLocator
-            .fromString(locator)
-            .getCellIdMatrix(this.cols.value.length),
-          cellLocator => this.getCellFromLocator(cellLocator).output.value,
-        )
-      }
-      else if (isColRangeLocatorString(locator)) {
-        acc[locator] = matrixMap(
-          ColRangeLocator
-            .fromString(locator)
-            .getCellIdMatrix(this.rows.value.length),
-          cellLocator => this.getCellFromLocator(cellLocator).output.value,
-        )
-      }
-      else if (isCellLocatorString(locator)) {
-        acc[locator] = this.getCellFromString(locator)?.output.value
-      }
-      else {
-        const aliasCell = this.alias.getCell(locator)
-        if (aliasCell) {
-          acc[locator] = this.alias.getCell(locator)?.output.value
-        }
-        else {
-          acc[locator] = new Error(`Invalid identifier: ${locator}`)
-        }
-      }
-      return acc
-    }, {})
+  public getValueFromLocator(locator: Locator): unknown {
+    if (locator instanceof RangeLocator) {
+      return matrixMap(
+        locator.getCellIdMatrix(),
+        cellLocator => this.getCellFromLocator(cellLocator).output.value,
+      )
+    }
+    else if (locator instanceof RowLocator) {
+      return locator
+        .getAllCellLocators(this.cols.value.length)
+        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
+    }
+    else if (locator instanceof ColLocator) {
+      return locator
+        .getAllCellLocators(this.cols.value.length)
+        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
+    }
+    else if (locator instanceof RowRangeLocator) {
+      return matrixMap(
+        locator.getCellIdMatrix(this.cols.value.length),
+        cellLocator => this.getCellFromLocator(cellLocator).output.value,
+      )
+    }
+    else if (locator instanceof ColRangeLocator) {
+      return matrixMap(
+        locator.getCellIdMatrix(this.rows.value.length),
+        cellLocator => this.getCellFromLocator(cellLocator).output.value,
+      )
+    }
+    else if (locator instanceof CellLocator) {
+      return this.getCellFromLocator(locator).output.value
+    }
   }
 
   public movePositionTo(cellLocator: CellLocator) {
@@ -640,6 +621,7 @@ export class Grid {
         new Cell(
           CellLocator.fromCoords({ row: row + index, col }),
           {
+            gridProject: this.gridProject,
             grid: this,
             commandCenter: this.gridProject.commandCenter,
           },
@@ -736,6 +718,7 @@ export class Grid {
         new Cell(
           CellLocator.fromCoords({ row, col: col + index }),
           {
+            gridProject: this.gridProject,
             grid: this,
             commandCenter: this.gridProject.commandCenter,
           },

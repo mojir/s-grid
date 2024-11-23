@@ -1,4 +1,6 @@
 import { CellLocator } from './CellLocator'
+import { CommonLocator } from './CommonLocator'
+
 import { colLocatorRegExp } from './utils'
 
 export type ColRange = {
@@ -31,8 +33,7 @@ export function getColNumber(colLocator: string): number {
   return match[3].split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)
 }
 
-export class ColLocator {
-  public readonly externalGrid: string | null
+export class ColLocator extends CommonLocator {
   public readonly absCol: boolean
   public readonly col: number
 
@@ -47,7 +48,7 @@ export class ColLocator {
       col: number
     },
   ) {
-    this.externalGrid = externalGrid
+    super(externalGrid)
     this.absCol = absCol
     this.col = col
   }
@@ -66,6 +67,28 @@ export class ColLocator {
       externalGrid,
       absCol,
       col,
+    })
+  }
+
+  public override withExternalGrid(externalGrid: string): ColLocator {
+    if (this.externalGrid === externalGrid) {
+      return this
+    }
+    return new ColLocator({
+      externalGrid,
+      absCol: this.absCol,
+      col: this.col,
+    })
+  }
+
+  public override withoutExternalGrid(): ColLocator {
+    if (!this.externalGrid) {
+      return this
+    }
+    return new ColLocator({
+      externalGrid: null,
+      absCol: this.absCol,
+      col: this.col,
     })
   }
 
