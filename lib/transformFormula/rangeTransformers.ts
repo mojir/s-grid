@@ -10,8 +10,8 @@ export function transformRange(rangeLocatorString: string, transformation: Formu
   switch (transformation.type) {
     case 'move':
       return RangeLocator.fromCellLocators(
-        CellLocator.fromString(transformMoveOnCell(rangeLocator.start, transformation.movement)),
-        CellLocator.fromString(transformMoveOnCell(rangeLocator.end, transformation.movement)),
+        CellLocator.fromString(transformMoveOnCell(rangeLocator.start, transformation.movement, transformation.range)),
+        CellLocator.fromString(transformMoveOnCell(rangeLocator.end, transformation.movement, transformation.range)),
       ).toString()
     case 'rowDelete':
       return transformRowDeleteOnRange(rangeLocator, transformation.rowRange)
