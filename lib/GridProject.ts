@@ -63,30 +63,24 @@ export class GridProject {
       }]
   }
 
-  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[]) {
+  public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
       const locator = getLocatorFromString(value)
       if (locator) {
         if (!locator.externalGrid) {
-          acc[value] = this.currentGrid.value.getValueFromLocator(locator)
+          acc[value] = grid.getValueFromLocator(locator)
         }
         else {
           const grid = this.grids.value.find(g => g.name === locator.externalGrid)?.grid
           if (grid) {
             acc[value] = grid.getValueFromLocator(locator.withoutExternalGrid())
           }
-          else {
-            acc[value] = new Error(`Grid ${locator.externalGrid} does not exist`)
-          }
         }
       }
       else {
-        const aliasCell = this.currentGrid.value.alias.getCell(value)
+        const aliasCell = grid.alias.getCell(value)
         if (aliasCell) {
           acc[value] = aliasCell.output.value
-        }
-        else {
-          acc[value] = new Error(`Invalid identifier: ${value}`)
         }
       }
 

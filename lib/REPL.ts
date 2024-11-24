@@ -144,7 +144,7 @@ ${command.description}`
     let result
     try {
       const { unresolvedIdentifiers } = this.lits.value.analyze(program, { jsFunctions: this.gridProject.commandCenter.jsFunctions })
-      const values = this.gridProject.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol))
+      const values = this.gridProject.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol), this.gridProject.currentGrid.value)
       result = this.lits.value.run(program, {
         values,
         jsFunctions: this.gridProject.commandCenter.jsFunctions,

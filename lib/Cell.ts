@@ -1,4 +1,4 @@
-import { isLitsError, isLitsFunction } from '@mojir/lits'
+import { isLitsFunction } from '@mojir/lits'
 import { CellStyle, type CellStyleJson } from './CellStyle'
 import { Color, type ColorJson } from './color'
 import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
@@ -148,7 +148,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       try {
-        const values = this.gridProject.getValuesFromUndefinedIdentifiers(this.references.value)
+        const values = this.gridProject.getValuesFromUndefinedIdentifiers(this.references.value, this.grid)
         const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
         return result
       }
@@ -214,7 +214,7 @@ export class Cell {
     const uniqueIdentifiers = Array.from(new Set(identifiers))
 
     try {
-      const values = this.gridProject.getValuesFromUndefinedIdentifiers(uniqueIdentifiers)
+      const values = this.gridProject.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
       const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {
@@ -233,8 +233,8 @@ export class Cell {
     return typeof this.output.value === 'number'
   })
 
-  public isError = computed(() => {
-    return isLitsError(this.output.value)
+  public hasError = computed(() => {
+    return this.output.value instanceof Error
   })
 
   public isFunction = computed(() => {
@@ -253,13 +253,14 @@ export class Cell {
       style: this.style.value.getJson(),
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
+      hasError: this.hasError.value,
     }
   }
 }
 
 function formatOutputValue(value: unknown): unknown {
   if (value instanceof Error) {
-    return 'ERR'
+    return value.message
   }
   if (isLitsFunction(value)) {
     return 'λ'
