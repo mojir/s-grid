@@ -4,8 +4,9 @@ import { whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
-import { ColLocator, getColId, type ColRange } from '~/lib/locator/ColLocator'
+import { ColLocator, getColId } from '~/lib/locator/ColLocator'
 import { getDocumentColId, getDocumentResizeColId } from '~/lib/locator/utils'
+import { ColRangeLocator } from '~/lib/locator/ColRangeLocator'
 
 const props = defineProps<{
   gridProject: GridProject
@@ -20,23 +21,25 @@ const colLocator = computed(() => ColLocator.fromNumber(col.value.index.value))
 const colId = computed(() => getDocumentColId(colLocator.value, grid.value.name.value))
 const resizeColId = computed(() => getDocumentResizeColId(colLocator.value, grid.value.name.value))
 
-function getAffectedRange(): ColRange {
+function getAffectedRange(): ColRangeLocator {
   const selectedRange = grid.value.selection.selectedCols.value
-  if (!selectedRange || !grid.value.selection.isColSelected(col.value.label.value)) {
-    return { col: col.value.index.value, count: 1 }
+  if (!selectedRange || !grid.value.selection.isColSelected(col.value.index.value)) {
+    return ColRangeLocator.fromColLocator(colLocator.value)
   }
   return selectedRange
 }
 
 const deleteColLabel = computed(() => {
-  const { col, count } = getAffectedRange()
+  const colRangeLocator = getAffectedRange()
+  const col = colRangeLocator.start.col
+  const count = colRangeLocator.size()
   const start = getColId(col)
   const end = getColId(col + count - 1)
   return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
 })
 
 const insertBeforeColLabel = computed(() => {
-  const { count } = getAffectedRange()
+  const count = getAffectedRange().size()
   if (count === 1) {
     return 'Insert 1 column before'
   }
@@ -45,7 +48,7 @@ const insertBeforeColLabel = computed(() => {
 })
 
 const insertAfterColLabel = computed(() => {
-  const { count } = getAffectedRange()
+  const count = getAffectedRange().size()
   if (count === 1) {
     return 'Insert 1 column after'
   }
@@ -66,7 +69,7 @@ function insertAfterCol() {
 }
 
 const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsCol(col.value.index.value))
-const isSelected = computed(() => grid.value.selection.isColSelected(col.value.label.value))
+const isSelected = computed(() => grid.value.selection.isColSelected(col.value.index.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {

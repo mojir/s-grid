@@ -2,9 +2,9 @@ import { isLitsError } from '@mojir/lits'
 import type { RangeLocator } from '../locator/RangeLocator'
 import { isRangeLocatorString } from '../locator/RangeLocator'
 import type { Movement } from '../locator/utils'
-import type { RowRange } from '../locator/RowLocator'
-import type { ColRange } from '../locator/ColLocator'
+import type { RowRangeLocator } from '../locator/RowRangeLocator'
 import { isCellLocatorString } from '../locator/CellLocator'
+import type { ColRangeLocator } from '../locator/ColRangeLocator'
 import { transformRange } from './rangeTransformers'
 import { transformCell } from './cellTransformers'
 
@@ -14,16 +14,16 @@ export type FormulaTransformation = {
   movement: Movement
 } | {
   type: 'rowDelete'
-  rowRange: RowRange
+  rowRangeLocator: RowRangeLocator
 } | {
   type: 'colDelete'
-  colRange: ColRange
+  colRangeLocator: ColRangeLocator
 } | {
   type: 'rowInsertBefore'
-  rowRange: RowRange
+  rowRangeLocator: RowRangeLocator
 } | {
   type: 'colInsertBefore'
-  colRange: ColRange
+  colRangeLocator: ColRangeLocator
 }
 
 export function transformGridReference(program: string, transformation: FormulaTransformation): string {

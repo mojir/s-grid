@@ -1,9 +1,11 @@
 import type { JsFunction } from '@mojir/lits'
 import { CellLocator } from './locator/CellLocator'
-import { getColNumber, type ColRange } from './locator/ColLocator'
-import { getRowNumber, type RowRange } from './locator/RowLocator'
+import { ColLocator, getColNumber } from './locator/ColLocator'
+import { getRowNumber, RowLocator } from './locator/RowLocator'
 import type { Direction } from './locator/utils'
 import { getLocatorFromString } from './locator/Locator'
+import { RowRangeLocator } from './locator/RowRangeLocator'
+import { ColRangeLocator } from './locator/ColRangeLocator'
 import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
 import type { GridProject } from '~/lib/GridProject'
@@ -306,14 +308,14 @@ export class CommandCenter {
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
-        const rowIndex = Math.min(startRowIndex, endRowIndex)
-        const count = Math.abs(endRowIndex - startRowIndex) + 1
-        const rowRange: RowRange = {
-          row: rowIndex,
-          count,
-        }
+        const startRow = Math.min(startRowIndex, endRowIndex)
+        const endRow = Math.max(startRowIndex, endRowIndex)
+        const rowRangeLocator = RowRangeLocator.fromRowLocators(
+          RowLocator.fromNumber(startRow),
+          RowLocator.fromNumber(endRow),
+        )
         const grid = this.gridProject.currentGrid
-        grid.value.deleteRows(rowRange)
+        grid.value.deleteRows(rowRangeLocator)
       },
     })
 
@@ -323,14 +325,14 @@ export class CommandCenter {
       execute: (startColStringId: string, endColStringId?: string) => {
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
-        const colIndex = Math.min(startColIndex, endColIndex)
-        const count = Math.abs(endColIndex - startColIndex) + 1
-        const colRange: ColRange = {
-          col: colIndex,
-          count,
-        }
+        const startCol = Math.min(startColIndex, endColIndex)
+        const endCol = Math.max(startColIndex, endColIndex)
+        const colRangeLocator = ColRangeLocator.fromColLocators(
+          ColLocator.fromNumber(startCol),
+          ColLocator.fromNumber(endCol),
+        )
         const grid = this.gridProject.currentGrid
-        grid.value.deleteCols(colRange)
+        grid.value.deleteCols(colRangeLocator)
       },
     })
 
@@ -340,14 +342,14 @@ export class CommandCenter {
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
-        const rowIndex = Math.min(startRowIndex, endRowIndex)
-        const count = Math.abs(endRowIndex - startRowIndex) + 1
-        const rowRange: RowRange = {
-          row: rowIndex,
-          count,
-        }
+        const startRow = Math.min(startRowIndex, endRowIndex)
+        const endRow = Math.max(startRowIndex, endRowIndex)
+        const rowRangeLocator = RowRangeLocator.fromRowLocators(
+          RowLocator.fromNumber(startRow),
+          RowLocator.fromNumber(endRow),
+        )
         const grid = this.gridProject.currentGrid
-        grid.value.insertRowsBefore(rowRange)
+        grid.value.insertRowsBefore(rowRangeLocator)
       },
     })
 
@@ -357,14 +359,14 @@ export class CommandCenter {
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
-        const rowIndex = Math.min(startRowIndex, endRowIndex)
-        const count = Math.abs(endRowIndex - startRowIndex) + 1
-        const rowRange: RowRange = {
-          row: rowIndex,
-          count,
-        }
+        const startRow = Math.min(startRowIndex, endRowIndex)
+        const endRow = Math.max(startRowIndex, endRowIndex)
+        const rowRangeLocator = RowRangeLocator.fromRowLocators(
+          RowLocator.fromNumber(startRow),
+          RowLocator.fromNumber(endRow),
+        )
         const grid = this.gridProject.currentGrid
-        grid.value.insertRowsAfter(rowRange)
+        grid.value.insertRowsAfter(rowRangeLocator)
       },
     })
 
@@ -374,14 +376,15 @@ export class CommandCenter {
       execute: (startColStringId: string, endColStringId?: string) => {
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
-        const colIndex = Math.min(startColIndex, endColIndex)
-        const count = Math.abs(endColIndex - startColIndex) + 1
-        const colRange: ColRange = {
-          col: colIndex,
-          count,
-        }
+        const startCol = Math.min(startColIndex, endColIndex)
+        const endCol = Math.max(startColIndex, endColIndex)
+        const colRangeLocator = ColRangeLocator.fromColLocators(
+          ColLocator.fromNumber(startCol),
+          ColLocator.fromNumber(endCol),
+        )
+
         const grid = this.gridProject.currentGrid
-        grid.value.insertColsBefore(colRange)
+        grid.value.insertColsBefore(colRangeLocator)
       },
     })
 
@@ -391,14 +394,15 @@ export class CommandCenter {
       execute: (startColStringId: string, endColStringId?: string) => {
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
-        const colIndex = Math.min(startColIndex, endColIndex)
-        const count = Math.abs(endColIndex - startColIndex) + 1
-        const colRange: ColRange = {
-          col: colIndex,
-          count,
-        }
+        const startCol = Math.min(startColIndex, endColIndex)
+        const endCol = Math.max(startColIndex, endColIndex)
+        const colRangeLocator = ColRangeLocator.fromColLocators(
+          ColLocator.fromNumber(startCol),
+          ColLocator.fromNumber(endCol),
+        )
+
         const grid = this.gridProject.currentGrid
-        grid.value.insertColsAfter(colRange)
+        grid.value.insertColsAfter(colRangeLocator)
       },
     })
   }

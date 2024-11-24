@@ -4,8 +4,9 @@ import { rowHeaderWidth } from '~/lib/constants'
 import type { Row } from '~/lib/Row'
 import { whs } from '~/lib/utils'
 import type { GridProject } from '~/lib/GridProject'
-import { getRowId, RowLocator, type RowRange } from '~/lib/locator/RowLocator'
+import { getRowId, RowLocator } from '~/lib/locator/RowLocator'
 import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locator/utils'
+import { RowRangeLocator } from '~/lib/locator/RowRangeLocator'
 
 const props = defineProps<{
   gridProject: GridProject
@@ -22,14 +23,16 @@ const rowId = computed(() => getDocumentRowId(rowLocator.value, grid.value.name.
 const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value, grid.value.name.value))
 
 const deleteRowLabel = computed(() => {
-  const { row, count } = getAffectedRange()
+  const rowRangeLocator = getAffectedRange()
+  const row = rowRangeLocator.start.row
+  const count = rowRangeLocator.size()
   const start = getRowId(row)
   const end = getRowId(row + count - 1)
   return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
 })
 
 const insertBeforeRowLabel = computed(() => {
-  const { count } = getAffectedRange()
+  const count = getAffectedRange().size()
   if (count === 1) {
     return 'Insert 1 row before'
   }
@@ -38,7 +41,7 @@ const insertBeforeRowLabel = computed(() => {
 })
 
 const insertAfterRowLabel = computed(() => {
-  const { count } = getAffectedRange()
+  const count = getAffectedRange().size()
   if (count === 1) {
     return 'Insert 1 row after'
   }
@@ -46,10 +49,10 @@ const insertAfterRowLabel = computed(() => {
   return `Insert ${count} rows after`
 })
 
-function getAffectedRange(): RowRange {
+function getAffectedRange(): RowRangeLocator {
   const selectedRange = grid.value.selection.selectedRows.value
-  if (!selectedRange || !grid.value.selection.isRowSelected(row.value.label.value)) {
-    return { row: row.value.index.value, count: 1 }
+  if (!selectedRange || !grid.value.selection.isRowSelected(row.value.index.value)) {
+    return RowRangeLocator.fromRowLocator(rowLocator.value)
   }
   return selectedRange
 }
@@ -67,7 +70,7 @@ function insertAfterRow() {
 }
 
 const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRow(row.value.index.value))
-const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.label.value))
+const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.index.value))
 
 const cellStyle = computed(() => {
   const style: CSSProperties = {

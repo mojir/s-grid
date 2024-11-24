@@ -1,11 +1,13 @@
 import { CellLocator, isCellLocatorString } from '../locator/CellLocator'
-import { getRowNumber, type RowRange } from '../locator/RowLocator'
-import { getColNumber, type ColRange } from '../locator/ColLocator'
+import { ColLocator } from '../locator/ColLocator'
+import { ColRangeLocator } from '../locator/ColRangeLocator'
+import { RowLocator } from '../locator/RowLocator'
+import { RowRangeLocator } from '../locator/RowRangeLocator'
 import type { Direction, Movement } from '../locator/utils'
-import { isRangeLocatorString, RangeLocator } from '~/lib/locator/RangeLocator'
-import type { Col } from '~/lib/Col'
-import type { Grid } from '~/lib/Grid'
 import type { Row } from '~/lib/Row'
+import { isRangeLocatorString, RangeLocator } from '~/lib/locator/RangeLocator'
+import type { Grid } from '~/lib/Grid'
+import type { Col } from '~/lib/Col'
 
 export class GridSelection {
   public selecting = ref(false)
@@ -21,38 +23,32 @@ export class GridSelection {
 
   private readonly unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords({ row: 0, col: 0 })))
   public readonly selectedRange = computed(() => this.unsortedSelectedRange.value.toSorted())
-  public selectedRows = computed<RowRange | null>(() => {
+  public selectedRows = computed<RowRangeLocator | null>(() => {
     if (this.selectedRange.value.start.col === 0 && this.selectedRange.value.end.col === this.grid.cols.value.length - 1) {
-      return {
-        row: this.selectedRange.value.start.row,
-        count: this.selectedRange.value.end.row - this.selectedRange.value.start.row + 1,
-      }
+      return RowRangeLocator.fromRowLocators(
+        RowLocator.fromNumber(this.selectedRange.value.start.row),
+        RowLocator.fromNumber(this.selectedRange.value.end.row),
+      )
     }
     return null
   })
 
-  public selectedCols = computed<ColRange | null>(() => {
+  public selectedCols = computed<ColRangeLocator | null>(() => {
     if (this.selectedRange.value.start.row === 0 && this.selectedRange.value.end.row === this.grid.rows.value.length - 1) {
-      return {
-        col: this.selectedRange.value.start.col,
-        count: this.selectedRange.value.end.col - this.selectedRange.value.start.col + 1,
-      }
+      return ColRangeLocator.fromColLocators(
+        ColLocator.fromNumber(this.selectedRange.value.start.col),
+        ColLocator.fromNumber(this.selectedRange.value.end.col),
+      )
     }
     return null
   })
 
-  public isRowSelected(rowLocator: string) {
-    const row = getRowNumber(rowLocator)
-    return this.selectedRows.value
-      && this.selectedRows.value.row <= row
-      && row < this.selectedRows.value.row + this.selectedRows.value.count
+  public isRowSelected(row: number): boolean {
+    return this.selectedRows.value?.containsRow(row) ?? false
   }
 
-  public isColSelected(colLocator: string) {
-    const col = getColNumber(colLocator)
-    return this.selectedCols.value
-      && this.selectedCols.value.col <= col
-      && col < this.selectedCols.value.col + this.selectedCols.value.count
+  public isColSelected(col: number) {
+    return this.selectedCols.value?.containsCol(col) ?? false
   }
 
   public moveSelection(movement: Movement) {

@@ -3,11 +3,6 @@ import { CommonLocator } from './CommonLocator'
 
 import { rowLocatorRegExp } from './utils'
 
-export type RowRange = {
-  row: number
-  count: number
-}
-
 export function isRowLocatorString(value: string): boolean {
   return rowLocatorRegExp.test(value)
 }
@@ -111,6 +106,14 @@ export class RowLocator extends CommonLocator {
       externalGrid: null,
       absRow: false,
       row: this.row,
+    })
+  }
+
+  public move(count: number): RowLocator {
+    return new RowLocator({
+      externalGrid: this.externalGrid,
+      absRow: this.absRow,
+      row: this.row + count,
     })
   }
 

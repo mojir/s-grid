@@ -42,7 +42,7 @@ export class RowRangeLocator extends CommonLocator {
     return new RowRangeLocator(rowLocator, rowLocator)
   }
 
-  static fromCellLocators(start: RowLocator, end: RowLocator): RowRangeLocator {
+  static fromRowLocators(start: RowLocator, end: RowLocator): RowRangeLocator {
     return new RowRangeLocator(start, end)
   }
 
@@ -107,6 +107,13 @@ export class RowRangeLocator extends CommonLocator {
         }),
       )
     }
+  }
+
+  public move(count: number): RowRangeLocator {
+    return new RowRangeLocator(
+      this.start.move(count),
+      this.end.move(count),
+    )
   }
 
   public getCoords(): Coords {

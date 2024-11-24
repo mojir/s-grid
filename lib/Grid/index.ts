@@ -5,11 +5,11 @@ import type { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { GridProject } from '../GridProject'
 import { CellLocator, isCellLocatorString } from '../locator/CellLocator'
-import { ColLocator, type ColRange } from '../locator/ColLocator'
+import { ColLocator } from '../locator/ColLocator'
 import { ColRangeLocator } from '../locator/ColRangeLocator'
 import type { Locator } from '../locator/Locator'
 import { RangeLocator } from '../locator/RangeLocator'
-import { RowLocator, type RowRange } from '../locator/RowLocator'
+import { RowLocator } from '../locator/RowLocator'
 import { RowRangeLocator } from '../locator/RowRangeLocator'
 import { getDocumentCellId, type Direction, type Movement } from '../locator/utils'
 import { matrixFilter, matrixForEach, matrixMap } from '../matrix'
@@ -452,8 +452,9 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRows(rowRange: RowRange) {
-    const { row, count } = rowRange
+  public deleteRows(rowRangeLocator: RowRangeLocator) {
+    const row = rowRangeLocator.start.row
+    const count = rowRangeLocator.size()
     if (count === this.rows.value.length) {
       throw new Error('Cannot delete all rows')
     }
@@ -502,10 +503,7 @@ export class Grid {
           cell.input.value.slice(1),
           {
             type: 'rowDelete',
-            rowRange: {
-              row,
-              count,
-            },
+            rowRangeLocator,
           },
         )}`
       }
@@ -515,8 +513,9 @@ export class Grid {
     this.position.value = this.selection.selectedRange.value.start
   }
 
-  public deleteCols(colRange: ColRange) {
-    const { col, count } = colRange
+  public deleteCols(colRangeLocator: ColRangeLocator) {
+    const col = colRangeLocator.start.col
+    const count = colRangeLocator.size()
     if (count === this.cols.value.length) {
       throw new Error('Cannot delete all columns')
     }
@@ -568,10 +567,7 @@ export class Grid {
           cell.input.value.slice(1),
           {
             type: 'colDelete',
-            colRange: {
-              col,
-              count,
-            },
+            colRangeLocator,
           },
         )}`
       }
@@ -580,29 +576,27 @@ export class Grid {
     this.position.value = this.selection.selectedRange.value.start
   }
 
-  public insertRowsBefore(rowRange: RowRange) {
-    const range = RangeLocator.fromCoords({
-      startRow: rowRange.row,
-      startCol: 0,
-      endRow: rowRange.row + rowRange.count - 1,
-      endCol: this.cols.value.length - 1 },
+  public insertRowsBefore(rowRangeLocator: RowRangeLocator) {
+    rowRangeLocator = rowRangeLocator.toSorted()
+    const range = RangeLocator.fromCellLocators(
+      CellLocator.fromCoords({ row: rowRangeLocator.start.row, col: 0 }),
+      CellLocator.fromCoords({ row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
     this.clipboard.copyStyleSelection(range)
-    this.insertRows(rowRange.row, rowRange.count)
+    this.insertRows(rowRangeLocator)
     this.clipboard.pasteStyleSelection(range)
   }
 
-  public insertRowsAfter(rowRange: RowRange) {
-    const range = RangeLocator.fromCoords({
-      startRow: rowRange.row,
-      startCol: 0,
-      endRow: rowRange.row + rowRange.count - 1,
-      endCol: this.cols.value.length - 1 },
+  public insertRowsAfter(rowRangeLocator: RowRangeLocator) {
+    rowRangeLocator = rowRangeLocator.toSorted()
+    const range = RangeLocator.fromCellLocators(
+      CellLocator.fromCoords({ row: rowRangeLocator.start.row, col: 0 }),
+      CellLocator.fromCoords({ row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
     this.clipboard.copyStyleSelection(range)
-    const beforeIndex = rowRange.row + rowRange.count
-    this.insertRows(beforeIndex, rowRange.count)
-    const movement: Movement = { rows: rowRange.count, cols: 0 }
+
+    this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
+    const movement: Movement = { rows: rowRangeLocator.size(), cols: 0 }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))
@@ -614,7 +608,9 @@ export class Grid {
     return RangeLocator.fromCellLocators(startCellId, endCellId).getAllCellLocators()
   }
 
-  private insertRows(row: number, count = 1) {
+  private insertRows(rowRangeLocator: RowRangeLocator) {
+    const row = rowRangeLocator.start.row
+    const count = rowRangeLocator.size()
     const createdRows = Array.from({ length: count }, (_, index) => {
       const rowInstance = new Row(row + index, defaultRowHeight)
       this.cells.splice(row + index, 0, Array.from({ length: this.cols.value.length }, (_, col) =>
@@ -662,10 +658,7 @@ export class Grid {
           cell.input.value.slice(1),
           {
             type: 'rowInsertBefore',
-            rowRange: {
-              row,
-              count,
-            },
+            rowRangeLocator,
           },
         )}`
       }
@@ -674,35 +667,34 @@ export class Grid {
     this.rows.value = newRows
   }
 
-  public insertColsBefore(colRange: ColRange) {
-    const range = RangeLocator.fromCoords({
-      startRow: 0,
-      startCol: colRange.col,
-      endRow: this.rows.value.length - 1,
-      endCol: colRange.col + colRange.count - 1,
-    })
+  public insertColsBefore(colRangeLocator: ColRangeLocator) {
+    colRangeLocator = colRangeLocator.toSorted()
+    const range = RangeLocator.fromCellLocators(
+      CellLocator.fromCoords({ row: 0, col: colRangeLocator.start.col }),
+      CellLocator.fromCoords({ row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+    )
+
     this.clipboard.copyStyleSelection(range)
-    this.insertCols(colRange.col, colRange.count)
+    this.insertCols(colRangeLocator)
     this.clipboard.pasteStyleSelection(range)
   }
 
-  public insertColsAfter(colRange: ColRange) {
-    const range = RangeLocator.fromCoords({
-      startRow: 0,
-      startCol: colRange.col,
-      endRow: this.rows.value.length - 1,
-      endCol: colRange.col + colRange.count - 1,
-    })
-    this.clipboard.copyStyleSelection(range)
-    const beforeIndex = colRange.col + colRange.count
-    this.insertCols(beforeIndex, colRange.count)
-    const movement: Movement = { rows: 0, cols: colRange.count }
+  public insertColsAfter(colRangeLocator: ColRangeLocator) {
+    colRangeLocator = colRangeLocator.toSorted()
+    const range = RangeLocator.fromCellLocators(
+      CellLocator.fromCoords({ row: 0, col: colRangeLocator.start.col }),
+      CellLocator.fromCoords({ row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+    )
+    this.insertCols(colRangeLocator.move(colRangeLocator.size()))
+    const movement: Movement = { rows: 0, cols: colRangeLocator.size() }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))
   }
 
-  private insertCols(col: number, count = 1) {
+  private insertCols(colRangeLocator: ColRangeLocator) {
+    const col = colRangeLocator.start.col
+    const count = colRangeLocator.size()
     const createdCols = Array.from({ length: count }, (_, index) => {
       return new Col(col + index, defaultColWidth)
     })
@@ -755,10 +747,7 @@ export class Grid {
           cell.input.value.slice(1),
           {
             type: 'colInsertBefore',
-            colRange: {
-              col,
-              count,
-            },
+            colRangeLocator,
           },
         )}`
       }

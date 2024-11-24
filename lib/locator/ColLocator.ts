@@ -3,11 +3,6 @@ import { CommonLocator } from './CommonLocator'
 
 import { colLocatorRegExp } from './utils'
 
-export type ColRange = {
-  col: number
-  count: number
-}
-
 export function isColLocatorString(value: string): boolean {
   return colLocatorRegExp.test(value)
 }
@@ -117,6 +112,14 @@ export class ColLocator extends CommonLocator {
       externalGrid: null,
       absCol: false,
       col: this.col,
+    })
+  }
+
+  public move(count: number): ColLocator {
+    return new ColLocator({
+      externalGrid: this.externalGrid,
+      absCol: this.absCol,
+      col: this.col + count,
     })
   }
 

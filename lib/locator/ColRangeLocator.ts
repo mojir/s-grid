@@ -67,11 +67,11 @@ export class ColRangeLocator extends CommonLocator {
     }))
   }
 
-  static fromRowLocator(rowLocator: ColLocator): ColRangeLocator {
+  static fromColLocator(rowLocator: ColLocator): ColRangeLocator {
     return new ColRangeLocator(rowLocator, rowLocator)
   }
 
-  static fromCellLocators(start: ColLocator, end: ColLocator): ColRangeLocator {
+  static fromColLocators(start: ColLocator, end: ColLocator): ColRangeLocator {
     return new ColRangeLocator(start, end)
   }
 
@@ -106,6 +106,13 @@ export class ColRangeLocator extends CommonLocator {
         }),
       )
     }
+  }
+
+  public move(count: number): ColRangeLocator {
+    return new ColRangeLocator(
+      this.start.move(count),
+      this.end.move(count),
+    )
   }
 
   public getCoords(): Coords {
