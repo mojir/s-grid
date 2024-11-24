@@ -23,7 +23,6 @@ defineProps<{
     <DropdownMenu>
       <DropdownMenuTrigger
         class="mr-2 min-w-7 h-7 flex justify-center items-center hover:dark:bg-slate-700 hover:bg-gray-200 rounded-md cursor-pointer"
-        @click="gridProject.addGrid()"
       >
         <Icon
           name="mdi-menu"
