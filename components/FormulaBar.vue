@@ -87,7 +87,7 @@ watch(position, (position) => {
 
 onMounted(() => {
   grid.value.editor.setEditingCellId(grid.value.position.value)
-  grid.value.editor.editorText.value = grid.value.getCellFromLocator(grid.value.editor.editingCellId.value).input.value
+  grid.value.editor.editorText.value = gridProject.value.getCellFromLocator(grid.value.editor.editingCellId.value).input.value
   initialValue.value = grid.value.editor.editorText.value
 })
 
@@ -125,7 +125,7 @@ function cancel() {
 function save() {
   const text = grid.value.editor.editorText.value.trim()
   if (initialValue.value !== text) {
-    const cell = grid.value.getCellFromLocator(grid.value.editor.editingCellId.value)
+    const cell = gridProject.value.getCellFromLocator(grid.value.editor.editingCellId.value)
     cell.input.value = text
     initialValue.value = text
   }

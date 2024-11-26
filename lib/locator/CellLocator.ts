@@ -139,19 +139,9 @@ export class CellLocator extends CommonLocator {
     })
   }
 
-  public toLocal(): CellLocator {
+  public toRelative(): CellLocator {
     return new CellLocator({
-      externalGrid: null,
-      absCol: this.absCol,
-      col: this.col,
-      absRow: this.absRow,
-      row: this.row,
-    })
-  }
-
-  public toLocalNonAbsolute(): CellLocator {
-    return new CellLocator({
-      externalGrid: null,
+      externalGrid: this.externalGrid,
       absCol: false,
       col: this.col,
       absRow: false,

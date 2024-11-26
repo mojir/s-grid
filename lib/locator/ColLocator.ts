@@ -99,17 +99,9 @@ export class ColLocator extends CommonLocator {
     return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}`
   }
 
-  public toLocal(): ColLocator {
+  public toRelative(): ColLocator {
     return new ColLocator({
-      externalGrid: null,
-      absCol: this.absCol,
-      col: this.col,
-    })
-  }
-
-  public toLocalNonAbsolute(): ColLocator {
-    return new ColLocator({
-      externalGrid: null,
+      externalGrid: this.externalGrid,
       absCol: false,
       col: this.col,
     })

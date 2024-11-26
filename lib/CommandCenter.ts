@@ -87,9 +87,9 @@ export class CommandCenter {
     this.registerCommand({
       name: 'CreateNamedFunction!',
       execute: (alias: string, input: string, cellLocatorString?: string) => {
-        const locator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || null
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCellFromLocator(locator)
+        const locator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || grid.value.position.value
+        const cell = this.gridProject.getCellFromLocator(locator)
         grid.value.alias.setCell(alias, cell)
         grid.value.setInput(input, locator)
       },
@@ -163,8 +163,7 @@ export class CommandCenter {
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
         const cellLocator = CellLocator.fromString(cellLocatorString)
-        const grid = this.gridProject.currentGrid
-        return grid.value.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.gridProject.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
@@ -172,17 +171,16 @@ export class CommandCenter {
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
         const cellLocator = CellLocator.fromString(cellLocatorString)
-        const grid = this.gridProject.currentGrid
-        return grid.value.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.gridProject.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
       name: 'SetAlias!',
       execute: (alias: string, cellLocatorString?: string) => {
-        const cellLocator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || null
         const grid = this.gridProject.currentGrid
-        const cell = grid.value.getCellFromLocator(cellLocator)
+        const cellLocator = (cellLocatorString && CellLocator.fromString(cellLocatorString)) || grid.value.position.value
+        const cell = this.gridProject.getCellFromLocator(cellLocator)
         grid.value.alias.setCell(alias, cell)
       },
       description: 'Create an alias for a cell',

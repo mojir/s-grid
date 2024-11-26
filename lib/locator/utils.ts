@@ -41,21 +41,21 @@ export enum DocumetIdType {
 }
 
 export function getDocumentCellId(cellLocator: CellLocator, gridName: string): string {
-  return `${DocumetIdType.Cell}:${gridName}:${cellLocator.toLocalNonAbsolute().toString()}`
+  return `${DocumetIdType.Cell}:${gridName}:${cellLocator.withoutExternalGrid().toRelative().toString()}`
 }
 
 export function getDocumentRowId(rowLocator: RowLocator, gridName: string): string {
-  return `${DocumetIdType.Row}:${gridName}:${rowLocator.toLocalNonAbsolute().toString()}`
+  return `${DocumetIdType.Row}:${gridName}:${rowLocator.withoutExternalGrid().toRelative().toString()}`
 }
 
 export function getDocumentResizeRowId(rowLocator: RowLocator, gridName: string): string {
-  return `${DocumetIdType.ResizeRow}:${gridName}:${rowLocator.toLocalNonAbsolute().toString()}`
+  return `${DocumetIdType.ResizeRow}:${gridName}:${rowLocator.withoutExternalGrid().toRelative().toString()}`
 }
 
 export function getDocumentColId(colLocator: ColLocator, gridName: string): string {
-  return `${DocumetIdType.Col}:${gridName}:${colLocator.toLocalNonAbsolute().toString()}`
+  return `${DocumetIdType.Col}:${gridName}:${colLocator.withoutExternalGrid().toRelative().toString()}`
 }
 
 export function getDocumentResizeColId(colLocator: ColLocator, gridName: string): string {
-  return `${DocumetIdType.ResizeCol}:${gridName}:${colLocator.toLocalNonAbsolute().toString()}`
+  return `${DocumetIdType.ResizeCol}:${gridName}:${colLocator.withoutExternalGrid().toRelative().toString()}`
 }

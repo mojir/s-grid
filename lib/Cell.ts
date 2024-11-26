@@ -19,10 +19,10 @@ export type CellJson = {
   textColor?: ColorJson | null
 }
 export class Cell {
-  private gridProject: GridProject
-  private grid: Grid
-  private commandCenter: CommandCenter
-  private lits: LitsComposable
+  private readonly gridProject: GridProject
+  private readonly grid: Grid
+  private readonly commandCenter: CommandCenter
+  private readonly lits: LitsComposable
 
   public readonly input = ref('')
   public readonly formatter = ref<string | null>(defaultFormatter)
@@ -91,7 +91,7 @@ export class Cell {
     this.style.value = new CellStyle()
   }
 
-  public formula = computed(() => this.input.value.startsWith('=') ? this.input.value.slice(1) : null)
+  public formula = computed(() => this.input.value.startsWith('=') && this.input.value.length > 1 ? this.input.value.slice(1) : null)
   public localReferenceLocators = computed(() => this.getLocatorsFromUnresolvedIdentifiers(this.localReferences.value))
 
   public localReferences = computed<string[]>(() => {
@@ -106,6 +106,10 @@ export class Cell {
 
     return []
   })
+
+  public setFormula(formula: string) {
+    this.input.value = `=${formula}`
+  }
 
   private getLocatorsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     return unresolvedIdentifiers.flatMap((identifier) => {
@@ -127,7 +131,7 @@ export class Cell {
     const allLocatorStrings = new Set<string>(this.localReferences.value)
 
     this.localReferenceLocators.value
-      .flatMap(locator => this.grid.getCellsFromLocator(locator))
+      .flatMap(locator => this.gridProject.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value)
       .forEach(identifier => allLocatorStrings.add(identifier))
 
@@ -208,7 +212,7 @@ export class Cell {
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(locator => this.grid.getCellsFromLocator(locator))
+      .flatMap(locator => this.gridProject.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))

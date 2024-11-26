@@ -93,17 +93,9 @@ export class RowLocator extends CommonLocator {
     })
   }
 
-  public toLocal(): RowLocator {
+  public toRelative(): RowLocator {
     return new RowLocator({
-      externalGrid: null,
-      absRow: this.absRow,
-      row: this.row,
-    })
-  }
-
-  public toLocalNonAbsolute(): RowLocator {
-    return new RowLocator({
-      externalGrid: null,
+      externalGrid: this.externalGrid,
       absRow: false,
       row: this.row,
     })

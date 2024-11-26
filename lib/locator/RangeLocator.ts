@@ -58,7 +58,7 @@ export class RangeLocator extends CommonLocator {
 
   public toString(): string {
     const externalGrid = this.start.externalGrid ? `${this.start.externalGrid}!` : ''
-    return `${externalGrid}${this.start.toLocal().toString()}-${this.end.toLocal().toString()}`
+    return `${externalGrid}${this.start.withoutExternalGrid().toString()}-${this.end.withoutExternalGrid().toString()}`
   }
 
   public override withExternalGrid(externalGrid: string | null): RangeLocator {

@@ -3,30 +3,34 @@ import { CellLocator } from '../locator/CellLocator'
 import type { Movement } from '../locator/utils'
 import type { RowRangeLocator } from '../locator/RowRangeLocator'
 import type { ColRangeLocator } from '../locator/ColRangeLocator'
+import type { Grid } from '../Grid'
 import type { FormulaTransformation } from '.'
 
-export function transformCell(cellLocatorString: string, transformation: FormulaTransformation): string {
-  const cellLocator = CellLocator.fromString(cellLocatorString)
+export function transformCellLocator({
+  grid,
+  cellLocator,
+  transformation,
+}: {
+  grid: Grid
+  cellLocator: CellLocator
+  transformation: FormulaTransformation
+}): string {
   switch (transformation.type) {
     case 'move':
-      return transformMoveOnCell(cellLocator, transformation.movement, transformation.range)
+      return transformMoveOnCell(grid, cellLocator, transformation.movement, transformation.range)
     case 'rowDelete':
-      return transformRowDeleteOnCell(cellLocator, transformation.rowRangeLocator)
+      return transformRowDeleteOnCell(grid, cellLocator, transformation.rowRangeLocator)
     case 'colDelete':
-      return transformColDeleteOnCell(cellLocator, transformation.colRangeLocator)
+      return transformColDeleteOnCell(grid, cellLocator, transformation.colRangeLocator)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnCell(cellLocator, transformation.rowRangeLocator)
+      return transformRowInsertBeforeOnCell(grid, cellLocator, transformation.rowRangeLocator)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnCell(cellLocator, transformation.colRangeLocator)
+      return transformColInsertBeforeOnCell(grid, cellLocator, transformation.colRangeLocator)
   }
 }
 
-export function transformMoveOnCell(cellLocator: CellLocator, { cols, rows }: Movement, maskRange?: RangeLocator): string {
-  if (cellLocator.externalGrid) {
-    return cellLocator.toString()
-  }
-
-  if (maskRange && !maskRange.containsCell(cellLocator)) {
+export function transformMoveOnCell(grid: Grid, cellLocator: CellLocator, { cols, rows }: Movement, maskRange?: RangeLocator): string {
+  if (maskRange && !maskRange.containsCell(cellLocator.withExternalGrid(grid.name.value))) {
     return cellLocator.toString()
   }
 
@@ -41,10 +45,7 @@ export function transformMoveOnCell(cellLocator: CellLocator, { cols, rows }: Mo
   return CellLocator.fromRowCol({ rowLocator, colLocator }).toString()
 }
 
-export function transformRowDeleteOnCell(cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
-  if (cellLocator.externalGrid) {
-    return cellLocator.toString()
-  }
+export function transformRowDeleteOnCell(grid: Grid, cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
   if (cellLocator.row >= row && cellLocator.row < row + count) {
@@ -52,15 +53,12 @@ export function transformRowDeleteOnCell(cellLocator: CellLocator, rowRangeLocat
   }
 
   if (cellLocator.row >= row + count) {
-    return transformMoveOnCell(cellLocator, { cols: 0, rows: -count })
+    return transformMoveOnCell(grid, cellLocator, { cols: 0, rows: -count })
   }
   return cellLocator.toString()
 }
 
-export function transformColDeleteOnCell(cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
-  if (cellLocator.externalGrid) {
-    return cellLocator.toString()
-  }
+export function transformColDeleteOnCell(grid: Grid, cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col && cellLocator.col < col + count) {
@@ -68,32 +66,26 @@ export function transformColDeleteOnCell(cellLocator: CellLocator, colRangeLocat
   }
 
   if (cellLocator.col >= col + count) {
-    return transformMoveOnCell(cellLocator, { cols: -count, rows: 0 })
+    return transformMoveOnCell(grid, cellLocator, { cols: -count, rows: 0 })
   }
   return cellLocator.toString()
 }
 
-export function transformRowInsertBeforeOnCell(cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
-  if (cellLocator.externalGrid) {
-    return cellLocator.toString()
-  }
+export function transformRowInsertBeforeOnCell(grid: Grid, cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
 
   if (cellLocator.row >= row) {
-    return transformMoveOnCell(cellLocator, { cols: 0, rows: count })
+    return transformMoveOnCell(grid, cellLocator, { cols: 0, rows: count })
   }
   return cellLocator.toString()
 }
 
-export function transformColInsertBeforeOnCell(cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
-  if (cellLocator.externalGrid) {
-    return cellLocator.toString()
-  }
+export function transformColInsertBeforeOnCell(grid: Grid, cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col) {
-    return transformMoveOnCell(cellLocator, { cols: count, rows: 0 })
+    return transformMoveOnCell(grid, cellLocator, { cols: count, rows: 0 })
   }
   return cellLocator.toString()
 }
