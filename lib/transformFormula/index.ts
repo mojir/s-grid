@@ -10,30 +10,40 @@ import { getLocatorFromString } from '../locator/Locator'
 import { transformRangeLocator } from './rangeTransformers'
 import { transformCellLocator } from './cellTransformers'
 
-export type FormulaTransformation = {
+export type MoveTransformation = {
   sourceGrid: Grid
   type: 'move'
   range?: RangeLocator
   movement: Movement
-} | {
+}
+
+export type RowDeleteTransformation = {
   sourceGrid: Grid
   type: 'rowDelete'
   rowRangeLocator: RowRangeLocator
-} | {
+}
+
+export type ColDeleteTransformation = {
   sourceGrid: Grid
   type: 'colDelete'
   colRangeLocator: ColRangeLocator
-} | {
+}
+
+export type RowInsertBeforeTransformation = {
   sourceGrid: Grid
   type: 'rowInsertBefore'
   rowRangeLocator: RowRangeLocator
-} | {
+}
+
+export type ColInsertBeforeTransformation = {
   sourceGrid: Grid
   type: 'colInsertBefore'
   colRangeLocator: ColRangeLocator
 }
 
-export function transformLocators(grid: Grid, cell: Cell, transformation: FormulaTransformation): void {
+export type FormulaTransformation = MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
+
+export function transformLocators(cell: Cell, transformation: FormulaTransformation): void {
   const formula = cell.formula.value
   if (!formula) {
     return
@@ -42,29 +52,23 @@ export function transformLocators(grid: Grid, cell: Cell, transformation: Formul
   const tokenStream = lits.tokenize(formula)
   const transformedTokenStream = lits.transform(
     tokenStream,
-    identifier => transformIdentifier(grid, identifier, transformation),
+    identifier => transformIdentifier(identifier, transformation),
   )
   cell.setFormula(lits.untokenize(transformedTokenStream))
 }
 
-function transformIdentifier(grid: Grid, identifier: string, transformation: FormulaTransformation): string {
-  const locator = getLocatorFromString(grid.name.value, identifier)
+function transformIdentifier(identifier: string, transformation: FormulaTransformation): string {
+  const locator = getLocatorFromString(transformation.sourceGrid.name.value, identifier)
   if (!locator) {
-    return identifier
-  }
-  if (locator.gridName && locator.gridName !== transformation.sourceGrid.name.value) {
-    return identifier
-  }
-  if (!locator.gridName && transformation.sourceGrid !== grid) {
     return identifier
   }
 
   try {
     if (locator instanceof CellLocator) {
-      return transformCellLocator({ grid, transformation, cellLocator: locator })
+      return transformCellLocator({ transformation, cellLocator: locator })
     }
     if (locator instanceof RangeLocator) {
-      return transformRangeLocator({ grid, transformation, rangeLocator: locator })
+      return transformRangeLocator({ transformation, rangeLocator: locator })
     }
     throw new Error(`Unsupported locator type: ${identifier}`)
   }

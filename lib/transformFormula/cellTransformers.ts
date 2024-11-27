@@ -1,37 +1,37 @@
-import type { RangeLocator } from '../locator/RangeLocator'
 import { CellLocator } from '../locator/CellLocator'
-import type { Movement } from '../locator/utils'
-import type { RowRangeLocator } from '../locator/RowRangeLocator'
-import type { ColRangeLocator } from '../locator/ColRangeLocator'
-import type { Grid } from '../Grid'
-import type { FormulaTransformation } from '.'
+import type {
+  ColDeleteTransformation,
+  ColInsertBeforeTransformation,
+  FormulaTransformation,
+  MoveTransformation,
+  RowDeleteTransformation,
+  RowInsertBeforeTransformation,
+} from '.'
 
 export function transformCellLocator({
-  grid,
   cellLocator,
   transformation,
 }: {
-  grid: Grid
   cellLocator: CellLocator
   transformation: FormulaTransformation
 }): string {
   switch (transformation.type) {
     case 'move':
-      return transformMoveOnCell(grid, cellLocator, transformation.movement, transformation.range)
+      return transformMoveOnCell(cellLocator, transformation)
     case 'rowDelete':
-      return transformRowDeleteOnCell(grid, cellLocator, transformation.rowRangeLocator)
+      return transformRowDeleteOnCell(cellLocator, transformation)
     case 'colDelete':
-      return transformColDeleteOnCell(grid, cellLocator, transformation.colRangeLocator)
+      return transformColDeleteOnCell(cellLocator, transformation)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnCell(grid, cellLocator, transformation.rowRangeLocator)
+      return transformRowInsertBeforeOnCell(cellLocator, transformation)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnCell(grid, cellLocator, transformation.colRangeLocator)
+      return transformColInsertBeforeOnCell(cellLocator, transformation)
   }
 }
 
-export function transformMoveOnCell(grid: Grid, cellLocator: CellLocator, { cols, rows }: Movement, maskRange?: RangeLocator): string {
-  if (maskRange && !maskRange.containsCell(cellLocator)) {
-    return cellLocator.toString(grid.name.value)
+export function transformMoveOnCell(cellLocator: CellLocator, { movement: { cols, rows }, range, sourceGrid }: MoveTransformation): string {
+  if (range && !range.containsCell(cellLocator)) {
+    return cellLocator.toString(sourceGrid.name.value)
   }
 
   const rowLocator = cellLocator.absRow
@@ -42,50 +42,50 @@ export function transformMoveOnCell(grid: Grid, cellLocator: CellLocator, { cols
     ? cellLocator.getColLocator()
     : cellLocator.move({ cols }).getColLocator()
 
-  return CellLocator.fromRowCol({ rowLocator, colLocator }).toString(grid.name.value)
+  return CellLocator.fromRowCol({ rowLocator, colLocator }).toString(sourceGrid.name.value)
 }
 
-export function transformRowDeleteOnCell(grid: Grid, cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
+export function transformRowDeleteOnCell(cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
   if (cellLocator.row >= row && cellLocator.row < row + count) {
-    throw new Error(`Cell ${cellLocator.toString(grid.name.value)} was deleted`)
+    throw new Error(`Cell ${cellLocator.toString(sourceGrid.name.value)} was deleted`)
   }
 
   if (cellLocator.row >= row + count) {
-    return transformMoveOnCell(grid, cellLocator, { cols: 0, rows: -count })
+    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: 0, rows: -count }, sourceGrid })
   }
-  return cellLocator.toString(grid.name.value)
+  return cellLocator.toString(sourceGrid.name.value)
 }
 
-export function transformColDeleteOnCell(grid: Grid, cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
+export function transformColDeleteOnCell(cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col && cellLocator.col < col + count) {
-    throw new Error(`Cell ${cellLocator.toString(grid.name.value)} was deleted`)
+    throw new Error(`Cell ${cellLocator.toString(sourceGrid.name.value)} was deleted`)
   }
 
   if (cellLocator.col >= col + count) {
-    return transformMoveOnCell(grid, cellLocator, { cols: -count, rows: 0 })
+    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: -count, rows: 0 }, sourceGrid })
   }
-  return cellLocator.toString(grid.name.value)
+  return cellLocator.toString(sourceGrid.name.value)
 }
 
-export function transformRowInsertBeforeOnCell(grid: Grid, cellLocator: CellLocator, rowRangeLocator: RowRangeLocator): string {
+export function transformRowInsertBeforeOnCell(cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowInsertBeforeTransformation): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
 
   if (cellLocator.row >= row) {
-    return transformMoveOnCell(grid, cellLocator, { cols: 0, rows: count })
+    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: 0, rows: count }, sourceGrid })
   }
-  return cellLocator.toString(grid.name.value)
+  return cellLocator.toString(sourceGrid.name.value)
 }
 
-export function transformColInsertBeforeOnCell(grid: Grid, cellLocator: CellLocator, colRangeLocator: ColRangeLocator): string {
+export function transformColInsertBeforeOnCell(cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColInsertBeforeTransformation): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col) {
-    return transformMoveOnCell(grid, cellLocator, { cols: count, rows: 0 })
+    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: count, rows: 0 }, sourceGrid })
   }
-  return cellLocator.toString(grid.name.value)
+  return cellLocator.toString(sourceGrid.name.value)
 }

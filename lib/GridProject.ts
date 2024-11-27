@@ -128,7 +128,7 @@ export class GridProject {
   public transformAllLocators(transformation: FormulaTransformation) {
     for (const gridEntry of this.grids.value) {
       matrixForEach(gridEntry.grid.cells, (cell) => {
-        transformLocators(gridEntry.grid, cell, transformation)
+        transformLocators(cell, transformation)
       })
     }
   }

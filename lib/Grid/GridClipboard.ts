@@ -161,7 +161,6 @@ export class GridClipboard {
         const cell = this.grid.cells[toPosition.row + row][toPosition.col + col]
         cell.setJson(cellJson)
         transformLocators(
-          this.grid,
           cell,
           {
             type: 'move',
