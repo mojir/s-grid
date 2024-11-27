@@ -76,7 +76,7 @@ export class GridClipboard {
     this.styleClipboard.value = null
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
       matrixForEach(styleClipboardValue.cells, (cellJson, [row, col]) => {
-        const cellLocator = CellLocator.fromCoords({ row: toPosition.row + row, col: toPosition.col + col })
+        const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
         const cell = this.gridProject.getCellFromLocator(cellLocator)
         cell.setJson(cellJson)
       })
@@ -85,6 +85,7 @@ export class GridClipboard {
 
   private getPastePositions(sourceRange: RangeLocator, targetRange?: RangeLocator): CellLocator[] {
     targetRange ??= this.selectedRange.value
+    const gridName = targetRange.start.gridName
 
     const selectionWidth = targetRange.end.col - targetRange.start.col + 1
     const selectionHeight = targetRange.end.row - targetRange.start.row + 1
@@ -100,7 +101,7 @@ export class GridClipboard {
     // Populate result array with the positions (CellLocator) to paste the clipboard
     do {
       do {
-        result.push(CellLocator.fromCoords({ row, col }))
+        result.push(CellLocator.fromCoords(gridName, { row, col }))
         col += rangeWidth
       } while (col - startCol + rangeWidth <= selectionWidth)
       row += rangeHeight
@@ -123,7 +124,7 @@ export class GridClipboard {
 
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellJson, [row, col]) => {
-      const cellLocator = CellLocator.fromCoords({ row: toPosition.row + row, col: toPosition.col + col })
+      const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
       const cell = this.gridProject.getCellFromLocator(cellLocator)
       cell.setJson(cellJson)
     })
@@ -136,7 +137,7 @@ export class GridClipboard {
       type: 'move',
       sourceGrid: this.grid,
       movement,
-      range: fromRange.withExternalGrid(this.grid.name.value),
+      range: fromRange,
     })
 
     this.clipboard.value = null

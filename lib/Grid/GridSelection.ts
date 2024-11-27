@@ -11,23 +11,25 @@ import type { Col } from '~/lib/Col'
 
 export class GridSelection {
   public selecting = ref(false)
+  private readonly unsortedSelectedRange: Ref<RangeLocator>
 
-  constructor(private grid: Grid) {}
+  constructor(private grid: Grid) {
+    this.unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords(this.grid.name.value, { row: 0, col: 0 })))
+  }
 
   private readonly gridRange = computed(() => {
     return RangeLocator.fromCellLocators(
-      CellLocator.fromCoords({ row: 0, col: 0 }),
-      CellLocator.fromCoords({ row: this.grid.rows.value.length - 1, col: this.grid.cols.value.length - 1 }),
+      CellLocator.fromCoords(this.grid.name.value, { row: 0, col: 0 }),
+      CellLocator.fromCoords(this.grid.name.value, { row: this.grid.rows.value.length - 1, col: this.grid.cols.value.length - 1 }),
     )
   })
 
-  private readonly unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords({ row: 0, col: 0 })))
   public readonly selectedRange = computed(() => this.unsortedSelectedRange.value.toSorted())
   public selectedRows = computed<RowRangeLocator | null>(() => {
     if (this.selectedRange.value.start.col === 0 && this.selectedRange.value.end.col === this.grid.cols.value.length - 1) {
       return RowRangeLocator.fromRowLocators(
-        RowLocator.fromNumber(this.selectedRange.value.start.row),
-        RowLocator.fromNumber(this.selectedRange.value.end.row),
+        RowLocator.fromNumber(this.grid.name.value, this.selectedRange.value.start.row),
+        RowLocator.fromNumber(this.grid.name.value, this.selectedRange.value.end.row),
       )
     }
     return null
@@ -36,8 +38,8 @@ export class GridSelection {
   public selectedCols = computed<ColRangeLocator | null>(() => {
     if (this.selectedRange.value.start.row === 0 && this.selectedRange.value.end.row === this.grid.rows.value.length - 1) {
       return ColRangeLocator.fromColLocators(
-        ColLocator.fromNumber(this.selectedRange.value.start.col),
-        ColLocator.fromNumber(this.selectedRange.value.end.col),
+        ColLocator.fromNumber(this.grid.name.value, this.selectedRange.value.start.col),
+        ColLocator.fromNumber(this.grid.name.value, this.selectedRange.value.end.col),
       )
     }
     return null
@@ -52,11 +54,11 @@ export class GridSelection {
   }
 
   public moveSelection(movement: Movement) {
-    const newStart = CellLocator.fromCoords({
+    const newStart = CellLocator.fromCoords(this.grid.name.value, {
       row: this.selectedRange.value.start.row + (movement.rows ?? 0),
       col: this.selectedRange.value.start.col + (movement.cols ?? 0),
     })
-    const newEnd = CellLocator.fromCoords({
+    const newEnd = CellLocator.fromCoords(this.grid.name.value, {
       row: this.selectedRange.value.end.row + (movement.rows ?? 0),
       col: this.selectedRange.value.end.col + (movement.cols ?? 0),
     })
@@ -78,7 +80,7 @@ export class GridSelection {
 
   public expandSelectionTo(target: CellLocator | string) {
     const start = this.unsortedSelectedRange.value.start
-    const end = target instanceof CellLocator ? target : CellLocator.fromString(target)
+    const end = target instanceof CellLocator ? target : CellLocator.fromString(this.grid.name.value, target)
 
     this.updateSelection(RangeLocator.fromCellLocators(start, end))
   }
@@ -90,26 +92,26 @@ export class GridSelection {
   public selectColRange(fromCol: Col, toCol: Col) {
     this.unsortedSelectedRange.value
       = RangeLocator.fromCellLocators(
-        CellLocator.fromCoords({ row: 0, col: fromCol.index.value }),
-        CellLocator.fromCoords({ row: this.gridRange.value.end.row, col: toCol.index.value }))
+        CellLocator.fromCoords(this.grid.name.value, { row: 0, col: fromCol.index.value }),
+        CellLocator.fromCoords(this.grid.name.value, { row: this.gridRange.value.end.row, col: toCol.index.value }))
   }
 
   public selectRowRange(fromRow: Row, toRow: Row) {
     this.unsortedSelectedRange.value
       = RangeLocator.fromCellLocators(
-        CellLocator.fromCoords({ row: fromRow.index.value, col: 0 }),
-        CellLocator.fromCoords({ row: toRow.index.value, col: this.gridRange.value.end.col }))
+        CellLocator.fromCoords(this.grid.name.value, { row: fromRow.index.value, col: 0 }),
+        CellLocator.fromCoords(this.grid.name.value, { row: toRow.index.value, col: this.gridRange.value.end.col }))
   }
 
   public select(target: string | RangeLocator | CellLocator) {
     const range = target instanceof RangeLocator
       ? target
       : typeof target === 'string' && isRangeLocatorString(target)
-        ? RangeLocator.fromString(target).clamp(this.gridRange.value)
+        ? RangeLocator.fromString(this.grid.name.value, target).clamp(this.gridRange.value)
         : target instanceof CellLocator
           ? RangeLocator.fromCellLocator(target)
           : isCellLocatorString(target)
-            ? RangeLocator.fromCellLocator(CellLocator.fromString(target)).clamp(this.gridRange.value)
+            ? RangeLocator.fromCellLocator(CellLocator.fromString(this.grid.name.value, target)).clamp(this.gridRange.value)
             : null
 
     if (!range) {

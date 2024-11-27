@@ -169,9 +169,6 @@ ${command.description}`
     if (isLitsError(result)) {
       return result.message
     }
-    if (result === null) {
-      return null
-    }
     return JSON.stringify(result, null, 2)
   }
 

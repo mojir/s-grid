@@ -16,12 +16,12 @@ export class CellLocator extends CommonLocator {
 
   public constructor(
     {
-      externalGrid,
+      gridName,
       absCol,
       col,
       absRow,
       row,
-    }: { externalGrid: string | null
+    }: { gridName: string
       absCol: boolean
       col: number
       absRow: boolean
@@ -41,20 +41,20 @@ export class CellLocator extends CommonLocator {
       throw new Error(`Row ${row} is out of range`)
     }
 
-    super(externalGrid)
+    super(gridName)
     this.absCol = absCol
     this.col = col
     this.absRow = absRow
     this.row = row
   }
 
-  static fromString(str: string): CellLocator {
+  static fromString(gridName: string, str: string): CellLocator {
     const match = str.match(cellLocatorRegExp)
     if (!match) {
       throw new Error(`Invalid cell locator: ${str}`)
     }
 
-    const externalGrid: string | null = match[1] ?? null
+    gridName = match[1] ?? gridName
     const absCol = !!match[2]
     const colId = match[3]
     const col = getColNumber(colId)
@@ -62,7 +62,7 @@ export class CellLocator extends CommonLocator {
     const rowId = match[5]
     const row = getRowNumber(rowId)
     return new CellLocator({
-      externalGrid,
+      gridName,
       absCol,
       col,
       absRow,
@@ -70,9 +70,9 @@ export class CellLocator extends CommonLocator {
     })
   }
 
-  static fromCoords({ row, col }: { row: number, col: number }): CellLocator {
+  static fromCoords(gridName: string, { row, col }: { row: number, col: number }): CellLocator {
     return new CellLocator({
-      externalGrid: null,
+      gridName,
       absCol: false,
       col,
       absRow: false,
@@ -81,11 +81,11 @@ export class CellLocator extends CommonLocator {
   }
 
   static fromRowCol({ rowLocator, colLocator }: { rowLocator: RowLocator, colLocator: ColLocator }): CellLocator {
-    if (rowLocator.externalGrid !== colLocator.externalGrid) {
-      throw new Error(`Row and col external grids do not match: ${rowLocator.externalGrid} !== ${colLocator.externalGrid}`)
+    if (rowLocator.gridName !== colLocator.gridName) {
+      throw new Error(`Row and col external grids do not match: ${rowLocator.gridName} !== ${colLocator.gridName}`)
     }
     return new CellLocator({
-      externalGrid: rowLocator.externalGrid,
+      gridName: rowLocator.gridName,
       absCol: colLocator.absCol,
       col: colLocator.col,
       absRow: rowLocator.absRow,
@@ -93,39 +93,21 @@ export class CellLocator extends CommonLocator {
     })
   }
 
-  public toString(): string {
-    return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
+  public override toString(currentGridName: string): string {
+    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
   }
 
-  public override withExternalGrid(externalGrid: string | null): CellLocator {
-    if (this.externalGrid === externalGrid) {
-      return this
-    }
-    return new CellLocator({
-      externalGrid,
-      absCol: this.absCol,
-      col: this.col,
-      absRow: this.absRow,
-      row: this.row,
-    })
+  public override toStringWithGrid(): string {
+    return `${this.gridName}!${this.toStringWithoutGrid()}`
   }
 
-  public override withoutExternalGrid(): CellLocator {
-    if (!this.externalGrid) {
-      return this
-    }
-    return new CellLocator({
-      externalGrid: null,
-      absCol: this.absCol,
-      col: this.col,
-      absRow: this.absRow,
-      row: this.row,
-    })
+  public override toStringWithoutGrid(): string {
+    return `${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
   public getRowLocator(): RowLocator {
     return new RowLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absRow: this.absRow,
       row: this.row,
     })
@@ -133,7 +115,7 @@ export class CellLocator extends CommonLocator {
 
   public getColLocator(): ColLocator {
     return new ColLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: this.absCol,
       col: this.col,
     })
@@ -141,7 +123,7 @@ export class CellLocator extends CommonLocator {
 
   public toRelative(): CellLocator {
     return new CellLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: false,
       col: this.col,
       absRow: false,
@@ -157,7 +139,7 @@ export class CellLocator extends CommonLocator {
       return this
     }
     return new CellLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: this.absCol,
       col: clampedCol,
       absRow: this.absRow,
@@ -167,7 +149,7 @@ export class CellLocator extends CommonLocator {
 
   public isSameCell(cellLocator: CellLocator): boolean {
     return (
-      this.externalGrid === cellLocator.externalGrid
+      this.gridName === cellLocator.gridName
       && this.col === cellLocator.col
       && this.row === cellLocator.row
     )
@@ -178,7 +160,7 @@ export class CellLocator extends CommonLocator {
       return this
     }
     return new CellLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: this.absCol,
       col: this.col + (movement.cols ?? 0),
       absRow: this.absRow,
@@ -215,7 +197,7 @@ export class CellLocator extends CommonLocator {
         row = startRow
       }
     }
-    return CellLocator.fromCoords({ row, col })
+    return CellLocator.fromCoords(this.gridName, { row, col })
   }
 
   public cellDown(range: RangeLocator, wrap: boolean): CellLocator {
@@ -234,7 +216,7 @@ export class CellLocator extends CommonLocator {
         row = endRow
       }
     }
-    return CellLocator.fromCoords({ row, col })
+    return CellLocator.fromCoords(this.gridName, { row, col })
   }
 
   public cellRight(range: RangeLocator, wrap: boolean): CellLocator {
@@ -253,7 +235,7 @@ export class CellLocator extends CommonLocator {
         col = endCol
       }
     }
-    return CellLocator.fromCoords({ row, col })
+    return CellLocator.fromCoords(this.gridName, { row, col })
   }
 
   public cellLeft(range: RangeLocator, wrap: boolean): CellLocator {
@@ -272,26 +254,26 @@ export class CellLocator extends CommonLocator {
         col = startCol
       }
     }
-    return CellLocator.fromCoords({ row, col })
+    return CellLocator.fromCoords(this.gridName, { row, col })
   }
 
   public cellTop(range: RangeLocator): CellLocator {
     const { startRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords({ row: startRow, col: this.col })
+    return CellLocator.fromCoords(this.gridName, { row: startRow, col: this.col })
   }
 
   public cellBottom(range: RangeLocator): CellLocator {
     const { endRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords({ row: endRow, col: this.col })
+    return CellLocator.fromCoords(this.gridName, { row: endRow, col: this.col })
   }
 
   public cellLeftmost(range: RangeLocator): CellLocator {
     const { startCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords({ row: this.row, col: startCol })
+    return CellLocator.fromCoords(this.gridName, { row: this.row, col: startCol })
   }
 
   public cellRightmost(range: RangeLocator): CellLocator {
     const { endCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords({ row: this.row, col: endCol })
+    return CellLocator.fromCoords(this.gridName, { row: this.row, col: endCol })
   }
 }

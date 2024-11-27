@@ -48,14 +48,14 @@ export function transformLocators(grid: Grid, cell: Cell, transformation: Formul
 }
 
 function transformIdentifier(grid: Grid, identifier: string, transformation: FormulaTransformation): string {
-  const locator = getLocatorFromString(identifier)
+  const locator = getLocatorFromString(grid.name.value, identifier)
   if (!locator) {
     return identifier
   }
-  if (locator.externalGrid && locator.externalGrid !== transformation.sourceGrid.name.value) {
+  if (locator.gridName && locator.gridName !== transformation.sourceGrid.name.value) {
     return identifier
   }
-  if (!locator.externalGrid && transformation.sourceGrid !== grid) {
+  if (!locator.gridName && transformation.sourceGrid !== grid) {
     return identifier
   }
 

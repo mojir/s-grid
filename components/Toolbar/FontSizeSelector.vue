@@ -7,7 +7,8 @@ const props = defineProps<{
 }>()
 
 const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
+
 const fontSize = ref<string | undefined>()
 watch(grid.value.selection.selectedRange, (newSelection) => {
   const selectedFontSize = grid.value.getStyle('fontSize', newSelection)

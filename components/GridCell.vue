@@ -20,14 +20,16 @@ const emit = defineEmits<{
 }>()
 
 const { gridProject, row, col } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
+const gridName = computed(() => grid.value.name.value)
+
 const { currentTab, sidePanelOpen } = useSidePanel()
 const repl = gridProject.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
 const hoveredCell = grid.value.hoveredCell
 
-const cellLocator = computed(() => CellLocator.fromCoords({ row: row.value.index.value, col: col.value.index.value }))
+const cellLocator = computed(() => CellLocator.fromCoords(gridName.value, { row: row.value.index.value, col: col.value.index.value }))
 const cell = computed(() => gridProject.value.getCellFromLocator(cellLocator.value))
 const isActiveCell = computed(() => grid.value.position.value.isSameCell(cellLocator.value))
 const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.containsCell(cellLocator.value))
@@ -192,7 +194,7 @@ function inspectCell(e: MouseEvent) {
     e.preventDefault()
     sidePanelOpen.value = true
     currentTab.value = 'repl'
-    repl.run(`(GetCell "${cellLocator.value.toString()}") ;; Inspecting Cell`)
+    repl.run(`(GetCell "${cellLocator.value.toStringWithGrid()}") ;; Inspecting Cell`)
   }
 }
 </script>

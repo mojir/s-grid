@@ -14,10 +14,12 @@ const props = defineProps<{
 }>()
 
 const { col, gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
+const gridName = computed(() => grid.value.name.value)
+
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-const colLocator = computed(() => ColLocator.fromNumber(col.value.index.value))
+const colLocator = computed(() => ColLocator.fromNumber(gridName.value, col.value.index.value))
 const colId = computed(() => getDocumentColId(colLocator.value, grid.value.name.value))
 const resizeColId = computed(() => getDocumentResizeColId(colLocator.value, grid.value.name.value))
 

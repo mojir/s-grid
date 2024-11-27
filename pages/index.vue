@@ -119,7 +119,7 @@ function onMouseDown(event: MouseEvent) {
 
   const [type, , locatorString] = targetId.split(':')
   if (type === DocumentIdType.Cell) {
-    const cellLocator = CellLocator.fromString(locatorString)
+    const cellLocator = CellLocator.fromString(grid.value.name.value, locatorString)
     if (isRightClick && selection.value.selectedRange.value.containsCell(cellLocator)) {
       return
     }
@@ -143,22 +143,22 @@ function onMouseDown(event: MouseEvent) {
 
   if (type === DocumentIdType.Col) {
     selection.value.selecting.value = true
-    const colLocator = ColLocator.fromString(locatorString)
+    const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
     mouseDownStart.value = colLocator
     const col = grid.value.getCol(colLocator)
     if (col) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(CellLocator.fromString(`${col.label.value}1`))
+        grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `${col.label.value}1`))
       }
       selection.value.selectColRange(col, col)
     }
   }
   if (type === DocumentIdType.ResizeCol) {
-    const col = grid.value.getCol(locatorString)
+    const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
+    const col = grid.value.getCol(colLocator)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
-    const colLocator = ColLocator.fromString(locatorString)
     colResizing.value = {
       colLocator,
       startX: x,
@@ -181,21 +181,21 @@ function onMouseDown(event: MouseEvent) {
 
   if (type === DocumentIdType.Row) {
     selection.value.selecting.value = true
-    const rowLocator = RowLocator.fromString(locatorString)
+    const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
     mouseDownStart.value = rowLocator
     const row = grid.value.getRow(rowLocator)
     if (row) {
       resetSelection()
       if (!grid.value.editor.isEditingLitsCode.value) {
-        grid.value.movePositionTo(CellLocator.fromString(`A${row.label.value}`))
+        grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `A${row.label.value}`))
       }
       selection.value.selectRowRange(row, row)
     }
   }
   if (type === DocumentIdType.ResizeRow) {
-    const row = grid.value.getRow(locatorString)
+    const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
+    const row = grid.value.getRow(rowLocator)
     const y = event.clientY
-    const rowLocator = RowLocator.fromString(locatorString)
     rowResizing.value = {
       rowLocator,
       startY: y,
@@ -305,7 +305,7 @@ function onMouseEnter(event: MouseEvent) {
 
   const [type, , locatorString] = targetId.split(':')
 
-  const cellLocator = type === DocumentIdType.Cell ? CellLocator.fromString(locatorString) : null
+  const cellLocator = type === DocumentIdType.Cell ? CellLocator.fromString(grid.value.name.value, locatorString) : null
   if (cellLocator) {
     hoveredCell.value = cellLocator
   }
@@ -314,15 +314,17 @@ function onMouseEnter(event: MouseEvent) {
       selection.value.select(RangeLocator.fromCellLocators(mouseDownStart.value, cellLocator))
     }
     else if (mouseDownStart.value instanceof ColLocator && type === DocumentIdType.Col) {
+      const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
       const fromCol = grid.value.getCol(mouseDownStart.value)
-      const toCol = grid.value.getCol(locatorString)
+      const toCol = grid.value.getCol(colLocator)
       if (fromCol && toCol) {
         selection.value.selectColRange(fromCol, toCol)
       }
     }
     else if (mouseDownStart.value instanceof RowLocator && type === DocumentIdType.Row) {
+      const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
       const fromRow = grid.value.getRow(mouseDownStart.value)
-      const toRow = grid.value.getRow(locatorString)
+      const toRow = grid.value.getRow(rowLocator)
       if (fromRow && toRow) {
         selection.value.selectRowRange(fromRow, toRow)
       }

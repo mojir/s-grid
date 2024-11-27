@@ -19,23 +19,23 @@ export class RowRangeLocator extends CommonLocator {
   public readonly end: RowLocator
 
   private constructor(start: RowLocator, end: RowLocator) {
-    if (start.externalGrid !== end.externalGrid) {
-      throw new Error(`Cannot create row range from different grids: ${start.toString()} - ${end.toString()}`)
+    if (start.gridName !== end.gridName) {
+      throw new Error(`Cannot create row range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.externalGrid)
+    super(start.gridName)
     this.start = start
     this.end = end
   }
 
-  static fromString(value: string): RowRangeLocator {
+  static fromString(gridName: string, value: string): RowRangeLocator {
     const match = value.match(rowRangeLocatorRegExp)
     if (!match?.groups) {
       throw new Error(`Invalid row range locator: ${value}`)
     }
-    const externalGrid = match.groups.grid ? `${match.groups.grid}!` : ''
-    const startString = `${externalGrid}${match.groups.start}`
-    const endString = `${externalGrid}${match.groups.end}`
-    return new RowRangeLocator(RowLocator.fromString(startString), RowLocator.fromString(endString))
+    gridName = match.groups.grid ?? gridName
+    const startString = `${gridName}!${match.groups.start}`
+    const endString = `${gridName}!${match.groups.end}`
+    return new RowRangeLocator(RowLocator.fromString(gridName, startString), RowLocator.fromString(gridName, endString))
   }
 
   static fromRowLocator(rowLocator: RowLocator): RowRangeLocator {
@@ -46,39 +46,16 @@ export class RowRangeLocator extends CommonLocator {
     return new RowRangeLocator(start, end)
   }
 
-  public toString(): string {
-    const externalGrid = this.start.externalGrid ? `${this.start.externalGrid}!` : ''
-    return `${externalGrid}${this.start.withoutExternalGrid().toString()}-${this.end.withoutExternalGrid().toString()}`
+  public override toString(currentGridName: string): string {
+    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
   }
 
-  public override withExternalGrid(externalGrid: string): RowRangeLocator {
-    if (this.externalGrid === externalGrid) {
-      return this
-    }
-    return new RowRangeLocator(new RowLocator({
-      externalGrid,
-      absRow: this.start.absRow,
-      row: this.start.row,
-    }), new RowLocator({
-      externalGrid,
-      absRow: this.end.absRow,
-      row: this.end.row,
-    }))
+  public override toStringWithGrid(): string {
+    return `${this.gridName}!${this.toStringWithoutGrid()}`
   }
 
-  public override withoutExternalGrid(): RowRangeLocator {
-    if (!this.externalGrid) {
-      return this
-    }
-    return new RowRangeLocator(new RowLocator({
-      externalGrid: null,
-      absRow: this.start.absRow,
-      row: this.start.row,
-    }), new RowLocator({
-      externalGrid: null,
-      absRow: this.end.absRow,
-      row: this.end.row,
-    }))
+  public override toStringWithoutGrid(): string {
+    return `${this.start.toStringWithoutGrid()}-${this.end.toStringWithoutGrid()}`
   }
 
   public size(): number {
@@ -88,7 +65,7 @@ export class RowRangeLocator extends CommonLocator {
   public toSorted(): RowRangeLocator {
     const start = this.start
     const end = this.end
-    const externalGrid = start.externalGrid
+    const gridName = start.gridName
 
     if (start.row <= end.row) {
       return this
@@ -96,12 +73,12 @@ export class RowRangeLocator extends CommonLocator {
     else {
       return new RowRangeLocator(
         new RowLocator({
-          externalGrid,
+          gridName,
           absRow: end.absRow,
           row: end.row,
         }),
         new RowLocator({
-          externalGrid,
+          gridName,
           absRow: start.absRow,
           row: start.row,
         }),
@@ -125,18 +102,17 @@ export class RowRangeLocator extends CommonLocator {
 
   public getAllCellLocators(colCount: number): CellLocator[] {
     return RangeLocator
-      .fromCoords({ ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
-      .withExternalGrid(this.externalGrid)
+      .fromCoords(this.gridName, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
       .getAllCellLocators()
   }
 
   public getAllRowLocators(): RowLocator[] {
-    const externalGrid = this.externalGrid
+    const gridName = this.gridName
     const { startRow, endRow } = this.toSorted().getCoords()
     const rowLocators: RowLocator[] = []
     for (let row = startRow; row <= endRow; row += 1) {
       rowLocators.push(new RowLocator({
-        externalGrid,
+        gridName,
         absRow: false,
         row,
       }))
@@ -146,8 +122,7 @@ export class RowRangeLocator extends CommonLocator {
 
   public getCellIdMatrix(colCount: number): CellLocator[][] {
     return RangeLocator
-      .fromCoords({ ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
-      .withExternalGrid(this.externalGrid)
+      .fromCoords(this.gridName, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
       .getCellIdMatrix()
   }
 

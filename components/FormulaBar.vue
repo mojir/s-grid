@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
 
 const { sidePanelOpen } = useSidePanel()
 
@@ -18,12 +18,12 @@ const inputRef = ref<HTMLInputElement>()
 
 const selectionLabel = computed(() => {
   if (grid.value.editor.editorFocused.value) {
-    return grid.value.editor.editingCellId.value.toString()
+    return grid.value.editor.editingCellId.value.toStringWithoutGrid()
   }
   if (grid.value.selection.selectedRange.value.size() === 1) {
-    return grid.value.selection.selectedRange.value.start.toString()
+    return grid.value.selection.selectedRange.value.start.toStringWithoutGrid()
   }
-  return grid.value.selection.selectedRange.value.toString()
+  return grid.value.selection.selectedRange.value.toStringWithoutGrid()
 })
 
 const cellInput = computed(() => {
@@ -53,8 +53,8 @@ watch(selectedRange, (selection) => {
   const inputElement = inputRef.value
   if (grid.value.editor.isEditingLitsCode.value && inputElement && grid.value.editor.editorFocused.value) {
     const selectionValue = `${selection.size() === 1
-      ? selection.start.toString()
-      : selection.toSorted().toString()} `
+      ? selection.start.toStringWithoutGrid()
+      : selection.toSorted().toStringWithoutGrid()} `
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0

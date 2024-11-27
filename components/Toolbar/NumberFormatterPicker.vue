@@ -7,7 +7,8 @@ const props = defineProps<{
 }>()
 
 const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
+
 const open = ref(false)
 
 const format = ref<string | null>(defaultFormatter)

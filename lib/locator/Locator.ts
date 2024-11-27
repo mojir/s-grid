@@ -7,21 +7,21 @@ import { isRowRangeLocatorString, RowRangeLocator } from './RowRangeLocator'
 
 export type Locator = CellLocator | RowLocator | ColLocator | RangeLocator | RowRangeLocator | ColRangeLocator
 
-export function getLocatorFromString(locatorString?: string): Locator | null {
+export function getLocatorFromString(gridName: string, locatorString: string): Locator | null {
   if (!locatorString) {
     return null
   }
   return isRangeLocatorString(locatorString)
-    ? RangeLocator.fromString(locatorString)
+    ? RangeLocator.fromString(gridName, locatorString)
     : isColLocatorString(locatorString)
-      ? ColLocator.fromString(locatorString)
+      ? ColLocator.fromString(gridName, locatorString)
       : isCellLocatorString(locatorString)
-        ? CellLocator.fromString(locatorString)
+        ? CellLocator.fromString(gridName, locatorString)
         : isCellLocatorString(locatorString)
-          ? CellLocator.fromString(locatorString)
+          ? CellLocator.fromString(gridName, locatorString)
           : isRowRangeLocatorString(locatorString)
-            ? RowRangeLocator.fromString(locatorString)
+            ? RowRangeLocator.fromString(gridName, locatorString)
             : isColRangeLocatorString(locatorString)
-              ? ColRangeLocator.fromString(locatorString)
+              ? ColRangeLocator.fromString(gridName, locatorString)
               : null
 }

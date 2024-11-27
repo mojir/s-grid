@@ -6,7 +6,8 @@ const props = defineProps<{
 }>()
 
 const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
+
 const bold = ref<boolean>()
 
 watch(grid.value.selection.selectedRange, (newSelection) => {

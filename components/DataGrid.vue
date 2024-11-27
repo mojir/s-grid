@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const grid = computed(() => gridProject.value.currentGrid.value)
 
 watch(grid.value.position, (position) => {
   const cellElement = document.getElementById(getDocumentCellId(position, grid.value.name.value))

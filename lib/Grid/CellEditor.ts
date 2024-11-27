@@ -1,9 +1,13 @@
 import { CellLocator } from '../locator/CellLocator'
 
 export class CellEditor {
+  public readonly editingCellId: Ref<CellLocator>
   public readonly editorText = ref<string>('')
-  public readonly editingCellId = ref<CellLocator>(CellLocator.fromString('A1'))
   public readonly editorFocused = ref(false)
+
+  constructor(gridName: string) {
+    this.editingCellId = ref<CellLocator>(CellLocator.fromString(gridName, 'A1'))
+  }
 
   public setEditorFocused(value: boolean) {
     this.editorFocused.value = value

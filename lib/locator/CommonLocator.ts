@@ -1,12 +1,10 @@
-import type { Locator } from './Locator'
-
 export abstract class CommonLocator {
-  readonly externalGrid: string | null
+  readonly gridName: string
 
-  constructor(externalGrid: string | null) {
-    this.externalGrid = externalGrid
+  constructor(gridName: string) {
+    this.gridName = gridName
   }
-  abstract toString(): string
-  abstract withoutExternalGrid(): Locator
-  abstract withExternalGrid(externalGrid: string): Locator
+  abstract toString(currentGridName: string): string
+  abstract toStringWithoutGrid(): string
+  abstract toStringWithGrid(): string
 }

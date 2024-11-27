@@ -23,7 +23,7 @@ export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart}
 export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${cellPart})-(?<end>${cellPart})$`)
 
 export function getMovement(from: CellLocator, to: CellLocator): Movement {
-  if (from.externalGrid !== to.externalGrid) {
+  if (from.gridName !== to.gridName) {
     throw new Error('Cannot calculate movement between cells in different grids')
   }
   return {
@@ -41,21 +41,21 @@ export enum DocumetIdType {
 }
 
 export function getDocumentCellId(cellLocator: CellLocator, gridName: string): string {
-  return `${DocumetIdType.Cell}:${gridName}:${cellLocator.withoutExternalGrid().toRelative().toString()}`
+  return `${DocumetIdType.Cell}:${gridName}:${cellLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentRowId(rowLocator: RowLocator, gridName: string): string {
-  return `${DocumetIdType.Row}:${gridName}:${rowLocator.withoutExternalGrid().toRelative().toString()}`
+  return `${DocumetIdType.Row}:${gridName}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeRowId(rowLocator: RowLocator, gridName: string): string {
-  return `${DocumetIdType.ResizeRow}:${gridName}:${rowLocator.withoutExternalGrid().toRelative().toString()}`
+  return `${DocumetIdType.ResizeRow}:${gridName}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentColId(colLocator: ColLocator, gridName: string): string {
-  return `${DocumetIdType.Col}:${gridName}:${colLocator.withoutExternalGrid().toRelative().toString()}`
+  return `${DocumetIdType.Col}:${gridName}:${colLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeColId(colLocator: ColLocator, gridName: string): string {
-  return `${DocumetIdType.ResizeCol}:${gridName}:${colLocator.withoutExternalGrid().toRelative().toString()}`
+  return `${DocumetIdType.ResizeCol}:${gridName}:${colLocator.toRelative().toStringWithoutGrid()}`
 }

@@ -18,9 +18,9 @@ export function transformRangeLocator({
   switch (transformation.type) {
     case 'move':
       return RangeLocator.fromCellLocators(
-        CellLocator.fromString(transformMoveOnCell(grid, rangeLocator.start, transformation.movement, transformation.range)),
-        CellLocator.fromString(transformMoveOnCell(grid, rangeLocator.end, transformation.movement, transformation.range)),
-      ).toString()
+        CellLocator.fromString(grid.name.value, transformMoveOnCell(grid, rangeLocator.start, transformation.movement, transformation.range)),
+        CellLocator.fromString(grid.name.value, transformMoveOnCell(grid, rangeLocator.end, transformation.movement, transformation.range)),
+      ).toString(grid.name.value)
     case 'rowDelete':
       return transformRowDeleteOnRange(grid, rangeLocator, transformation.rowRangeLocator)
     case 'colDelete':
@@ -46,7 +46,7 @@ function transformRowDeleteOnRange(grid: Grid, range: RangeLocator, rowRangeLoca
 
   // range reference is enclosed in deleted row range
   if (startIsInDeletedRange && endIsInDeletedRange) {
-    throw new Error(`Range ${range.toString()} was deleted`)
+    throw new Error(`Range ${range.toStringWithGrid()} was deleted`)
   }
 
   // range reference is below and intersecting deleted row range
@@ -59,7 +59,7 @@ function transformRowDeleteOnRange(grid: Grid, range: RangeLocator, rowRangeLoca
 
   // range is above and intersecting deleted row range
   if (endIsInDeletedRange) {
-    const newStart = start.toString()
+    const newStart = start.toStringWithGrid()
     const newEnd = transformMoveOnCell(grid, end, { cols: 0, rows: startRowToDelete - end.row - 1 })
 
     return `${newStart}-${newEnd}`
@@ -70,8 +70,8 @@ function transformRowDeleteOnRange(grid: Grid, range: RangeLocator, rowRangeLoca
   const startIsBelowDeletedRange = start.row >= startRowToDelete + deleteCount
   const endIsBelowDeletedRange = end.row >= startRowToDelete + deleteCount
 
-  const newStart: string = startIsBelowDeletedRange ? transformMoveOnCell(grid, start, { cols: 0, rows: -deleteCount }) : start.toString()
-  const newEnd: string = endIsBelowDeletedRange ? transformMoveOnCell(grid, end, { cols: 0, rows: -deleteCount }) : end.toString()
+  const newStart: string = startIsBelowDeletedRange ? transformMoveOnCell(grid, start, { cols: 0, rows: -deleteCount }) : start.toStringWithGrid()
+  const newEnd: string = endIsBelowDeletedRange ? transformMoveOnCell(grid, end, { cols: 0, rows: -deleteCount }) : end.toStringWithGrid()
 
   return `${newStart}-${newEnd}`
 }
@@ -92,7 +92,7 @@ function transformColDeleteOnRange(grid: Grid, range: RangeLocator, colRangeLoca
 
   // range reference is enclosed in deleted col range
   if (startIsInDeletedRange && endIsInDeletedRange) {
-    throw new Error(`Range ${range.toString()} was deleted`)
+    throw new Error(`Range ${range.toStringWithGrid()} was deleted`)
   }
 
   // range reference is to the right and intersecting deleted col range
@@ -105,7 +105,7 @@ function transformColDeleteOnRange(grid: Grid, range: RangeLocator, colRangeLoca
 
   // range is to the right and intersecting deleted col range
   if (endIsInDeletedRange) {
-    const newStart = start.toString()
+    const newStart = start.toStringWithGrid()
     const newEnd = transformMoveOnCell(grid, end, { cols: startColToDelete - end.col - 1, rows: 0 })
 
     return `${newStart}-${newEnd}`
@@ -116,8 +116,8 @@ function transformColDeleteOnRange(grid: Grid, range: RangeLocator, colRangeLoca
   const startIsRightOfDeletedRange = start.col >= startColToDelete + deleteCount
   const endIsRightOfDeletedRange = end.col >= startColToDelete + deleteCount
 
-  const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(grid, start, { cols: -deleteCount, rows: 0 }) : start.toString()
-  const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(grid, end, { cols: -deleteCount, rows: 0 }) : end.toString()
+  const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(grid, start, { cols: -deleteCount, rows: 0 }) : start.toStringWithGrid()
+  const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(grid, end, { cols: -deleteCount, rows: 0 }) : end.toStringWithGrid()
 
   return `${newStart}-${newEnd}`
 }

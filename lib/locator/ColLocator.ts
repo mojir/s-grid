@@ -34,74 +34,60 @@ export class ColLocator extends CommonLocator {
 
   public constructor(
     {
-      externalGrid,
+      gridName,
       absCol,
       col,
     }: {
-      externalGrid: string | null
+      gridName: string
       absCol: boolean
       col: number
     },
   ) {
-    super(externalGrid)
+    super(gridName)
     this.absCol = absCol
     this.col = col
   }
 
-  static fromString(str: string): ColLocator {
+  static fromString(gridName: string, str: string): ColLocator {
     const match = str.match(colLocatorRegExp)
     if (!match) {
       throw new Error(`Invalid col locator: ${str}`)
     }
 
-    const externalGrid: string | null = match[1] ?? null
+    gridName = match[1] ?? gridName
     const absCol = !!match[2]
     const colString = match[3]
     const col = getColNumber(colString)
     return new ColLocator({
-      externalGrid,
+      gridName,
       absCol,
       col,
     })
   }
 
-  public override withExternalGrid(externalGrid: string): ColLocator {
-    if (this.externalGrid === externalGrid) {
-      return this
-    }
+  static fromNumber(gridName: string, col: number): ColLocator {
     return new ColLocator({
-      externalGrid,
-      absCol: this.absCol,
-      col: this.col,
-    })
-  }
-
-  public override withoutExternalGrid(): ColLocator {
-    if (!this.externalGrid) {
-      return this
-    }
-    return new ColLocator({
-      externalGrid: null,
-      absCol: this.absCol,
-      col: this.col,
-    })
-  }
-
-  static fromNumber(col: number): ColLocator {
-    return new ColLocator({
-      externalGrid: null,
+      gridName,
       absCol: false,
       col,
     })
   }
 
-  public toString(): string {
-    return `${this.externalGrid ? `${this.externalGrid}!` : ''}${this.absCol ? '$' : ''}${getColId(this.col)}`
+  public override toString(currentGridName: string): string {
+    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
+  }
+
+  public override toStringWithGrid(): string {
+    return `${this.gridName}!${this.toStringWithoutGrid()}`
+  }
+
+  public override toStringWithoutGrid(): string {
+    return `${this.absCol ? '$' : ''}${getColId(this.col)}`
   }
 
   public toRelative(): ColLocator {
     return new ColLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: false,
       col: this.col,
     })
@@ -109,7 +95,7 @@ export class ColLocator extends CommonLocator {
 
   public move(count: number): ColLocator {
     return new ColLocator({
-      externalGrid: this.externalGrid,
+      gridName: this.gridName,
       absCol: this.absCol,
       col: this.col + count,
     })
@@ -118,7 +104,7 @@ export class ColLocator extends CommonLocator {
   public getAllCellLocators(rowCount: number): CellLocator[] {
     return Array.from({ length: rowCount }, (_, row) =>
       new CellLocator({
-        externalGrid: this.externalGrid,
+        gridName: this.gridName,
         absCol: this.absCol,
         col: this.col,
         absRow: this.absCol,
@@ -127,6 +113,6 @@ export class ColLocator extends CommonLocator {
   }
 
   public isSameCol(other: ColLocator): boolean {
-    return this.externalGrid === other.externalGrid && this.col === other.col
+    return this.gridName === other.gridName && this.col === other.col
   }
 }

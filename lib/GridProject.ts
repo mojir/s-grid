@@ -76,9 +76,9 @@ export class GridProject {
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
-      const locator = getLocatorFromString(value)
+      const locator = getLocatorFromString(grid.name.value, value)
       if (locator) {
-        acc[value] = this.getValueFromLocator(locator)
+        acc[value] = this.getValueFromLocator(grid, locator)
       }
       else {
         const aliasCell = grid.alias.getCell(value)
@@ -91,8 +91,7 @@ export class GridProject {
     }, {})
   }
 
-  public getValueFromLocator(locator: Locator): unknown {
-    const grid = this.getGridFromLocator(locator)
+  public getValueFromLocator(grid: Grid, locator: Locator): unknown {
     if (locator instanceof RangeLocator) {
       return matrixMap(
         locator.getCellIdMatrix(),
@@ -135,12 +134,12 @@ export class GridProject {
   }
 
   public getGridFromLocator(locator: Locator): Grid {
-    if (!locator.externalGrid) {
+    if (!locator.gridName) {
       return this.currentGrid.value
     }
-    const grid = this.grids.value.find(g => g.name === locator.externalGrid)?.grid
+    const grid = this.grids.value.find(g => g.name === locator.gridName)?.grid
     if (!grid) {
-      throw new Error(`Grid not found ${locator.toString()}`)
+      throw new Error(`Grid not found ${locator.toStringWithGrid()}`)
     }
     return grid
   }
@@ -149,7 +148,7 @@ export class GridProject {
     const grid = this.getGridFromLocator(cellLocator)
     const cell = grid.cells[cellLocator.row][cellLocator.col]
     if (!cell) {
-      throw new Error(`Cell ${cellLocator.toString()} is out of range`)
+      throw new Error(`Cell ${cellLocator.toStringWithGrid()} is out of range`)
     }
 
     return cell
@@ -182,7 +181,7 @@ export class GridProject {
             ? locator.getAllRowLocators()
             : [
                 new RowLocator({
-                  externalGrid: null,
+                  gridName: locator.gridName,
                   absRow: false,
                   row: locator.row,
                 }),
@@ -203,7 +202,7 @@ export class GridProject {
             ? locator.getAllColLocators()
             : [
                 new ColLocator({
-                  externalGrid: null,
+                  gridName: locator.gridName,
                   absCol: false,
                   col: locator.col,
                 }),
