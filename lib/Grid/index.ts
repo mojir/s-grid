@@ -473,7 +473,12 @@ export class Grid {
     this.clipboard.copyStyleSelection(range)
 
     this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
-    const movement: Movement = { rows: rowRangeLocator.size(), cols: 0 }
+    const movement: Movement = {
+      fromGrid: this.name.value,
+      toGrid: this.name.value,
+      deltaRow: rowRangeLocator.size(),
+      deltaCol: 0,
+    }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))
@@ -559,7 +564,12 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
     )
     this.insertCols(colRangeLocator.move(colRangeLocator.size()))
-    const movement: Movement = { rows: 0, cols: colRangeLocator.size() }
+    const movement: Movement = {
+      fromGrid: this.name.value,
+      toGrid: this.name.value,
+      deltaRow: 0,
+      deltaCol: colRangeLocator.size(),
+    }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
     this.clipboard.pasteStyleSelection(range.move(movement))

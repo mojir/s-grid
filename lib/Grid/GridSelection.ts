@@ -55,12 +55,12 @@ export class GridSelection {
 
   public moveSelection(movement: Movement) {
     const newStart = CellLocator.fromCoords(this.grid.name.value, {
-      row: this.selectedRange.value.start.row + (movement.rows ?? 0),
-      col: this.selectedRange.value.start.col + (movement.cols ?? 0),
+      row: this.selectedRange.value.start.row + (movement.deltaRow ?? 0),
+      col: this.selectedRange.value.start.col + (movement.deltaCol ?? 0),
     })
     const newEnd = CellLocator.fromCoords(this.grid.name.value, {
-      row: this.selectedRange.value.end.row + (movement.rows ?? 0),
-      col: this.selectedRange.value.end.col + (movement.cols ?? 0),
+      row: this.selectedRange.value.end.row + (movement.deltaRow ?? 0),
+      col: this.selectedRange.value.end.col + (movement.deltaCol ?? 0),
     })
     this.updateSelection(RangeLocator.fromCellLocators(newStart, newEnd))
   }

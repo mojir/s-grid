@@ -156,15 +156,15 @@ export class CellLocator extends CommonLocator {
   }
 
   public move(movement: Movement): CellLocator {
-    if (!movement.cols && !movement.rows) {
+    if (!movement.deltaCol && !movement.deltaRow) {
       return this
     }
     return new CellLocator({
       gridName: this.gridName,
       absCol: this.absCol,
-      col: this.col + (movement.cols ?? 0),
+      col: this.col + (movement.deltaCol ?? 0),
       absRow: this.absRow,
-      row: this.row + (movement.rows ?? 0),
+      row: this.row + (movement.deltaRow ?? 0),
     })
   }
 

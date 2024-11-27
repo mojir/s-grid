@@ -29,18 +29,30 @@ export function transformCellLocator({
   }
 }
 
-export function transformMoveOnCell(cellLocator: CellLocator, { movement: { cols, rows }, range, sourceGrid }: MoveTransformation): string {
+export function transformMoveOnCell(cellLocator: CellLocator, { movement: { deltaCol: cols, deltaRow: rows }, range, sourceGrid }: MoveTransformation): string {
   if (range && !range.containsCell(cellLocator)) {
     return cellLocator.toString(sourceGrid.name.value)
   }
 
   const rowLocator = cellLocator.absRow
     ? cellLocator.getRowLocator()
-    : cellLocator.move({ rows }).getRowLocator()
+    : cellLocator.move(
+      {
+        fromGrid: sourceGrid.name.value,
+        toGrid: sourceGrid.name.value,
+        deltaRow: rows,
+      },
+    ).getRowLocator()
 
   const colLocator = cellLocator.absCol
     ? cellLocator.getColLocator()
-    : cellLocator.move({ cols }).getColLocator()
+    : cellLocator.move(
+      {
+        fromGrid: sourceGrid.name.value,
+        toGrid: sourceGrid.name.value,
+        deltaCol: cols,
+      },
+    ).getColLocator()
 
   return CellLocator.fromRowCol({ rowLocator, colLocator }).toString(sourceGrid.name.value)
 }
@@ -53,7 +65,19 @@ export function transformRowDeleteOnCell(cellLocator: CellLocator, { rowRangeLoc
   }
 
   if (cellLocator.row >= row + count) {
-    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: 0, rows: -count }, sourceGrid })
+    return transformMoveOnCell(
+      cellLocator,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: -count,
+        },
+        sourceGrid,
+      },
+    )
   }
   return cellLocator.toString(sourceGrid.name.value)
 }
@@ -66,7 +90,19 @@ export function transformColDeleteOnCell(cellLocator: CellLocator, { colRangeLoc
   }
 
   if (cellLocator.col >= col + count) {
-    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: -count, rows: 0 }, sourceGrid })
+    return transformMoveOnCell(
+      cellLocator,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: -count,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
   }
   return cellLocator.toString(sourceGrid.name.value)
 }
@@ -76,7 +112,19 @@ export function transformRowInsertBeforeOnCell(cellLocator: CellLocator, { rowRa
   const count = rowRangeLocator.size()
 
   if (cellLocator.row >= row) {
-    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: 0, rows: count }, sourceGrid })
+    return transformMoveOnCell(
+      cellLocator,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: count,
+        },
+        sourceGrid,
+      },
+    )
   }
   return cellLocator.toString(sourceGrid.name.value)
 }
@@ -85,7 +133,19 @@ export function transformColInsertBeforeOnCell(cellLocator: CellLocator, { colRa
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col) {
-    return transformMoveOnCell(cellLocator, { type: 'move', movement: { cols: count, rows: 0 }, sourceGrid })
+    return transformMoveOnCell(
+      cellLocator,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: count,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
   }
   return cellLocator.toString(sourceGrid.name.value)
 }

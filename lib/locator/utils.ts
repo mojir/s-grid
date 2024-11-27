@@ -6,8 +6,10 @@ import type { ColLocator } from './ColLocator'
 export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
 
 export type Movement = {
-  rows?: number
-  cols?: number
+  fromGrid: string
+  toGrid: string
+  deltaRow?: number
+  deltaCol?: number
 }
 
 const colPart = '(\\$?)([A-Z]{1,2})' // Two groups
@@ -23,12 +25,11 @@ export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart}
 export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${cellPart})-(?<end>${cellPart})$`)
 
 export function getMovement(from: CellLocator, to: CellLocator): Movement {
-  if (from.gridName !== to.gridName) {
-    throw new Error('Cannot calculate movement between cells in different grids')
-  }
   return {
-    cols: to.col - from.col,
-    rows: to.row - from.row,
+    fromGrid: from.gridName,
+    toGrid: to.gridName,
+    deltaCol: to.col - from.col,
+    deltaRow: to.row - from.row,
   }
 }
 

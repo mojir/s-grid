@@ -46,8 +46,31 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
 
   // range reference is below and intersecting deleted row range
   if (startIsInDeletedRange) {
-    const newStart = transformMoveOnCell(start, { type: 'move', movement: { cols: 0, rows: startRowToDelete - start.row }, sourceGrid })
-    const newEnd = transformMoveOnCell(end, { type: 'move', movement: { cols: 0, rows: -deleteCount }, sourceGrid })
+    const newStart = transformMoveOnCell(
+      start,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: startRowToDelete - start.row,
+        },
+        sourceGrid,
+      })
+    const newEnd = transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: -deleteCount,
+        },
+        sourceGrid,
+      },
+    )
 
     return `${newStart}-${newEnd}`
   }
@@ -55,7 +78,19 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
   // range is above and intersecting deleted row range
   if (endIsInDeletedRange) {
     const newStart = start.toStringWithGrid()
-    const newEnd = transformMoveOnCell(end, { type: 'move', movement: { cols: 0, rows: startRowToDelete - end.row - 1 }, sourceGrid })
+    const newEnd = transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: startRowToDelete - end.row - 1,
+        },
+        sourceGrid,
+      },
+    )
 
     return `${newStart}-${newEnd}`
   }
@@ -66,10 +101,34 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
   const endIsBelowDeletedRange = end.row >= startRowToDelete + deleteCount
 
   const newStart: string = startIsBelowDeletedRange
-    ? transformMoveOnCell(start, { type: 'move', movement: { cols: 0, rows: -deleteCount }, sourceGrid })
+    ? transformMoveOnCell(
+      start,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: -deleteCount,
+        },
+        sourceGrid,
+      },
+    )
     : start.toStringWithGrid()
   const newEnd: string = endIsBelowDeletedRange
-    ? transformMoveOnCell(end, { type: 'move', movement: { cols: 0, rows: -deleteCount }, sourceGrid })
+    ? transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: 0,
+          deltaRow: -deleteCount,
+        },
+        sourceGrid,
+      },
+    )
     : end.toStringWithGrid()
 
   return `${newStart}-${newEnd}`
@@ -96,8 +155,32 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
 
   // range reference is to the right and intersecting deleted col range
   if (startIsInDeletedRange) {
-    const newStart = transformMoveOnCell(start, { type: 'move', movement: { cols: startColToDelete - start.col, rows: 0 }, sourceGrid })
-    const newEnd = transformMoveOnCell(end, { type: 'move', movement: { cols: -deleteCount, rows: 0 }, sourceGrid })
+    const newStart = transformMoveOnCell(
+      start,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: startColToDelete - start.col,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
+    const newEnd = transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: -deleteCount,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
 
     return `${newStart}-${newEnd}`
   }
@@ -105,7 +188,19 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
   // range is to the right and intersecting deleted col range
   if (endIsInDeletedRange) {
     const newStart = start.toStringWithGrid()
-    const newEnd = transformMoveOnCell(end, { type: 'move', movement: { cols: startColToDelete - end.col - 1, rows: 0 }, sourceGrid })
+    const newEnd = transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: startColToDelete - end.col - 1,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
 
     return `${newStart}-${newEnd}`
   }
@@ -115,8 +210,36 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
   const startIsRightOfDeletedRange = start.col >= startColToDelete + deleteCount
   const endIsRightOfDeletedRange = end.col >= startColToDelete + deleteCount
 
-  const newStart: string = startIsRightOfDeletedRange ? transformMoveOnCell(start, { type: 'move', movement: { cols: -deleteCount, rows: 0 }, sourceGrid }) : start.toStringWithGrid()
-  const newEnd: string = endIsRightOfDeletedRange ? transformMoveOnCell(end, { type: 'move', movement: { cols: -deleteCount, rows: 0 }, sourceGrid }) : end.toStringWithGrid()
+  const newStart: string = startIsRightOfDeletedRange
+    ? transformMoveOnCell(
+      start,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: -deleteCount,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
+    : start.toStringWithGrid()
+  const newEnd: string = endIsRightOfDeletedRange
+    ? transformMoveOnCell(
+      end,
+      {
+        type: 'move',
+        movement: {
+          fromGrid: sourceGrid.name.value,
+          toGrid: sourceGrid.name.value,
+          deltaCol: -deleteCount,
+          deltaRow: 0,
+        },
+        sourceGrid,
+      },
+    )
+    : end.toStringWithGrid()
 
   return `${newStart}-${newEnd}`
 }
