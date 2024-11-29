@@ -471,7 +471,6 @@ export class Grid {
 
     this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
     const movement: Movement = {
-      fromGrid: this.name.value,
       toGrid: this.name.value,
       deltaRow: rowRangeLocator.size(),
       deltaCol: 0,
@@ -562,7 +561,6 @@ export class Grid {
     )
     this.insertCols(colRangeLocator.move(colRangeLocator.size()))
     const movement: Movement = {
-      fromGrid: this.name.value,
       toGrid: this.name.value,
       deltaRow: 0,
       deltaCol: colRangeLocator.size(),

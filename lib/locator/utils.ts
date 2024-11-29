@@ -6,7 +6,6 @@ import type { ColLocator } from './ColLocator'
 export type Direction = 'up' | 'down' | 'left' | 'right' | 'top' | 'bottom' | 'leftmost' | 'rightmost'
 
 export type Movement = {
-  fromGrid: string
   toGrid: string
   deltaRow?: number
   deltaCol?: number

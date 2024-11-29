@@ -31,7 +31,7 @@ export function transformCellLocator({
   }
 }
 
-export function transformMoveOnCell(cellGrid: string, cellLocator: CellLocator, { movement: { fromGrid, toGrid, deltaCol: cols, deltaRow: rows }, range }: MoveTransformation): string {
+export function transformMoveOnCell(cellGrid: string, cellLocator: CellLocator, { movement: { toGrid, deltaCol: cols, deltaRow: rows }, range }: MoveTransformation): string {
   if (range && !range.containsCell(cellLocator)) {
     return cellLocator.toString(cellGrid)
   }
@@ -40,7 +40,6 @@ export function transformMoveOnCell(cellGrid: string, cellLocator: CellLocator, 
     ? cellLocator.getRowLocator()
     : cellLocator.move(
       {
-        fromGrid,
         toGrid,
         deltaRow: rows,
       },
@@ -50,7 +49,6 @@ export function transformMoveOnCell(cellGrid: string, cellLocator: CellLocator, 
     ? cellLocator.getColLocator()
     : cellLocator.move(
       {
-        fromGrid,
         toGrid,
         deltaCol: cols,
       },
@@ -74,7 +72,6 @@ export function transformRowDeleteOnCell(cellGrid: string, cellLocator: CellLoca
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -count,
@@ -100,7 +97,6 @@ export function transformColDeleteOnCell(cellGrid: string, cellLocator: CellLoca
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: -count,
           deltaRow: 0,
@@ -123,7 +119,6 @@ export function transformRowInsertBeforeOnCell(cellGrid: string, cellLocator: Ce
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: count,
@@ -145,7 +140,6 @@ export function transformColInsertBeforeOnCell(cellGrid: string, cellLocator: Ce
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: count,
           deltaRow: 0,

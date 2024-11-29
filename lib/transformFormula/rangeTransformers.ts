@@ -55,7 +55,6 @@ function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: startRowToDelete - start.row,
@@ -68,7 +67,6 @@ function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
@@ -89,7 +87,6 @@ function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: startRowToDelete - end.row - 1,
@@ -113,7 +110,6 @@ function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
@@ -129,7 +125,6 @@ function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
@@ -169,7 +164,6 @@ function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: startColToDelete - start.col,
           deltaRow: 0,
@@ -183,7 +177,6 @@ function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,
@@ -204,7 +197,6 @@ function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: startColToDelete - end.col - 1,
           deltaRow: 0,
@@ -228,7 +220,6 @@ function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,
@@ -244,7 +235,6 @@ function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colR
         type: 'move',
         sourceGrid,
         movement: {
-          fromGrid: cellGrid,
           toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,

@@ -126,7 +126,6 @@ export class ProjectClipboard {
     const fromRange = this.clipboard.value.range
     const fromPosition = fromRange.start
     const movement: Movement = {
-      fromGrid: fromPosition.gridName,
       toGrid: toPosition.gridName,
       deltaRow: toPosition.row - fromPosition.row,
       deltaCol: toPosition.col - fromPosition.col,
@@ -156,7 +155,6 @@ export class ProjectClipboard {
       const range = this.clipboard.value.range
       const fromPosition = range.start
       const movement: Movement = {
-        fromGrid: fromPosition.gridName,
         toGrid: toPosition.gridName,
         deltaRow: toPosition.row - fromPosition.row,
         deltaCol: toPosition.col - fromPosition.col,
