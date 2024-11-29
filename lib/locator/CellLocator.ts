@@ -156,11 +156,8 @@ export class CellLocator extends CommonLocator {
   }
 
   public move(movement: Movement): CellLocator {
-    if (!movement.deltaCol && !movement.deltaRow) {
-      return this
-    }
     return new CellLocator({
-      gridName: this.gridName,
+      gridName: movement.toGrid,
       absCol: this.absCol,
       col: this.col + (movement.deltaCol ?? 0),
       absRow: this.absRow,

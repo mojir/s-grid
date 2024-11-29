@@ -4,30 +4,32 @@ import { transformColInsertBeforeOnCell, transformMoveOnCell, transformRowInsert
 import type { ColDeleteTransformation, ColInsertBeforeTransformation, FormulaTransformation, RowDeleteTransformation, RowInsertBeforeTransformation } from '.'
 
 export function transformRangeLocator({
+  cellGrid,
   rangeLocator,
   transformation,
 }: {
+  cellGrid: string
   rangeLocator: RangeLocator
   transformation: FormulaTransformation
 }): string {
   switch (transformation.type) {
     case 'move':
       return RangeLocator.fromCellLocators(
-        CellLocator.fromString(transformation.sourceGrid.name.value, transformMoveOnCell(rangeLocator.start, transformation)),
-        CellLocator.fromString(transformation.sourceGrid.name.value, transformMoveOnCell(rangeLocator.end, transformation)),
-      ).toString(transformation.sourceGrid.name.value)
+        CellLocator.fromString(cellGrid, transformMoveOnCell(cellGrid, rangeLocator.start, transformation)),
+        CellLocator.fromString(cellGrid, transformMoveOnCell(cellGrid, rangeLocator.end, transformation)),
+      ).toString(cellGrid)
     case 'rowDelete':
-      return transformRowDeleteOnRange(rangeLocator, transformation)
+      return transformRowDeleteOnRange(cellGrid, rangeLocator, transformation)
     case 'colDelete':
-      return transformColDeleteOnRange(rangeLocator, transformation)
+      return transformColDeleteOnRange(cellGrid, rangeLocator, transformation)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnRange(rangeLocator, transformation)
+      return transformRowInsertBeforeOnRange(cellGrid, rangeLocator, transformation)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnRange(rangeLocator, transformation)
+      return transformColInsertBeforeOnRange(cellGrid, rangeLocator, transformation)
   }
 }
 
-function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
+function transformRowDeleteOnRange(cellGrid: string, range: RangeLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
   const startRowToDelete = rowRangeLocator.start.row
   const deleteCount = rowRangeLocator.size()
   const { start, end } = range
@@ -47,28 +49,30 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
   // range reference is below and intersecting deleted row range
   if (startIsInDeletedRange) {
     const newStart = transformMoveOnCell(
+      cellGrid,
       start,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: startRowToDelete - start.row,
         },
-        sourceGrid,
       })
     const newEnd = transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
         },
-        sourceGrid,
       },
     )
 
@@ -79,16 +83,17 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
   if (endIsInDeletedRange) {
     const newStart = start.toStringWithGrid()
     const newEnd = transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: startRowToDelete - end.row - 1,
         },
-        sourceGrid,
       },
     )
 
@@ -102,31 +107,33 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
 
   const newStart: string = startIsBelowDeletedRange
     ? transformMoveOnCell(
+      cellGrid,
       start,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
         },
-        sourceGrid,
       },
     )
     : start.toStringWithGrid()
   const newEnd: string = endIsBelowDeletedRange
     ? transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -deleteCount,
         },
-        sourceGrid,
       },
     )
     : end.toStringWithGrid()
@@ -134,7 +141,7 @@ function transformRowDeleteOnRange(range: RangeLocator, { rowRangeLocator, sourc
   return `${newStart}-${newEnd}`
 }
 
-function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
+function transformColDeleteOnRange(cellGrid: string, range: RangeLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
   const { start, end } = range
 
   const startColToDelete = colRangeLocator.start.col
@@ -156,29 +163,31 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
   // range reference is to the right and intersecting deleted col range
   if (startIsInDeletedRange) {
     const newStart = transformMoveOnCell(
+      cellGrid,
       start,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: startColToDelete - start.col,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
     const newEnd = transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
 
@@ -189,16 +198,17 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
   if (endIsInDeletedRange) {
     const newStart = start.toStringWithGrid()
     const newEnd = transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: startColToDelete - end.col - 1,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
 
@@ -212,31 +222,33 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
 
   const newStart: string = startIsRightOfDeletedRange
     ? transformMoveOnCell(
+      cellGrid,
       start,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
     : start.toStringWithGrid()
   const newEnd: string = endIsRightOfDeletedRange
     ? transformMoveOnCell(
+      cellGrid,
       end,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: -deleteCount,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
     : end.toStringWithGrid()
@@ -244,14 +256,14 @@ function transformColDeleteOnRange(range: RangeLocator, { colRangeLocator, sourc
   return `${newStart}-${newEnd}`
 }
 
-function transformRowInsertBeforeOnRange({ start, end }: RangeLocator, transformation: RowInsertBeforeTransformation): string {
-  const newStart = transformRowInsertBeforeOnCell(start, transformation)
-  const newEnd = transformRowInsertBeforeOnCell(end, transformation)
+function transformRowInsertBeforeOnRange(cellGrid: string, { start, end }: RangeLocator, transformation: RowInsertBeforeTransformation): string {
+  const newStart = transformRowInsertBeforeOnCell(cellGrid, start, transformation)
+  const newEnd = transformRowInsertBeforeOnCell(cellGrid, end, transformation)
   return `${newStart}-${newEnd}`
 }
 
-function transformColInsertBeforeOnRange({ start, end }: RangeLocator, transformation: ColInsertBeforeTransformation): string {
-  const newStart = transformColInsertBeforeOnCell(start, transformation)
-  const newEnd = transformColInsertBeforeOnCell(end, transformation)
+function transformColInsertBeforeOnRange(cellGrid: string, { start, end }: RangeLocator, transformation: ColInsertBeforeTransformation): string {
+  const newStart = transformColInsertBeforeOnCell(cellGrid, start, transformation)
+  const newEnd = transformColInsertBeforeOnCell(cellGrid, end, transformation)
   return `${newStart}-${newEnd}`
 }

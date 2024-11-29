@@ -1,3 +1,4 @@
+import { ProjectClipboard } from './ProjectClipboard'
 import type { Cell } from './Cell'
 import type { Col } from './Col'
 import { Grid } from './Grid'
@@ -23,7 +24,7 @@ export class GridProject {
   public commandCenter: CommandCenter
   public repl: REPL
   public readonly currentGrid: ComputedRef<Grid>
-
+  public readonly clipboard: ProjectClipboard
   public readonly gridIndex = ref(0)
   public grids: Ref<GridEntry[]>
 
@@ -40,6 +41,7 @@ export class GridProject {
     this.currentGrid = computed(() => {
       return this.grids.value[this.gridIndex.value]!.grid
     })
+    this.clipboard = new ProjectClipboard(this)
   }
 
   public selectGrid(gridName: string) {

@@ -9,37 +9,39 @@ import type {
 } from '.'
 
 export function transformCellLocator({
+  cellGrid,
   cellLocator,
   transformation,
 }: {
+  cellGrid: string
   cellLocator: CellLocator
   transformation: FormulaTransformation
 }): string {
   switch (transformation.type) {
     case 'move':
-      return transformMoveOnCell(cellLocator, transformation)
+      return transformMoveOnCell(cellGrid, cellLocator, transformation)
     case 'rowDelete':
-      return transformRowDeleteOnCell(cellLocator, transformation)
+      return transformRowDeleteOnCell(cellGrid, cellLocator, transformation)
     case 'colDelete':
-      return transformColDeleteOnCell(cellLocator, transformation)
+      return transformColDeleteOnCell(cellGrid, cellLocator, transformation)
     case 'rowInsertBefore':
-      return transformRowInsertBeforeOnCell(cellLocator, transformation)
+      return transformRowInsertBeforeOnCell(cellGrid, cellLocator, transformation)
     case 'colInsertBefore':
-      return transformColInsertBeforeOnCell(cellLocator, transformation)
+      return transformColInsertBeforeOnCell(cellGrid, cellLocator, transformation)
   }
 }
 
-export function transformMoveOnCell(cellLocator: CellLocator, { movement: { deltaCol: cols, deltaRow: rows }, range, sourceGrid }: MoveTransformation): string {
+export function transformMoveOnCell(cellGrid: string, cellLocator: CellLocator, { movement: { fromGrid, toGrid, deltaCol: cols, deltaRow: rows }, range }: MoveTransformation): string {
   if (range && !range.containsCell(cellLocator)) {
-    return cellLocator.toString(sourceGrid.name.value)
+    return cellLocator.toString(cellGrid)
   }
 
   const rowLocator = cellLocator.absRow
     ? cellLocator.getRowLocator()
     : cellLocator.move(
       {
-        fromGrid: sourceGrid.name.value,
-        toGrid: sourceGrid.name.value,
+        fromGrid,
+        toGrid,
         deltaRow: rows,
       },
     ).getRowLocator()
@@ -48,104 +50,108 @@ export function transformMoveOnCell(cellLocator: CellLocator, { movement: { delt
     ? cellLocator.getColLocator()
     : cellLocator.move(
       {
-        fromGrid: sourceGrid.name.value,
-        toGrid: sourceGrid.name.value,
+        fromGrid,
+        toGrid,
         deltaCol: cols,
       },
     ).getColLocator()
 
-  return CellLocator.fromRowCol({ rowLocator, colLocator }).toString(sourceGrid.name.value)
+  return CellLocator.fromRowCol({ rowLocator, colLocator }).toString(cellGrid)
 }
 
-export function transformRowDeleteOnCell(cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
+export function transformRowDeleteOnCell(cellGrid: string, cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
   if (cellLocator.row >= row && cellLocator.row < row + count) {
-    throw new Error(`Cell ${cellLocator.toString(sourceGrid.name.value)} was deleted`)
+    throw new Error(`Cell ${cellLocator.toString(cellGrid)} was deleted`)
   }
 
   if (cellLocator.row >= row + count) {
     return transformMoveOnCell(
+      cellGrid,
       cellLocator,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: -count,
         },
-        sourceGrid,
       },
     )
   }
-  return cellLocator.toString(sourceGrid.name.value)
+  return cellLocator.toString(cellGrid)
 }
 
-export function transformColDeleteOnCell(cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
+export function transformColDeleteOnCell(cellGrid: string, cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col && cellLocator.col < col + count) {
-    throw new Error(`Cell ${cellLocator.toString(sourceGrid.name.value)} was deleted`)
+    throw new Error(`Cell ${cellLocator.toString(cellGrid)} was deleted`)
   }
 
   if (cellLocator.col >= col + count) {
     return transformMoveOnCell(
+      cellGrid,
       cellLocator,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: -count,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
   }
-  return cellLocator.toString(sourceGrid.name.value)
+  return cellLocator.toString(cellGrid)
 }
 
-export function transformRowInsertBeforeOnCell(cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowInsertBeforeTransformation): string {
+export function transformRowInsertBeforeOnCell(cellGrid: string, cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowInsertBeforeTransformation): string {
   const row = rowRangeLocator.start.row
   const count = rowRangeLocator.size()
 
   if (cellLocator.row >= row) {
     return transformMoveOnCell(
+      cellGrid,
       cellLocator,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: 0,
           deltaRow: count,
         },
-        sourceGrid,
       },
     )
   }
-  return cellLocator.toString(sourceGrid.name.value)
+  return cellLocator.toString(cellGrid)
 }
 
-export function transformColInsertBeforeOnCell(cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColInsertBeforeTransformation): string {
+export function transformColInsertBeforeOnCell(cellGrid: string, cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColInsertBeforeTransformation): string {
   const col = colRangeLocator.start.col
   const count = colRangeLocator.size()
   if (cellLocator.col >= col) {
     return transformMoveOnCell(
+      cellGrid,
       cellLocator,
       {
         type: 'move',
+        sourceGrid,
         movement: {
-          fromGrid: sourceGrid.name.value,
-          toGrid: sourceGrid.name.value,
+          fromGrid: cellGrid,
+          toGrid: cellGrid,
           deltaCol: count,
           deltaRow: 0,
         },
-        sourceGrid,
       },
     )
   }
-  return cellLocator.toString(sourceGrid.name.value)
+  return cellLocator.toString(cellGrid)
 }

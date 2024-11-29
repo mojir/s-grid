@@ -24,15 +24,6 @@ export const rowRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${rowPart}
 export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart})-(?<end>${colPart})$`)
 export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${cellPart})-(?<end>${cellPart})$`)
 
-export function getMovement(from: CellLocator, to: CellLocator): Movement {
-  return {
-    fromGrid: from.gridName,
-    toGrid: to.gridName,
-    deltaCol: to.col - from.col,
-    deltaRow: to.row - from.row,
-  }
-}
-
 export enum DocumetIdType {
   Cell = 'cell',
   Row = 'row',

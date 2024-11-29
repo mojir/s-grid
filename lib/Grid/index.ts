@@ -14,7 +14,6 @@ import type { RowRangeLocator } from '../locator/RowRangeLocator'
 import { getDocumentCellId, type Direction, type Movement } from '../locator/utils'
 import { matrixFilter } from '../matrix'
 import { Row } from '../Row'
-import { GridClipboard } from './GridClipboard'
 import { GridSelection } from './GridSelection'
 import { GridAlias } from '~/lib/Grid/GridAlias'
 import { CellEditor } from '~/lib/Grid/CellEditor'
@@ -26,7 +25,6 @@ export class Grid {
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
   public cols: Ref<Col[]>
-  public readonly clipboard: GridClipboard
   public readonly cells: Cell[][]
   public readonly position: Ref<CellLocator>
   public readonly gridRange: ComputedRef<RangeLocator>
@@ -42,7 +40,6 @@ export class Grid {
     this.editor = new CellEditor(name)
     this.selection = new GridSelection(this)
     this.alias = new GridAlias()
-    this.clipboard = new GridClipboard(this.gridProject, this)
     this.position = ref(CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }))
 
     this.cells = Array.from({ length: this.rows.value.length }, (_, row) =>
@@ -383,7 +380,7 @@ export class Grid {
 
     this.gridProject.transformAllLocators(
       {
-        sourceGrid: this,
+        sourceGrid: this.name.value,
         type: 'rowDelete',
         rowRangeLocator,
       },
@@ -443,7 +440,7 @@ export class Grid {
 
     this.gridProject.transformAllLocators(
       {
-        sourceGrid: this,
+        sourceGrid: this.name.value,
         type: 'colDelete',
         colRangeLocator,
       },
@@ -459,9 +456,9 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.start.row, col: 0 }),
       CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
-    this.clipboard.copyStyleSelection(range)
+    this.gridProject.clipboard.copyStyleSelection(range)
     this.insertRows(rowRangeLocator)
-    this.clipboard.pasteStyleSelection(range)
+    this.gridProject.clipboard.pasteStyleSelection(range)
   }
 
   public insertRowsAfter(rowRangeLocator: RowRangeLocator) {
@@ -470,7 +467,7 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.start.row, col: 0 }),
       CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
-    this.clipboard.copyStyleSelection(range)
+    this.gridProject.clipboard.copyStyleSelection(range)
 
     this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
     const movement: Movement = {
@@ -481,7 +478,7 @@ export class Grid {
     }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
-    this.clipboard.pasteStyleSelection(range.move(movement))
+    this.gridProject.clipboard.pasteStyleSelection(range.move(movement))
   }
 
   private getCellIdsFromColIndex(col: number): CellLocator[] {
@@ -536,7 +533,7 @@ export class Grid {
 
     this.gridProject.transformAllLocators(
       {
-        sourceGrid: this,
+        sourceGrid: this.name.value,
         type: 'rowInsertBefore',
         rowRangeLocator,
       },
@@ -552,9 +549,9 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
     )
 
-    this.clipboard.copyStyleSelection(range)
+    this.gridProject.clipboard.copyStyleSelection(range)
     this.insertCols(colRangeLocator)
-    this.clipboard.pasteStyleSelection(range)
+    this.gridProject.clipboard.pasteStyleSelection(range)
   }
 
   public insertColsAfter(colRangeLocator: ColRangeLocator) {
@@ -572,7 +569,7 @@ export class Grid {
     }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
-    this.clipboard.pasteStyleSelection(range.move(movement))
+    this.gridProject.clipboard.pasteStyleSelection(range.move(movement))
   }
 
   private insertCols(colRangeLocator: ColRangeLocator) {
@@ -626,7 +623,7 @@ export class Grid {
 
     this.gridProject.transformAllLocators(
       {
-        sourceGrid: this,
+        sourceGrid: this.name.value,
         type: 'colInsertBefore',
         colRangeLocator,
       },

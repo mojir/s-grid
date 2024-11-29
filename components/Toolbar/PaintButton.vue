@@ -7,18 +7,19 @@ const props = defineProps<{
 
 const { gridProject } = toRefs(props)
 const grid = gridProject.value.currentGrid
+const selection = grid.value.selection.selectedRange.value
 const pressed = ref<boolean>()
 
-watch(grid.value.clipboard.hasStyleData, (hasData) => {
+watch(gridProject.value.clipboard.hasStyleData, (hasData) => {
   pressed.value = hasData
 }, { immediate: true })
 
 function onUpdatePressed(value: boolean) {
   if (value) {
-    grid.value.clipboard.copyStyleSelection()
+    gridProject.value.clipboard.copyStyleSelection(selection)
   }
   else {
-    grid.value.clipboard.clearStyleClipboard()
+    gridProject.value.clipboard.clearStyleClipboard()
   }
 }
 </script>

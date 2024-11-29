@@ -20,10 +20,10 @@ export type CellJson = {
 }
 export class Cell {
   private readonly gridProject: GridProject
-  private readonly grid: Grid
   private readonly commandCenter: CommandCenter
   private readonly lits: LitsComposable
 
+  public readonly grid: Grid
   public readonly input = ref('')
   public readonly formatter = ref<string | null>(defaultFormatter)
   public readonly style = ref(new CellStyle())

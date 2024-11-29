@@ -7,6 +7,7 @@ const props = defineProps<{
 
 const { gridProject } = toRefs(props)
 const grid = gridProject.value.currentGrid
+const selection = grid.value.selection.selectedRange
 </script>
 
 <template>
@@ -17,7 +18,7 @@ const grid = gridProject.value.currentGrid
     <ContextMenuContent>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.cutSelection()"
+        @click="gridProject.clipboard.cutSelection(selection)"
       >
         <Icon
           name="mdi-content-cut"
@@ -33,7 +34,7 @@ const grid = gridProject.value.currentGrid
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.copySelection()"
+        @click="gridProject.clipboard.copyRange(selection)"
       >
         <Icon
           name="mdi-content-copy"
@@ -49,7 +50,7 @@ const grid = gridProject.value.currentGrid
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="grid.clipboard.pasteSelection()"
+        @click="gridProject.clipboard.pasteSelection(selection)"
       >
         <Icon
           name="mdi-content-paste"

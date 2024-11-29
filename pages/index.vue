@@ -242,7 +242,7 @@ function onMouseUp(event: MouseEvent) {
   const id = target?.id
 
   if (selection.value.selecting.value || (id && isCellLocatorString(id))) {
-    grid.value.clipboard.pasteStyleSelection()
+    gridProject.clipboard.pasteStyleSelection(selection.value.selectedRange.value)
   }
   selection.value.selecting.value = false
 
@@ -460,13 +460,13 @@ function onKeyDown(e: KeyboardEvent) {
     //   resetSelection()
     // }
     else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-      grid.value.clipboard.copySelection()
+      gridProject.clipboard.copyRange(selection.value.selectedRange.value)
     }
     else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
-      grid.value.clipboard.cutSelection()
+      gridProject.clipboard.cutSelection(selection.value.selectedRange.value)
     }
     else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-      grid.value.clipboard.pasteSelection()
+      gridProject.clipboard.pasteSelection(selection.value.selectedRange.value)
     }
   }
 }

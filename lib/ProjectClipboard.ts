@@ -1,7 +1,6 @@
-import { CellLocator } from '../locator/CellLocator'
-import { getMovement } from '../locator/utils'
-import type { GridProject } from '../GridProject'
-import type { Grid } from '.'
+import { CellLocator } from './locator/CellLocator'
+import type { Movement } from './locator/utils'
+import type { GridProject } from './GridProject'
 import type { CellJson } from '~/lib/Cell'
 import type { RangeLocator } from '~/lib/locator/RangeLocator'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
@@ -12,34 +11,31 @@ type InternalClipboard<T> = {
   cells: T[][]
 }
 
-export class GridClipboard {
-  private readonly selectedRange: Ref<RangeLocator>
+export class ProjectClipboard {
   private clipboard = ref<InternalClipboard<CellJson> | null>(null)
   private styleClipboard = ref<InternalClipboard<Pick<CellJson, 'style' | 'backgroundColor' | 'textColor' | 'formatter'>> | null>(null)
   private cutCellIds = ref<CellLocator[] | null>(null)
   public hasStyleData = computed(() => !!this.styleClipboard.value)
 
-  constructor(private gridProject: GridProject, private grid: Grid) {
-    this.selectedRange = grid.selection.selectedRange
+  constructor(private gridProject: GridProject) {
   }
 
   public clearStyleClipboard() {
     this.styleClipboard.value = null
   }
 
-  public copySelection() {
+  public copyRange(range: RangeLocator) {
     if (this.cutCellIds.value !== null) {
       this.cutCellIds.value = null
     }
 
     this.clipboard.value = {
-      range: this.selectedRange.value,
-      cells: matrixMap(this.selectedRange.value.getCellIdMatrix(), cellLocator => this.gridProject.getCellFromLocator(cellLocator).getJson()),
+      range,
+      cells: matrixMap(range.getCellIdMatrix(), cellLocator => this.gridProject.getCellFromLocator(cellLocator).getJson()),
     }
   }
 
-  public copyStyleSelection(range?: RangeLocator) {
-    range ??= this.selectedRange.value
+  public copyStyleSelection(range: RangeLocator) {
     this.styleClipboard.value = {
       range,
       cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
@@ -54,21 +50,21 @@ export class GridClipboard {
     }
   }
 
-  public cutSelection() {
-    this.copySelection()
-    this.cutCellIds.value = this.selectedRange.value.getAllCellLocators()
+  public cutSelection(range: RangeLocator) {
+    this.copyRange(range)
+    this.cutCellIds.value = range.getAllCellLocators()
   }
 
-  public pasteSelection() {
+  public pasteSelection(targetRange: RangeLocator) {
     if (this.cutCellIds.value) {
-      this.cutPasteSelection()
+      this.cutPasteSelection(targetRange)
     }
     else {
-      this.copyPasteSelection()
+      this.copyPasteSelection(targetRange)
     }
   }
 
-  public pasteStyleSelection(targetRange?: RangeLocator) {
+  public pasteStyleSelection(targetRange: RangeLocator) {
     const styleClipboardValue = this.styleClipboard.value
     if (!styleClipboardValue) {
       return
@@ -83,8 +79,7 @@ export class GridClipboard {
     })
   }
 
-  private getPastePositions(sourceRange: RangeLocator, targetRange?: RangeLocator): CellLocator[] {
-    targetRange ??= this.selectedRange.value
+  private getPastePositions(sourceRange: RangeLocator, targetRange: RangeLocator): CellLocator[] {
     const gridName = targetRange.start.gridName
 
     const selectionWidth = targetRange.end.col - targetRange.start.col + 1
@@ -111,16 +106,16 @@ export class GridClipboard {
     return result
   }
 
-  private cutPasteSelection() {
+  private cutPasteSelection(targetRange: RangeLocator) {
     if (!this.cutCellIds.value || !this.clipboard.value) {
       return
     }
 
     this.cutCellIds.value.forEach((cellLocator) => {
-      this.grid.clear(cellLocator)
+      this.gridProject.getGridFromLocator(cellLocator).clear(cellLocator)
     })
 
-    const toPosition = this.selectedRange.value.start
+    const toPosition = targetRange.start
 
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellJson, [row, col]) => {
@@ -128,14 +123,18 @@ export class GridClipboard {
       const cell = this.gridProject.getCellFromLocator(cellLocator)
       cell.setJson(cellJson)
     })
-
     const fromRange = this.clipboard.value.range
     const fromPosition = fromRange.start
-    const movement = getMovement(fromPosition, toPosition)
+    const movement: Movement = {
+      fromGrid: fromPosition.gridName,
+      toGrid: toPosition.gridName,
+      deltaRow: toPosition.row - fromPosition.row,
+      deltaCol: toPosition.col - fromPosition.col,
+    }
 
     this.gridProject.transformAllLocators({
+      sourceGrid: fromRange.start.gridName,
       type: 'move',
-      sourceGrid: this.grid,
       movement,
       range: fromRange,
     })
@@ -144,27 +143,33 @@ export class GridClipboard {
     this.cutCellIds.value = null
   }
 
-  private copyPasteSelection() {
+  private copyPasteSelection(targetRange: RangeLocator) {
     if (!this.clipboard.value) {
       return
     }
-    this.getPastePositions(this.clipboard.value.range).forEach((toPosition) => {
+    const fromGrid = this.gridProject.getGridFromLocator(targetRange)
+    this.getPastePositions(this.clipboard.value.range, targetRange).forEach((toPosition) => {
       if (!this.clipboard.value) {
         return
       }
       const clipboardCells = this.clipboard.value.cells
       const range = this.clipboard.value.range
       const fromPosition = range.start
-      const movement = getMovement(fromPosition, toPosition)
+      const movement: Movement = {
+        fromGrid: fromPosition.gridName,
+        toGrid: toPosition.gridName,
+        deltaRow: toPosition.row - fromPosition.row,
+        deltaCol: toPosition.col - fromPosition.col,
+      }
 
       matrixForEach(clipboardCells, (cellJson, [row, col]) => {
-        const cell = this.grid.cells[toPosition.row + row][toPosition.col + col]
+        const cell = fromGrid.cells[toPosition.row + row][toPosition.col + col]
         cell.setJson(cellJson)
         transformLocators(
           cell,
           {
+            sourceGrid: fromPosition.gridName,
             type: 'move',
-            sourceGrid: this.grid,
             movement,
           },
         )
