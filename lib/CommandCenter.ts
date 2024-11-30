@@ -1,15 +1,18 @@
 import type { JsFunction } from '@mojir/lits'
 import { CellLocator } from './locator/CellLocator'
-import { ColLocator, getColNumber } from './locator/ColLocator'
-import { getRowNumber, RowLocator } from './locator/RowLocator'
+import { ColLocator } from './locator/ColLocator'
+import { RowLocator } from './locator/RowLocator'
 import type { Direction } from './locator/utils'
 import { getLocatorFromString } from './locator/Locator'
 import { RowRangeLocator } from './locator/RowRangeLocator'
 import { ColRangeLocator } from './locator/ColRangeLocator'
-import { validCellStyle, type CellStyle, type CellStyleName } from '~/lib/CellStyle'
+import { getColNumber, getRowNumber } from './utils'
+import type { CellStyle } from '~/lib/CellStyle'
+import { validCellStyle } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
 import type { GridProject } from '~/lib/GridProject'
 import { format } from '~/lib/litsInterop/format'
+import type { CellStyleName } from '~/dto/CellStyleDTO'
 
 const commandNames = [
   'Clear!',

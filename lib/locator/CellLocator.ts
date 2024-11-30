@@ -1,7 +1,9 @@
+import { cellLocatorRegExp } from '../constants'
+import { getColId, getColNumber, getRowId, getRowNumber } from '../utils'
 import type { RangeLocator } from './RangeLocator'
-import { ColLocator, getColNumber, getColId } from './ColLocator'
-import { getRowNumber, getRowId, RowLocator } from './RowLocator'
-import { cellLocatorRegExp, type Direction, type Movement } from './utils'
+import { ColLocator } from './ColLocator'
+import { RowLocator } from './RowLocator'
+import type { Direction, Movement } from './utils'
 import { CommonLocator } from './CommonLocator'
 
 export function isCellLocatorString(id: string): boolean {

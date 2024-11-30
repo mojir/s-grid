@@ -1,20 +1,21 @@
 import { isLitsFunction } from '@mojir/lits'
-import { CellStyle, type CellStyleJson } from './CellStyle'
 import { Color, type ColorJson } from './color'
 import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
-import { defaultFormatter } from './utils'
 import type { Grid } from './Grid'
 import type { CommandCenter } from './CommandCenter'
 import { CellLocator, isCellLocatorString } from './locator/CellLocator'
 import type { GridProject } from './GridProject'
+import { CellStyle } from './CellStyle'
+import { defaultFormatter } from './constants'
 import type { LitsComposable } from '~/composables/useLits'
+import type { CellStyleDTO } from '~/dto/CellStyleDTO'
 
 export type CellJson = {
   input: string
   output: unknown
   display: string
   formatter: string | null
-  style: CellStyleJson
+  style: CellStyleDTO
   backgroundColor?: ColorJson | null
   textColor?: ColorJson | null
 }

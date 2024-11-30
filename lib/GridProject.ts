@@ -14,6 +14,7 @@ import { REPL } from './REPL'
 import type { Row } from './Row'
 import { transformLocators, type FormulaTransformation } from './transformFormula'
 import { CommandCenter } from '~/lib/CommandCenter'
+import type { GridDTO } from '~/dto/GridDTO'
 
 type GridEntry = {
   name: string
@@ -42,6 +43,17 @@ export class GridProject {
       return this.grids.value[this.gridIndex.value]!.grid
     })
     this.clipboard = new ProjectClipboard(this)
+  }
+
+  public importGrid(grid: GridDTO) {
+    this.grids.value = [
+      ...this.grids.value,
+      {
+        name: grid.name,
+        grid: Grid.fromDTO(this, grid),
+      },
+    ]
+    this.selectGrid(grid.name)
   }
 
   public selectGrid(gridName: string) {

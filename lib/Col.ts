@@ -1,9 +1,4 @@
-import { getColId } from './locator/ColLocator'
-
-// const resizeColIdRegExp = /^resize-col:([A-Z]{1,2})$/
-// export function isResizeColId(id: string): boolean {
-//   return resizeColIdRegExp.test(id)
-// }
+import { getColId } from './utils'
 
 export class Col {
   public readonly index: Ref<number>

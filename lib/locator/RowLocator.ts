@@ -1,25 +1,10 @@
+import { rowLocatorRegExp } from '../constants'
+import { getRowId, getRowNumber } from '../utils'
 import { CellLocator } from './CellLocator'
 import { CommonLocator } from './CommonLocator'
 
-import { rowLocatorRegExp } from './utils'
-
 export function isRowLocatorString(value: string): boolean {
   return rowLocatorRegExp.test(value)
-}
-
-export function getRowId(rowIndex: number): string {
-  if (rowIndex < 9999 && rowIndex >= 0) {
-    return `${rowIndex + 1}` as string
-  }
-  throw new Error(`Row index ${rowIndex} is out of range`)
-}
-
-export function getRowNumber(rowLocator: string): number {
-  const match = rowLocator.match(rowLocatorRegExp)
-  if (!match) {
-    throw new Error(`Invalid row string: ${rowLocator}`)
-  }
-  return Number(match[3]) - 1
 }
 
 export class RowLocator extends CommonLocator {

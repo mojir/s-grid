@@ -1,9 +1,10 @@
+import { rangeLocatorRegExp } from '../constants'
 import { CellLocator } from './CellLocator'
 import { ColLocator } from './ColLocator'
 import { CommonLocator } from './CommonLocator'
 
 import { RowLocator } from './RowLocator'
-import { rangeLocatorRegExp, type Movement } from './utils'
+import type { Movement } from './utils'
 
 export function isRangeLocatorString(value: string): boolean {
   return rangeLocatorRegExp.test(value)

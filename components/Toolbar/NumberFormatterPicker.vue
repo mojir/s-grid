@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { defaultFormatter } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
-import { defaultFormatter } from '~/lib/utils'
 
 const props = defineProps<{
   gridProject: GridProject

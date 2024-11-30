@@ -1,5 +1,5 @@
 import { Cell } from '../Cell'
-import type { CellStyle, CellStyleName } from '../CellStyle'
+import { CellStyle } from '../CellStyle'
 import { Col } from '../Col'
 import type { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
@@ -7,7 +7,7 @@ import type { GridProject } from '../GridProject'
 import { CellLocator } from '../locator/CellLocator'
 import type { ColLocator } from '../locator/ColLocator'
 import type { ColRangeLocator } from '../locator/ColRangeLocator'
-import type { Locator } from '../locator/Locator'
+import { getLocatorFromString, type Locator } from '../locator/Locator'
 import { RangeLocator } from '../locator/RangeLocator'
 import type { RowLocator } from '../locator/RowLocator'
 import type { RowRangeLocator } from '../locator/RowRangeLocator'
@@ -17,6 +17,8 @@ import { Row } from '../Row'
 import { GridSelection } from './GridSelection'
 import { GridAlias } from '~/lib/Grid/GridAlias'
 import { CellEditor } from '~/lib/Grid/CellEditor'
+import type { CellStyleName } from '~/dto/CellStyleDTO'
+import type { GridDTO } from '~/dto/GridDTO'
 
 export class Grid {
   private gridProject: GridProject
@@ -57,6 +59,29 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }),
       CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
+  }
+
+  static fromDTO(gridProject: GridProject, grid: GridDTO): Grid {
+    const newGrid = new Grid(gridProject, grid.name)
+    newGrid.rows.value = Array.from({ length: grid.rows }, (_, row) => new Row(row, defaultRowHeight))
+    newGrid.cols.value = Array.from({ length: grid.cols }, (_, col) => new Col(col, defaultColWidth))
+
+    Object.entries(grid.cells).forEach(([key, cell]) => {
+      // TODO use new regexp, to avoid the need of Locator
+      const cellLocator = getLocatorFromString(grid.name, key) as CellLocator
+      const gridCell = newGrid.cells[cellLocator.row][cellLocator.col]
+      if (cell.input !== undefined) {
+        gridCell.input.value = cell.input
+      }
+      if (cell.formatter !== undefined) {
+        gridCell.formatter.value = cell.formatter
+      }
+      if (cell.style !== undefined) {
+        gridCell.style.value = CellStyle.fromJson(cell.style)
+      }
+      // TODO fix colors
+    })
+    return newGrid
   }
 
   public setScrollPosition(value: { scrollTop?: number, scrollLeft?: number }) {

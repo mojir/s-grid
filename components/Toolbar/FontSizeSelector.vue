@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { styleFontSizes, type StyleFontSize } from '~/lib/CellStyle'
+import { type StyleFontSize, styleFontSizes } from '~/dto/CellStyleDTO'
 import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{

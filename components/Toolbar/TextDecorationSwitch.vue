@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StyleTextDecoration } from '~/lib/CellStyle'
+import type { StyleTextDecoration } from '~/dto/CellStyleDTO'
 import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{

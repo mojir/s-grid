@@ -2,9 +2,9 @@
 import type { CSSProperties } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
 import type { Row } from '~/lib/Row'
-import { whs } from '~/lib/utils'
+import { getRowId, whs } from '~/lib/utils'
 import type { GridProject } from '~/lib/GridProject'
-import { getRowId, RowLocator } from '~/lib/locator/RowLocator'
+import { RowLocator } from '~/lib/locator/RowLocator'
 import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locator/utils'
 import { RowRangeLocator } from '~/lib/locator/RowRangeLocator'
 

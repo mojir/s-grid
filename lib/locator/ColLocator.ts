@@ -1,31 +1,10 @@
+import { colLocatorRegExp } from '../constants'
+import { getColId, getColNumber } from '../utils'
 import { CellLocator } from './CellLocator'
 import { CommonLocator } from './CommonLocator'
 
-import { colLocatorRegExp } from './utils'
-
 export function isColLocatorString(value: string): boolean {
   return colLocatorRegExp.test(value)
-}
-
-export function getColId(col: number): string {
-  if (col < 0 || col >= 26 * 26) {
-    throw new Error(`Col ${col} is out of range`)
-  }
-  let result = ''
-  while (col >= 0) {
-    result = String.fromCharCode((col % 26) + 65) + result
-    col = Math.floor(col / 26) - 1
-  }
-  return result
-}
-
-export function getColNumber(colLocator: string): number {
-  const match = colLocator.match(colLocatorRegExp)
-  if (!match) {
-    throw new Error(`Invalid col string: ${colLocator}`)
-  }
-
-  return match[3].split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)
 }
 
 export class ColLocator extends CommonLocator {

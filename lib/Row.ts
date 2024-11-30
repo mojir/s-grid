@@ -1,9 +1,4 @@
-import { getRowId } from './locator/RowLocator'
-
-// const resizeRowIdRegExp = /^resize-row:([1-9]\d{0,3})$/
-// export function isResizeRowId(id: string): boolean {
-//   return resizeRowIdRegExp.test(id)
-// }
+import { getRowId } from './utils'
 
 export class Row {
   public readonly index: Ref<number>

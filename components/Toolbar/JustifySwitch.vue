@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StyleJustify } from '~/lib/CellStyle'
+import type { StyleJustify } from '~/dto/CellStyleDTO'
 import type { GridProject } from '~/lib/GridProject'
 
 const props = defineProps<{

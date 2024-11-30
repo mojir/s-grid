@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { whs } from '~/lib/utils'
+import { getColId, whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
-import { ColLocator, getColId } from '~/lib/locator/ColLocator'
+import { ColLocator } from '~/lib/locator/ColLocator'
 import { getDocumentColId, getDocumentResizeColId } from '~/lib/locator/utils'
 import { ColRangeLocator } from '~/lib/locator/ColRangeLocator'
 

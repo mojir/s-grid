@@ -1,7 +1,7 @@
+import { colRangeLocatorRegExp } from '../constants'
 import type { CellLocator } from './CellLocator'
 import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
-import { colRangeLocatorRegExp } from './utils'
 import { CommonLocator } from './CommonLocator'
 
 export function isColRangeLocatorString(value: string): boolean {

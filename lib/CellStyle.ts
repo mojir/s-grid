@@ -1,33 +1,14 @@
 import { defaultFontSize } from './constants'
+import {
+  type StyleFontSize,
+  type StyleTextDecoration,
+  type StyleJustify,
+  type StyleAlign,
+  type CellStyleDTO,
+  type CellStyleName,
+  styleFontSizes,
+} from '~/dto/CellStyleDTO'
 
-export type StyleJustify = 'left' | 'center' | 'right'
-export type StyleAlign = 'top' | 'middle' | 'bottom'
-export type StyleTextDecoration = 'underline' | 'line-through'
-export const styleFontSizes = [
-  12,
-  14,
-  16,
-  18,
-  24,
-  36,
-  48,
-  60,
-  72,
-  96,
-] as const
-
-export type StyleFontSize = typeof styleFontSizes[number]
-
-export type CellStyleName = keyof Omit<CellStyle, 'getJson'>
-
-export type CellStyleJson = {
-  fontSize?: StyleFontSize
-  bold?: boolean
-  italic?: boolean
-  textDecoration?: StyleTextDecoration
-  justify?: StyleJustify
-  align?: StyleAlign
-}
 export class CellStyle {
   public fontSize: StyleFontSize | undefined = defaultFontSize
   public bold: boolean | undefined = undefined
@@ -36,7 +17,7 @@ export class CellStyle {
   public justify: StyleJustify | undefined = undefined
   public align: StyleAlign | undefined = undefined
 
-  public static fromJson(json: CellStyleJson): CellStyle {
+  public static fromJson(json: CellStyleDTO): CellStyle {
     const style = new CellStyle()
     style.fontSize = json.fontSize
     style.bold = json.bold
@@ -47,7 +28,7 @@ export class CellStyle {
     return style
   }
 
-  public getJson(): CellStyleJson {
+  public getJson(): CellStyleDTO {
     return {
       fontSize: this.fontSize,
       bold: this.bold,
