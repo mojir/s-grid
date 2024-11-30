@@ -2,7 +2,7 @@ import { Cell } from '../Cell'
 import { CellStyle } from '../CellStyle'
 import { Col } from '../Col'
 import type { Color } from '../color'
-import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
+import { defaultColWidth, defaultNumberOfCols, defaultNumberOfRows, defaultRowHeight, getLineHeight } from '../constants'
 import type { GridProject } from '../GridProject'
 import { CellLocator } from '../locator/CellLocator'
 import type { ColLocator } from '../locator/ColLocator'
@@ -14,6 +14,7 @@ import type { RowRangeLocator } from '../locator/RowRangeLocator'
 import { getDocumentCellId, type Direction, type Movement } from '../locator/utils'
 import { matrixFilter } from '../matrix'
 import { Row } from '../Row'
+import { getGridName } from '../utils'
 import { GridSelection } from './GridSelection'
 import { GridAlias } from '~/lib/Grid/GridAlias'
 import { CellEditor } from '~/lib/Grid/CellEditor'
@@ -34,11 +35,11 @@ export class Grid {
   public hoveredCell = ref<CellLocator | null>(null)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
-  constructor(gridProject: GridProject, name: string) {
+  constructor(gridProject: GridProject, name: string, nbrOfRows: number, nbrOfCols: number) {
     this.name = ref(name)
     this.gridProject = gridProject
-    this.rows = shallowRef(Array.from({ length: 50 }, (_, row) => new Row(row, defaultRowHeight)))
-    this.cols = shallowRef(Array.from({ length: 26 }, (_, col) => new Col(col, defaultColWidth)))
+    this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(row, defaultRowHeight)))
+    this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(col, defaultColWidth)))
     this.editor = new CellEditor(name)
     this.selection = new GridSelection(this)
     this.alias = new GridAlias()
@@ -62,13 +63,14 @@ export class Grid {
   }
 
   static fromDTO(gridProject: GridProject, grid: GridDTO): Grid {
-    const newGrid = new Grid(gridProject, grid.name)
-    newGrid.rows.value = Array.from({ length: grid.rows }, (_, row) => new Row(row, defaultRowHeight))
-    newGrid.cols.value = Array.from({ length: grid.cols }, (_, col) => new Col(col, defaultColWidth))
+    const gridName = getGridName(grid.name)
+    const nbrOfRows = Math.max(grid.rows, defaultNumberOfRows)
+    const nbrOfCols = Math.max(grid.cols, defaultNumberOfCols)
+    const newGrid = new Grid(gridProject, gridName, nbrOfRows, nbrOfCols)
 
     Object.entries(grid.cells).forEach(([key, cell]) => {
       // TODO use new regexp, to avoid the need of Locator
-      const cellLocator = getLocatorFromString(grid.name, key) as CellLocator
+      const cellLocator = getLocatorFromString(gridName, key) as CellLocator
       const gridCell = newGrid.cells[cellLocator.row][cellLocator.col]
       if (cell.input !== undefined) {
         gridCell.input.value = cell.input
@@ -77,7 +79,7 @@ export class Grid {
         gridCell.formatter.value = cell.formatter
       }
       if (cell.style !== undefined) {
-        gridCell.style.value = CellStyle.fromJson(cell.style)
+        gridCell.style.value = CellStyle.fromDTO(cell.style)
       }
       // TODO fix colors
     })

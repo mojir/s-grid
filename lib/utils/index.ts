@@ -3,6 +3,14 @@ import { colLocatorRegExp, rowLocatorRegExp } from '../constants'
 export { cn } from './cn'
 export { hs, whs, ws } from './cssUtils'
 
+export function getGridName(displayName: string): string {
+  return displayName.replace(/\s+/g, '_')
+}
+
+export function getGridDisplayName(gridName: string): string {
+  return gridName.replace(/_/g, ' ')
+}
+
 export function getRowId(rowIndex: number): string {
   if (rowIndex < 9999 && rowIndex >= 0) {
     return `${rowIndex + 1}` as string

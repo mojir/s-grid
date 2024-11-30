@@ -1,10 +1,10 @@
 import { CellLocator } from './locator/CellLocator'
 import type { Movement } from './locator/utils'
 import type { GridProject } from './GridProject'
-import type { CellJson } from '~/lib/Cell'
 import type { RangeLocator } from '~/lib/locator/RangeLocator'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
 import { transformLocators } from '~/lib/transformFormula'
+import type { CellDTO } from '~/dto/CellDTO'
 
 type InternalClipboard<T> = {
   range: RangeLocator
@@ -12,8 +12,8 @@ type InternalClipboard<T> = {
 }
 
 export class ProjectClipboard {
-  private clipboard = ref<InternalClipboard<CellJson> | null>(null)
-  private styleClipboard = ref<InternalClipboard<Pick<CellJson, 'style' | 'backgroundColor' | 'textColor' | 'formatter'>> | null>(null)
+  private clipboard = ref<InternalClipboard<CellDTO> | null>(null)
+  private styleClipboard = ref<InternalClipboard<CellDTO> | null>(null)
   private cutCellIds = ref<CellLocator[] | null>(null)
   public hasStyleData = computed(() => !!this.styleClipboard.value)
 
@@ -31,7 +31,7 @@ export class ProjectClipboard {
 
     this.clipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), cellLocator => this.gridProject.getCellFromLocator(cellLocator).getJson()),
+      cells: matrixMap(range.getCellIdMatrix(), cellLocator => this.gridProject.getCellFromLocator(cellLocator).getDTO()),
     }
   }
 
@@ -39,12 +39,12 @@ export class ProjectClipboard {
     this.styleClipboard.value = {
       range,
       cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
-        const cellJson = this.gridProject.getCellFromLocator(cellLocator).getJson()
+        const cellDTO = this.gridProject.getCellFromLocator(cellLocator).getDTO()
         return {
-          style: cellJson.style,
-          backgroundColor: cellJson.backgroundColor,
-          textColor: cellJson.textColor,
-          formatter: cellJson.formatter,
+          style: cellDTO.style,
+          backgroundColor: cellDTO.backgroundColor,
+          textColor: cellDTO.textColor,
+          formatter: cellDTO.formatter,
         }
       }),
     }
@@ -71,10 +71,11 @@ export class ProjectClipboard {
     }
     this.styleClipboard.value = null
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
-      matrixForEach(styleClipboardValue.cells, (cellJson, [row, col]) => {
+      matrixForEach(styleClipboardValue.cells, (cellDTO, [row, col]) => {
         const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
         const cell = this.gridProject.getCellFromLocator(cellLocator)
-        cell.setJson(cellJson)
+        const { alias, ...cellDTOWithoutAlias } = cellDTO
+        cell.setDTO(cellDTOWithoutAlias)
       })
     })
   }
@@ -118,10 +119,10 @@ export class ProjectClipboard {
     const toPosition = targetRange.start
 
     const clipboardCells = this.clipboard.value.cells
-    matrixForEach(clipboardCells, (cellJson, [row, col]) => {
+    matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
       const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
       const cell = this.gridProject.getCellFromLocator(cellLocator)
-      cell.setJson(cellJson)
+      cell.setDTO(cellDTO)
     })
     const fromRange = this.clipboard.value.range
     const fromPosition = fromRange.start
@@ -160,9 +161,9 @@ export class ProjectClipboard {
         deltaCol: toPosition.col - fromPosition.col,
       }
 
-      matrixForEach(clipboardCells, (cellJson, [row, col]) => {
+      matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
         const cell = fromGrid.cells[toPosition.row + row][toPosition.col + col]
-        cell.setJson(cellJson)
+        cell.setDTO(cellDTO)
         transformLocators(
           cell,
           {

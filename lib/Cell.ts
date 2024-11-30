@@ -1,5 +1,5 @@
 import { isLitsFunction } from '@mojir/lits'
-import { Color, type ColorJson } from './color'
+import { Color } from './color'
 import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
 import type { Grid } from './Grid'
 import type { CommandCenter } from './CommandCenter'
@@ -8,17 +8,8 @@ import type { GridProject } from './GridProject'
 import { CellStyle } from './CellStyle'
 import { defaultFormatter } from './constants'
 import type { LitsComposable } from '~/composables/useLits'
-import type { CellStyleDTO } from '~/dto/CellStyleDTO'
+import type { CellDTO } from '~/dto/CellDTO'
 
-export type CellJson = {
-  input: string
-  output: unknown
-  display: string
-  formatter: string | null
-  style: CellStyleDTO
-  backgroundColor?: ColorJson | null
-  textColor?: ColorJson | null
-}
 export class Cell {
   private readonly gridProject: GridProject
   private readonly commandCenter: CommandCenter
@@ -54,33 +45,35 @@ export class Cell {
     })
   }
 
-  public setJson(json: Partial<CellJson>) {
-    if (json.input !== undefined && json.input !== this.input.value) {
-      this.input.value = json.input
+  public setDTO(cellDTO: Partial<CellDTO>) {
+    if (cellDTO.input !== undefined && cellDTO.input !== this.input.value) {
+      this.input.value = cellDTO.input
     }
-    if (json.formatter !== undefined && json.formatter !== this.formatter.value) {
-      this.formatter.value = json.formatter
+    if (cellDTO.formatter !== undefined && cellDTO.formatter !== this.formatter.value) {
+      this.formatter.value = cellDTO.formatter
     }
-    if (json.style !== undefined) {
-      this.style.value = CellStyle.fromJson(json.style)
+    if (cellDTO.style !== undefined) {
+      this.style.value = CellStyle.fromDTO(cellDTO.style)
     }
-    if (json.backgroundColor !== undefined) {
-      this.backgroundColor.value = json.backgroundColor ? Color.fromJson(json.backgroundColor) : null
+    if (cellDTO.backgroundColor !== undefined) {
+      this.backgroundColor.value = cellDTO.backgroundColor ? Color.fromDTO(cellDTO.backgroundColor) : null
     }
-    if (json.textColor !== undefined) {
-      this.textColor.value = json.textColor ? Color.fromJson(json.textColor) : null
+    if (cellDTO.textColor !== undefined) {
+      this.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
+    }
+    if (cellDTO.alias !== undefined) {
+      this.grid.alias.setCell(cellDTO.alias, this, true)
     }
   }
 
-  public getJson(): CellJson {
+  public getDTO(): CellDTO {
     return {
       input: this.input.value,
-      output: this.output.value,
-      display: this.display.value,
-      formatter: this.formatter.value,
-      style: this.style.value.getJson(),
-      backgroundColor: this.backgroundColor.value?.getJson(),
-      textColor: this.textColor.value?.getJson(),
+      formatter: this.formatter.value ?? undefined,
+      style: this.style.value.getDTO(),
+      backgroundColor: this.backgroundColor.value?.getDTO(),
+      textColor: this.textColor.value?.getDTO(),
+      alias: this.grid.alias.getAlias(this),
     }
   }
 
@@ -256,7 +249,7 @@ export class Cell {
       formatter: this.formatter.value,
       row: this.cellLocator.row,
       col: this.cellLocator.col,
-      style: this.style.value.getJson(),
+      style: this.style.value.getDTO(),
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
       hasError: this.hasError.value,

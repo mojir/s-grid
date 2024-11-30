@@ -16,6 +16,10 @@ const forceBlur = ref(false)
 const initialValue = ref('')
 const inputRef = ref<HTMLInputElement>()
 
+watch(grid, () => {
+  initialValue.value = grid.value.editor.editorText.value
+})
+
 const selectionLabel = computed(() => {
   if (grid.value.editor.editorFocused.value) {
     return grid.value.editor.editingCellId.value.toStringWithoutGrid()

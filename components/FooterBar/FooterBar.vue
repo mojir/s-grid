@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { GridProject } from '~/lib/GridProject'
+import { getGridDisplayName } from '~/lib/utils'
 
 defineProps<{
   gridProject: GridProject
@@ -36,7 +37,7 @@ defineProps<{
           :checked="gridProject.gridIndex.value === index"
           @click="gridProject.selectGrid(gridEntry.name)"
         >
-          {{ gridEntry.name }}
+          {{ getGridDisplayName(gridEntry.name) }}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -44,13 +45,12 @@ defineProps<{
       <FooterBarGridButton
         v-for="(gridEntry, index) of gridProject.grids.value"
         :key="gridEntry.name"
-        :name="gridEntry.name"
         :selected="index === gridProject.gridIndex.value"
         :removable="gridProject.grids.value.length > 1"
         @select="gridProject.selectGrid(gridEntry.name)"
         @remove="gridProject.removeGrid(gridEntry.name)"
       >
-        {{ gridEntry.name }}
+        {{ getGridDisplayName(gridEntry.name) }}
       </FooterBarGridButton>
     </div>
   </div>

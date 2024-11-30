@@ -1,13 +1,9 @@
+import type { ColorDTO } from '~/dto/ColorDTO'
+
 type Tripple = [number, number, number]
 
 const hexRegExp = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i
 
-export type ColorJson = {
-  hue: number
-  saturation: number
-  lightness: number
-  alpha: number
-}
 export class Color {
   private constructor(
     public readonly hue: number,
@@ -47,8 +43,8 @@ export class Color {
     return new Color(...rgbToHsl(r, g, b), a)
   }
 
-  public static fromJson(json: ColorJson): Color {
-    return new Color(json.hue, json.saturation, json.lightness, json.alpha)
+  public static fromDTO(dto: ColorDTO): Color {
+    return new Color(dto.hue, dto.saturation, dto.lightness, dto.alpha)
   }
 
   public withAlpha(alpha: number): Color {
@@ -59,7 +55,7 @@ export class Color {
     return rgbToHex(...hslToRgb(this.hue, this.saturation, this.lightness))
   }
 
-  public getJson(): ColorJson {
+  public getDTO(): ColorDTO {
     return {
       hue: this.hue,
       saturation: this.saturation,

@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import type { GridDTO } from '~/dto/GridDTO'
 import type { GridProject } from '~/lib/GridProject'
+import { getGridDisplayName } from '~/lib/utils'
 
 const props = defineProps<{
   gridProject: GridProject
 }>()
 
 const { gridProject } = toRefs(props)
+
+const testFixtures = useTestFixtures()
 
 const commandCenter = gridProject.value.commandCenter
 
@@ -168,12 +172,37 @@ function addSampleData() {
 
   commandCenter.exec('MovePositionTo!', 'A1')
 }
+
+function addGridDto(dto: GridDTO) {
+  gridProject.value.importGrid(dto)
+}
 </script>
 
 <template>
   <div
     class="flex flex-col w-full text-sm dark:text-slate-400 text-gray-600 gap-2"
   >
+    <div
+      v-if="testFixtures"
+      class="flex flex-col"
+    >
+      <div class="font-bold">
+        Test grids
+      </div>
+      <div class="flex flex-col">
+        <div
+          v-for="gridDTO of testFixtures"
+          :key="gridDTO.name"
+        >
+          <a
+            class="cursor-pointer hover:underline pl-2 active:font-bold"
+            @click="addGridDto(gridDTO)"
+          >
+            {{ getGridDisplayName(gridDTO.name) }}
+          </a>
+        </div>
+      </div>
+    </div>
     <button
       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
       @click="addSampleData"

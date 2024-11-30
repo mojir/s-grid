@@ -16,22 +16,13 @@ export const styleFontSizes = [
 
 export type StyleFontSize = typeof styleFontSizes[number]
 
-export class CellStyleDTO {
-  public readonly fontSize?: StyleFontSize
-  public readonly bold?: boolean
-  public readonly italic?: boolean
-  public readonly textDecoration?: StyleTextDecoration
-  public readonly justify?: StyleJustify
-  public readonly align?: StyleAlign
-
-  constructor(style: CellStyleDTO) {
-    this.fontSize = style.fontSize
-    this.bold = style.bold
-    this.italic = style.italic
-    this.textDecoration = style.textDecoration
-    this.justify = style.justify
-    this.align = style.align
-  }
+export type CellStyleDTO = {
+  fontSize?: StyleFontSize
+  bold?: boolean
+  italic?: boolean
+  textDecoration?: StyleTextDecoration
+  justify?: StyleJustify
+  align?: StyleAlign
 }
 
 export type CellStyleName = keyof CellStyleDTO

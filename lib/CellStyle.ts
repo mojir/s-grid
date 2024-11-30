@@ -17,18 +17,18 @@ export class CellStyle {
   public justify: StyleJustify | undefined = undefined
   public align: StyleAlign | undefined = undefined
 
-  public static fromJson(json: CellStyleDTO): CellStyle {
+  public static fromDTO(dto: CellStyleDTO): CellStyle {
     const style = new CellStyle()
-    style.fontSize = json.fontSize
-    style.bold = json.bold
-    style.italic = json.italic
-    style.textDecoration = json.textDecoration
-    style.justify = json.justify
-    style.align = json.align
+    style.fontSize = dto.fontSize
+    style.bold = dto.bold
+    style.italic = dto.italic
+    style.textDecoration = dto.textDecoration
+    style.justify = dto.justify
+    style.align = dto.align
     return style
   }
 
-  public getJson(): CellStyleDTO {
+  public getDTO(): CellStyleDTO {
     return {
       fontSize: this.fontSize,
       bold: this.bold,

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 const props = defineProps<{
-  name: string
   selected: boolean
   removable: boolean
 }>()
 
-const { name, selected } = toRefs(props)
+const { selected, removable } = toRefs(props)
 
 const emit = defineEmits<{
   (e: 'select' | 'remove'): void
@@ -35,7 +34,7 @@ function onContextMenu(e: MouseEvent) {
     @contextmenu="onContextMenu"
   >
     <div>
-      {{ name }}
+      <slot />
     </div>
     <DropdownMenu v-model:open="open">
       <DropdownMenuTrigger

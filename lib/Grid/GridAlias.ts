@@ -4,8 +4,9 @@ export class GridAlias {
   private cellAliases = new Map<string, Cell>()
   private lookup = new WeakMap<Cell, string>()
 
-  public setCell(alias: string, cell: Cell) {
-    if (this.cellAliases.has(alias)) {
+  public setCell(alias: string, cell: Cell, force = false) {
+    const existingCell = this.cellAliases.get(alias)
+    if (!force && existingCell) {
       throw new Error(`Alias ${alias} already exists`)
     }
     this.lookup.set(cell, alias)

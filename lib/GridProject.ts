@@ -13,6 +13,8 @@ import { matrixForEach, matrixMap } from './matrix'
 import { REPL } from './REPL'
 import type { Row } from './Row'
 import { transformLocators, type FormulaTransformation } from './transformFormula'
+import { getGridName } from './utils'
+import { defaultNumberOfCols, defaultNumberOfRows } from './constants'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -36,7 +38,7 @@ export class GridProject {
     this.grids = shallowRef([
       {
         name: 'Grid1',
-        grid: new Grid(this, 'Grid1'),
+        grid: new Grid(this, 'Grid1', defaultNumberOfRows, defaultNumberOfCols),
       },
     ])
     this.currentGrid = computed(() => {
@@ -46,14 +48,26 @@ export class GridProject {
   }
 
   public importGrid(grid: GridDTO) {
-    this.grids.value = [
-      ...this.grids.value,
-      {
-        name: grid.name,
-        grid: Grid.fromDTO(this, grid),
-      },
-    ]
-    this.selectGrid(grid.name)
+    const gridName = getGridName(grid.name)
+    const newGridEntry: GridEntry = {
+      name: gridName,
+      grid: Grid.fromDTO(this, grid),
+    }
+    const existingGridIndex = this.grids.value.findIndex(g => g.name === gridName)
+    if (existingGridIndex >= 0) {
+      this.grids.value = [
+        ...this.grids.value.slice(0, existingGridIndex),
+        newGridEntry,
+        ...this.grids.value.slice(existingGridIndex + 1),
+      ]
+    }
+    else {
+      this.grids.value = [
+        ...this.grids.value,
+        newGridEntry,
+      ]
+    }
+    this.selectGrid(gridName)
   }
 
   public selectGrid(gridName: string) {
@@ -84,7 +98,7 @@ export class GridProject {
     this.grids.value = [
       ...this.grids.value, {
         name: gridName,
-        grid: new Grid(this, gridName),
+        grid: new Grid(this, gridName, defaultNumberOfRows, defaultNumberOfCols),
       }]
   }
 

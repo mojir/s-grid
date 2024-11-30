@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest'
-import { oneGrid10NamesWithAges } from './fixtures'
+import { tenNamesWithAges } from './fixtures'
 import type { CommandCenter } from '~/lib/CommandCenter'
 import { GridProject } from '~/lib/GridProject'
 
@@ -13,7 +13,6 @@ beforeEach(() => {
 
 describe('CommandCenter', () => {
   test('existance', () => {
-    console.log(oneGrid10NamesWithAges)
     expect(commandCenter).toBeDefined()
   })
 
@@ -23,7 +22,7 @@ describe('CommandCenter', () => {
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Hello')
     })
     test('Clear!', () => {
-      gridProject.importGrid(oneGrid10NamesWithAges)
+      gridProject.importGrid(tenNamesWithAges)
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
       commandCenter.exec('Clear!', 'A1')
@@ -31,7 +30,7 @@ describe('CommandCenter', () => {
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
     })
     test('ClearAllCells!', () => {
-      gridProject.importGrid(oneGrid10NamesWithAges)
+      gridProject.importGrid(tenNamesWithAges)
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
       commandCenter.exec('ClearAllCells!', 'A1')
