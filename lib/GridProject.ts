@@ -16,6 +16,7 @@ import { transformLocators, type FormulaTransformation } from './transformFormul
 import { getGridName } from './utils'
 import { defaultNumberOfCols, defaultNumberOfRows } from './constants'
 import { Aliases } from './Aliases'
+import { builtinGrid } from './builtinGrid'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -32,6 +33,7 @@ export class GridProject {
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public grids: Ref<GridEntry[]>
+  public visibleGrids: ComputedRef<Grid[]>
 
   constructor() {
     this.grids = shallowRef([
@@ -39,9 +41,19 @@ export class GridProject {
         name: 'Grid1',
         grid: new Grid(this, 'Grid1', defaultNumberOfRows, defaultNumberOfCols),
       },
+      {
+        name: builtinGrid.name,
+        grid: Grid.fromDTO(this, builtinGrid),
+      },
     ])
     this.currentGrid = computed(() => {
       return this.grids.value[this.currentGridIndex.value]!.grid
+    })
+    this.visibleGrids = computed(() => {
+      const { debugMode } = useDebug()
+      return this.grids.value
+        .map(entry => entry.grid)
+        .filter(g => debugMode.value || !g.hidden.value)
     })
   }
 

@@ -1,0 +1,31 @@
+ProductID,ProductName,Category,StockLevel,PurchasePrice,SalePrice,Supplier
+P001,Gaming Laptop,Computers,25,850,1299,TechSupply Ltd
+P002,Smartphone X12,Phones,50,520,799,MobilePro
+P003,Tablet Pro,Tablets,30,400,599,TechSupply Ltd
+P004,Wireless Headphones,Accessories,100,80,129,AudioTech
+P005,Mechanical Keyboard,Accessories,45,60,89,PeripheralsPlus
+P006,Wireless Mouse,Accessories,75,30,49,PeripheralsPlus
+P007,Ultrabook Slim,Computers,15,950,1399,TechSupply Ltd
+P008,Smartphone X13,Phones,40,600,849,MobilePro
+P009,Tablet Lite,Tablets,35,450,649,TechSupply Ltd
+P010,Sport Headphones,Accessories,60,90,149,AudioTech
+P011,Gaming Keyboard,Accessories,40,65,99,PeripheralsPlus
+P012,Ergonomic Mouse,Accessories,55,40,59,PeripheralsPlus
+P013,Student Laptop,Computers,20,750,1199,TechSupply Ltd
+P014,Smartphone X14,Phones,30,700,999,MobilePro
+P015,Tablet Kids,Tablets,25,350,549,TechSupply Ltd
+P016,Pro Laptop,Computers,22,899,1349,TechSupply Ltd
+P017,Smartphone X15,Phones,45,590,879,MobilePro
+P018,Tablet Business,Tablets,28,420,619,TechSupply Ltd
+P019,Premium Headphones,Accessories,85,95,145,AudioTech
+P020,RGB Keyboard,Accessories,50,62,92,PeripheralsPlus
+P021,Gaming Mouse,Accessories,70,35,52,PeripheralsPlus
+P022,Designer Laptop,Computers,18,980,1449,TechSupply Ltd
+P023,Smartphone X16,Phones,35,650,929,MobilePro
+P024,Tablet Pro Plus,Tablets,32,440,639,TechSupply Ltd
+P025,Noise-Canceling Headphones,Accessories,55,110,169,AudioTech
+P026,Compact Keyboard,Accessories,48,55,85,PeripheralsPlus
+P027,Bluetooth Mouse,Accessories,65,38,56,PeripheralsPlus
+P028,Business Laptop,Computers,24,880,1299,TechSupply Ltd
+P029,Smartphone X17,Phones,42,680,959,MobilePro
+P030,Tablet Ultra,Tablets,30,460,659,TechSupply Ltd

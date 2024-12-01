@@ -32,25 +32,25 @@ defineProps<{
       </DropdownMenuTrigger>
       <DropdownMenuContent class="flex flex-col max-h-96 overflow-y-auto">
         <DropdownMenuCheckboxItem
-          v-for="(gridEntry, index) of gridProject.grids.value"
-          :key="gridEntry.name"
-          :checked="gridProject.currentGridIndex.value === index"
-          @click="gridProject.selectGrid(gridEntry.name)"
+          v-for="grid of gridProject.visibleGrids.value"
+          :key="grid.name.value"
+          :checked="gridProject.currentGrid.value === grid"
+          @click="gridProject.selectGrid(grid.name.value)"
         >
-          {{ getGridDisplayName(gridEntry.name) }}
+          {{ getGridDisplayName(grid.name.value) }}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
     <div class="flex overflow-auto h-full">
       <FooterBarGridButton
-        v-for="(gridEntry, index) of gridProject.grids.value"
-        :key="gridEntry.name"
-        :selected="index === gridProject.currentGridIndex.value"
-        :removable="gridProject.grids.value.length > 1"
-        @select="gridProject.selectGrid(gridEntry.name)"
-        @remove="gridProject.removeGrid(gridEntry.name)"
+        v-for="grid of gridProject.visibleGrids.value"
+        :key="grid.name.value"
+        :selected="grid === gridProject.currentGrid.value"
+        :removable="gridProject.visibleGrids.value.length > 1"
+        @select="gridProject.selectGrid(grid.name.value)"
+        @remove="gridProject.removeGrid(grid.name.value)"
       >
-        {{ getGridDisplayName(gridEntry.name) }}
+        {{ getGridDisplayName(grid.name.value) }}
       </FooterBarGridButton>
     </div>
   </div>

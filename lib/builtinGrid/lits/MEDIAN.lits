@@ -1,0 +1,16 @@
+#(let [sorted (sort (AS_FLAT_RANGE %))
+       cnt (count sorted)
+       halfway (quot cnt 2)]
+   (cond
+      ; empty range, default to 0
+     (zero? cnt)
+     0
+
+     (odd? cnt)
+     (nth sorted halfway)
+
+     :else
+     (let [bottom (dec halfway)
+           bottom-val (nth sorted bottom)
+           top-val (nth sorted halfway)]
+       (/ (+ bottom-val top-val) 2))))

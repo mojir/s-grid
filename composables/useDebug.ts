@@ -1,4 +1,4 @@
-const debugMode = ref(true)
+const debugMode = ref(false)
 
 export function useDebug() {
   return {

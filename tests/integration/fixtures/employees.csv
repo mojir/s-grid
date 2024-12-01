@@ -1,0 +1,33 @@
+ID,Name,Title,Department,HireDate,MonthlySalary
+EMP001,John Smith,Developer,IT,2020-03-15,4500
+EMP002,Sarah Johnson,Project Manager,Marketing,2020-06-01,6500
+EMP003,Mike Williams,Designer,Development,2021-01-15,4200
+EMP004,Emma Brown,Analyst,Finance,2020-09-01,4800
+EMP005,James Wilson,Consultant,IT,2021-03-15,5200
+EMP006,Lisa Davis,Developer,Development,2020-11-01,4700
+EMP007,Robert Taylor,Project Manager,HR,2021-06-15,6300
+EMP008,Emily Anderson,Designer,Marketing,2020-08-01,4400
+EMP009,David Martinez,Analyst,IT,2021-02-15,4900
+EMP010,Jessica Thompson,Consultant,Finance,2020-12-01,5400
+EMP011,Daniel White,Developer,Development,2021-04-15,4600
+EMP012,Rachel Clark,Project Manager,IT,2020-10-01,6400
+EMP013,Thomas Wilson,Designer,Marketing,2021-05-15,4300
+EMP014,Amanda Moore,Analyst,HR,2020-07-01,5000
+EMP015,Kevin Lee,Consultant,Development,2021-08-15,5300
+EMP016,Laura Hall,Developer,IT,2021-09-01,4800
+EMP017,Chris Evans,Project Manager,Marketing,2020-05-15,6600
+EMP018,Michelle King,Designer,Development,2021-03-01,4500
+EMP019,Brian Adams,Analyst,Finance,2020-11-15,5100
+EMP020,Jennifer Wright,Consultant,HR,2021-01-01,5500
+EMP021,Mark Turner,Developer,IT,2020-08-15,4900
+EMP022,Sophie Baker,Project Manager,Development,2021-02-01,6200
+EMP023,Paul Collins,Designer,Marketing,2020-12-15,4600
+EMP024,Nicole Gray,Analyst,Finance,2021-04-01,5200
+EMP025,Andrew Phillips,Consultant,IT,2020-10-15,5600
+EMP026,Katherine Ross,Developer,Development,2021-05-01,4700
+EMP027,Steven Cooper,Project Manager,HR,2020-07-15,6700
+EMP028,Mary Peterson,Designer,Marketing,2021-06-01,4400
+EMP029,George Barnes,Analyst,IT,2020-09-15,5300
+EMP030,Julia Morgan,Consultant,Finance,2021-07-01,5400
+,,,,Average,=(AVERAGE F2-F31)
+,,,,Median,=(MEDIAN F2-F31)

@@ -1,8 +1,8 @@
 import { Cell } from '../Cell'
 import { CellStyle } from '../CellStyle'
 import { Col } from '../Col'
-import type { Color } from '../color'
-import { defaultColWidth, defaultNumberOfCols, defaultNumberOfRows, defaultRowHeight, getLineHeight } from '../constants'
+import { Color } from '../color'
+import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { GridProject } from '../GridProject'
 import { CellLocator } from '../locator/CellLocator'
 import type { ColLocator } from '../locator/ColLocator'
@@ -22,6 +22,7 @@ import type { GridDTO } from '~/dto/GridDTO'
 
 export class Grid {
   private gridProject: GridProject
+  public readonly hidden = ref(false)
   public readonly name: Ref<string>
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
@@ -61,9 +62,10 @@ export class Grid {
 
   static fromDTO(gridProject: GridProject, grid: GridDTO): Grid {
     const gridName = getGridName(grid.name)
-    const nbrOfRows = Math.max(grid.rows, defaultNumberOfRows)
-    const nbrOfCols = Math.max(grid.cols, defaultNumberOfCols)
-    const newGrid = new Grid(gridProject, gridName, nbrOfRows, nbrOfCols)
+    const newGrid = new Grid(gridProject, gridName, grid.rows, grid.cols)
+    if (grid.hidden !== undefined) {
+      newGrid.hidden.value = grid.hidden
+    }
 
     Object.entries(grid.cells).forEach(([key, cell]) => {
       // TODO use new regexp, to avoid the need of Locator
@@ -77,6 +79,15 @@ export class Grid {
       }
       if (cell.style !== undefined) {
         gridCell.style.value = CellStyle.fromDTO(cell.style)
+      }
+      if (cell.backgroundColor !== undefined) {
+        gridCell.backgroundColor.value = cell.backgroundColor ? Color.fromDTO(cell.backgroundColor) : null
+      }
+      if (cell.textColor !== undefined) {
+        gridCell.textColor.value = cell.textColor ? Color.fromDTO(cell.textColor) : null
+      }
+      if (cell.alias !== undefined) {
+        gridProject.aliases.setCell(cell.alias, gridCell, true)
       }
       // TODO fix colors
     })
