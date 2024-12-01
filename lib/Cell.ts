@@ -115,7 +115,7 @@ export class Cell {
       }
       const aliasCell = this.grid.alias.getCell(identifier)
       if (aliasCell) {
-        return aliasCell.cellLocator
+        return aliasCell.value.cellLocator
       }
       return []
     })

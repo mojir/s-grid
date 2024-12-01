@@ -1,19 +1,26 @@
 import type { Cell } from '~/lib/Cell'
 
 export class GridAlias {
-  private cellAliases = new Map<string, Cell>()
+  private cellAliases = new Map<string, Ref<Cell>>()
   private lookup = new WeakMap<Cell, string>()
 
   public setCell(alias: string, cell: Cell, force = false) {
     const existingCell = this.cellAliases.get(alias)
-    if (!force && existingCell) {
+    if (existingCell && !force) {
       throw new Error(`Alias ${alias} already exists`)
     }
+
     this.lookup.set(cell, alias)
-    this.cellAliases.set(alias, cell)
+    const cellRef = shallowRef(cell)
+    if (existingCell) {
+      existingCell.value = cell
+    }
+    else {
+      this.cellAliases.set(alias, cellRef)
+    }
   }
 
-  public getCell(alias: string): Cell | undefined {
+  public getCell(alias: string): Ref<Cell> | undefined {
     return this.cellAliases.get(alias)
   }
 

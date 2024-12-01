@@ -111,7 +111,7 @@ export class GridProject {
       else {
         const aliasCell = grid.alias.getCell(value)
         if (aliasCell) {
-          acc[value] = aliasCell.output.value
+          acc[value] = aliasCell.value.output.value
         }
       }
 
