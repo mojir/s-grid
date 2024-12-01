@@ -1,6 +1,6 @@
 import type { Cell } from '~/lib/Cell'
 
-export class GridAlias {
+export class Aliases {
   private cellAliases = new Map<string, Ref<Cell>>()
   private lookup = new WeakMap<Cell, string>()
 

@@ -34,7 +34,7 @@ defineProps<{
         <DropdownMenuCheckboxItem
           v-for="(gridEntry, index) of gridProject.grids.value"
           :key="gridEntry.name"
-          :checked="gridProject.gridIndex.value === index"
+          :checked="gridProject.currentGridIndex.value === index"
           @click="gridProject.selectGrid(gridEntry.name)"
         >
           {{ getGridDisplayName(gridEntry.name) }}
@@ -45,7 +45,7 @@ defineProps<{
       <FooterBarGridButton
         v-for="(gridEntry, index) of gridProject.grids.value"
         :key="gridEntry.name"
-        :selected="index === gridProject.gridIndex.value"
+        :selected="index === gridProject.currentGridIndex.value"
         :removable="gridProject.grids.value.length > 1"
         @select="gridProject.selectGrid(gridEntry.name)"
         @remove="gridProject.removeGrid(gridEntry.name)"

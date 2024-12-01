@@ -15,6 +15,7 @@ import type { Row } from './Row'
 import { transformLocators, type FormulaTransformation } from './transformFormula'
 import { getGridName } from './utils'
 import { defaultNumberOfCols, defaultNumberOfRows } from './constants'
+import { Aliases } from './Aliases'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -24,17 +25,15 @@ type GridEntry = {
 }
 
 export class GridProject {
-  public commandCenter: CommandCenter
-  public repl: REPL
+  public readonly commandCenter = new CommandCenter(this)
+  public readonly repl = new REPL(this)
+  public readonly aliases = new Aliases()
+  public readonly clipboard = new ProjectClipboard(this)
+  public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
-  public readonly clipboard: ProjectClipboard
-  public readonly gridIndex = ref(0)
   public grids: Ref<GridEntry[]>
 
   constructor() {
-    this.repl = new REPL(this)
-    this.commandCenter = new CommandCenter(this)
-
     this.grids = shallowRef([
       {
         name: 'Grid1',
@@ -42,9 +41,8 @@ export class GridProject {
       },
     ])
     this.currentGrid = computed(() => {
-      return this.grids.value[this.gridIndex.value]!.grid
+      return this.grids.value[this.currentGridIndex.value]!.grid
     })
-    this.clipboard = new ProjectClipboard(this)
   }
 
   public importGrid(grid: GridDTO) {
@@ -75,7 +73,7 @@ export class GridProject {
     if (index < 0) {
       throw new Error(`Grid "${gridName}" does not exist`)
     }
-    this.gridIndex.value = index
+    this.currentGridIndex.value = index
   }
 
   public removeGrid(gridName: string) {
@@ -84,7 +82,7 @@ export class GridProject {
       throw new Error(`Grid "${gridName}" does not exist`)
     }
     this.grids.value = this.grids.value.filter((_, i) => i !== index)
-    this.gridIndex.value = Math.max(this.gridIndex.value - 1, 0)
+    this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
   }
 
   public addGrid() {
@@ -109,7 +107,7 @@ export class GridProject {
         acc[value] = this.getValueFromLocator(grid, locator)
       }
       else {
-        const aliasCell = grid.alias.getCell(value)
+        const aliasCell = this.aliases.getCell(value)
         if (aliasCell) {
           acc[value] = aliasCell.value.output.value
         }

@@ -94,7 +94,7 @@ export class CommandCenter {
         const gridName = grid.value.name.value
         const locator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
         const cell = this.gridProject.getCellFromLocator(locator)
-        grid.value.alias.setCell(alias, cell)
+        this.gridProject.aliases.setCell(alias, cell)
         grid.value.setInput(input, locator)
       },
       description: 'Clear the current cell',
@@ -195,7 +195,7 @@ export class CommandCenter {
         const gridName = grid.value.name.value
         const cellLocator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
         const cell = this.gridProject.getCellFromLocator(cellLocator)
-        grid.value.alias.setCell(alias, cell)
+        this.gridProject.aliases.setCell(alias, cell)
       },
       description: 'Create an alias for a cell',
     })

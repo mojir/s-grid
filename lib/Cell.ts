@@ -62,7 +62,7 @@ export class Cell {
       this.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
     }
     if (cellDTO.alias !== undefined) {
-      this.grid.alias.setCell(cellDTO.alias, this, true)
+      this.gridProject.aliases.setCell(cellDTO.alias, this, true)
     }
   }
 
@@ -73,7 +73,7 @@ export class Cell {
       style: this.style.value.getDTO(),
       backgroundColor: this.backgroundColor.value?.getDTO(),
       textColor: this.textColor.value?.getDTO(),
-      alias: this.grid.alias.getAlias(this),
+      alias: this.gridProject.aliases.getAlias(this),
     }
   }
 
@@ -113,7 +113,7 @@ export class Cell {
       if (isRangeLocatorString(identifier)) {
         return RangeLocator.fromString(this.grid.name.value, identifier)
       }
-      const aliasCell = this.grid.alias.getCell(identifier)
+      const aliasCell = this.gridProject.aliases.getCell(identifier)
       if (aliasCell) {
         return aliasCell.value.cellLocator
       }
@@ -171,7 +171,7 @@ export class Cell {
       return '#ERR'
     }
     if (this.isFunction.value) {
-      const alias = this.grid.alias.getAlias(this)
+      const alias = this.gridProject.aliases.getAlias(this)
 
       return `${alias ? `${alias} ` : ''}λ`
     }
