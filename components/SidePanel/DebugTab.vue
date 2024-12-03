@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const { gridProject } = toRefs(props)
 
-const testFixtures = useTestFixtures()
+const { testFixtures } = useFixtures()
 
 function addGridDto(dto: GridDTO) {
   gridProject.value.importGrid(dto)
@@ -34,7 +34,7 @@ function addGridDto(dto: GridDTO) {
       </div>
       <div class="flex flex-col">
         <div
-          v-for="gridDTO of testFixtures"
+          v-for="gridDTO of Object.values(testFixtures)"
           :key="gridDTO.name"
         >
           <a

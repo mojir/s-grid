@@ -1,6 +1,6 @@
 const debugMode = ref(false)
 
-export function useDebug() {
+export default function () {
   return {
     debugMode,
   }

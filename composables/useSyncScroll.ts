@@ -6,7 +6,7 @@ import type RowHeader from '@/components/RowHeader.vue'
 let activeScrollElement: HTMLElement | null = null
 let scrollTimer: ReturnType<typeof setTimeout> | null = null
 
-export function useSyncScroll(
+export default function (
   dataGridRef: Ref<typeof DataGrid>,
   rowHeaderRef: Ref<typeof RowHeader>,
   colHeaderRef: Ref<typeof ColHeader>,

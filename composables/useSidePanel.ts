@@ -63,7 +63,7 @@ function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
   return false
 }
 
-export function useSidePanel() {
+export default function () {
   return {
     tabs,
     currentTab,

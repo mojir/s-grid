@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, test } from 'vitest'
-import { persons } from './fixtures'
 import type { CommandCenter } from '~/lib/CommandCenter'
 import { GridProject } from '~/lib/GridProject'
 
+const { getTestFixtures } = useFixtures()
 let gridProject: GridProject
 let commandCenter: CommandCenter
 
@@ -21,7 +21,8 @@ describe('CommandCenter', () => {
       commandCenter.exec('SetInput!', 'Hello', 'A1')
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Hello')
     })
-    test('Clear!', () => {
+    test('Clear!', async () => {
+      const persons = (await getTestFixtures()).persons
       gridProject.importGrid(persons)
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
@@ -29,7 +30,9 @@ describe('CommandCenter', () => {
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('')
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
     })
-    test('ClearAllCells!', () => {
+    test('ClearAllCells!', async () => {
+      const persons = (await getTestFixtures()).persons
+
       gridProject.importGrid(persons)
       expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
       expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
