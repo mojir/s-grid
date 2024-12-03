@@ -11,8 +11,7 @@ const { gridProject } = toRefs(props)
 const grid = gridProject.value.currentGrid
 
 const errorMessage = computed(() => {
-  const cell = grid.value.getCurrentCell()
-  const output = cell?.output.value
+  const output = grid.value.currentCell.value.output.value
   if (output instanceof Error) {
     if (isLitsError(output)) {
       return output.message

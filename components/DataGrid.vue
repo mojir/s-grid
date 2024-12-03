@@ -25,6 +25,29 @@ watch(grid.value.position, (position) => {
   })
 })
 
+watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
+  const newStart = newRange.start
+  const newEnd = newRange.end
+  const oldStart = oldRange.start
+  const oldEnd = oldRange.end
+
+  if (oldStart.row !== newStart.row || oldStart.col !== newStart.col) {
+    const cellElement = document.getElementById(getDocumentCellId(newStart, grid.value.name.value))
+    cellElement?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }
+
+  if (oldEnd.row !== newEnd.row || oldEnd.col !== newEnd.col) {
+    const cellElement = document.getElementById(getDocumentCellId(newEnd, grid.value.name.value))
+    cellElement?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }
+})
+
 const el = ref<HTMLDivElement>()
 
 defineExpose({
@@ -35,8 +58,15 @@ defineExpose({
 <template>
   <div
     ref="el"
-    class="pl-[1px] pt-[1px] overflow-auto"
+    class="pl-[1px] pt-[1px] overflow-auto relative bg-grid"
   >
+    <!-- <GridRegion
+      v-if="grid.selection.selectedRange.value.size() > 1"
+      :grid="grid"
+      :region="grid.selection.selectedRange"
+      class="bg-selected-cell"
+    /> -->
+
     <GridContextMenu :grid-project="gridProject">
       <div
         v-for="row of grid.rows.value"
@@ -47,7 +77,6 @@ defineExpose({
         <div
           v-for="col of grid.cols.value"
           :key="col.index.value"
-          class="dark:bg-blue-700 bg-blue-200"
         >
           <GridCell
             :row="row"
@@ -58,5 +87,24 @@ defineExpose({
         </div>
       </div>
     </GridContextMenu>
+    <GridRegion
+      v-if="grid.selection.selectedRange.value.size() > 1"
+      :grid="grid"
+      :region="grid.selection.selectedRange"
+      class="border border-cell-border bg-selected-cell"
+    />
+    <GridRegion
+      :grid="grid"
+      :region="grid.position"
+      class="border-2 border-cell-border"
+    />
+    <GridRegion
+      v-if="grid.editor.editing.value"
+      active
+      :grid="grid"
+      :region="grid.position"
+    >
+      <CellInput :grid="grid" />
+    </GridRegion>
   </div>
 </template>

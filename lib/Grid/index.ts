@@ -28,6 +28,7 @@ export class Grid {
   public rows: Ref<Row[]>
   public cols: Ref<Col[]>
   public readonly cells: Cell[][]
+  public readonly currentCell: ComputedRef<Cell>
   public readonly position: Ref<CellLocator>
   public readonly gridRange: ComputedRef<RangeLocator>
   public readonly editor: CellEditor
@@ -39,9 +40,9 @@ export class Grid {
     this.gridProject = gridProject
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(col, defaultColWidth)))
-    this.editor = new CellEditor(name)
     this.selection = new GridSelection(this)
     this.position = ref(CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }))
+    this.editor = new CellEditor(this)
 
     this.cells = Array.from({ length: this.rows.value.length }, (_, row) =>
       Array.from({ length: this.cols.value.length }, (_, col) =>
@@ -58,6 +59,7 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }),
       CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
+    this.currentCell = computed(() => this.gridProject.getCellFromLocator(this.position.value))
   }
 
   static fromDTO(gridProject: GridProject, grid: GridDTO): Grid {
@@ -111,14 +113,17 @@ export class Grid {
     this.scrollPosition.scrollLeft = scrollLeft
   }
 
-  public getCurrentCell(): Cell {
-    return this.gridProject.getCellFromLocator(this.position.value)
-  }
-
   public clear(locator: Locator | null) {
     this.gridProject.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
       .forEach((cell) => {
         cell.clear()
+      })
+  }
+
+  public clearInput(locator: Locator | null) {
+    this.gridProject.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+      .forEach((cell) => {
+        cell.input.value = ''
       })
   }
 
@@ -299,7 +304,8 @@ export class Grid {
         if (!cell.display.value) {
           return acc
         }
-        const lineHeight = getLineHeight(cell.style.value.fontSize)
+        const nbrOfLines = cell.display.value.split('\n').length
+        const lineHeight = getLineHeight(cell.style.value.fontSize) * nbrOfLines
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 

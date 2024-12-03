@@ -19,7 +19,7 @@ const gridWrapper = ref<HTMLDivElement>()
 const dataGridRef = ref()
 const rowHeaderRef = ref()
 const colHeaderRef = ref()
-const formulaBarRef = ref()
+// const formulaBarRef = ref()
 
 onMounted(() => {
   window.addEventListener('contextmenu', onContextMenu, true)
@@ -94,7 +94,7 @@ const handleVisibilityChange = () => {
 }
 
 function onContextMenu(event: MouseEvent) {
-  if (grid.value.editor.editorFocused.value) {
+  if (grid.value.editor.editing.value) {
     event.preventDefault()
   }
 }
@@ -102,7 +102,7 @@ function onContextMenu(event: MouseEvent) {
 function onMouseDown(event: MouseEvent) {
   const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
 
-  if (grid.value.editor.editorFocused.value && isRightClick) {
+  if (grid.value.editor.editing.value && isRightClick) {
     event.preventDefault()
     return
   }
@@ -126,11 +126,11 @@ function onMouseDown(event: MouseEvent) {
 
     selection.value.selecting.value = true
     mouseDownStart.value = cellLocator
-    if (grid.value.editor.isEditingLitsCode.value) {
+    if (grid.value.editor.editingLitsCode.value) {
       selection.value.select(cellLocator)
     }
     else {
-      formulaBarRef.value.save()
+      grid.value.editor.save()
       resetSelection()
       grid.value.movePositionTo(cellLocator)
     }
@@ -148,7 +148,7 @@ function onMouseDown(event: MouseEvent) {
     const col = grid.value.getCol(colLocator)
     if (col) {
       resetSelection()
-      if (!grid.value.editor.isEditingLitsCode.value) {
+      if (!grid.value.editor.editingLitsCode.value) {
         grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `${col.label.value}1`))
       }
       selection.value.selectColRange(col, col)
@@ -186,7 +186,7 @@ function onMouseDown(event: MouseEvent) {
     const row = grid.value.getRow(rowLocator)
     if (row) {
       resetSelection()
-      if (!grid.value.editor.isEditingLitsCode.value) {
+      if (!grid.value.editor.editingLitsCode.value) {
         grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `A${row.label.value}`))
       }
       selection.value.selectRowRange(row, row)
@@ -337,18 +337,48 @@ function onMouseLeave() {
 }
 
 function onCellDblclick() {
-  formulaBarRef.value.focus()
+  grid.value.editor.edit(null)
+}
+
+function shouldSave(e: KeyboardEvent) {
+  return e.key === 'Enter'
+    || e.key === 'Tab'
+    || e.key === 'Escape'
+    || e.key === 'ArrowDown'
+    || e.key === 'ArrowUp'
+    || e.key === 'ArrowRight'
+    || e.key === 'ArrowLeft'
+    || e.key === 'PageDown'
+    || e.key === 'PageUp'
+    || e.key === 'Home'
+    || e.key === 'End'
+}
+
+function shouldCancel(e: KeyboardEvent) {
+  return e.key === 'Escape'
 }
 
 function onKeyDown(e: KeyboardEvent) {
   if (sidePanelHandleKeyDown(e)) {
     return
   }
+  let saved = false
+  if (grid.value.editor.editing.value) {
+    if (shouldSave(e)) {
+      saved = true
+      grid.value.editor.save()
+    }
+    else if (shouldCancel(e)) {
+      grid.value.editor.cancel()
+    }
+  }
 
-  if (grid.value.editor.editorFocused.value) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      formulaBarRef.value.save()
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    grid.value.editor.edit(e, false)
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (saved) {
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }
@@ -356,118 +386,94 @@ function onKeyDown(e: KeyboardEvent) {
         grid.value.movePosition('down', true)
       }
     }
-    else if (e.key === 'Escape') {
-      formulaBarRef.value.cancel()
-    }
-    else if (e.key === 'Tab') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        grid.value.movePosition('left', true)
-      }
-      else {
-        grid.value.movePosition('right', true)
-      }
+    else {
+      grid.value.editor.edit(null)
     }
   }
-  else {
-    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      formulaBarRef.value.update('')
-      formulaBarRef.value.focus()
+  else if (e.key === 'Tab') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      grid.value.movePosition('left', true)
     }
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      formulaBarRef.value.focus()
+    else {
+      grid.value.movePosition('right', true)
     }
-    else if (e.key === 'Tab') {
-      e.preventDefault()
-      if (e.shiftKey) {
-        grid.value.movePosition('left', true)
-      }
-      else {
-        grid.value.movePosition('right', true)
-      }
+  }
+  else if (e.key === 'Backspace' || e.key === 'Delete') {
+    grid.value.clearInput(selection.value.selectedRange.value)
+  }
+  else if (e.key === 'F2') {
+    grid.value.editor.edit(null)
+  }
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('down')
     }
-    else if (e.key === 'Backspace' || e.key === 'Delete') {
-      grid.value.clear(selection.value.selectedRange.value)
-      formulaBarRef.value.update('')
+    else {
+      grid.value.movePosition('down')
+      resetSelection()
     }
-    else if (e.key === 'F2') {
-      formulaBarRef.value.focus()
+  }
+  else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('up')
     }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        selection.value.expandSelection('down')
-      }
-      else {
-        grid.value.movePosition('down')
-        resetSelection()
-      }
+    else {
+      grid.value.movePosition('up')
+      resetSelection()
     }
-    else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        selection.value.expandSelection('up')
-      }
-      else {
-        grid.value.movePosition('up')
-        resetSelection()
-      }
+  }
+  else if (e.key === 'ArrowRight') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('right')
     }
-    else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        selection.value.expandSelection('right')
-      }
-      else {
-        grid.value.movePosition('right')
-        resetSelection()
-      }
+    else {
+      grid.value.movePosition('right')
+      resetSelection()
     }
-    else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      formulaBarRef.value.save()
-      if (e.shiftKey) {
-        selection.value.expandSelection('left')
-      }
-      else {
-        grid.value.movePosition('left')
-        resetSelection()
-      }
+  }
+  else if (e.key === 'ArrowLeft') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('left')
     }
-    // else if (e.key === 'Home') {
-    //   e.preventDefault()
-    //   grid.value.movePosition('home')
-    //   resetSelection()
-    // }
-    // else if (e.key === 'End') {
-    //   e.preventDefault()
-    //   grid.value.movePosition('end')
-    //   resetSelection()
-    // }
-    // else if (e.key === 'PageDown') {
-    //   e.preventDefault()
-    //   grid.value.movePosition('pagedown')
-    //   resetSelection()
-    // }
-    // else if (e.key === 'PageUp') {
-    //   e.preventDefault()
-    //   grid.value.movePosition('pageup')
-    //   resetSelection()
-    // }
-    else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-      gridProject.clipboard.copyRange(selection.value.selectedRange.value)
+    else {
+      grid.value.movePosition('left')
+      resetSelection()
     }
-    else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
-      gridProject.clipboard.cutSelection(selection.value.selectedRange.value)
-    }
-    else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-      gridProject.clipboard.pasteSelection(selection.value.selectedRange.value)
-    }
+  }
+  // else if (e.key === 'Home') {
+  //   e.preventDefault()
+  //   grid.value.movePosition('home')
+  //   resetSelection()
+  // }
+  // else if (e.key === 'End') {
+  //   e.preventDefault()
+  //   grid.value.movePosition('end')
+  //   resetSelection()
+  // }
+  // else if (e.key === 'PageDown') {
+  //   e.preventDefault()
+  //   grid.value.movePosition('pagedown')
+  //   resetSelection()
+  // }
+  // else if (e.key === 'PageUp') {
+  //   e.preventDefault()
+  //   grid.value.movePosition('pageup')
+  //   resetSelection()
+  // }
+  else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+    gridProject.clipboard.copyRange(selection.value.selectedRange.value)
+  }
+  else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
+    gridProject.clipboard.cutSelection(selection.value.selectedRange.value)
+  }
+  else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+    gridProject.clipboard.pasteSelection(selection.value.selectedRange.value)
   }
 }
 

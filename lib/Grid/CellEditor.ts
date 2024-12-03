@@ -1,23 +1,58 @@
-import { CellLocator } from '../locator/CellLocator'
+import type { Grid } from '.'
 
 export class CellEditor {
-  public readonly editingCellId: Ref<CellLocator>
+  private readonly initialText = ref<string>('')
   public readonly editorText = ref<string>('')
-  public readonly editorFocused = ref(false)
+  public readonly editing = ref(false)
+  public readonly keyboardEnabled = ref(false)
 
-  constructor(gridName: string) {
-    this.editingCellId = ref<CellLocator>(CellLocator.fromString(gridName, 'A1'))
+  constructor(private grid: Grid) {
+    watch(this.grid.position, () => {
+      this.save()
+    })
   }
 
-  public setEditorFocused(value: boolean) {
-    this.editorFocused.value = value
+  private getStringFromEvent(event: KeyboardEvent | null): string {
+    if (event === null) {
+      return this.grid.currentCell.value.input.value
+    }
+    const key = event.key
+    console.log(key)
+    if (key.length === 1) {
+      event.preventDefault()
+      return key
+    }
+    return this.grid.currentCell.value.input.value
   }
 
-  public setEditingCellId(cellLocator: CellLocator) {
-    this.editingCellId.value = cellLocator
+  public edit(value: KeyboardEvent | null, keyboardOn = true) {
+    if (!this.editing.value) {
+      this.initialText.value = this.grid.currentCell.value.input.value
+      this.editorText.value = this.getStringFromEvent(value)
+      this.editing.value = true
+      this.keyboardEnabled.value = keyboardOn
+    }
   }
 
-  public isEditingLitsCode = computed<boolean>(() => {
-    return this.editorFocused.value && this.editorText.value.startsWith('=')
+  public cancel() {
+    if (this.editing.value) {
+      this.grid.currentCell.value.input.value = this.initialText.value
+      this.editorText.value = this.initialText.value = ''
+      this.editing.value = false
+      this.keyboardEnabled.value = false
+    }
+  }
+
+  public save() {
+    if (this.editing.value) {
+      this.grid.currentCell.value.input.value = this.editorText.value
+      this.editorText.value = this.initialText.value = ''
+      this.editing.value = false
+      this.keyboardEnabled.value = false
+    }
+  }
+
+  public editingLitsCode = computed<boolean>(() => {
+    return this.editing.value && this.editorText.value.startsWith('=')
   })
 }

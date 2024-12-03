@@ -3,7 +3,6 @@ import { computed, toRefs, type CSSProperties } from 'vue'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
-import { RangeLocator } from '~/lib/locator/RangeLocator'
 import { getLineHeight } from '~/lib/constants'
 import type { GridProject } from '~/lib/GridProject'
 import { CellLocator } from '~/lib/locator/CellLocator'
@@ -27,25 +26,10 @@ const { currentTab, sidePanelOpen } = useSidePanel()
 const repl = gridProject.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
-const hoveredCell = grid.value.hoveredCell
 
 const cellLocator = computed(() => CellLocator.fromCoords(gridName.value, { row: row.value.index.value, col: col.value.index.value }))
 const cell = computed(() => gridProject.value.getCellFromLocator(cellLocator.value))
-const isActiveCell = computed(() => grid.value.position.value.isSameCell(cellLocator.value))
-const insideSelection = computed(() => grid.value.selection.selectedRange.value.size() > 1 && grid.value.selection.selectedRange.value.containsCell(cellLocator.value))
-const isReferenced = computed(() => {
-  const targets = gridProject.value.getCellFromLocator(grid.value.position.value).localReferenceLocators.value
-  const ranges = targets.map(target => target instanceof RangeLocator ? target : RangeLocator.fromCellLocator(target))
-  return ranges.some(range => range.containsCell(cellLocator.value))
-})
-const hoverSelectingCell = computed(() => grid.value.editor.isEditingLitsCode.value
-  && !isActiveCell.value && hoveredCell.value && hoveredCell.value.isSameCell(cellLocator.value))
-
-const isEditingCell = computed(() => grid.value.editor.editorFocused.value && grid.value.editor.editingCellId.value.isSameCell(cellLocator.value))
 const cellContent = computed(() => {
-  if (isEditingCell.value) {
-    return grid.value.editor.editorText
-  }
   return gridProject.value.getCellFromLocator(cellLocator.value).display
 })
 
@@ -88,29 +72,6 @@ const cellStyle = computed(() => {
     overflow: 'hidden',
   }
 
-  if (isActiveCell.value || isEditingCell.value) {
-    style.border = '1px solid var(--current-cell-border-color)'
-    style['z-index'] = 10
-    if (isEditingCell.value) {
-      if (grid.value.editor.isEditingLitsCode.value) {
-        style.outline = '3px dashed var(--editing-lits-cell-outline-color)'
-        style.outlineOffset = '1px'
-      }
-      else {
-        style.outline = '2px dashed var(--editing-cell-outline-color)'
-        style.outlineOffset = '1px'
-      }
-    }
-    style.overflow = 'visible'
-  }
-
-  if (insideSelection.value) {
-    style.backgroundColor = 'var(--selected-cell-background-color)'
-  }
-  else {
-    style.backgroundColor = 'var(--cell-background-color)'
-  }
-
   const cellStyle = cell.value.style.value
   style.fontSize = `${cellStyle.fontSize}px`
   style.lineHeight = `${getLineHeight(cellStyle.fontSize) - 1}px`
@@ -131,12 +92,15 @@ const cellStyle = computed(() => {
 
   if (cellStyle.justify) {
     if (cellStyle.justify === 'left') {
+      style.textAlign = 'left'
       style.justifyContent = 'flex-start'
     }
     else if (cellStyle.justify === 'center') {
+      style.textAlign = 'center'
       style.justifyContent = 'center'
     }
     else if (cellStyle.justify === 'right') {
+      style.textAlign = 'right'
       style.justifyContent = 'flex-end'
     }
   }
@@ -163,24 +127,16 @@ const cellStyle = computed(() => {
     style.alignItems = 'flex-end'
   }
 
-  if (grid.value.editor.editorFocused.value && isReferenced.value) {
-    style.backgroundColor = 'var(--referenced-cell-background-color)'
+  if (cellBackgroundColor.value) {
+    style.backgroundColor = cellBackgroundColor.value.getStyleString()
   }
-  else {
-    if (cellBackgroundColor.value) {
-      style.backgroundColor = insideSelection.value
-        ? cellBackgroundColor.value.withAlpha(0.8).getStyleString()
-        : isReferenced.value
-          ? cellBackgroundColor.value.withAlpha(0.9).getStyleString()
-          : cellBackgroundColor.value.getStyleString()
-    }
-    if (cellTextColor.value) {
-      style.color = cellTextColor.value.getStyleString()
-    }
-    else if (cell.value.hasError.value) {
-      style.color = 'var(--error-color)'
-    }
+  if (cellTextColor.value) {
+    style.color = cellTextColor.value.getStyleString()
   }
+  else if (cell.value.hasError.value) {
+    style.color = 'var(--error-color)'
+  }
+  // }
 
   return style
 })
@@ -204,18 +160,15 @@ function inspectCell(e: MouseEvent) {
     <div
       :id="cellId"
       :style="cellStyle"
-      class="px-1 h-full relative flex box-border text-sm whitespace-nowrap"
-      :class="{
-        'cursor-pointer': hoverSelectingCell,
-      }"
+      class="px-1 h-full relative flex box-border text-sm whitespace-pre"
       @dblclick="emit('cell-dblclick', cellLocator)"
       @click="inspectCell"
     >
       {{ cellContent }}
     </div>
-    <div
+    <!-- <div
       v-if="hoverSelectingCell"
       class="z-[100] pointer-events-none block absolute top-[1px] right-[1px] bottom-0 left-0 bg-red outline-dotted dark:outline-slate-600 outline-gray-400"
-    />
+    /> -->
   </div>
 </template>

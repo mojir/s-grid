@@ -39,7 +39,7 @@ export class Cell {
     this.lits = useLits()
 
     watch(this.display, (newValue, oldValue) => {
-      if (!oldValue && newValue) {
+      if ((!oldValue && newValue) || oldValue.split('\n').length !== newValue.split('\n').length) {
         grid.autoSetRowHeightByTarget(this.cellLocator)
       }
     })

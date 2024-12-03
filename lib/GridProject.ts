@@ -95,10 +95,15 @@ export class GridProject {
     }
     this.grids.value = this.grids.value.filter((_, i) => i !== index)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
+    let attempts = 0
+    while (this.grids.value[this.currentGridIndex.value].grid.hidden.value && attempts < this.grids.value.length) {
+      this.currentGridIndex.value = (this.currentGridIndex.value + 1) % this.grids.value.length
+      attempts += 1
+    }
   }
 
   public addGrid() {
-    let gridIndex = this.grids.value.length + 1
+    let gridIndex = this.grids.value.filter(g => !g.grid.hidden).length + 1
     let gridName = `Grid${gridIndex}`
     while (this.grids.value.find(g => g.name === gridName)) {
       gridIndex += 1

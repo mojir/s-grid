@@ -11,7 +11,7 @@ defineProps<{
   <div>
     <InfoBar :grid-project="gridProject" />
     <div
-      class="px-2 flex min-h-10 items-center text-sm dark:bg-slate-800 bg-gray-100 box-border border-t dark:border-slate-700 border-gray-300"
+      class="px-2 flex h-10 items-center text-sm dark:bg-slate-800 bg-gray-100 box-border border-t dark:border-slate-700 border-gray-300"
     >
       <div
         class="mr-1 min-w-7 h-7 flex justify-center items-center hover:dark:bg-slate-700 hover:bg-gray-200 rounded-md cursor-pointer"

@@ -6,7 +6,7 @@ const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups
 const cellPart = `${colPart}${rowPart}` // Four groups
 const gridPart = `(?:(?<grid>${nameCharacterClass}+)!)?` // One group
 
-export const defaultNumberOfRows = 50
+export const defaultNumberOfRows = 99
 export const defaultNumberOfCols = 26
 export const cellLocatorRegExp = new RegExp(`^${gridPart}${cellPart}$`)
 export const rowLocatorRegExp = new RegExp(`^${gridPart}@?${rowPart}$`)
