@@ -12,7 +12,7 @@ const { sidePanelOpen } = useSidePanel()
 
 <template>
   <div
-    class="gap-2 py-1.5 px-4 w-full flex items-center dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl drop-shadow-md"
+    class="gap-2 py-1.5 px-4 w-full flex items-center dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl drop-shadow-md min-w-[780px] overflow-x-auto overflow-y-hidden"
   >
     <AppLogo
       class="w-[60px] h-[60px] -ml-2 -my-3"

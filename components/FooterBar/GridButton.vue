@@ -33,7 +33,7 @@ function onContextMenu(e: MouseEvent) {
     @click="emit('select')"
     @contextmenu="onContextMenu"
   >
-    <div>
+    <div class="whitespace-nowrap">
       <slot />
     </div>
     <DropdownMenu v-model:open="open">

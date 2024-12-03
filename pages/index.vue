@@ -490,7 +490,7 @@ watch(grid, () => {
     }"
   >
     <div
-      class="flex flex-col overflow-hidden"
+      class="flex flex-col overflow-hidden w-screen"
     >
       <div class="m-4">
         <Toolbar :grid-project="gridProject" />
@@ -546,7 +546,6 @@ watch(grid, () => {
           />
         </div>
       </div>
-      <InfoBar :grid-project="gridProject" />
       <FooterBar :grid-project="gridProject" />
     </div>
     <SidePanel :grid-project="gridProject" />
