@@ -4,7 +4,7 @@ import { parseCsv } from '~/lib/csvParser'
 import { getColId, getRowId } from '~/lib/utils'
 
 export async function createGridDtoFromCsv(name: string, csv: string): Promise<GridDTO> {
-  const data = await parseCsv(csv)
+  const data = parseCsv(csv)
   const cells: Record<string, CellDTO> = {}
   let cols = defaultNumberOfCols
   const rows = Math.max(data.length, defaultNumberOfRows)
