@@ -4,7 +4,6 @@ export function parseCsv(csv: string): string[][] {
   return csv
     .split('\n')
     .map(line => line.trim())
-    .filter(line => line.length > 0)
     .map(parseLine)
 }
 
@@ -22,7 +21,13 @@ function parseLine(line: string): string[] {
             position += 2
           }
           else {
-            position += 1
+            const nextComma = line.indexOf(delimiter, position + 1)
+            if (nextComma < 0) {
+              position = line.length
+            }
+            else {
+              position = nextComma + 1
+            }
             break
           }
         }
