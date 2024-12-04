@@ -31,20 +31,23 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
   const oldStart = oldRange.start
   const oldEnd = oldRange.end
 
-  if (oldStart.row !== newStart.row || oldStart.col !== newStart.col) {
-    const cellElement = document.getElementById(getDocumentCellId(newStart, grid.value.name.value))
-    cellElement?.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-    })
-  }
+  // Avoid scrolling if a row or column is selected
+  if (oldRange.size() > 1 || newRange.size() === 2) {
+    if (oldStart.row !== newStart.row || oldStart.col !== newStart.col) {
+      const cellElement = document.getElementById(getDocumentCellId(newStart, grid.value.name.value))
+      cellElement?.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
 
-  if (oldEnd.row !== newEnd.row || oldEnd.col !== newEnd.col) {
-    const cellElement = document.getElementById(getDocumentCellId(newEnd, grid.value.name.value))
-    cellElement?.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-    })
+    if (oldEnd.row !== newEnd.row || oldEnd.col !== newEnd.col) {
+      const cellElement = document.getElementById(getDocumentCellId(newEnd, grid.value.name.value))
+      cellElement?.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
   }
 })
 
