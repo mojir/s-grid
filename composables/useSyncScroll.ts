@@ -23,17 +23,17 @@ export default function (
 
     activeScrollElement = event.target as HTMLElement
 
-    if (activeScrollElement === dataGridRef.value.el) {
-      rowHeaderRef.value.el.scrollTop = activeScrollElement.scrollTop
-      colHeaderRef.value.el.scrollLeft = activeScrollElement.scrollLeft
+    if (activeScrollElement === dataGridRef.value.$el) {
+      rowHeaderRef.value.$el.scrollTop = activeScrollElement.scrollTop
+      colHeaderRef.value.$el.scrollLeft = activeScrollElement.scrollLeft
       updateScrollPosition({ scrollTop: activeScrollElement.scrollTop, scrollLeft: activeScrollElement.scrollLeft })
     }
-    else if (activeScrollElement === rowHeaderRef.value.el) {
-      dataGridRef.value.el.scrollTop = activeScrollElement.scrollTop
+    else if (activeScrollElement === rowHeaderRef.value.$el) {
+      dataGridRef.value.$el.scrollTop = activeScrollElement.scrollTop
       updateScrollPosition({ scrollTop: activeScrollElement.scrollTop })
     }
-    else if (activeScrollElement === colHeaderRef.value.el) {
-      dataGridRef.value.el.scrollLeft = activeScrollElement.scrollLeft
+    else if (activeScrollElement === colHeaderRef.value.$el) {
+      dataGridRef.value.$el.scrollLeft = activeScrollElement.scrollLeft
       updateScrollPosition({ scrollLeft: activeScrollElement.scrollLeft })
     }
 
@@ -51,10 +51,10 @@ export default function (
     if (!dataGridRef.value || !rowHeaderRef.value || !colHeaderRef.value) {
       return
     }
-    dataGridRef.value.el.scrollTop = scrollTop
-    dataGridRef.value.el.scrollLeft = scrollLeft
-    rowHeaderRef.value.el.scrollTop = scrollTop
-    colHeaderRef.value.el.scrollLeft = scrollLeft
+    dataGridRef.value.$el.scrollTop = scrollTop
+    dataGridRef.value.$el.scrollLeft = scrollLeft
+    rowHeaderRef.value.$el.scrollTop = scrollTop
+    colHeaderRef.value.$el.scrollLeft = scrollLeft
   }
 
   return {

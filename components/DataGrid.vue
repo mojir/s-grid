@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import GridCell from './GridCell.vue'
 import { hs } from '~/lib/utils'
 import type { GridProject } from '~/lib/GridProject'
@@ -50,26 +50,10 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
     }
   }
 })
-
-const el = ref<HTMLDivElement>()
-
-defineExpose({
-  el,
-})
 </script>
 
 <template>
-  <div
-    ref="el"
-    class="pl-[1px] pt-[1px] overflow-auto relative bg-grid"
-  >
-    <!-- <GridRegion
-      v-if="grid.selection.selectedRange.value.size() > 1"
-      :grid="grid"
-      :region="grid.selection.selectedRange"
-      class="bg-selected-cell"
-    /> -->
-
+  <div class="pl-[1px] pt-[1px] overflow-auto relative bg-grid">
     <GridContextMenu :grid-project="gridProject">
       <div
         v-for="row of grid.rows.value"
