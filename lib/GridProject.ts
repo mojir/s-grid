@@ -5,7 +5,7 @@ import { Grid } from './Grid'
 import { CellLocator } from './locator/CellLocator'
 import { ColLocator } from './locator/ColLocator'
 import { ColRangeLocator } from './locator/ColRangeLocator'
-import { getLocatorFromString, type Locator } from './locator/Locator'
+import { getReferenceLocatorFromString, type AnyLocator, type ReferenceLocator } from './locator/Locator'
 import { RangeLocator } from './locator/RangeLocator'
 import { RowLocator } from './locator/RowLocator'
 import { RowRangeLocator } from './locator/RowRangeLocator'
@@ -119,7 +119,7 @@ export class GridProject {
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
-      const locator = getLocatorFromString(grid.name.value, value)
+      const locator = getReferenceLocatorFromString(grid, value)
       if (locator) {
         acc[value] = this.getValueFromLocator(grid, locator)
       }
@@ -134,7 +134,7 @@ export class GridProject {
     }, {})
   }
 
-  public getValueFromLocator(grid: Grid, locator: Locator): unknown {
+  public getValueFromLocator(grid: Grid, locator: ReferenceLocator): unknown {
     if (locator instanceof RangeLocator) {
       return matrixMap(
         locator.getCellIdMatrix(),
@@ -176,13 +176,21 @@ export class GridProject {
     }
   }
 
-  public getGridFromLocator(locator: Locator): Grid {
+  public getGridFromLocator(locator: AnyLocator): Grid {
     if (!locator.gridName) {
       return this.currentGrid.value
     }
     const grid = this.grids.value.find(g => g.name === locator.gridName)?.grid
     if (!grid) {
       throw new Error(`Grid not found ${locator.toStringWithGrid()}`)
+    }
+    return grid
+  }
+
+  public getGrid(gridName: string): Grid {
+    const grid = this.grids.value.find(g => g.name === gridName)?.grid
+    if (!grid) {
+      throw new Error(`Grid not found ${gridName}`)
     }
     return grid
   }
@@ -197,7 +205,7 @@ export class GridProject {
     return cell
   }
 
-  public getCellsFromLocator(locator: Locator): Cell[] {
+  public getCellsFromLocator(locator: ReferenceLocator): Cell[] {
     const grid = this.getGridFromLocator(locator)
     return locator instanceof RangeLocator
       ? locator.getAllCellLocators().map(cellLocator => this.getCellFromLocator(cellLocator))
@@ -212,7 +220,7 @@ export class GridProject {
               : [this.getCellFromLocator(locator)]
   }
 
-  public getRowsFromLocator(locator: Locator): Row[] {
+  public getRowsFromLocator(locator: AnyLocator): Row[] {
     const grid = this.getGridFromLocator(locator)
     const rowLocators: RowLocator[] = locator instanceof RangeLocator
       ? locator.getAllRowLocators()
@@ -233,7 +241,7 @@ export class GridProject {
     return rowLocators.map(rowLocator => grid.rows.value[rowLocator.row])
   }
 
-  public getColsFromLocator(locator: Locator): Col[] {
+  public getColsFromLocator(locator: AnyLocator): Col[] {
     const grid = this.getGridFromLocator(locator)
     const colLocators: ColLocator[] = locator instanceof RangeLocator
       ? locator.getAllColLocators()

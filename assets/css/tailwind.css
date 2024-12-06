@@ -14,7 +14,7 @@
     --header-border-color: theme('colors.gray.300');
     --grid: theme('colors.white'); /* colors.white, rgb(243, 244, 246) */
     --selected-cell: rgba(0, 74, 247, 0.1);
-    --referenced-cell-background-color: rgb(252, 255, 198);
+    --referenced-cell: rgba(255, 255, 0, 0.2);
     --cell-border-color: theme('colors.gray.200');
     --current-cell-border-color: theme('colors.gray.400');
     --editing-cell-outline-color: theme('colors.gray.400');
@@ -65,7 +65,7 @@
     --header-border-color: theme('colors.slate.700');
     --grid: theme('colors.slate.900'); /* colors.slate.900, rgb(15, 23, 42) */
     --selected-cell: rgba(15, 23, 42, 0.8);
-    --referenced-cell-background-color: rgb(0, 0, 0);
+    --referenced-cell: rgba(255, 255, 0, 0.1);
     --cell-border-color: theme('colors.slate.800');
     --current-cell-border-color: theme('colors.slate.600');
     --editing-cell-outline-color: theme('colors.slate.600');

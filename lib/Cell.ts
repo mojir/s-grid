@@ -111,7 +111,7 @@ export class Cell {
         return CellLocator.fromString(this.grid.name.value, identifier)
       }
       if (isRangeLocatorString(identifier)) {
-        return RangeLocator.fromString(this.grid.name.value, identifier)
+        return RangeLocator.fromString(this.grid, identifier)
       }
       const aliasCell = this.gridProject.aliases.getCell(identifier)
       if (aliasCell) {

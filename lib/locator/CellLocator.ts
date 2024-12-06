@@ -1,6 +1,6 @@
 import { cellLocatorRegExp } from '../constants'
 import { getColId, getColNumber, getRowId, getRowNumber } from '../utils'
-import type { RangeLocator } from './RangeLocator'
+import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
 import { RowLocator } from './RowLocator'
 import type { Direction, Movement } from './utils'
@@ -93,6 +93,10 @@ export class CellLocator extends CommonLocator {
       absRow: rowLocator.absRow,
       row: rowLocator.row,
     })
+  }
+
+  public toRangeLocator(): RangeLocator {
+    return RangeLocator.fromCellLocator(this)
   }
 
   public override toString(currentGridName: string): string {

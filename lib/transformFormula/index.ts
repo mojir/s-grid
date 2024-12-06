@@ -5,37 +5,38 @@ import type { RowRangeLocator } from '../locator/RowRangeLocator'
 import { CellLocator } from '../locator/CellLocator'
 import type { ColRangeLocator } from '../locator/ColRangeLocator'
 import type { Cell } from '../Cell'
-import { getLocatorFromString } from '../locator/Locator'
+import { getReferenceLocatorFromString } from '../locator/Locator'
+import type { Grid } from '../Grid'
 import { transformRangeLocator } from './rangeTransformers'
 import { transformCellLocator } from './cellTransformers'
 
 export type MoveTransformation = {
-  sourceGrid: string
+  sourceGrid: Grid
   type: 'move'
   range?: RangeLocator
   movement: Movement
 }
 
 export type RowDeleteTransformation = {
-  sourceGrid: string
+  sourceGrid: Grid
   type: 'rowDelete'
   rowRangeLocator: RowRangeLocator
 }
 
 export type ColDeleteTransformation = {
-  sourceGrid: string
+  sourceGrid: Grid
   type: 'colDelete'
   colRangeLocator: ColRangeLocator
 }
 
 export type RowInsertBeforeTransformation = {
-  sourceGrid: string
+  sourceGrid: Grid
   type: 'rowInsertBefore'
   rowRangeLocator: RowRangeLocator
 }
 
 export type ColInsertBeforeTransformation = {
-  sourceGrid: string
+  sourceGrid: Grid
   type: 'colInsertBefore'
   colRangeLocator: ColRangeLocator
 }
@@ -51,13 +52,13 @@ export function transformLocators(cell: Cell, transformation: FormulaTransformat
   const tokenStream = lits.tokenize(formula)
   const transformedTokenStream = lits.transform(
     tokenStream,
-    identifier => transformIdentifier(cell.grid.name.value, identifier, transformation),
+    identifier => transformIdentifier(cell.grid, identifier, transformation),
   )
   cell.setFormula(lits.untokenize(transformedTokenStream))
 }
 
-function transformIdentifier(cellGrid: string, identifier: string, transformation: FormulaTransformation): string {
-  const locator = getLocatorFromString(transformation.sourceGrid, identifier)
+function transformIdentifier(cellGrid: Grid, identifier: string, transformation: FormulaTransformation): string {
+  const locator = getReferenceLocatorFromString(transformation.sourceGrid, identifier)
   if (!locator) {
     return identifier
   }

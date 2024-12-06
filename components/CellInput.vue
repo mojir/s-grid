@@ -97,10 +97,13 @@ function onKeyDown(e: KeyboardEvent) {
       const position = start + 1
       inputElement.setSelectionRange(position, position)
       grid.value.editor.editorText.value = inputElement.value
-      updateDimensions()
     }
   }
 }
+
+watch(grid.value.editor.editorText, () => {
+  updateDimensions()
+})
 
 // Update width based on content
 const updateDimensions = () => {

@@ -107,7 +107,7 @@ export class GridSelection {
     const range = target instanceof RangeLocator
       ? target
       : typeof target === 'string' && isRangeLocatorString(target)
-        ? RangeLocator.fromString(this.grid.name.value, target).clamp(this.gridRange.value)
+        ? RangeLocator.fromString(this.grid, target).clamp(this.gridRange.value)
         : target instanceof CellLocator
           ? RangeLocator.fromCellLocator(target)
           : isCellLocatorString(target)

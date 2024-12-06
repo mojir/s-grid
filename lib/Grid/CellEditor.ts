@@ -17,7 +17,6 @@ export class CellEditor {
       return this.grid.currentCell.value.input.value
     }
     const key = event.key
-    console.log(key)
     if (key.length === 1) {
       event.preventDefault()
       return key

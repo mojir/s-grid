@@ -133,7 +133,7 @@ export class ProjectClipboard {
     }
 
     this.gridProject.transformAllLocators({
-      sourceGrid: fromRange.start.gridName,
+      sourceGrid: this.gridProject.getGrid(fromRange.start.gridName),
       type: 'move',
       movement,
       range: fromRange,
@@ -167,7 +167,7 @@ export class ProjectClipboard {
         transformLocators(
           cell,
           {
-            sourceGrid: fromPosition.gridName,
+            sourceGrid: this.gridProject.getGrid(fromPosition.gridName),
             type: 'move',
             movement,
           },

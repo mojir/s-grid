@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import type { Grid } from '~/lib/Grid'
-import type { CellLocator } from '~/lib/locator/CellLocator'
-import { RangeLocator } from '~/lib/locator/RangeLocator'
+import type { ReferenceLocator } from '~/lib/locator/Locator'
+import type { RangeLocator } from '~/lib/locator/RangeLocator'
 
 const props = defineProps<{
   grid: Grid
-  region: Ref<RangeLocator | CellLocator>
+  region: Ref<ReferenceLocator>
   active?: boolean
 }>()
 
 const { grid } = toRefs(props)
 
-const range = computed(() => {
-  if (props.region.value instanceof RangeLocator) {
-    return props.region.value
-  }
-
-  return RangeLocator.fromCellLocator(props.region.value)
+const range = computed<RangeLocator>(() => {
+  const range = props.region.value.toRangeLocator()
+  return range
 })
 const top = computed(() => {
   const prevRows = grid.value.rows.value.slice(0, range.value.start.row)

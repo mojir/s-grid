@@ -1,4 +1,6 @@
 import { rangeLocatorRegExp } from '../constants'
+import type { Grid } from '../Grid'
+import { getColId, getRowId } from '../utils'
 import { CellLocator } from './CellLocator'
 import { ColLocator } from './ColLocator'
 import { CommonLocator } from './CommonLocator'
@@ -7,7 +9,15 @@ import { RowLocator } from './RowLocator'
 import type { Movement } from './utils'
 
 export function isRangeLocatorString(value: string): boolean {
-  return rangeLocatorRegExp.test(value)
+  const match = rangeLocatorRegExp.exec(value)
+  if (!match) {
+    return false
+  }
+  const { colStart, rowStart, colEnd, rowEnd } = match.groups ?? {}
+  if ((colStart && rowEnd) || (rowStart && colEnd)) {
+    return false
+  }
+  return true
 }
 
 type Coords = {
@@ -15,6 +25,14 @@ type Coords = {
   startCol: number
   endRow: number
   endCol: number
+}
+
+function getStartString({ col, row, cell }: { col?: string, row?: string, cell?: string }): string {
+  return row ? `A${row}` : col ? `${col}1` : cell!
+}
+
+function getEndString(grid: Grid, { col, row, cell }: { col?: string, row?: string, cell?: string }): string {
+  return row ? `${getColId(grid.cols.value.length - 1)}${row}` : col ? `${col}${getRowId(grid.rows.value.length - 1)}` : cell!
 }
 
 export class RangeLocator extends CommonLocator {
@@ -30,15 +48,32 @@ export class RangeLocator extends CommonLocator {
     this.end = end
   }
 
-  static fromString(gridName: string, value: string): RangeLocator {
+  static fromString(grid: Grid, value: string): RangeLocator {
     const match = value.match(rangeLocatorRegExp)
+
     if (!match?.groups) {
       throw new Error(`Invalid cell range locator: ${value}`)
     }
-    gridName = match.groups.grid ?? gridName
-    const startString = `${gridName}!${match.groups.start}`
-    const endString = `${gridName}!${match.groups.end}`
-    return new RangeLocator(CellLocator.fromString(gridName, startString), CellLocator.fromString(gridName, endString))
+    const { colStart, rowStart, cellStart, colEnd, rowEnd, cellEnd } = match.groups
+    const reverse = !!(cellEnd && !cellStart)
+
+    const startCellString = reverse
+      ? getStartString({ col: colEnd, row: rowEnd, cell: cellEnd })
+      : getStartString({ col: colStart, row: rowStart, cell: cellStart })
+
+    const endCellString = reverse
+      ? getEndString(grid, { col: colStart, row: rowStart, cell: cellStart })
+      : getEndString(grid, { col: colEnd, row: rowEnd, cell: cellEnd })
+
+    const gridName = match.groups.grid ?? grid.name.value
+    const startString = `${gridName}!${startCellString}`
+    const endString = `${gridName}!${endCellString}`
+    if (cellEnd && !cellStart) {
+      return new RangeLocator(CellLocator.fromString(gridName, endString), CellLocator.fromString(gridName, startString)).toSorted()
+    }
+    else {
+      return new RangeLocator(CellLocator.fromString(gridName, startString), CellLocator.fromString(gridName, endString)).toSorted()
+    }
   }
 
   static fromCellLocator(cellLocator: CellLocator): RangeLocator {
@@ -55,6 +90,10 @@ export class RangeLocator extends CommonLocator {
       new CellLocator({ row: startRow, col: startCol, absRow: false, absCol: false, gridName }),
       new CellLocator({ row: endRow, col: endCol, absRow: false, absCol: false, gridName }),
     )
+  }
+
+  public toRangeLocator(): RangeLocator {
+    return this
   }
 
   public override toString(currentGridName: string): string {

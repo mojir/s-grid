@@ -19,6 +19,7 @@ module.exports = {
         'selected-cell': 'var(--selected-cell)',
         'grid': 'var(--grid)',
         'cell-border': 'var(--cell-border)',
+        'referenced-cell': 'var(--referenced-cell)',
         'border': 'hsl(var(--border))',
         'input': 'hsl(var(--input))',
         'ring': 'hsl(var(--ring))',

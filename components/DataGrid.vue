@@ -17,6 +17,11 @@ const emit = defineEmits<{
 const { gridProject } = toRefs(props)
 const grid = computed(() => gridProject.value.currentGrid.value)
 
+const referencedLocators = computed(() => {
+  return grid.value.currentCell.value.localReferenceLocators.value.filter((locator) => {
+    return locator.gridName === grid.value.name.value
+  })
+})
 watch(grid.value.position, (position) => {
   const cellElement = document.getElementById(getDocumentCellId(position, grid.value.name.value))
   cellElement?.scrollIntoView({
@@ -60,6 +65,7 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
         :key="row.index.value"
         :style="hs(row.height.value)"
         class="flex"
+        :class="{ 'cursor-crosshair': grid.editor.editingLitsCode.value }"
       >
         <div
           v-for="col of grid.cols.value"
@@ -85,6 +91,17 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
       :region="grid.position"
       class="border-2 border-cell-border"
     />
+    <div
+      v-if="grid.editor.editing.value"
+    >
+      <GridRegion
+        v-for="region of referencedLocators"
+        :key="region.toStringWithoutGrid()"
+        :grid="grid"
+        :region="ref(region)"
+        class="bg-referenced-cell"
+      />
+    </div>
     <GridRegion
       v-if="grid.editor.editing.value"
       active

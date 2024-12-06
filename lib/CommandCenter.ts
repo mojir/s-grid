@@ -1,11 +1,11 @@
 import type { JsFunction } from '@mojir/lits'
 import { CellLocator } from './locator/CellLocator'
-import { ColLocator } from './locator/ColLocator'
-import { RowLocator } from './locator/RowLocator'
+import { ColLocator, isColLocatorString } from './locator/ColLocator'
+import { isRowLocatorString, RowLocator } from './locator/RowLocator'
 import type { Direction } from './locator/utils'
-import { getLocatorFromString } from './locator/Locator'
-import { RowRangeLocator } from './locator/RowRangeLocator'
-import { ColRangeLocator } from './locator/ColRangeLocator'
+import { getReferenceLocatorFromString } from './locator/Locator'
+import { isRowRangeLocatorString, RowRangeLocator } from './locator/RowRangeLocator'
+import { ColRangeLocator, isColRangeLocatorString } from './locator/ColRangeLocator'
 import { getColNumber, getRowNumber } from './utils'
 import type { CellStyle } from '~/lib/CellStyle'
 import { validCellStyle } from '~/lib/CellStyle'
@@ -105,8 +105,23 @@ export class CommandCenter {
       execute: (height: number, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
         const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
-        grid.value.setRowHeight(height, locator)
+        if (!locatorString) {
+          grid.value.setRowHeight(height, null)
+          return
+        }
+        const rowRangeLocator: RowRangeLocator | undefined = isRowRangeLocatorString(locatorString)
+          ? RowRangeLocator.fromString(gridName, locatorString)
+          : isRowLocatorString(locatorString)
+            ? RowRangeLocator.fromRowLocators(
+              RowLocator.fromString(gridName, locatorString),
+              RowLocator.fromString(gridName, locatorString),
+            )
+            : undefined
+
+        if (!rowRangeLocator) {
+          throw new Error(`Invalid row locator: ${locatorString}`)
+        }
+        grid.value.setRowHeight(height, rowRangeLocator)
       },
       description: 'Set row height',
     })
@@ -116,8 +131,24 @@ export class CommandCenter {
       execute: (width: number, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
         const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
-        grid.value.setColWidth(width, locator)
+        if (!locatorString) {
+          grid.value.setColWidth(width, null)
+          return
+        }
+
+        const colRangeLocator: ColRangeLocator | undefined = isColRangeLocatorString(locatorString)
+          ? ColRangeLocator.fromString(gridName, locatorString)
+          : isColLocatorString(locatorString)
+            ? ColRangeLocator.fromColLocators(
+              ColLocator.fromString(gridName, locatorString),
+              ColLocator.fromString(gridName, locatorString),
+            )
+            : undefined
+
+        if (!colRangeLocator) {
+          throw new Error(`Invalid col locator: ${locatorString}`)
+        }
+        grid.value.setColWidth(width, colRangeLocator)
       },
       description: 'Set column width',
     })
@@ -144,8 +175,14 @@ export class CommandCenter {
       name: 'SetInput!',
       execute: (input: string, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
+        if (!locatorString) {
+          grid.value.setInput(input, null)
+          return
+        }
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
         grid.value.setInput(input, locator)
       },
       description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
@@ -154,8 +191,15 @@ export class CommandCenter {
       name: 'Clear!',
       execute: (locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
+        if (!locatorString) {
+          grid.value.clear(null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
         grid.value.clear(locator)
       },
       description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
@@ -204,14 +248,19 @@ export class CommandCenter {
       name: 'SetStyle!',
       execute: <T extends CellStyleName>(property: T, value: CellStyle[T], locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
-        if (validCellStyle(property, value)) {
-          grid.value.setStyle(property, value, locator)
-        }
-        else {
+        if (!validCellStyle(property, value)) {
           throw new Error(`Invalid cell style property: ${property}`)
         }
+        if (!locatorString) {
+          grid.value.setStyle(property, value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setStyle(property, value, locator)
       },
       description: 'Set the style of a cell or a range of cells. If no target is specified, set the style of all cells in the current selection.',
     })
@@ -220,9 +269,15 @@ export class CommandCenter {
       name: 'SetBackgroundColor!',
       execute: (hexCode: string, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
         const color = Color.fromHex(hexCode)
+        if (!locatorString) {
+          grid.value.setBackgroundColor(color, null)
+          return
+        }
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
         grid.value.setBackgroundColor(color, locator)
       },
       description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
@@ -232,9 +287,17 @@ export class CommandCenter {
       name: 'SetTextColor!',
       execute: (hexCode: string, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
         const color = Color.fromHex(hexCode)
+        if (!locatorString) {
+          grid.value.setTextColor(color, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+
         grid.value.setTextColor(color, locator)
       },
       description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
@@ -244,8 +307,15 @@ export class CommandCenter {
       name: 'SetFormatter!',
       execute: (formatter: string, locatorString?: string) => {
         const grid = this.gridProject.currentGrid
-        const gridName = grid.value.name.value
-        const locator = locatorString ? getLocatorFromString(gridName, locatorString) : null
+        if (!locatorString) {
+          grid.value.setFormatter(formatter, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
         grid.value.setFormatter(formatter, locator)
       },
       description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
