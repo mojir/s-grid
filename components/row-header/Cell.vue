@@ -4,9 +4,9 @@ import { rowHeaderWidth } from '~/lib/constants'
 import type { Row } from '~/lib/Row'
 import { getRowId, whs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
-import { RowLocator } from '~/lib/locator/RowLocator'
-import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locator/utils'
-import { RowRangeLocator } from '~/lib/locator/RowRangeLocator'
+import { RowLocator } from '~/lib/locators/RowLocator'
+import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locators/utils'
+import { RowRangeLocator } from '~/lib/locators/RowRangeLocator'
 
 const props = defineProps<{
   project: Project
@@ -19,8 +19,8 @@ const grid = computed(() => project.value.currentGrid.value)
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 const rowLocator = computed(() => RowLocator.fromNumber(grid.value.name.value, row.value.index.value))
-const rowId = computed(() => getDocumentRowId(rowLocator.value, grid.value.name.value))
-const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value, grid.value.name.value))
+const rowId = computed(() => getDocumentRowId(rowLocator.value))
+const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value))
 
 const deleteRowLabel = computed(() => {
   const rowRangeLocator = getAffectedRange()

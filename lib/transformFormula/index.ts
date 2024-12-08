@@ -6,7 +6,7 @@ import { CellLocator } from '../locators/CellLocator'
 import type { ColRangeLocator } from '../locators/ColRangeLocator'
 import type { Cell } from '../Cell'
 import type { Grid } from '../grid/Grid'
-import { transformRangeLocator } from './rangeTransformers'
+import { transformRangeLocator } from '../transformLocators/rangeTransformers'
 import { transformCellLocator } from './cellTransformers'
 
 export type MoveTransformation = {

@@ -5,8 +5,8 @@ import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
 import { getLineHeight } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
-import { CellLocator } from '~/lib/locator/CellLocator'
-import { getDocumentCellId } from '~/lib/locator/utils'
+import { CellLocator } from '~/lib/locators/CellLocator'
+import { getDocumentCellId } from '~/lib/locators/utils'
 
 const props = defineProps<{
   project: Project
@@ -28,12 +28,12 @@ const { debugMode } = useDebug()
 const colorMode = useColorMode()
 
 const cellLocator = computed(() => CellLocator.fromCoords(gridName.value, { row: row.value.index.value, col: col.value.index.value }))
-const cell = computed(() => project.value.getCellFromLocator(cellLocator.value))
+const cell = computed(() => project.value.locator.getCellFromLocator(cellLocator.value))
 const cellContent = computed(() => {
-  return project.value.getCellFromLocator(cellLocator.value).display
+  return project.value.locator.getCellFromLocator(cellLocator.value).display
 })
 
-const cellId = computed(() => getDocumentCellId(cellLocator.value, grid.value.name.value))
+const cellId = computed(() => getDocumentCellId(cellLocator.value))
 
 const cellBackgroundColor = computed<Color | null>(() => {
   const bg = cell.value.backgroundColor.value

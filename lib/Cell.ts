@@ -1,9 +1,9 @@
 import { isLitsFunction } from '@mojir/lits'
 import { Color } from './color'
-import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
+import { isRangeLocatorString, RangeLocator } from './locators/RangeLocator'
 import type { Grid } from './grid/Grid'
 import type { CommandCenter } from './CommandCenter'
-import { CellLocator, isCellLocatorString } from './locator/CellLocator'
+import { CellLocator, isCellLocatorString } from './locators/CellLocator'
 import type { Project } from './project/Project'
 import { CellStyle } from './CellStyle'
 import { defaultFormatter } from './constants'
@@ -125,7 +125,7 @@ export class Cell {
     const allLocatorStrings = new Set<string>(this.localReferences.value)
 
     this.localReferenceLocators.value
-      .flatMap(locator => this.project.getCellsFromLocator(locator))
+      .flatMap(locator => this.project.locator.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value)
       .forEach(identifier => allLocatorStrings.add(identifier))
 
@@ -206,7 +206,7 @@ export class Cell {
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(locator => this.project.getCellsFromLocator(locator))
+      .flatMap(locator => this.project.locator.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))

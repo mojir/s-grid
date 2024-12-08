@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { RangeLocator } from '~/lib/locator/RangeLocator'
+import { RangeLocator } from '~/lib/locators/RangeLocator'
 import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Project } from '~/lib/project/Project'
 import { whs, hs } from '~/lib/utils'
-import { RowLocator } from '~/lib/locator/RowLocator'
-import { DocumetIdType as DocumentIdType } from '~/lib/locator/utils'
-import { CellLocator, isCellLocatorString } from '~/lib/locator/CellLocator'
-import { ColLocator } from '~/lib/locator/ColLocator'
+import { RowLocator } from '~/lib/locators/RowLocator'
+import { DocumetIdType as DocumentIdType, type Direction } from '~/lib/locators/utils'
+import { CellLocator, isCellLocatorString } from '~/lib/locators/CellLocator'
+import { ColLocator } from '~/lib/locators/ColLocator'
 
 const project = new Project()
 const grid = project.currentGrid
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
+const { isMacOS } = useDevice()
 const hoveredCell = grid.value.hoveredCell
 
 const gridWrapper = ref<HTMLDivElement>()
 const GridViewRef = ref()
 const rowHeaderRef = ref()
 const colHeaderRef = ref()
-// const formulaBarRef = ref()
 
 onMounted(() => {
   window.addEventListener('contextmenu', onContextMenu, true)
@@ -359,6 +359,7 @@ function shouldCancel(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  const isMeta = isMacOS ? e.metaKey : e.ctrlKey
   if (sidePanelHandleKeyDown(e)) {
     return
   }
@@ -378,7 +379,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   if (e.key === 'Enter') {
     e.preventDefault()
-    if (saved) {
+    if (saved || selection.value.selectedRange.value.size() > 1) {
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }
@@ -408,64 +409,88 @@ function onKeyDown(e: KeyboardEvent) {
 
   if (e.key === 'ArrowDown') {
     e.preventDefault()
+    const dir: Direction = isMeta ? 'pageDown' : 'down'
     if (e.shiftKey) {
-      selection.value.expandSelection('down')
+      selection.value.expandSelection(dir)
     }
     else {
-      grid.value.movePosition('down')
+      grid.value.movePosition(dir)
       resetSelection()
     }
   }
   else if (e.key === 'ArrowUp') {
     e.preventDefault()
+    const dir: Direction = isMeta ? 'pageUp' : 'up'
     if (e.shiftKey) {
-      selection.value.expandSelection('up')
+      selection.value.expandSelection(dir)
     }
     else {
-      grid.value.movePosition('up')
+      grid.value.movePosition(dir)
       resetSelection()
     }
   }
   else if (e.key === 'ArrowRight') {
     e.preventDefault()
+    const dir: Direction = isMeta ? 'pageRight' : 'right'
     if (e.shiftKey) {
-      selection.value.expandSelection('right')
+      selection.value.expandSelection(dir)
     }
     else {
-      grid.value.movePosition('right')
+      grid.value.movePosition(dir)
       resetSelection()
     }
   }
   else if (e.key === 'ArrowLeft') {
     e.preventDefault()
+    const dir: Direction = isMeta ? 'pageLeft' : 'left'
     if (e.shiftKey) {
-      selection.value.expandSelection('left')
+      selection.value.expandSelection(dir)
     }
     else {
-      grid.value.movePosition('left')
+      grid.value.movePosition(dir)
       resetSelection()
     }
   }
-  // else if (e.key === 'Home') {
-  //   e.preventDefault()
-  //   grid.value.movePosition('home')
-  //   resetSelection()
-  // }
-  // else if (e.key === 'End') {
-  //   e.preventDefault()
-  //   grid.value.movePosition('end')
-  //   resetSelection()
-  // }
-  // else if (e.key === 'PageDown') {
-  //   e.preventDefault()
-  //   grid.value.movePosition('pagedown')
-  //   resetSelection()
-  // }
-  // else if (e.key === 'PageUp') {
-  //   e.preventDefault()
-  //   grid.value.movePosition('pageup')
-  //   resetSelection()
-  // }
+  else if (e.key === 'Home') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('top')
+    }
+    else {
+      grid.value.movePosition('top')
+      resetSelection()
+    }
+  }
+  else if (e.key === 'End') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('bottom')
+    }
+    else {
+      grid.value.movePosition('bottom')
+      resetSelection()
+    }
+  }
+  else if (e.key === 'PageDown') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('pageDown')
+    }
+    else {
+      grid.value.movePosition('pageDown')
+      resetSelection()
+    }
+  }
+  else if (e.key === 'PageUp') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      selection.value.expandSelection('pageUp')
+    }
+    else {
+      grid.value.movePosition('pageUp')
+      resetSelection()
+    }
+  }
   else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
     project.clipboard.copyRange(selection.value.selectedRange.value)
   }

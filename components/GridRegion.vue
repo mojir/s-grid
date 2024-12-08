@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Grid } from '~/lib/grid/Grid'
-import type { ReferenceLocator } from '~/lib/locator/Locator'
-import type { RangeLocator } from '~/lib/locator/RangeLocator'
+import type { RangeLocator } from '~/lib/locators/RangeLocator'
+import type { ReferenceLocator } from '~/lib/locators/utils'
 
 const props = defineProps<{
   grid: Grid

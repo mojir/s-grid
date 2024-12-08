@@ -2,8 +2,10 @@
 import { watch } from 'vue'
 import { hs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
-import type { CellLocator } from '~/lib/locator/CellLocator'
-import { getDocumentCellId } from '~/lib/locator/utils'
+import type { CellLocator } from '~/lib/locators/CellLocator'
+import { getDocumentCellId, getDocumentColId, getDocumentRowId } from '~/lib/locators/utils'
+import { ColLocator } from '~/lib/locators/ColLocator'
+import { RowLocator } from '~/lib/locators/RowLocator'
 
 const props = defineProps<{
   project: Project
@@ -22,7 +24,7 @@ const referencedLocators = computed(() => {
   })
 })
 watch(grid.value.position, (position) => {
-  const cellElement = document.getElementById(getDocumentCellId(position, grid.value.name.value))
+  const cellElement = document.getElementById(getDocumentCellId(position))
   cellElement?.scrollIntoView({
     block: 'nearest',
     inline: 'nearest',
@@ -36,22 +38,44 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
   const oldEnd = oldRange.end
 
   // Avoid scrolling if a row or column is selected
+  let element: HTMLElement | null = null
   if (oldRange.size() > 1 || newRange.size() === 2) {
-    if (oldStart.row !== newStart.row || oldStart.col !== newStart.col) {
-      const cellElement = document.getElementById(getDocumentCellId(newStart, grid.value.name.value))
-      cellElement?.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      })
-    }
+    if (oldStart.row !== newStart.row) {
+      const row = newStart.row > oldStart.row
+        ? (newStart.row < grid.value.rows.value.length - 1 ? newStart.row + 1 : newStart.row)
+        : (newStart.row > 0 ? newStart.row - 1 : newStart.row)
 
-    if (oldEnd.row !== newEnd.row || oldEnd.col !== newEnd.col) {
-      const cellElement = document.getElementById(getDocumentCellId(newEnd, grid.value.name.value))
-      cellElement?.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      })
+      const rowLocator = RowLocator.fromNumber(grid.value.name.value, row)
+      element = document.getElementById(getDocumentRowId(rowLocator))
     }
+    else if (oldStart.col !== newStart.col) {
+      const col = newStart.col > oldStart.col
+        ? (newStart.col < grid.value.cols.value.length - 1 ? newStart.col + 1 : newStart.col)
+        : (newStart.col > 0 ? newStart.col - 1 : newStart.col)
+
+      const colLocator = ColLocator.fromNumber(grid.value.name.value, col)
+      element = document.getElementById(getDocumentColId(colLocator))
+    }
+    else if (oldEnd.row !== newEnd.row) {
+      const row = newEnd.row > oldEnd.row
+        ? (newEnd.row < grid.value.rows.value.length - 1 ? newEnd.row + 1 : newEnd.row)
+        : (newEnd.row > 0 ? newEnd.row - 1 : newEnd.row)
+
+      const rowLocator = RowLocator.fromNumber(grid.value.name.value, row)
+      element = document.getElementById(getDocumentRowId(rowLocator))
+    }
+    else if (oldEnd.col !== newEnd.col) {
+      const col = newEnd.col > oldEnd.col
+        ? (newEnd.col < grid.value.cols.value.length - 1 ? newEnd.col + 1 : newEnd.col)
+        : (newEnd.col > 0 ? newEnd.col - 1 : newEnd.col)
+
+      const colLocator = ColLocator.fromNumber(grid.value.name.value, col)
+      element = document.getElementById(getDocumentColId(colLocator))
+    }
+    element?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    })
   }
 })
 </script>
@@ -79,16 +103,17 @@ watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
         </div>
       </div>
     </gridViewMenu>
+
+    <GridRegion
+      :grid="grid"
+      :region="grid.position"
+      class="border-2 border-cell-border"
+    />
     <GridRegion
       v-if="grid.selection.selectedRange.value.size() > 1"
       :grid="grid"
       :region="grid.selection.selectedRange"
       class="border border-cell-border bg-selected-cell"
-    />
-    <GridRegion
-      :grid="grid"
-      :region="grid.position"
-      class="border-2 border-cell-border"
     />
     <div
       v-if="grid.editor.editing.value"

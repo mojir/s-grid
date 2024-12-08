@@ -1,11 +1,10 @@
 import type { JsFunction } from '@mojir/lits'
-import { CellLocator } from './locator/CellLocator'
-import { ColLocator, isColLocatorString } from './locator/ColLocator'
-import { isRowLocatorString, RowLocator } from './locator/RowLocator'
-import type { Direction } from './locator/utils'
-import { getReferenceLocatorFromString } from './locator/Locator'
-import { isRowRangeLocatorString, RowRangeLocator } from './locator/RowRangeLocator'
-import { ColRangeLocator, isColRangeLocatorString } from './locator/ColRangeLocator'
+import { CellLocator } from './locators/CellLocator'
+import { ColLocator, isColLocatorString } from './locators/ColLocator'
+import { isRowLocatorString, RowLocator } from './locators/RowLocator'
+import { getReferenceLocatorFromString, type Direction } from './locators/utils'
+import { isRowRangeLocatorString, RowRangeLocator } from './locators/RowRangeLocator'
+import { ColRangeLocator, isColRangeLocatorString } from './locators/ColRangeLocator'
 import { getColNumber, getRowNumber } from './utils'
 import type { CellStyle } from '~/lib/CellStyle'
 import { validCellStyle } from '~/lib/CellStyle'
@@ -93,7 +92,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const locator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
-        const cell = this.project.getCellFromLocator(locator)
+        const cell = this.project.locator.getCellFromLocator(locator)
         this.project.aliases.setCell(alias, cell)
         grid.value.setInput(input, locator)
       },
@@ -218,7 +217,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
-        return this.project.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
@@ -228,7 +227,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
-        return this.project.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
@@ -238,7 +237,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
-        const cell = this.project.getCellFromLocator(cellLocator)
+        const cell = this.project.locator.getCellFromLocator(cellLocator)
         this.project.aliases.setCell(alias, cell)
       },
       description: 'Create an alias for a cell',

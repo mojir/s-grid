@@ -35,7 +35,7 @@ const inputValue = computed(() => {
     >
       <div
         :style="hs(20)"
-        class="flex pl-2 border-r dark:border-slate-600 border-gray-400 text-sm pr-4 min-w-20"
+        class="flex pl-2 border-r dark:border-slate-600 border-gray-400 text-sm pr-4 min-w-24 whitespace-nowrap"
       >
         {{ selectionLabel }}
       </div>

@@ -1,22 +1,14 @@
-import type { Cell } from '../Cell'
-import type { Col } from '../Col'
-import { Grid } from '../grid/Grid'
-import { CellLocator } from '../locator/CellLocator'
-import { ColLocator } from '../locator/ColLocator'
-import { ColRangeLocator } from '../locator/ColRangeLocator'
-import { getReferenceLocatorFromString, type AnyLocator, type ReferenceLocator } from '../locator/Locator'
-import { RangeLocator } from '../locator/RangeLocator'
-import { RowLocator } from '../locator/RowLocator'
-import { RowRangeLocator } from '../locator/RowRangeLocator'
-import { matrixForEach, matrixMap } from '../matrix'
-import { REPL } from '../REPL'
-import type { Row } from '../Row'
-import { transformLocators, type FormulaTransformation } from '../transformLocators'
-import { getGridName } from '../utils'
-import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
 import { Aliases } from '../Aliases'
 import { builtinGrid } from '../builtinGrid'
+import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
+import { Grid } from '../grid/Grid'
+import { getReferenceLocatorFromString } from '../locators/utils'
+import { matrixForEach } from '../matrix'
+import { REPL } from '../REPL'
+import { transformLocators, type FormulaTransformation } from '../transformLocators'
+import { getGridName } from '../utils'
 import { ProjectClipboard } from './ProjectClipboard'
+import { Locator } from './Locator'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -30,6 +22,7 @@ export class Project {
   public readonly repl = new REPL(this)
   public readonly aliases = new Aliases()
   public readonly clipboard = new ProjectClipboard(this)
+  public readonly locator = new Locator(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public grids: Ref<GridEntry[]>
@@ -121,7 +114,7 @@ export class Project {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
       const locator = getReferenceLocatorFromString(grid, value)
       if (locator) {
-        acc[value] = this.getValueFromLocator(grid, locator)
+        acc[value] = this.locator.getValueFromLocator(locator)
       }
       else {
         const aliasCell = this.aliases.getCell(value)
@@ -134,40 +127,6 @@ export class Project {
     }, {})
   }
 
-  public getValueFromLocator(grid: Grid, locator: ReferenceLocator): unknown {
-    if (locator instanceof RangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof RowLocator) {
-      return locator
-        .getAllCellLocators(grid.cols.value.length)
-        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-    }
-    else if (locator instanceof ColLocator) {
-      return locator
-        .getAllCellLocators(grid.rows.value.length)
-        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-    }
-    else if (locator instanceof RowRangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(grid.cols.value.length),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof ColRangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(grid.rows.value.length),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof CellLocator) {
-      return this.getCellFromLocator(locator).output.value
-    }
-  }
-
   public transformAllLocators(transformation: FormulaTransformation) {
     for (const gridEntry of this.grids.value) {
       matrixForEach(gridEntry.grid.cells, (cell) => {
@@ -176,89 +135,11 @@ export class Project {
     }
   }
 
-  public getGridFromLocator(locator: AnyLocator): Grid {
-    if (!locator.gridName) {
-      return this.currentGrid.value
-    }
-    const grid = this.grids.value.find(g => g.name === locator.gridName)?.grid
-    if (!grid) {
-      throw new Error(`Grid not found ${locator.toStringWithGrid()}`)
-    }
-    return grid
-  }
-
   public getGrid(gridName: string): Grid {
     const grid = this.grids.value.find(g => g.name === gridName)?.grid
     if (!grid) {
       throw new Error(`Grid not found ${gridName}`)
     }
     return grid
-  }
-
-  public getCellFromLocator(cellLocator: CellLocator): Cell {
-    const grid = this.getGridFromLocator(cellLocator)
-    const cell = grid.cells[cellLocator.row][cellLocator.col]
-    if (!cell) {
-      throw new Error(`Cell ${cellLocator.toStringWithGrid()} is out of range`)
-    }
-
-    return cell
-  }
-
-  public getCellsFromLocator(locator: ReferenceLocator): Cell[] {
-    const grid = this.getGridFromLocator(locator)
-    return locator instanceof RangeLocator
-      ? locator.getAllCellLocators().map(cellLocator => this.getCellFromLocator(cellLocator))
-      : locator instanceof RowLocator
-        ? locator.getAllCellLocators(grid.cols.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-        : locator instanceof ColLocator
-          ? locator.getAllCellLocators(grid.rows.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-          : locator instanceof RowRangeLocator
-            ? locator.getAllCellLocators(grid.cols.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-            : locator instanceof ColRangeLocator
-              ? locator.getAllCellLocators(grid.rows.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-              : [this.getCellFromLocator(locator)]
-  }
-
-  public getRowsFromLocator(locator: AnyLocator): Row[] {
-    const grid = this.getGridFromLocator(locator)
-    const rowLocators: RowLocator[] = locator instanceof RangeLocator
-      ? locator.getAllRowLocators()
-      : locator instanceof RowLocator
-        ? [locator]
-        : locator instanceof ColLocator || locator instanceof ColRangeLocator
-          ? grid.gridRange.value.getAllRowLocators()
-          : locator instanceof RowRangeLocator
-            ? locator.getAllRowLocators()
-            : [
-                new RowLocator({
-                  gridName: locator.gridName,
-                  absRow: false,
-                  row: locator.row,
-                }),
-              ]
-
-    return rowLocators.map(rowLocator => grid.rows.value[rowLocator.row])
-  }
-
-  public getColsFromLocator(locator: AnyLocator): Col[] {
-    const grid = this.getGridFromLocator(locator)
-    const colLocators: ColLocator[] = locator instanceof RangeLocator
-      ? locator.getAllColLocators()
-      : locator instanceof ColLocator
-        ? [locator]
-        : locator instanceof RowLocator || locator instanceof RowRangeLocator
-          ? grid.gridRange.value.getAllColLocators()
-          : locator instanceof ColRangeLocator
-            ? locator.getAllColLocators()
-            : [
-                new ColLocator({
-                  gridName: locator.gridName,
-                  absCol: false,
-                  col: locator.col,
-                }),
-              ]
-
-    return colLocators.map(colLocator => grid.cols.value[colLocator.col])
   }
 }

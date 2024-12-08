@@ -1,19 +1,20 @@
-import { CellLocator, isCellLocatorString } from '../locator/CellLocator'
-import { ColLocator } from '../locator/ColLocator'
-import { ColRangeLocator } from '../locator/ColRangeLocator'
-import { RowLocator } from '../locator/RowLocator'
-import { RowRangeLocator } from '../locator/RowRangeLocator'
-import type { Direction, Movement } from '../locator/utils'
+import { CellLocator, isCellLocatorString } from '../locators/CellLocator'
+import { ColLocator } from '../locators/ColLocator'
+import { ColRangeLocator } from '../locators/ColRangeLocator'
+import { RowLocator } from '../locators/RowLocator'
+import { RowRangeLocator } from '../locators/RowRangeLocator'
+import type { Direction, Movement } from '../locators/utils'
+import type { Project } from '../project/Project'
 import type { Grid } from './Grid'
 import type { Row } from '~/lib/Row'
-import { isRangeLocatorString, RangeLocator } from '~/lib/locator/RangeLocator'
+import { isRangeLocatorString, RangeLocator } from '~/lib/locators/RangeLocator'
 import type { Col } from '~/lib/Col'
 
 export class GridSelection {
   public selecting = ref(false)
   private readonly unsortedSelectedRange: Ref<RangeLocator>
 
-  constructor(private grid: Grid) {
+  constructor(private readonly project: Project, private readonly grid: Grid) {
     this.unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords(this.grid.name.value, { row: 0, col: 0 })))
   }
 
@@ -73,7 +74,7 @@ export class GridSelection {
 
   public expandSelection(dir: Direction) {
     const start = this.unsortedSelectedRange.value.start
-    const end = this.unsortedSelectedRange.value.end.cellMove(dir, this.gridRange.value, false)
+    const end = this.project.locator.locate(dir, this.unsortedSelectedRange.value.end, this.gridRange.value, false)
 
     this.updateSelection(RangeLocator.fromCellLocators(start, end))
   }

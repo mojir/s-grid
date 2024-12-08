@@ -4,9 +4,9 @@ import { getColId, whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
-import { ColLocator } from '~/lib/locator/ColLocator'
-import { getDocumentColId, getDocumentResizeColId } from '~/lib/locator/utils'
-import { ColRangeLocator } from '~/lib/locator/ColRangeLocator'
+import { ColLocator } from '~/lib/locators/ColLocator'
+import { getDocumentColId, getDocumentResizeColId } from '~/lib/locators/utils'
+import { ColRangeLocator } from '~/lib/locators/ColRangeLocator'
 
 const props = defineProps<{
   project: Project
@@ -20,8 +20,8 @@ const gridName = computed(() => grid.value.name.value)
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
 const colLocator = computed(() => ColLocator.fromNumber(gridName.value, col.value.index.value))
-const colId = computed(() => getDocumentColId(colLocator.value, grid.value.name.value))
-const resizeColId = computed(() => getDocumentResizeColId(colLocator.value, grid.value.name.value))
+const colId = computed(() => getDocumentColId(colLocator.value))
+const resizeColId = computed(() => getDocumentResizeColId(colLocator.value))
 
 function getAffectedRange(): ColRangeLocator {
   const selectedRange = grid.value.selection.selectedCols.value

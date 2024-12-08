@@ -1,7 +1,7 @@
-import { CellLocator } from '../locator/CellLocator'
-import type { Movement } from '../locator/utils'
+import { CellLocator } from '../locators/CellLocator'
+import type { Movement } from '../locators/utils'
 import type { Project } from './Project'
-import type { RangeLocator } from '~/lib/locator/RangeLocator'
+import type { RangeLocator } from '~/lib/locators/RangeLocator'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
 import { transformLocators } from '~/lib/transformLocators'
 import type { CellDTO } from '~/dto/CellDTO'
@@ -31,7 +31,7 @@ export class ProjectClipboard {
 
     this.clipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), cellLocator => this.project.getCellFromLocator(cellLocator).getDTO()),
+      cells: matrixMap(range.getCellIdMatrix(), cellLocator => this.project.locator.getCellFromLocator(cellLocator).getDTO()),
     }
   }
 
@@ -39,7 +39,7 @@ export class ProjectClipboard {
     this.styleClipboard.value = {
       range,
       cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
-        const cellDTO = this.project.getCellFromLocator(cellLocator).getDTO()
+        const cellDTO = this.project.locator.getCellFromLocator(cellLocator).getDTO()
         return {
           style: cellDTO.style,
           backgroundColor: cellDTO.backgroundColor,
@@ -73,7 +73,7 @@ export class ProjectClipboard {
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
       matrixForEach(styleClipboardValue.cells, (cellDTO, [row, col]) => {
         const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
-        const cell = this.project.getCellFromLocator(cellLocator)
+        const cell = this.project.locator.getCellFromLocator(cellLocator)
         const { alias, ...cellDTOWithoutAlias } = cellDTO
         cell.setDTO(cellDTOWithoutAlias)
       })
@@ -113,7 +113,7 @@ export class ProjectClipboard {
     }
 
     this.cutCellIds.value.forEach((cellLocator) => {
-      this.project.getGridFromLocator(cellLocator).clear(cellLocator)
+      this.project.getGrid(cellLocator.gridName).clear(cellLocator)
     })
 
     const toPosition = targetRange.start
@@ -121,7 +121,7 @@ export class ProjectClipboard {
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
       const cellLocator = CellLocator.fromCoords(toPosition.gridName, { row: toPosition.row + row, col: toPosition.col + col })
-      const cell = this.project.getCellFromLocator(cellLocator)
+      const cell = this.project.locator.getCellFromLocator(cellLocator)
       cell.setDTO(cellDTO)
     })
     const fromRange = this.clipboard.value.range
@@ -147,7 +147,7 @@ export class ProjectClipboard {
     if (!this.clipboard.value) {
       return
     }
-    const fromGrid = this.project.getGridFromLocator(targetRange)
+    const fromGrid = this.project.getGrid(targetRange.gridName)
     this.getPastePositions(this.clipboard.value.range, targetRange).forEach((toPosition) => {
       if (!this.clipboard.value) {
         return

@@ -3,7 +3,7 @@ import { getColId, getColNumber, getRowId, getRowNumber } from '../utils'
 import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
 import { RowLocator } from './RowLocator'
-import type { Direction, Movement } from './utils'
+import type { Movement } from './utils'
 import { CommonLocator } from './CommonLocator'
 
 export function isCellLocatorString(id: string): boolean {
@@ -169,114 +169,5 @@ export class CellLocator extends CommonLocator {
       absRow: this.absRow,
       row: this.row + (movement.deltaRow ?? 0),
     })
-  }
-
-  public cellMove(dir: Direction, range: RangeLocator, wrap: boolean): CellLocator {
-    switch (dir) {
-      case 'up': return this.cellUp(range, wrap)
-      case 'down': return this.cellDown(range, wrap)
-      case 'right': return this.cellRight(range, wrap)
-      case 'left': return this.cellLeft(range, wrap)
-      case 'top': return this.cellTop(range)
-      case 'bottom': return this.cellBottom(range)
-      case 'leftmost': return this.cellLeftmost(range)
-      case 'rightmost': return this.cellRightmost(range)
-    }
-  }
-
-  public cellUp(range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
-    let row = this.row - 1
-    let col = this.col
-    if (row < startRow) {
-      if (wrap) {
-        row = endRow
-        col -= 1
-        if (col < startCol) {
-          col = endCol
-        }
-      }
-      else {
-        row = startRow
-      }
-    }
-    return CellLocator.fromCoords(this.gridName, { row, col })
-  }
-
-  public cellDown(range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
-    let row = this.row + 1
-    let col = this.col
-    if (row > endRow) {
-      if (wrap) {
-        row = startRow
-        col += 1
-        if (col > endCol) {
-          col = startCol
-        }
-      }
-      else {
-        row = endRow
-      }
-    }
-    return CellLocator.fromCoords(this.gridName, { row, col })
-  }
-
-  public cellRight(range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
-    let row = this.row
-    let col = this.col + 1
-    if (col > endCol) {
-      if (wrap) {
-        col = startCol
-        row += 1
-        if (row > endRow) {
-          row = startRow
-        }
-      }
-      else {
-        col = endCol
-      }
-    }
-    return CellLocator.fromCoords(this.gridName, { row, col })
-  }
-
-  public cellLeft(range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
-    let row = this.row
-    let col = this.col - 1
-    if (col < startCol) {
-      if (wrap) {
-        col = endCol
-        row -= 1
-        if (row < startRow) {
-          row = endRow
-        }
-      }
-      else {
-        col = startCol
-      }
-    }
-    return CellLocator.fromCoords(this.gridName, { row, col })
-  }
-
-  public cellTop(range: RangeLocator): CellLocator {
-    const { startRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(this.gridName, { row: startRow, col: this.col })
-  }
-
-  public cellBottom(range: RangeLocator): CellLocator {
-    const { endRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(this.gridName, { row: endRow, col: this.col })
-  }
-
-  public cellLeftmost(range: RangeLocator): CellLocator {
-    const { startCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(this.gridName, { row: this.row, col: startCol })
-  }
-
-  public cellRightmost(range: RangeLocator): CellLocator {
-    const { endCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(this.gridName, { row: this.row, col: endCol })
   }
 }

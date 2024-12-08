@@ -4,14 +4,13 @@ import { Col } from '../Col'
 import { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { Project } from '../project/Project'
-import { CellLocator } from '../locator/CellLocator'
-import type { ColLocator } from '../locator/ColLocator'
-import type { ColRangeLocator } from '../locator/ColRangeLocator'
-import type { ReferenceLocator } from '../locator/Locator'
-import { RangeLocator } from '../locator/RangeLocator'
-import type { RowLocator } from '../locator/RowLocator'
-import type { RowRangeLocator } from '../locator/RowRangeLocator'
-import { getDocumentCellId, type Direction, type Movement } from '../locator/utils'
+import { CellLocator } from '../locators/CellLocator'
+import type { ColLocator } from '../locators/ColLocator'
+import type { ColRangeLocator } from '../locators/ColRangeLocator'
+import { RangeLocator } from '../locators/RangeLocator'
+import type { RowLocator } from '../locators/RowLocator'
+import type { RowRangeLocator } from '../locators/RowRangeLocator'
+import { getDocumentCellId, type Direction, type Movement, type ReferenceLocator } from '../locators/utils'
 import { matrixFilter } from '../matrix'
 import { Row } from '../Row'
 import { getGridName } from '../utils'
@@ -40,7 +39,7 @@ export class Grid {
     this.project = project
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(col, defaultColWidth)))
-    this.selection = new GridSelection(this)
+    this.selection = new GridSelection(this.project, this)
     this.position = ref(CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }))
     this.editor = new CellEditor(this)
 
@@ -59,7 +58,7 @@ export class Grid {
       CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }),
       CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
-    this.currentCell = computed(() => this.project.getCellFromLocator(this.position.value))
+    this.currentCell = computed(() => this.project.locator.getCellFromLocator(this.position.value))
   }
 
   static fromDTO(project: Project, grid: GridDTO): Grid {
@@ -114,14 +113,14 @@ export class Grid {
   }
 
   public clear(locator: ReferenceLocator | null) {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
       .forEach((cell) => {
         cell.clear()
       })
   }
 
   public clearInput(locator: ReferenceLocator | null) {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
       .forEach((cell) => {
         cell.input.value = ''
       })
@@ -129,7 +128,7 @@ export class Grid {
 
   public clearAllCells() {
     this.gridRange.value.getAllCellLocators().forEach((cellLocator) => {
-      this.project.getCellFromLocator(cellLocator).clear()
+      this.project.locator.getCellFromLocator(cellLocator).clear()
     })
   }
 
@@ -148,90 +147,64 @@ export class Grid {
   public movePosition(dir: Direction, wrap = false) {
     const selection = this.selection.selectedRange.value
     const range = wrap && selection.size() > 1 ? selection : this.gridRange.value
-
-    switch (dir) {
-      case 'up':
-        this.movePositionTo(this.position.value.cellUp(range, wrap))
-        break
-      case 'down':
-        this.movePositionTo(this.position.value.cellDown(range, wrap))
-        break
-      case 'left':
-        this.movePositionTo(this.position.value.cellLeft(range, wrap))
-        break
-      case 'right':
-        this.movePositionTo(this.position.value.cellRight(range, wrap))
-        break
-      case 'top':
-        this.movePositionTo(this.position.value.cellTop(range))
-        break
-      case 'bottom':
-        this.movePositionTo(this.position.value.cellBottom(range))
-        break
-      case 'leftmost':
-        this.movePositionTo(this.position.value.cellLeftmost(range))
-        break
-      case 'rightmost':
-        this.movePositionTo(this.position.value.cellRightmost(range))
-        break
-    }
+    this.movePositionTo(this.project.locator.locate(dir, this.position.value, range, wrap))
   }
 
   public setInput(input: string, locator: ReferenceLocator | null) {
     locator = locator ?? this.selection.selectedRange.value
-    this.project.getCellsFromLocator(locator)
+    this.project.locator.getCellsFromLocator(locator)
       .forEach((cell) => {
         cell.input.value = input
       })
   }
 
   public setBackgroundColor(color: Color | null, locator: ReferenceLocator | null): void {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
 
   public getBackgroundColor(locator: ReferenceLocator | null): Color | null {
-    const cells = this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const color = cells[0]?.backgroundColor.value ?? null
 
     return cells.slice(1).every(cell => cell.backgroundColor.value === color) ? color : null
   }
 
   public setTextColor(color: Color | null, locator: ReferenceLocator | null): void {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
       cell.textColor.value = color
     })
   }
 
   public getTextColor(locator: ReferenceLocator | null): Color | null {
-    const cells = this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const color = cells[0]?.textColor.value ?? null
 
     return cells.slice(1).every(cell => cell.textColor.value === color) ? color : null
   }
 
   public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], locator: ReferenceLocator | null): void {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
       cell.style.value[property] = value
     })
   }
 
   public getStyle<T extends CellStyleName>(property: T, locator: ReferenceLocator | null): CellStyle[T] {
-    const cells = this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const styleValue = cells[0]?.style.value[property]
 
     return cells.slice(1).every(cell => cell.style.value[property] === styleValue) ? styleValue : undefined
   }
 
   public setFormatter(formatter: string | null, locator: ReferenceLocator | null): void {
-    this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
       cell.formatter.value = formatter
     })
   }
 
   public getFormatter(locator: ReferenceLocator | null): string | null {
-    const cells = this.project.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const formatter = cells[0]?.formatter.value ?? null
 
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
@@ -239,14 +212,14 @@ export class Grid {
 
   public setRowHeight(height: number, rowRangeLocator: RowRangeLocator | null): void {
     const locator = rowRangeLocator ?? this.selection.selectedRange.value
-    this.project.getRowsFromLocator(locator).forEach((row) => {
+    this.project.locator.getRowsFromLocator(locator).forEach((row) => {
       row.height.value = height
     })
   }
 
   public setColWidth(width: number, colRangeLocator: ColRangeLocator | null): void {
     const locator = colRangeLocator ?? this.selection.selectedRange.value
-    this.project.getColsFromLocator(locator).forEach((col) => {
+    this.project.locator.getColsFromLocator(locator).forEach((col) => {
       col.width.value = width
     })
   }
@@ -319,7 +292,7 @@ export class Grid {
       : this.selection.selectedRange.value.getAllCellLocators()
 
     const rowIds = cellIds
-      .filter(cellLocator => this.project.getCellFromLocator(cellLocator)?.display.value)
+      .filter(cellLocator => this.project.locator.getCellFromLocator(cellLocator)?.display.value)
       .reduce((acc: number[], cellLocator) => {
         if (!acc.includes(cellLocator.row)) {
           acc.push(cellLocator.row)
@@ -332,13 +305,13 @@ export class Grid {
   public autoSetColWidth(cols: number[]) {
     cols.forEach((col) => {
       const cells = this.getCellIdsFromColIndex(col)
-        .map(cellLocator => this.project.getCellFromLocator(cellLocator))
+        .map(cellLocator => this.project.locator.getCellFromLocator(cellLocator))
 
       const newColWidth = cells.reduce((acc, cell) => {
         if (!cell.display.value) {
           return acc
         }
-        const elem = document.getElementById(getDocumentCellId(cell.cellLocator, this.name.value))
+        const elem = document.getElementById(getDocumentCellId(cell.cellLocator))
         if (!elem) {
           return acc
         }
@@ -367,7 +340,7 @@ export class Grid {
     const range = RangeLocator.fromCellLocators(startCellId, endCellId)
     return range
       .getAllCellLocators()
-      .flatMap(cellLocator => this.project.getCellFromLocator(cellLocator) ?? [])
+      .flatMap(cellLocator => this.project.locator.getCellFromLocator(cellLocator) ?? [])
   }
 
   public resetSelection() {

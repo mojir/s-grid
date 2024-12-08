@@ -1,5 +1,5 @@
-import { CellLocator } from '../locator/CellLocator'
-import { RangeLocator } from '../locator/RangeLocator'
+import { CellLocator } from '../locators/CellLocator'
+import { RangeLocator } from '../locators/RangeLocator'
 import type { Grid } from '../grid/Grid'
 import { transformColInsertBeforeOnCell, transformMoveOnCell, transformRowInsertBeforeOnCell } from './cellTransformers'
 import type { ColDeleteTransformation, ColInsertBeforeTransformation, FormulaTransformation, RowDeleteTransformation, RowInsertBeforeTransformation } from '.'
