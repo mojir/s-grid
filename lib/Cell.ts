@@ -1,17 +1,17 @@
 import { isLitsFunction } from '@mojir/lits'
 import { Color } from './color'
 import { isRangeLocatorString, RangeLocator } from './locator/RangeLocator'
-import type { Grid } from './Grid'
+import type { Grid } from './grid/Grid'
 import type { CommandCenter } from './CommandCenter'
 import { CellLocator, isCellLocatorString } from './locator/CellLocator'
-import type { GridProject } from './GridProject'
+import type { Project } from './project/Project'
 import { CellStyle } from './CellStyle'
 import { defaultFormatter } from './constants'
-import type { LitsComposable } from '~/composables/useLits'
+import type { LitsComposable } from '~/composables/use-lits'
 import type { CellDTO } from '~/dto/CellDTO'
 
 export class Cell {
-  private readonly gridProject: GridProject
+  private readonly project: Project
   private readonly commandCenter: CommandCenter
   private readonly lits: LitsComposable
 
@@ -25,15 +25,15 @@ export class Cell {
   constructor(
     public cellLocator: CellLocator,
     {
-      gridProject,
+      project,
       grid,
       commandCenter,
     }: {
-      gridProject: GridProject
+      project: Project
       grid: Grid
       commandCenter: CommandCenter
     }) {
-    this.gridProject = gridProject
+    this.project = project
     this.grid = grid
     this.commandCenter = commandCenter
     this.lits = useLits()
@@ -62,7 +62,7 @@ export class Cell {
       this.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
     }
     if (cellDTO.alias !== undefined) {
-      this.gridProject.aliases.setCell(cellDTO.alias, this, true)
+      this.project.aliases.setCell(cellDTO.alias, this, true)
     }
   }
 
@@ -73,7 +73,7 @@ export class Cell {
       style: this.style.value.getDTO(),
       backgroundColor: this.backgroundColor.value?.getDTO(),
       textColor: this.textColor.value?.getDTO(),
-      alias: this.gridProject.aliases.getAlias(this),
+      alias: this.project.aliases.getAlias(this),
     }
   }
 
@@ -113,7 +113,7 @@ export class Cell {
       if (isRangeLocatorString(identifier)) {
         return RangeLocator.fromString(this.grid, identifier)
       }
-      const aliasCell = this.gridProject.aliases.getCell(identifier)
+      const aliasCell = this.project.aliases.getCell(identifier)
       if (aliasCell) {
         return aliasCell.value.cellLocator
       }
@@ -125,7 +125,7 @@ export class Cell {
     const allLocatorStrings = new Set<string>(this.localReferences.value)
 
     this.localReferenceLocators.value
-      .flatMap(locator => this.gridProject.getCellsFromLocator(locator))
+      .flatMap(locator => this.project.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value)
       .forEach(identifier => allLocatorStrings.add(identifier))
 
@@ -146,7 +146,7 @@ export class Cell {
     if (this.formula.value !== null) {
       const lits = this.lits.value
       try {
-        const values = this.gridProject.getValuesFromUndefinedIdentifiers(this.references.value, this.grid)
+        const values = this.project.getValuesFromUndefinedIdentifiers(this.references.value, this.grid)
         const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
         return result
       }
@@ -171,7 +171,7 @@ export class Cell {
       return '#ERR'
     }
     if (this.isFunction.value) {
-      const alias = this.gridProject.aliases.getAlias(this)
+      const alias = this.project.aliases.getAlias(this)
 
       return `${alias ? `${alias} ` : ''}λ`
     }
@@ -206,13 +206,13 @@ export class Cell {
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(locator => this.gridProject.getCellsFromLocator(locator))
+      .flatMap(locator => this.project.getCellsFromLocator(locator))
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))
 
     try {
-      const values = this.gridProject.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
+      const values = this.project.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
       const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {

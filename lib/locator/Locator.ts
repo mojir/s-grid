@@ -1,4 +1,4 @@
-import type { Grid } from '../Grid'
+import type { Grid } from '../grid/Grid'
 import { CellLocator, isCellLocatorString } from './CellLocator'
 import type { ColLocator } from './ColLocator'
 import type { ColRangeLocator } from './ColRangeLocator'

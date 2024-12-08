@@ -10,7 +10,7 @@ import { getColNumber, getRowNumber } from './utils'
 import type { CellStyle } from '~/lib/CellStyle'
 import { validCellStyle } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
-import type { GridProject } from '~/lib/GridProject'
+import type { Project } from '~/lib/project/Project'
 import { format } from '~/lib/litsInterop/format'
 import type { CellStyleName } from '~/dto/CellStyleDTO'
 
@@ -61,7 +61,7 @@ export class CommandCenter {
     format,
   }
 
-  public constructor(private gridProject: GridProject) {
+  public constructor(private project: Project) {
     this.registerCommands()
     commandNames.forEach((name) => {
       if (!this.commands.has(name)) {
@@ -85,16 +85,16 @@ export class CommandCenter {
   }
 
   private registerCommands() {
-    const repl = this.gridProject.repl
+    const repl = this.project.repl
 
     this.registerCommand({
       name: 'CreateNamedFunction!',
       execute: (alias: string, input: string, cellLocatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const locator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
-        const cell = this.gridProject.getCellFromLocator(locator)
-        this.gridProject.aliases.setCell(alias, cell)
+        const cell = this.project.getCellFromLocator(locator)
+        this.project.aliases.setCell(alias, cell)
         grid.value.setInput(input, locator)
       },
       description: 'Clear the current cell',
@@ -103,7 +103,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetRowHeight!',
       execute: (height: number, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         if (!locatorString) {
           grid.value.setRowHeight(height, null)
@@ -129,7 +129,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetColWidth!',
       execute: (width: number, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         if (!locatorString) {
           grid.value.setColWidth(width, null)
@@ -156,7 +156,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'MovePosition!',
       execute: (direction: Direction) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.movePosition(direction)
       },
       description: 'Move the position one step in a specific direction.',
@@ -164,7 +164,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'MovePositionTo!',
       execute: (cellLocatorString: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
         grid.value.movePositionTo(cellLocator)
@@ -174,7 +174,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetInput!',
       execute: (input: string, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         if (!locatorString) {
           grid.value.setInput(input, null)
           return
@@ -190,7 +190,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'Clear!',
       execute: (locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         if (!locatorString) {
           grid.value.clear(null)
           return
@@ -207,7 +207,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'ClearAllCells!',
       execute: () => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.clearAllCells()
       },
       description: 'Clear all cells',
@@ -215,31 +215,31 @@ export class CommandCenter {
     this.registerCommand({
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
-        return this.gridProject.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.project.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
-        return this.gridProject.getCellFromLocator(cellLocator).getDebugInfo()
+        return this.project.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
       name: 'SetAlias!',
       execute: (alias: string, cellLocatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const cellLocator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
-        const cell = this.gridProject.getCellFromLocator(cellLocator)
-        this.gridProject.aliases.setCell(alias, cell)
+        const cell = this.project.getCellFromLocator(cellLocator)
+        this.project.aliases.setCell(alias, cell)
       },
       description: 'Create an alias for a cell',
     })
@@ -247,7 +247,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetStyle!',
       execute: <T extends CellStyleName>(property: T, value: CellStyle[T], locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         if (!validCellStyle(property, value)) {
           throw new Error(`Invalid cell style property: ${property}`)
         }
@@ -268,7 +268,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetBackgroundColor!',
       execute: (hexCode: string, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const color = Color.fromHex(hexCode)
         if (!locatorString) {
           grid.value.setBackgroundColor(color, null)
@@ -286,7 +286,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetTextColor!',
       execute: (hexCode: string, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const color = Color.fromHex(hexCode)
         if (!locatorString) {
           grid.value.setTextColor(color, null)
@@ -306,7 +306,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'SetFormatter!',
       execute: (formatter: string, locatorString?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         if (!locatorString) {
           grid.value.setFormatter(formatter, null)
           return
@@ -324,7 +324,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'ResetSelection!',
       execute: () => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.resetSelection()
       },
       description: 'Reset the selection',
@@ -332,14 +332,14 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'GetSelection',
-      execute: () => this.gridProject.currentGrid.value.selection.selectedRange.value.toStringWithGrid(),
+      execute: () => this.project.currentGrid.value.selection.selectedRange.value.toStringWithGrid(),
       description: 'Get the current selection.',
     })
 
     this.registerCommand({
       name: 'ExpandSelection!',
       execute: (direction: Direction) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.selection.expandSelection(direction)
       },
       description: 'Expand the selection one step in a specific direction',
@@ -348,7 +348,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'ExpandSelectionTo!',
       execute: (target: CellLocator | string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.selection.expandSelectionTo(target)
       },
       description: 'Expand the selection to a cell',
@@ -357,7 +357,7 @@ export class CommandCenter {
     this.registerCommand({
       name: 'Select!',
       execute: (target: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         grid.value.selection.select(target)
       },
       description: 'Select a cell or a range',
@@ -392,7 +392,7 @@ export class CommandCenter {
       name: 'DeleteRows!',
       description: 'Delete rows',
       execute: (startRowStringId: string, endRowStringId?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
@@ -413,7 +413,7 @@ export class CommandCenter {
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const endCol = Math.max(startColIndex, endColIndex)
         const colRangeLocator = ColRangeLocator.fromColLocators(
@@ -428,7 +428,7 @@ export class CommandCenter {
       name: 'InsertRowsBefore!',
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
@@ -446,7 +446,7 @@ export class CommandCenter {
       name: 'InsertRowsAfter!',
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
@@ -464,7 +464,7 @@ export class CommandCenter {
       name: 'InsertColsBefore!',
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
@@ -483,7 +483,7 @@ export class CommandCenter {
       name: 'InsertColsAfter!',
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
-        const grid = this.gridProject.currentGrid
+        const grid = this.project.currentGrid
         const gridName = grid.value.name.value
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex

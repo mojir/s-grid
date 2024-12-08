@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import type { CommandCenter } from '~/lib/CommandCenter'
-import { GridProject } from '~/lib/GridProject'
+import { Project } from '~/lib/project/Project'
 
 const { getTestFixtures } = useFixtures()
-let gridProject: GridProject
+let project: Project
 let commandCenter: CommandCenter
 
 beforeEach(() => {
-  gridProject = new GridProject()
-  commandCenter = gridProject.commandCenter
+  project = new Project()
+  commandCenter = project.commandCenter
 })
 
 describe('CommandCenter', () => {
@@ -19,26 +19,26 @@ describe('CommandCenter', () => {
   describe('commands', () => {
     test('SetInput!', () => {
       commandCenter.exec('SetInput!', 'Hello', 'A1')
-      expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Hello')
+      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Hello')
     })
     test('Clear!', async () => {
       const persons = (await getTestFixtures()).persons
-      gridProject.importGrid(persons)
-      expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
-      expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      project.importGrid(persons)
+      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Albert')
+      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
       commandCenter.exec('Clear!', 'A1')
-      expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('')
-      expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      expect(project.currentGrid.value.cells[0][0].input.value).toBe('')
+      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
     })
     test('ClearAllCells!', async () => {
       const persons = (await getTestFixtures()).persons
 
-      gridProject.importGrid(persons)
-      expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('Albert')
-      expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      project.importGrid(persons)
+      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Albert')
+      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
       commandCenter.exec('ClearAllCells!', 'A1')
-      expect(gridProject.currentGrid.value.cells[0][0].input.value).toBe('')
-      expect(gridProject.currentGrid.value.cells[1][0].input.value).toBe('')
+      expect(project.currentGrid.value.cells[0][0].input.value).toBe('')
+      expect(project.currentGrid.value.cells[1][0].input.value).toBe('')
     })
   })
 })

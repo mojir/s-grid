@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { GridProject } from '~/lib/GridProject'
+import type { Project } from '~/lib/project/Project'
 import { hs } from '~/lib/utils'
 
 const props = defineProps<{
-  gridProject: GridProject
+  project: Project
 }>()
 
-const { gridProject } = toRefs(props)
-const grid = computed(() => gridProject.value.currentGrid.value)
+const { project } = toRefs(props)
+const grid = computed(() => project.value.currentGrid.value)
 
 const selectionLabel = computed(() => {
   if (grid.value.editor.editing.value) {

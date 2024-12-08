@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Grid } from '~/lib/Grid'
+import type { Grid } from '~/lib/grid/Grid'
 import type { ReferenceLocator } from '~/lib/locator/Locator'
 import type { RangeLocator } from '~/lib/locator/RangeLocator'
 

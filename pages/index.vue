@@ -2,21 +2,21 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RangeLocator } from '~/lib/locator/RangeLocator'
 import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
-import { GridProject } from '~/lib/GridProject'
+import { Project } from '~/lib/project/Project'
 import { whs, hs } from '~/lib/utils'
 import { RowLocator } from '~/lib/locator/RowLocator'
 import { DocumetIdType as DocumentIdType } from '~/lib/locator/utils'
 import { CellLocator, isCellLocatorString } from '~/lib/locator/CellLocator'
 import { ColLocator } from '~/lib/locator/ColLocator'
 
-const gridProject = new GridProject()
-const grid = gridProject.currentGrid
+const project = new Project()
+const grid = project.currentGrid
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()
 const hoveredCell = grid.value.hoveredCell
 
 const gridWrapper = ref<HTMLDivElement>()
-const dataGridRef = ref()
+const GridViewRef = ref()
 const rowHeaderRef = ref()
 const colHeaderRef = ref()
 // const formulaBarRef = ref()
@@ -242,7 +242,7 @@ function onMouseUp(event: MouseEvent) {
   const id = target?.id
 
   if (selection.value.selecting.value || (id && isCellLocatorString(id))) {
-    gridProject.clipboard.pasteStyleSelection(selection.value.selectedRange.value)
+    project.clipboard.pasteStyleSelection(selection.value.selectedRange.value)
   }
   selection.value.selecting.value = false
 
@@ -467,17 +467,17 @@ function onKeyDown(e: KeyboardEvent) {
   //   resetSelection()
   // }
   else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-    gridProject.clipboard.copyRange(selection.value.selectedRange.value)
+    project.clipboard.copyRange(selection.value.selectedRange.value)
   }
   else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
-    gridProject.clipboard.cutSelection(selection.value.selectedRange.value)
+    project.clipboard.cutSelection(selection.value.selectedRange.value)
   }
   else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-    gridProject.clipboard.pasteSelection(selection.value.selectedRange.value)
+    project.clipboard.pasteSelection(selection.value.selectedRange.value)
   }
 }
 
-const { syncScroll, setScrollPosition } = useSyncScroll(dataGridRef, rowHeaderRef, colHeaderRef, (value) => {
+const { syncScroll, setScrollPosition } = useSyncScroll(GridViewRef, rowHeaderRef, colHeaderRef, (value) => {
   grid.value.setScrollPosition(value)
 })
 
@@ -499,11 +499,11 @@ watch(grid, () => {
       class="flex flex-col overflow-hidden w-screen"
     >
       <div class="m-4">
-        <Toolbar :grid-project="gridProject" />
+        <Toolbar :project="project" />
       </div>
       <FormulaBar
         ref="formulaBarRef"
-        :grid-project="gridProject"
+        :project="project"
       />
       <div
         ref="gridWrapper"
@@ -520,19 +520,19 @@ watch(grid, () => {
           />
           <ColHeader
             ref="colHeaderRef"
-            :grid-project="gridProject"
+            :project="project"
             @scroll="syncScroll"
           />
         </div>
         <div class="flex overflow-hidden">
           <RowHeader
             ref="rowHeaderRef"
-            :grid-project="gridProject"
+            :project="project"
             @scroll="syncScroll"
           />
-          <DataGrid
-            ref="dataGridRef"
-            :grid-project="gridProject"
+          <GridView
+            ref="GridViewRef"
+            :project="project"
             @scroll="syncScroll"
             @cell-dblclick="onCellDblclick"
           />
@@ -552,9 +552,9 @@ watch(grid, () => {
           />
         </div>
       </div>
-      <FooterBar :grid-project="gridProject" />
+      <FooterBar :project="project" />
     </div>
-    <SidePanel :grid-project="gridProject" />
+    <SidePanel :project="project" />
   </div>
 </template>
 

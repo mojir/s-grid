@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { isLitsError } from '@mojir/lits'
 import { computed } from 'vue'
-import type { GridProject } from '~/lib/GridProject'
+import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
-  gridProject: GridProject
+  project: Project
 }>()
 
-const { gridProject } = toRefs(props)
-const grid = gridProject.value.currentGrid
+const { project } = toRefs(props)
+const grid = project.value.currentGrid
 
 const errorMessage = computed(() => {
   const output = grid.value.currentCell.value.output.value

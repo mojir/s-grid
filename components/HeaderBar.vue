@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { GridProject } from '~/lib/GridProject'
+import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
-  gridProject: GridProject
+  project: Project
 }>()
 
-const { gridProject } = toRefs(props)
+const { project } = toRefs(props)
 </script>
 
 <template>
-  <Toolbar :grid-project="gridProject" />
+  <Toolbar :project="project" />
 </template>

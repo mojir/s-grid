@@ -1,5 +1,5 @@
 import { rangeLocatorRegExp } from '../constants'
-import type { Grid } from '../Grid'
+import type { Grid } from '../grid/Grid'
 import { getColId, getRowId } from '../utils'
 import { CellLocator } from './CellLocator'
 import { ColLocator } from './ColLocator'

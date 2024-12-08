@@ -8,7 +8,7 @@ import {
   type ApiName,
   isFunctionReference,
 } from '@mojir/lits'
-import type { GridProject } from './GridProject'
+import type { Project } from './project/Project'
 
 type HistoryEntry = {
   program: string
@@ -23,7 +23,7 @@ export class REPL {
   public history = ref<HistoryEntry[]>([])
   private suggestionHistory: { enteredText: string, suggestions: string[], index: number } | null = null
 
-  public constructor(private gridProject: GridProject) {}
+  public constructor(private project: Project) {}
 
   public clearRepl() {
     nextTick(() => {
@@ -38,7 +38,7 @@ export class REPL {
   }
 
   public getHelp(topic?: string): string {
-    const commands = this.gridProject.commandCenter.commands
+    const commands = this.project.commandCenter.commands
     if (!topic) {
       let result = 'Commands:\n'
       Array.from(commands.values())
@@ -63,7 +63,7 @@ ${command.description}`
   }
 
   private getAllSuggestions(enteredText: string): string[] {
-    const commands = this.gridProject.commandCenter.commands
+    const commands = this.project.commandCenter.commands
     const startsWithParentheses = enteredText.startsWith('(')
     const searchPattern = (startsWithParentheses ? enteredText.substring(1).trim() : enteredText.trim()).toLowerCase()
     const suggestions = new Set<string>()
@@ -143,11 +143,11 @@ ${command.description}`
   public run(program: string) {
     let result
     try {
-      const { unresolvedIdentifiers } = this.lits.value.analyze(program, { jsFunctions: this.gridProject.commandCenter.jsFunctions })
-      const values = this.gridProject.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol), this.gridProject.currentGrid.value)
+      const { unresolvedIdentifiers } = this.lits.value.analyze(program, { jsFunctions: this.project.commandCenter.jsFunctions })
+      const values = this.project.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol), this.project.currentGrid.value)
       result = this.lits.value.run(program, {
         values,
-        jsFunctions: this.gridProject.commandCenter.jsFunctions,
+        jsFunctions: this.project.commandCenter.jsFunctions,
         globalContext: this.globalContext,
       })
     }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import type { Grid } from '~/lib/Grid'
+import type { Grid } from '~/lib/grid/Grid'
 
 const props = defineProps<{
   grid: Grid
