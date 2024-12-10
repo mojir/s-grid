@@ -12,10 +12,15 @@ import type { Col } from '~/lib/Col'
 
 export class GridSelection {
   public selecting = ref(false)
+  private scrollDisabled = false
   private readonly unsortedSelectedRange: Ref<RangeLocator>
 
   constructor(private readonly project: Project, private readonly grid: Grid) {
     this.unsortedSelectedRange = ref(RangeLocator.fromCellLocator(CellLocator.fromCoords(this.grid.name.value, { row: 0, col: 0 })))
+  }
+
+  public isScollDisabled() {
+    return this.scrollDisabled
   }
 
   private readonly gridRange = computed(() => {
@@ -69,6 +74,7 @@ export class GridSelection {
   public updateSelection(newSelection: RangeLocator) {
     if (!newSelection.equals(this.unsortedSelectedRange.value)) {
       this.unsortedSelectedRange.value = newSelection
+      this.scrollDisabled = false
     }
   }
 
@@ -88,6 +94,7 @@ export class GridSelection {
 
   public selectAll() {
     this.updateSelection(this.gridRange.value)
+    this.scrollDisabled = true
   }
 
   public selectColRange(fromCol: Col, toCol: Col) {
@@ -95,6 +102,7 @@ export class GridSelection {
       = RangeLocator.fromCellLocators(
         CellLocator.fromCoords(this.grid.name.value, { row: 0, col: fromCol.index.value }),
         CellLocator.fromCoords(this.grid.name.value, { row: this.gridRange.value.end.row, col: toCol.index.value }))
+    this.scrollDisabled = true
   }
 
   public selectRowRange(fromRow: Row, toRow: Row) {
@@ -102,6 +110,7 @@ export class GridSelection {
       = RangeLocator.fromCellLocators(
         CellLocator.fromCoords(this.grid.name.value, { row: fromRow.index.value, col: 0 }),
         CellLocator.fromCoords(this.grid.name.value, { row: toRow.index.value, col: this.gridRange.value.end.col }))
+    this.scrollDisabled = true
   }
 
   public select(target: string | RangeLocator | CellLocator) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, type WatchHandle } from 'vue'
 import { hs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
 import type { CellLocator } from '~/lib/locators/CellLocator'
@@ -23,61 +23,73 @@ const referencedLocators = computed(() => {
     return locator.gridName === grid.value.name.value
   })
 })
-watch(grid.value.position, (position) => {
-  const cellElement = document.getElementById(getDocumentCellId(position))
-  cellElement?.scrollIntoView({
-    block: 'nearest',
-    inline: 'nearest',
-  })
-})
-
-watch(grid.value.selection.selectedRange, (newRange, oldRange) => {
-  const newStart = newRange.start
-  const newEnd = newRange.end
-  const oldStart = oldRange.start
-  const oldEnd = oldRange.end
-
-  // Avoid scrolling if a row or column is selected
-  let element: HTMLElement | null = null
-  if (oldRange.size() > 1 || newRange.size() === 2) {
-    if (oldStart.row !== newStart.row) {
-      const row = newStart.row > oldStart.row
-        ? (newStart.row < grid.value.rows.value.length - 1 ? newStart.row + 1 : newStart.row)
-        : (newStart.row > 0 ? newStart.row - 1 : newStart.row)
-
-      const rowLocator = RowLocator.fromNumber(grid.value.name.value, row)
-      element = document.getElementById(getDocumentRowId(rowLocator))
-    }
-    else if (oldStart.col !== newStart.col) {
-      const col = newStart.col > oldStart.col
-        ? (newStart.col < grid.value.cols.value.length - 1 ? newStart.col + 1 : newStart.col)
-        : (newStart.col > 0 ? newStart.col - 1 : newStart.col)
-
-      const colLocator = ColLocator.fromNumber(grid.value.name.value, col)
-      element = document.getElementById(getDocumentColId(colLocator))
-    }
-    else if (oldEnd.row !== newEnd.row) {
-      const row = newEnd.row > oldEnd.row
-        ? (newEnd.row < grid.value.rows.value.length - 1 ? newEnd.row + 1 : newEnd.row)
-        : (newEnd.row > 0 ? newEnd.row - 1 : newEnd.row)
-
-      const rowLocator = RowLocator.fromNumber(grid.value.name.value, row)
-      element = document.getElementById(getDocumentRowId(rowLocator))
-    }
-    else if (oldEnd.col !== newEnd.col) {
-      const col = newEnd.col > oldEnd.col
-        ? (newEnd.col < grid.value.cols.value.length - 1 ? newEnd.col + 1 : newEnd.col)
-        : (newEnd.col > 0 ? newEnd.col - 1 : newEnd.col)
-
-      const colLocator = ColLocator.fromNumber(grid.value.name.value, col)
-      element = document.getElementById(getDocumentColId(colLocator))
-    }
-    element?.scrollIntoView({
+watch(grid.value.position, (newPosition) => {
+  project.value.locator.getSurroundingCorners(newPosition, grid.value.gridRange.value)
+    .map(locator => document.getElementById(getDocumentCellId(locator)))
+    .forEach(element => element?.scrollIntoView({
       block: 'nearest',
       inline: 'nearest',
-    })
-  }
+    }))
 })
+
+let handle: WatchHandle
+watch(grid, (grid) => {
+  if (handle) {
+    handle.stop()
+  }
+  handle = watch(grid.selection.selectedRange, (newRange, oldRange) => {
+    if (grid.selection.isScollDisabled()) {
+      return
+    }
+
+    const newStart = newRange.start
+    const newEnd = newRange.end
+    const oldStart = oldRange.start
+    const oldEnd = oldRange.end
+
+    const elements: (HTMLElement | null)[] = []
+
+    // TODO implement and use getSurroundingRows from Locator
+    // or even better, getSurroundingCorners from A cellLocator
+    if (oldStart.row !== newStart.row) {
+      elements.push(...[
+        Math.max(newStart.row - 2, 0),
+        Math.min(newStart.row + 2, grid.rows.value.length - 1),
+      ]
+        .map(row => RowLocator.fromNumber(grid.name.value, row))
+        .map(getDocumentRowId)
+        .map(id => document.getElementById(id)))
+    }
+    else if (oldStart.col !== newStart.col) {
+      elements.push(...[
+        Math.max(newStart.col - 1, 0),
+        Math.min(newStart.col + 1, grid.cols.value.length - 1),
+      ]
+        .map(col => ColLocator.fromNumber(grid.name.value, col))
+        .map(getDocumentColId)
+        .map(id => document.getElementById(id)))
+    }
+    else if (oldEnd.row !== newEnd.row) {
+      elements.push(...[
+        Math.max(newEnd.row - 2, 0),
+        Math.min(newEnd.row + 2, grid.rows.value.length - 1),
+      ]
+        .map(row => RowLocator.fromNumber(grid.name.value, row))
+        .map(getDocumentRowId)
+        .map(id => document.getElementById(id)))
+    }
+    else if (oldEnd.col !== newEnd.col) {
+      elements.push(...[
+        Math.max(newEnd.col - 1, 0),
+        Math.min(newEnd.col + 1, grid.cols.value.length - 1),
+      ]
+        .map(col => ColLocator.fromNumber(grid.name.value, col))
+        .map(getDocumentColId)
+        .map(id => document.getElementById(id)))
+    }
+    elements.forEach(element => element?.scrollIntoView({ block: 'nearest', inline: 'nearest' }))
+  })
+}, { immediate: true })
 </script>
 
 <template>

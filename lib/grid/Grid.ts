@@ -108,10 +108,6 @@ export class Grid {
     return this.scrollPosition
   }
 
-  public setScrollLeft(scrollLeft: number) {
-    this.scrollPosition.scrollLeft = scrollLeft
-  }
-
   public clear(locator: ReferenceLocator | null) {
     this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
       .forEach((cell) => {
