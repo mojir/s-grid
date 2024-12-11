@@ -53,7 +53,7 @@ function resetSelection() {
 
 const dbClickTime: number = 300
 
-const mouseDownStart = ref<CellLocator | RowLocator | ColLocator | null>(null)
+const mouseDownStart = shallowRef<CellLocator | RowLocator | ColLocator | null>(null)
 const rowResizing = shallowRef<{
   rowLocator: RowLocator
   startY: number

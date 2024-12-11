@@ -10,7 +10,7 @@ export abstract class CommonLocator {
   abstract toStringWithoutGrid(): string
 
   public toStringWithGrid(): string {
-    return `${this.grid}!${this.toStringWithoutGrid()}`
+    return `${this.grid.name.value}!${this.toStringWithoutGrid()}`
   }
 
   public toString(currentGrid: Grid): string {
