@@ -119,7 +119,7 @@ function onMouseDown(event: MouseEvent) {
 
   const [type, , locatorString] = targetId.split(':')
   if (type === DocumentIdType.Cell) {
-    const cellLocator = CellLocator.fromString(grid.value.name.value, locatorString)
+    const cellLocator = CellLocator.fromString(grid.value, locatorString)
     if (isRightClick && selection.value.selectedRange.value.containsCell(cellLocator)) {
       return
     }
@@ -143,19 +143,19 @@ function onMouseDown(event: MouseEvent) {
 
   if (type === DocumentIdType.Col) {
     selection.value.selecting.value = true
-    const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
+    const colLocator = ColLocator.fromString(grid.value, locatorString)
     mouseDownStart.value = colLocator
     const col = grid.value.getCol(colLocator)
     if (col) {
       resetSelection()
       if (!grid.value.editor.editingLitsCode.value) {
-        grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `${col.label.value}1`))
+        grid.value.movePositionTo(CellLocator.fromString(grid.value, `${col.label.value}1`))
       }
       selection.value.selectColRange(col, col)
     }
   }
   if (type === DocumentIdType.ResizeCol) {
-    const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
+    const colLocator = ColLocator.fromString(grid.value, locatorString)
     const col = grid.value.getCol(colLocator)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
@@ -181,19 +181,19 @@ function onMouseDown(event: MouseEvent) {
 
   if (type === DocumentIdType.Row) {
     selection.value.selecting.value = true
-    const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
+    const rowLocator = RowLocator.fromString(grid.value, locatorString)
     mouseDownStart.value = rowLocator
     const row = grid.value.getRow(rowLocator)
     if (row) {
       resetSelection()
       if (!grid.value.editor.editingLitsCode.value) {
-        grid.value.movePositionTo(CellLocator.fromString(grid.value.name.value, `A${row.label.value}`))
+        grid.value.movePositionTo(CellLocator.fromString(grid.value, `A${row.label.value}`))
       }
       selection.value.selectRowRange(row, row)
     }
   }
   if (type === DocumentIdType.ResizeRow) {
-    const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
+    const rowLocator = RowLocator.fromString(grid.value, locatorString)
     const row = grid.value.getRow(rowLocator)
     const y = event.clientY
     rowResizing.value = {
@@ -305,7 +305,7 @@ function onMouseEnter(event: MouseEvent) {
 
   const [type, , locatorString] = targetId.split(':')
 
-  const cellLocator = type === DocumentIdType.Cell ? CellLocator.fromString(grid.value.name.value, locatorString) : null
+  const cellLocator = type === DocumentIdType.Cell ? CellLocator.fromString(grid.value, locatorString) : null
   if (cellLocator) {
     hoveredCell.value = cellLocator
   }
@@ -314,7 +314,7 @@ function onMouseEnter(event: MouseEvent) {
       selection.value.select(RangeLocator.fromCellLocators(mouseDownStart.value, cellLocator))
     }
     else if (mouseDownStart.value instanceof ColLocator && type === DocumentIdType.Col) {
-      const colLocator = ColLocator.fromString(grid.value.name.value, locatorString)
+      const colLocator = ColLocator.fromString(grid.value, locatorString)
       const fromCol = grid.value.getCol(mouseDownStart.value)
       const toCol = grid.value.getCol(colLocator)
       if (fromCol && toCol) {
@@ -322,7 +322,7 @@ function onMouseEnter(event: MouseEvent) {
       }
     }
     else if (mouseDownStart.value instanceof RowLocator && type === DocumentIdType.Row) {
-      const rowLocator = RowLocator.fromString(grid.value.name.value, locatorString)
+      const rowLocator = RowLocator.fromString(grid.value, locatorString)
       const fromRow = grid.value.getRow(mouseDownStart.value)
       const toRow = grid.value.getRow(rowLocator)
       if (fromRow && toRow) {

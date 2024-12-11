@@ -4,8 +4,6 @@ import { hs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
 import type { CellLocator } from '~/lib/locators/CellLocator'
 import { getDocumentCellId, getDocumentColId, getDocumentRowId } from '~/lib/locators/utils'
-import { ColLocator } from '~/lib/locators/ColLocator'
-import { RowLocator } from '~/lib/locators/RowLocator'
 
 const props = defineProps<{
   project: Project
@@ -20,7 +18,7 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const referencedLocators = computed(() => {
   return grid.value.currentCell.value.localReferenceLocators.value.filter((locator) => {
-    return locator.gridName === grid.value.name.value
+    return locator.grid === grid.value
   })
 })
 watch(grid.value.position, (newPosition) => {
@@ -49,43 +47,21 @@ watch(grid, (grid) => {
 
     const elements: (HTMLElement | null)[] = []
 
-    // TODO implement and use getSurroundingRows from Locator
-    // or even better, getSurroundingCorners from A cellLocator
     if (oldStart.row !== newStart.row) {
-      elements.push(...[
-        Math.max(newStart.row - 2, 0),
-        Math.min(newStart.row + 2, grid.rows.value.length - 1),
-      ]
-        .map(row => RowLocator.fromNumber(grid.name.value, row))
-        .map(getDocumentRowId)
-        .map(id => document.getElementById(id)))
+      elements.push(...project.value.locator.getSurroundingRows(newStart, grid.gridRange.value)
+        .map(locator => document.getElementById(getDocumentRowId(locator))))
     }
     else if (oldStart.col !== newStart.col) {
-      elements.push(...[
-        Math.max(newStart.col - 1, 0),
-        Math.min(newStart.col + 1, grid.cols.value.length - 1),
-      ]
-        .map(col => ColLocator.fromNumber(grid.name.value, col))
-        .map(getDocumentColId)
-        .map(id => document.getElementById(id)))
+      elements.push(...project.value.locator.getSurroundingCols(newStart, grid.gridRange.value)
+        .map(locator => document.getElementById(getDocumentColId(locator))))
     }
     else if (oldEnd.row !== newEnd.row) {
-      elements.push(...[
-        Math.max(newEnd.row - 2, 0),
-        Math.min(newEnd.row + 2, grid.rows.value.length - 1),
-      ]
-        .map(row => RowLocator.fromNumber(grid.name.value, row))
-        .map(getDocumentRowId)
-        .map(id => document.getElementById(id)))
+      elements.push(...project.value.locator.getSurroundingRows(newEnd, grid.gridRange.value)
+        .map(locator => document.getElementById(getDocumentRowId(locator))))
     }
     else if (oldEnd.col !== newEnd.col) {
-      elements.push(...[
-        Math.max(newEnd.col - 1, 0),
-        Math.min(newEnd.col + 1, grid.cols.value.length - 1),
-      ]
-        .map(col => ColLocator.fromNumber(grid.name.value, col))
-        .map(getDocumentColId)
-        .map(id => document.getElementById(id)))
+      elements.push(...project.value.locator.getSurroundingCols(newEnd, grid.gridRange.value)
+        .map(locator => document.getElementById(getDocumentColId(locator))))
     }
     elements.forEach(element => element?.scrollIntoView({ block: 'nearest', inline: 'nearest' }))
   })
@@ -134,7 +110,7 @@ watch(grid, (grid) => {
         v-for="region of referencedLocators"
         :key="region.toStringWithoutGrid()"
         :grid="grid"
-        :region="ref(region)"
+        :region="shallowRef(region)"
         class="bg-referenced-cell"
       />
     </div>

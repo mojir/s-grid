@@ -4,7 +4,7 @@ export { cn } from './cn'
 export { hs, whs, ws } from './cssUtils'
 
 export function getGridName(displayName: string): string {
-  return displayName.replace(/\s+/g, '_')
+  return displayName.trim().replace(/\s+/g, '_')
 }
 
 export function getGridDisplayName(gridName: string): string {

@@ -14,7 +14,7 @@ const { testFixtures } = useFixtures()
 function addGridDto(dto: GridDTO) {
   project.value.importGrid(dto)
   setTimeout(() => {
-    const grid = project.value.grids.value.find(grid => grid.name === getGridName(dto.name))!.grid
+    const grid = project.value.grids.value.find(grid => grid.name.value === getGridName(dto.name))!
     const colIndices = Array.from({ length: grid.cols.value.length }, (_, i) => i)
     grid.autoSetColWidth(colIndices)
   }, 0)

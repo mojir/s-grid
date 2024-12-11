@@ -49,6 +49,8 @@ defineProps<{
           :key="grid.name.value"
           :selected="grid === project.currentGrid.value"
           :removable="project.visibleGrids.value.length > 1"
+          :grid-name="grid.name.value"
+          :project="project"
           @select="project.selectGrid(grid.name.value)"
           @remove="project.removeGrid(grid.name.value)"
         >

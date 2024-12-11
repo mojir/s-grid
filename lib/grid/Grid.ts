@@ -20,7 +20,7 @@ import type { GridDTO } from '~/dto/GridDTO'
 import type { CellStyleName } from '~/dto/CellStyleDTO'
 
 export class Grid {
-  private project: Project
+  public project: Project
   public readonly hidden = ref(false)
   public readonly name: Ref<string>
   public readonly selection: GridSelection
@@ -40,12 +40,12 @@ export class Grid {
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(col, defaultColWidth)))
     this.selection = new GridSelection(this.project, this)
-    this.position = ref(CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }))
+    this.position = shallowRef(CellLocator.fromCoords(this, { row: 0, col: 0 }))
     this.editor = new CellEditor(this)
 
     this.cells = Array.from({ length: this.rows.value.length }, (_, row) =>
       Array.from({ length: this.cols.value.length }, (_, col) =>
-        new Cell(CellLocator.fromCoords(this.name.value, { row, col }),
+        new Cell(CellLocator.fromCoords(this, { row, col }),
           {
             project: this.project,
             grid: this,
@@ -55,8 +55,8 @@ export class Grid {
       ),
     )
     this.gridRange = computed(() => RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this.name.value, { row: 0, col: 0 }),
-      CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
+      CellLocator.fromCoords(this, { row: 0, col: 0 }),
+      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
     this.currentCell = computed(() => this.project.locator.getCellFromLocator(this.position.value))
   }
@@ -70,7 +70,7 @@ export class Grid {
 
     Object.entries(grid.cells).forEach(([key, cell]) => {
       // TODO use new regexp, to avoid the need of Locator
-      const cellLocator = CellLocator.fromString(gridName, key) as CellLocator
+      const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
       const CellView = newGrid.cells[cellLocator.row][cellLocator.col]
       if (cell.input !== undefined) {
         CellView.input.value = cell.input
@@ -221,7 +221,7 @@ export class Grid {
   }
 
   public getRow(rowLocator: RowLocator): Row {
-    if (rowLocator.gridName !== this.name.value) {
+    if (rowLocator.grid !== this) {
       throw new Error(`Row ${rowLocator.toStringWithGrid()} is not in grid ${this.name.value}`)
     }
 
@@ -234,7 +234,7 @@ export class Grid {
   }
 
   public getCol(colLocator: ColLocator): Col {
-    if (colLocator.gridName !== this.name.value) {
+    if (colLocator.grid !== this) {
       throw new Error(`Col ${colLocator.toStringWithGrid()} is not in grid ${this.name.value}`)
     }
     const col = this.cols.value[colLocator.col]
@@ -331,8 +331,8 @@ export class Grid {
   }
 
   public getRowCells(row: number): Cell[] {
-    const startCellId = CellLocator.fromCoords(this.name.value, { row, col: 0 })
-    const endCellId = CellLocator.fromCoords(this.name.value, { row, col: this.cols.value.length - 1 })
+    const startCellId = CellLocator.fromCoords(this, { row, col: 0 })
+    const endCellId = CellLocator.fromCoords(this, { row, col: this.cols.value.length - 1 })
     const range = RangeLocator.fromCellLocators(startCellId, endCellId)
     return range
       .getAllCellLocators()
@@ -371,7 +371,7 @@ export class Grid {
       row.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this.name.value, { row: index, col })
+        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
         const aliasString = this.project.aliases.getAlias(cell)
 
         if (aliasString) {
@@ -430,7 +430,7 @@ export class Grid {
       col.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this.name.value, { row: index, col })
+        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
 
         const aliasString = this.project.aliases.getAlias(cell)
 
@@ -463,8 +463,8 @@ export class Grid {
   public insertRowsBefore(rowRangeLocator: RowRangeLocator) {
     rowRangeLocator = rowRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.start.row, col: 0 }),
-      CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
+      CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
+      CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
     this.project.clipboard.copyStyleSelection(range)
     this.insertRows(rowRangeLocator)
@@ -474,14 +474,14 @@ export class Grid {
   public insertRowsAfter(rowRangeLocator: RowRangeLocator) {
     rowRangeLocator = rowRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.start.row, col: 0 }),
-      CellLocator.fromCoords(this.name.value, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
+      CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
+      CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
     )
     this.project.clipboard.copyStyleSelection(range)
 
     this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
     const movement: Movement = {
-      toGrid: this.name.value,
+      toGrid: this,
       deltaRow: rowRangeLocator.size(),
       deltaCol: 0,
     }
@@ -491,8 +491,8 @@ export class Grid {
   }
 
   private getCellIdsFromColIndex(col: number): CellLocator[] {
-    const startCellId = CellLocator.fromCoords(this.name.value, { row: 0, col })
-    const endCellId = CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col })
+    const startCellId = CellLocator.fromCoords(this, { row: 0, col })
+    const endCellId = CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col })
     return RangeLocator.fromCellLocators(startCellId, endCellId).getAllCellLocators()
   }
 
@@ -503,7 +503,7 @@ export class Grid {
       const rowInstance = new Row(row + index, defaultRowHeight)
       this.cells.splice(row + index, 0, Array.from({ length: this.cols.value.length }, (_, col) =>
         new Cell(
-          CellLocator.fromCoords(this.name.value, { row: row + index, col }),
+          CellLocator.fromCoords(this, { row: row + index, col }),
           {
             project: this.project,
             grid: this,
@@ -525,7 +525,7 @@ export class Grid {
       row.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this.name.value, { row: index, col })
+        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
         const aliasString = this.project.aliases.getAlias(cell)
 
         if (aliasString) {
@@ -554,8 +554,8 @@ export class Grid {
   public insertColsBefore(colRangeLocator: ColRangeLocator) {
     colRangeLocator = colRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this.name.value, { row: 0, col: colRangeLocator.start.col }),
-      CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+      CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
+      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
     )
 
     this.project.clipboard.copyStyleSelection(range)
@@ -566,12 +566,12 @@ export class Grid {
   public insertColsAfter(colRangeLocator: ColRangeLocator) {
     colRangeLocator = colRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this.name.value, { row: 0, col: colRangeLocator.start.col }),
-      CellLocator.fromCoords(this.name.value, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+      CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
+      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
     )
     this.insertCols(colRangeLocator.move(colRangeLocator.size()))
     const movement: Movement = {
-      toGrid: this.name.value,
+      toGrid: this,
       deltaRow: 0,
       deltaCol: colRangeLocator.size(),
     }
@@ -596,7 +596,7 @@ export class Grid {
     this.cells.forEach((cellRow, row) => {
       cellRow.splice(col, 0, ...Array.from({ length: count }, (_, index) =>
         new Cell(
-          CellLocator.fromCoords(this.name.value, { row, col: col + index }),
+          CellLocator.fromCoords(this, { row, col: col + index }),
           {
             project: this.project,
             grid: this,
@@ -614,7 +614,7 @@ export class Grid {
     for (let row = 0; row < this.cells.length; row++) {
       for (let index = col + count; index < newCols.length; index++) {
         const cell = this.cells[row][index]
-        cell.cellLocator = CellLocator.fromCoords(this.name.value, { row, col: index })
+        cell.cellLocator = CellLocator.fromCoords(this, { row, col: index })
         const aliasString = this.project.aliases.getAlias(cell)
 
         if (aliasString) {

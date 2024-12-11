@@ -90,8 +90,7 @@ export class CommandCenter {
       name: 'CreateNamedFunction!',
       execute: (alias: string, input: string, cellLocatorString?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
-        const locator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
+        const locator = (cellLocatorString && CellLocator.fromString(grid.value, cellLocatorString)) || grid.value.position.value
         const cell = this.project.locator.getCellFromLocator(locator)
         this.project.aliases.setCell(alias, cell)
         grid.value.setInput(input, locator)
@@ -103,18 +102,17 @@ export class CommandCenter {
       name: 'SetRowHeight!',
       execute: (height: number, locatorString?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         if (!locatorString) {
           grid.value.setRowHeight(height, null)
           return
         }
         const rowRangeLocator: RowRangeLocator | undefined = isRowRangeLocatorString(locatorString)
-          ? RowRangeLocator.fromString(gridName, locatorString)
+          ? RowRangeLocator.fromString(grid.value, locatorString)
           : isRowLocatorString(locatorString)
             ? RowRangeLocator.fromRowLocators(
-              RowLocator.fromString(gridName, locatorString),
-              RowLocator.fromString(gridName, locatorString),
-            )
+                RowLocator.fromString(grid.value, locatorString),
+                RowLocator.fromString(grid.value, locatorString),
+              )
             : undefined
 
         if (!rowRangeLocator) {
@@ -129,19 +127,18 @@ export class CommandCenter {
       name: 'SetColWidth!',
       execute: (width: number, locatorString?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         if (!locatorString) {
           grid.value.setColWidth(width, null)
           return
         }
 
         const colRangeLocator: ColRangeLocator | undefined = isColRangeLocatorString(locatorString)
-          ? ColRangeLocator.fromString(gridName, locatorString)
+          ? ColRangeLocator.fromString(grid.value, locatorString)
           : isColLocatorString(locatorString)
             ? ColRangeLocator.fromColLocators(
-              ColLocator.fromString(gridName, locatorString),
-              ColLocator.fromString(gridName, locatorString),
-            )
+                ColLocator.fromString(grid.value, locatorString),
+                ColLocator.fromString(grid.value, locatorString),
+              )
             : undefined
 
         if (!colRangeLocator) {
@@ -164,8 +161,7 @@ export class CommandCenter {
       name: 'MovePositionTo!',
       execute: (cellLocatorString: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
-        const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
+        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
         grid.value.movePositionTo(cellLocator)
       },
       description: 'Move the position to a specific cell',
@@ -215,8 +211,7 @@ export class CommandCenter {
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
-        const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
+        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
         return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
@@ -225,8 +220,7 @@ export class CommandCenter {
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
-        const cellLocator = CellLocator.fromString(gridName, cellLocatorString)
+        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
         return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
@@ -235,8 +229,7 @@ export class CommandCenter {
       name: 'SetAlias!',
       execute: (alias: string, cellLocatorString?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
-        const cellLocator = (cellLocatorString && CellLocator.fromString(gridName, cellLocatorString)) || grid.value.position.value
+        const cellLocator = (cellLocatorString && CellLocator.fromString(grid.value, cellLocatorString)) || grid.value.position.value
         const cell = this.project.locator.getCellFromLocator(cellLocator)
         this.project.aliases.setCell(alias, cell)
       },
@@ -392,14 +385,13 @@ export class CommandCenter {
       description: 'Delete rows',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
         const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(gridName, startRow),
-          RowLocator.fromNumber(gridName, endRow),
+          RowLocator.fromNumber(grid.value, startRow),
+          RowLocator.fromNumber(grid.value, endRow),
         )
         grid.value.deleteRows(rowRangeLocator)
       },
@@ -413,11 +405,10 @@ export class CommandCenter {
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const endCol = Math.max(startColIndex, endColIndex)
         const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(gridName, startCol),
-          ColLocator.fromNumber(gridName, endCol),
+          ColLocator.fromNumber(grid.value, startCol),
+          ColLocator.fromNumber(grid.value, endCol),
         )
         grid.value.deleteCols(colRangeLocator)
       },
@@ -428,14 +419,13 @@ export class CommandCenter {
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
         const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(gridName, startRow),
-          RowLocator.fromNumber(gridName, endRow),
+          RowLocator.fromNumber(grid.value, startRow),
+          RowLocator.fromNumber(grid.value, endRow),
         )
         grid.value.insertRowsBefore(rowRangeLocator)
       },
@@ -446,14 +436,13 @@ export class CommandCenter {
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const startRowIndex = getRowNumber(startRowStringId)
         const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
         const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(gridName, startRow),
-          RowLocator.fromNumber(gridName, endRow),
+          RowLocator.fromNumber(grid.value, startRow),
+          RowLocator.fromNumber(grid.value, endRow),
         )
         grid.value.insertRowsAfter(rowRangeLocator)
       },
@@ -464,14 +453,13 @@ export class CommandCenter {
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const endCol = Math.max(startColIndex, endColIndex)
         const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(gridName, startCol),
-          ColLocator.fromNumber(gridName, endCol),
+          ColLocator.fromNumber(grid.value, startCol),
+          ColLocator.fromNumber(grid.value, endCol),
         )
 
         grid.value.insertColsBefore(colRangeLocator)
@@ -483,14 +471,13 @@ export class CommandCenter {
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
         const grid = this.project.currentGrid
-        const gridName = grid.value.name.value
         const startColIndex = getColNumber(startColStringId)
         const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const endCol = Math.max(startColIndex, endColIndex)
         const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(gridName, startCol),
-          ColLocator.fromNumber(gridName, endCol),
+          ColLocator.fromNumber(grid.value, startCol),
+          ColLocator.fromNumber(grid.value, endCol),
         )
 
         grid.value.insertColsAfter(colRangeLocator)

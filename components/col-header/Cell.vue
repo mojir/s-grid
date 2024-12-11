@@ -15,11 +15,10 @@ const props = defineProps<{
 
 const { col, project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
-const gridName = computed(() => grid.value.name.value)
 
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-const colLocator = computed(() => ColLocator.fromNumber(gridName.value, col.value.index.value))
+const colLocator = computed(() => ColLocator.fromNumber(grid.value, col.value.index.value))
 const colId = computed(() => getDocumentColId(colLocator.value))
 const resizeColId = computed(() => getDocumentResizeColId(colLocator.value))
 

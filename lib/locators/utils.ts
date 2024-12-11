@@ -21,7 +21,7 @@ export type Direction =
   | 'pageLeft'
 
 export type Movement = {
-  toGrid: string
+  toGrid: Grid
   deltaRow?: number
   deltaCol?: number
 }
@@ -35,24 +35,24 @@ export enum DocumetIdType {
 }
 
 export function getDocumentCellId(cellLocator: CellLocator): string {
-  return `${DocumetIdType.Cell}:${cellLocator.gridName}:${cellLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumetIdType.Cell}:${cellLocator.grid.name.value}:${cellLocator.toRelative().toStringWithoutGrid()}`
 }
 
 // TODO remove girdName parameter
 export function getDocumentRowId(rowLocator: RowLocator): string {
-  return `${DocumetIdType.Row}:${rowLocator.gridName}:${rowLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumetIdType.Row}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeRowId(rowLocator: RowLocator): string {
-  return `${DocumetIdType.ResizeRow}:${rowLocator.gridName}:${rowLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumetIdType.ResizeRow}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentColId(colLocator: ColLocator): string {
-  return `${DocumetIdType.Col}:${colLocator.gridName}:${colLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumetIdType.Col}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeColId(colLocator: ColLocator): string {
-  return `${DocumetIdType.ResizeCol}:${colLocator.gridName}:${colLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumetIdType.ResizeCol}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export type ReferenceLocator = CellLocator | RangeLocator
@@ -63,7 +63,7 @@ export function getReferenceLocatorFromString(grid: Grid, locatorString: string)
     return null
   }
   return isCellLocatorString(locatorString)
-    ? CellLocator.fromString(grid.name.value, locatorString)
+    ? CellLocator.fromString(grid, locatorString)
     : isRangeLocatorString(locatorString)
       ? RangeLocator.fromString(grid, locatorString)
       : null

@@ -1,4 +1,5 @@
 import { rowLocatorRegExp } from '../constants'
+import type { Grid } from '../grid/Grid'
 import { getRowId, getRowNumber } from '../utils'
 import { CellLocator } from './CellLocator'
 import { CommonLocator } from './CommonLocator'
@@ -13,51 +14,43 @@ export class RowLocator extends CommonLocator {
 
   public constructor(
     {
-      gridName,
+      grid,
       absRow,
       row,
     }: {
-      gridName: string
+      grid: Grid
       absRow: boolean
       row: number
     },
   ) {
-    super(gridName)
+    super(grid)
     this.absRow = absRow
     this.row = row
   }
 
-  static fromString(gridName: string, str: string): RowLocator {
+  static fromString(grid: Grid, str: string): RowLocator {
     const match = str.match(rowLocatorRegExp)
     if (!match) {
       throw new Error(`Invalid row locator: ${str}`)
     }
 
-    gridName = match[1] ?? gridName
+    grid = match[1] ? grid.project.getGrid(match[1]) : grid
     const absRow = !!match[2]
     const rowString = match[3]
     const row = getRowNumber(rowString)
     return new RowLocator({
-      gridName,
+      grid,
       absRow,
       row,
     })
   }
 
-  static fromNumber(gridName: string, row: number): RowLocator {
+  static fromNumber(grid: Grid, row: number): RowLocator {
     return new RowLocator({
-      gridName,
+      grid,
       absRow: false,
       row,
     })
-  }
-
-  public override toString(currentGridName: string): string {
-    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
-  }
-
-  public override toStringWithGrid(): string {
-    return `${this.gridName}!${this.toStringWithoutGrid()}`
   }
 
   public override toStringWithoutGrid(): string {
@@ -66,7 +59,7 @@ export class RowLocator extends CommonLocator {
 
   public toRelative(): RowLocator {
     return new RowLocator({
-      gridName: this.gridName,
+      grid: this.grid,
       absRow: false,
       row: this.row,
     })
@@ -74,7 +67,7 @@ export class RowLocator extends CommonLocator {
 
   public move(count: number): RowLocator {
     return new RowLocator({
-      gridName: this.gridName,
+      grid: this.grid,
       absRow: this.absRow,
       row: this.row + count,
     })
@@ -83,7 +76,7 @@ export class RowLocator extends CommonLocator {
   public getAllCellLocators(colCount: number): CellLocator[] {
     return Array.from({ length: colCount }, (_, col) =>
       new CellLocator({
-        gridName: this.gridName,
+        grid: this.grid,
         absCol: this.absRow,
         col,
         absRow: this.absRow,
@@ -92,6 +85,6 @@ export class RowLocator extends CommonLocator {
   }
 
   public isSameRow(other: RowLocator): boolean {
-    return this.gridName === other.gridName && this.row === other.row
+    return this.grid === other.grid && this.row === other.row
   }
 }

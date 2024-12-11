@@ -16,7 +16,7 @@ export class Locator {
   constructor(private readonly project: Project) {}
 
   public getValueFromLocator(locator: ReferenceLocator): unknown {
-    const grid = this.project.getGrid(locator.gridName)
+    const grid = locator.grid
     if (!grid) {
       throw new Error(`Grid not found ${locator.toStringWithGrid()}`)
     }
@@ -54,7 +54,7 @@ export class Locator {
   }
 
   public getCellFromLocator(cellLocator: CellLocator): Cell {
-    const grid = this.project.getGrid(cellLocator.gridName)
+    const grid = cellLocator.grid
     const cell = grid.cells[cellLocator.row][cellLocator.col]
     if (!cell) {
       throw new Error(`Cell ${cellLocator.toStringWithGrid()} is out of range`)
@@ -64,7 +64,7 @@ export class Locator {
   }
 
   public getCellsFromLocator(locator: ReferenceLocator): Cell[] {
-    const grid = this.project.getGrid(locator.gridName)
+    const grid = locator.grid
     return locator instanceof RangeLocator
       ? locator.getAllCellLocators().map(cellLocator => this.getCellFromLocator(cellLocator))
       : locator instanceof RowLocator
@@ -79,7 +79,7 @@ export class Locator {
   }
 
   public getRowsFromLocator(locator: AnyLocator): Row[] {
-    const grid = this.project.getGrid(locator.gridName)
+    const grid = locator.grid
     const rowLocators: RowLocator[] = locator instanceof RangeLocator
       ? locator.getAllRowLocators()
       : locator instanceof RowLocator
@@ -90,7 +90,7 @@ export class Locator {
             ? locator.getAllRowLocators()
             : [
                 new RowLocator({
-                  gridName: locator.gridName,
+                  grid,
                   absRow: false,
                   row: locator.row,
                 }),
@@ -100,7 +100,7 @@ export class Locator {
   }
 
   public getColsFromLocator(locator: AnyLocator): Col[] {
-    const grid = this.project.getGrid(locator.gridName)
+    const grid = locator.grid
     const colLocators: ColLocator[] = locator instanceof RangeLocator
       ? locator.getAllColLocators()
       : locator instanceof ColLocator
@@ -111,7 +111,7 @@ export class Locator {
             ? locator.getAllColLocators()
             : [
                 new ColLocator({
-                  gridName: locator.gridName,
+                  grid,
                   absCol: false,
                   col: locator.col,
                 }),
@@ -147,10 +147,34 @@ export class Locator {
     const rightCol = Math.min(endCol, locator.col + 1)
 
     return [
-      CellLocator.fromCoords(locator.gridName, { row: upperRow, col: leftCol }),
-      CellLocator.fromCoords(locator.gridName, { row: upperRow, col: rightCol }),
-      CellLocator.fromCoords(locator.gridName, { row: lowerRow, col: leftCol }),
-      CellLocator.fromCoords(locator.gridName, { row: lowerRow, col: rightCol }),
+      CellLocator.fromCoords(locator.grid, { row: upperRow, col: leftCol }),
+      CellLocator.fromCoords(locator.grid, { row: upperRow, col: rightCol }),
+      CellLocator.fromCoords(locator.grid, { row: lowerRow, col: leftCol }),
+      CellLocator.fromCoords(locator.grid, { row: lowerRow, col: rightCol }),
+    ]
+  }
+
+  public getSurroundingRows(locator: CellLocator, range: RangeLocator): RowLocator[] {
+    const { startRow, endRow } = range.toSorted().getCoords()
+
+    const upperRow = Math.max(startRow, locator.row - 2)
+    const lowerRow = Math.min(endRow, locator.row + 2)
+
+    return [
+      RowLocator.fromNumber(locator.grid, upperRow),
+      RowLocator.fromNumber(locator.grid, lowerRow),
+    ]
+  }
+
+  public getSurroundingCols(locator: CellLocator, range: RangeLocator): ColLocator[] {
+    const { startCol, endCol } = range.toSorted().getCoords()
+
+    const leftCol = Math.max(startCol, locator.col - 1)
+    const rightCol = Math.min(endCol, locator.col + 1)
+
+    return [
+      ColLocator.fromNumber(locator.grid, leftCol),
+      ColLocator.fromNumber(locator.grid, rightCol),
     ]
   }
 
@@ -170,7 +194,7 @@ export class Locator {
         row = startRow
       }
     }
-    return CellLocator.fromCoords(cellLocator.gridName, { row, col })
+    return CellLocator.fromCoords(cellLocator.grid, { row, col })
   }
 
   private cellDown(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
@@ -189,7 +213,7 @@ export class Locator {
         row = endRow
       }
     }
-    return CellLocator.fromCoords(cellLocator.gridName, { row, col })
+    return CellLocator.fromCoords(cellLocator.grid, { row, col })
   }
 
   private cellRight(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
@@ -208,7 +232,7 @@ export class Locator {
         col = endCol
       }
     }
-    return CellLocator.fromCoords(cellLocator.gridName, { row, col })
+    return CellLocator.fromCoords(cellLocator.grid, { row, col })
   }
 
   private cellLeft(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
@@ -227,27 +251,27 @@ export class Locator {
         col = startCol
       }
     }
-    return CellLocator.fromCoords(cellLocator.gridName, { row, col })
+    return CellLocator.fromCoords(cellLocator.grid, { row, col })
   }
 
   private cellTop(cellLocator: CellLocator, range: RangeLocator): CellLocator {
     const { startRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(cellLocator.gridName, { row: startRow, col: cellLocator.col })
+    return CellLocator.fromCoords(cellLocator.grid, { row: startRow, col: cellLocator.col })
   }
 
   private cellBottom(cellLocator: CellLocator, range: RangeLocator): CellLocator {
     const { endRow } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(cellLocator.gridName, { row: endRow, col: cellLocator.col })
+    return CellLocator.fromCoords(cellLocator.grid, { row: endRow, col: cellLocator.col })
   }
 
   private cellLeftmost(cellLocator: CellLocator, range: RangeLocator): CellLocator {
     const { startCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(cellLocator.gridName, { row: cellLocator.row, col: startCol })
+    return CellLocator.fromCoords(cellLocator.grid, { row: cellLocator.row, col: startCol })
   }
 
   private cellRightmost(cellLocator: CellLocator, range: RangeLocator): CellLocator {
     const { endCol } = range.toSorted().getCoords()
-    return CellLocator.fromCoords(cellLocator.gridName, { row: cellLocator.row, col: endCol })
+    return CellLocator.fromCoords(cellLocator.grid, { row: cellLocator.row, col: endCol })
   }
 
   private cellPageUp(cellLocator: CellLocator, range: RangeLocator): CellLocator {

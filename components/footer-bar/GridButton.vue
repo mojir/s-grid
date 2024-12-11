@@ -1,21 +1,22 @@
 <script setup lang="ts">
+import type { Project } from '~/lib/project/Project'
+
 const props = defineProps<{
+  gridName: string
   selected: boolean
   removable: boolean
+  project: Project
 }>()
 
-const { selected, removable } = toRefs(props)
-
-const emit = defineEmits<{
-  (e: 'select' | 'remove'): void
-}>()
+const { selected, removable, gridName, project } = toRefs(props)
 
 const open = ref(false)
-const dialogOpen = ref(false)
+const removeDialogOpen = ref(false)
+const renameDialogOpen = ref(false)
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   if (!selected.value) {
-    emit('select')
+    project.value.selectGrid(gridName.value)
   }
   else {
     open.value = true
@@ -30,7 +31,7 @@ function onContextMenu(e: MouseEvent) {
       'dark:bg-slate-700 bg-gray-200 font-bold cursor-default': selected,
       'dark:bg-slate-800 bg-gray-100 cursor-pointer': !selected,
     }"
-    @click="emit('select')"
+    @click="project.selectGrid(gridName)"
     @contextmenu="onContextMenu"
   >
     <div class="whitespace-nowrap">
@@ -49,32 +50,34 @@ function onContextMenu(e: MouseEvent) {
       <DropdownMenuContent>
         <DropdownMenuItem
           :disabled="!removable"
-          @click="dialogOpen = !dialogOpen"
+          @click="removeDialogOpen = !removeDialogOpen"
         >
-          Remove Grid
+          <Icon
+            name="mdi-delete"
+            class="w-5 h-5"
+          />
+          <span>Remove</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          @click="renameDialogOpen = !renameDialogOpen"
+        >
+          <Icon
+            name="mdi-rename"
+            class="w-5 h-5"
+          />
+          <span>Rename</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    <Dialog v-model:open="dialogOpen">
-      <DialogContent>
-        <div class="p-4">
-          <p class="text-lg">
-            Are you sure you want to remove the grid?
-          </p>
-        </div>
-        <DialogFooter>
-          <Button
-            @click="emit('remove')"
-          >
-            Remove
-          </Button>
-          <Button
-            @click="dialogOpen = false"
-          >
-            Cancel
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DialogRemoveGrid
+      v-model:open="removeDialogOpen"
+      :grid-name="gridName"
+      :project="project"
+    />
+    <DialogRenameGrid
+      v-model:open="renameDialogOpen"
+      :grid-name="gridName"
+      :project="project"
+    />
   </div>
 </template>

@@ -40,10 +40,10 @@ export class RangeLocator extends CommonLocator {
   public readonly end: CellLocator
 
   private constructor(start: CellLocator, end: CellLocator) {
-    super(start.gridName)
-    if (start.gridName !== end.gridName) {
+    if (start.grid !== end.grid) {
       throw new Error(`Cannot create cell range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
+    super(start.grid)
     this.start = start
     this.end = end
   }
@@ -69,10 +69,10 @@ export class RangeLocator extends CommonLocator {
     const startString = `${gridName}!${startCellString}`
     const endString = `${gridName}!${endCellString}`
     if (cellEnd && !cellStart) {
-      return new RangeLocator(CellLocator.fromString(gridName, endString), CellLocator.fromString(gridName, startString)).toSorted()
+      return new RangeLocator(CellLocator.fromString(grid, endString), CellLocator.fromString(grid, startString)).toSorted()
     }
     else {
-      return new RangeLocator(CellLocator.fromString(gridName, startString), CellLocator.fromString(gridName, endString)).toSorted()
+      return new RangeLocator(CellLocator.fromString(grid, startString), CellLocator.fromString(grid, endString)).toSorted()
     }
   }
 
@@ -84,24 +84,16 @@ export class RangeLocator extends CommonLocator {
     return new RangeLocator(start, end)
   }
 
-  static fromCoords(gridName: string, coords: Coords): RangeLocator {
+  static fromCoords(grid: Grid, coords: Coords): RangeLocator {
     const { startRow, startCol, endRow, endCol } = coords
     return new RangeLocator(
-      new CellLocator({ row: startRow, col: startCol, absRow: false, absCol: false, gridName }),
-      new CellLocator({ row: endRow, col: endCol, absRow: false, absCol: false, gridName }),
+      new CellLocator({ row: startRow, col: startCol, absRow: false, absCol: false, grid }),
+      new CellLocator({ row: endRow, col: endCol, absRow: false, absCol: false, grid }),
     )
   }
 
   public toRangeLocator(): RangeLocator {
     return this
-  }
-
-  public override toString(currentGridName: string): string {
-    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
-  }
-
-  public override toStringWithGrid(): string {
-    return `${this.gridName}!${this.toStringWithoutGrid()}`
   }
 
   public override toStringWithoutGrid(): string {
@@ -115,7 +107,6 @@ export class RangeLocator extends CommonLocator {
   public toSorted(): RangeLocator {
     const start = this.start
     const end = this.end
-    const gridName = start.gridName
 
     if (start.row <= end.row && start.col <= end.col) {
       return this
@@ -123,14 +114,14 @@ export class RangeLocator extends CommonLocator {
     else if (start.col <= end.col && start.row > end.row) {
       return new RangeLocator(
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: start.absCol,
           col: start.col,
           absRow: end.absRow,
           row: end.row,
         }),
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: end.absCol,
           col: end.col,
           absRow: start.absRow,
@@ -141,14 +132,14 @@ export class RangeLocator extends CommonLocator {
     else if (start.col > end.col && start.row <= end.row) {
       return new RangeLocator(
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: end.absCol,
           col: end.col,
           absRow: start.absRow,
           row: start.row,
         }),
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: start.absCol,
           col: start.col,
           absRow: end.absRow,
@@ -159,14 +150,14 @@ export class RangeLocator extends CommonLocator {
     else {
       return new RangeLocator(
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: end.absCol,
           col: end.col,
           absRow: end.absRow,
           row: end.row,
         }),
         new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: start.absCol,
           col: start.col,
           absRow: start.absRow,
@@ -185,7 +176,7 @@ export class RangeLocator extends CommonLocator {
   }
 
   public clamp(range: RangeLocator): RangeLocator {
-    if (this.gridName !== range.gridName) {
+    if (this.grid !== range.grid) {
       throw new Error(`Cannot clamp cell range from different grids: ${this.toStringWithGrid()} and ${range.toStringWithGrid()}`)
     }
     const sorted = this.toSorted()
@@ -197,14 +188,13 @@ export class RangeLocator extends CommonLocator {
 
   public getAllCellLocators(): CellLocator[] {
     const cellLocators: CellLocator[] = []
-    const gridName = this.start.gridName
 
     const { startRow, startCol, endRow, endCol } = this.toSorted().getCoords()
 
     for (let row = startRow; row <= endRow; row += 1) {
       for (let col = startCol; col <= endCol; col += 1) {
         cellLocators.push(new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: false,
           col,
           absRow: false,
@@ -218,13 +208,12 @@ export class RangeLocator extends CommonLocator {
 
   public getAllRowLocators(): RowLocator[] {
     const rowLocators: RowLocator[] = []
-    const gridName = this.start.gridName
 
     const { startRow, endRow } = this.toSorted().getCoords()
 
     for (let row = startRow; row <= endRow; row += 1) {
       rowLocators.push(new RowLocator({
-        gridName,
+        grid: this.grid,
         absRow: false,
         row,
       }))
@@ -235,13 +224,12 @@ export class RangeLocator extends CommonLocator {
 
   public getAllColLocators(): ColLocator[] {
     const rowLocators: ColLocator[] = []
-    const gridName = this.start.gridName
 
     const { startCol, endCol } = this.toSorted().getCoords()
 
     for (let col = startCol; col <= endCol; col += 1) {
       rowLocators.push(new ColLocator({
-        gridName,
+        grid: this.grid,
         absCol: false,
         col,
       }))
@@ -251,7 +239,6 @@ export class RangeLocator extends CommonLocator {
   }
 
   public getCellIdMatrix(): CellLocator[][] {
-    const gridName = this.start.gridName
     const { startRow, startCol, endRow, endCol } = this.toSorted().getCoords()
 
     const matrix: CellLocator[][] = []
@@ -260,7 +247,7 @@ export class RangeLocator extends CommonLocator {
       matrix.push(rowArray)
       for (let col = startCol; col <= endCol; col++) {
         rowArray.push(new CellLocator({
-          gridName,
+          grid: this.grid,
           absCol: false,
           col,
           absRow: false,
@@ -272,7 +259,7 @@ export class RangeLocator extends CommonLocator {
   }
 
   public containsCell(cellLocator: CellLocator): boolean {
-    if (this.gridName !== cellLocator.gridName) {
+    if (this.grid !== cellLocator.grid) {
       return false
     }
     const sorted = this.toSorted()
@@ -293,28 +280,28 @@ export class RangeLocator extends CommonLocator {
   }
 
   public isCellInTopRow(cellLocator: CellLocator): boolean {
-    if (this.gridName !== cellLocator.gridName) {
+    if (this.grid !== cellLocator.grid) {
       return false
     }
     return cellLocator.row === this.toSorted().start.row
   }
 
   public isCellBottomRow(cellLocator: CellLocator): boolean {
-    if (this.gridName !== cellLocator.gridName) {
+    if (this.grid !== cellLocator.grid) {
       return false
     }
     return cellLocator.row === this.toSorted().end.row
   }
 
   public isCellIdLeftColumn(cellLocator: CellLocator): boolean {
-    if (this.gridName !== cellLocator.gridName) {
+    if (this.grid !== cellLocator.grid) {
       return false
     }
     return cellLocator.col === this.toSorted().start.col
   }
 
   public isCellIdRightColumn(cellLocator: CellLocator): boolean {
-    if (this.gridName !== cellLocator.gridName) {
+    if (this.grid !== cellLocator.grid) {
       return false
     }
     return cellLocator.col === this.toSorted().end.col

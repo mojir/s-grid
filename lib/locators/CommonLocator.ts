@@ -1,10 +1,19 @@
-export abstract class CommonLocator {
-  readonly gridName: string
+import type { Grid } from '../grid/Grid'
 
-  constructor(gridName: string) {
-    this.gridName = gridName
+export abstract class CommonLocator {
+  readonly grid: Grid
+
+  constructor(grid: Grid) {
+    this.grid = grid
   }
-  abstract toString(currentGridName: string): string
+
   abstract toStringWithoutGrid(): string
-  abstract toStringWithGrid(): string
+
+  public toStringWithGrid(): string {
+    return `${this.grid}!${this.toStringWithoutGrid()}`
+  }
+
+  public toString(currentGrid: Grid): string {
+    return this.grid === currentGrid ? this.toStringWithoutGrid() : this.toStringWithGrid()
+  }
 }

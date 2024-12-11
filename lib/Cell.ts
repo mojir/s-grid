@@ -108,7 +108,7 @@ export class Cell {
   private getLocatorsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     return unresolvedIdentifiers.flatMap((identifier) => {
       if (isCellLocatorString(identifier)) {
-        return CellLocator.fromString(this.grid.name.value, identifier)
+        return CellLocator.fromString(this.grid, identifier)
       }
       if (isRangeLocatorString(identifier)) {
         return RangeLocator.fromString(this.grid, identifier)
@@ -242,7 +242,7 @@ export class Cell {
   public getDebugInfo() {
     return {
       grid: this.grid.name.value,
-      locator: this.cellLocator.toString(this.grid.name.value),
+      locator: this.cellLocator.toString(this.grid),
       input: this.input.value,
       output: formatOutputValue(this.output.value),
       display: this.display.value,

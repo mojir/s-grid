@@ -24,6 +24,8 @@
     "@nuxt/icon": "^1.6.1",
     "@nuxthub/core": "^0.8.4",
     "@nuxtjs/device": "^3.2.4",
+    "@vee-validate/zod": "^4.14.7",
+    "@vueuse/core": "^12.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "d3-format": "^3.1.0",
@@ -32,8 +34,10 @@
     "radix-vue": "^1.9.8",
     "shadcn-nuxt": "^0.11.3",
     "tailwind-merge": "^2.5.4",
+    "vee-validate": "^4.14.7",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.1",

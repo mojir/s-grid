@@ -1,13 +1,19 @@
 import { isLitsError } from '@mojir/lits'
-import { RangeLocator } from '../locators/RangeLocator'
+import { isRangeLocatorString, RangeLocator } from '../locators/RangeLocator'
 import { getReferenceLocatorFromString, type Movement } from '../locators/utils'
 import type { RowRangeLocator } from '../locators/RowRangeLocator'
-import { CellLocator } from '../locators/CellLocator'
+import { CellLocator, isCellLocatorString } from '../locators/CellLocator'
 import type { ColRangeLocator } from '../locators/ColRangeLocator'
 import type { Cell } from '../Cell'
 import type { Grid } from '../grid/Grid'
 import { transformRangeLocator } from './rangeTransformers'
 import { transformCellLocator } from './cellTransformers'
+
+export type RenameGridTransformation = {
+  type: 'renameGrid'
+  newName: string
+  oldName: string
+}
 
 export type MoveTransformation = {
   sourceGrid: Grid
@@ -40,7 +46,7 @@ export type ColInsertBeforeTransformation = {
   colRangeLocator: ColRangeLocator
 }
 
-export type FormulaTransformation = MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
+export type FormulaTransformation = RenameGridTransformation | MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
 
 export function transformLocators(cell: Cell, transformation: FormulaTransformation): void {
   const formula = cell.formula.value
@@ -57,6 +63,21 @@ export function transformLocators(cell: Cell, transformation: FormulaTransformat
 }
 
 function transformIdentifier(cellGrid: Grid, identifier: string, transformation: FormulaTransformation): string {
+  if (!isCellLocatorString(identifier) && !isRangeLocatorString(identifier)) {
+    return identifier
+  }
+
+  if (transformation.type === 'renameGrid') {
+    if (!identifier.includes('!')) {
+      return identifier
+    }
+    const [gridName, rest] = identifier.split('!')
+    if (gridName !== transformation.oldName) {
+      return identifier
+    }
+    return `${transformation.newName}!${rest}`
+  }
+
   const locator = getReferenceLocatorFromString(transformation.sourceGrid, identifier)
   if (!locator) {
     return identifier

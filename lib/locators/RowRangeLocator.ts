@@ -1,4 +1,5 @@
 import { rowRangeLocatorRegExp } from '../constants'
+import type { Grid } from '../grid/Grid'
 import type { CellLocator } from './CellLocator'
 import { CommonLocator } from './CommonLocator'
 import { RangeLocator } from './RangeLocator'
@@ -18,23 +19,23 @@ export class RowRangeLocator extends CommonLocator {
   public readonly end: RowLocator
 
   private constructor(start: RowLocator, end: RowLocator) {
-    if (start.gridName !== end.gridName) {
+    if (start.grid !== end.grid) {
       throw new Error(`Cannot create row range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.gridName)
+    super(start.grid)
     this.start = start
     this.end = end
   }
 
-  static fromString(gridName: string, value: string): RowRangeLocator {
+  static fromString(grid: Grid, value: string): RowRangeLocator {
     const match = value.match(rowRangeLocatorRegExp)
     if (!match?.groups) {
       throw new Error(`Invalid row range locator: ${value}`)
     }
-    gridName = match.groups.grid ?? gridName
-    const startString = `${gridName}!${match.groups.start}`
-    const endString = `${gridName}!${match.groups.end}`
-    return new RowRangeLocator(RowLocator.fromString(gridName, startString), RowLocator.fromString(gridName, endString))
+    grid = match.groups.grid ? grid.project.getGrid(match.groups.grid) : grid
+    const startString = `${grid.name.value}!${match.groups.start}`
+    const endString = `${grid.name.value}!${match.groups.end}`
+    return new RowRangeLocator(RowLocator.fromString(grid, startString), RowLocator.fromString(grid, endString))
   }
 
   static fromRowLocator(rowLocator: RowLocator): RowRangeLocator {
@@ -43,14 +44,6 @@ export class RowRangeLocator extends CommonLocator {
 
   static fromRowLocators(start: RowLocator, end: RowLocator): RowRangeLocator {
     return new RowRangeLocator(start, end)
-  }
-
-  public override toString(currentGridName: string): string {
-    return this.gridName === currentGridName ? this.toStringWithoutGrid() : this.toStringWithGrid()
-  }
-
-  public override toStringWithGrid(): string {
-    return `${this.gridName}!${this.toStringWithoutGrid()}`
   }
 
   public override toStringWithoutGrid(): string {
@@ -64,7 +57,6 @@ export class RowRangeLocator extends CommonLocator {
   public toSorted(): RowRangeLocator {
     const start = this.start
     const end = this.end
-    const gridName = start.gridName
 
     if (start.row <= end.row) {
       return this
@@ -72,12 +64,12 @@ export class RowRangeLocator extends CommonLocator {
     else {
       return new RowRangeLocator(
         new RowLocator({
-          gridName,
+          grid: this.grid,
           absRow: end.absRow,
           row: end.row,
         }),
         new RowLocator({
-          gridName,
+          grid: this.grid,
           absRow: start.absRow,
           row: start.row,
         }),
@@ -101,17 +93,16 @@ export class RowRangeLocator extends CommonLocator {
 
   public getAllCellLocators(colCount: number): CellLocator[] {
     return RangeLocator
-      .fromCoords(this.gridName, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
+      .fromCoords(this.grid, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
       .getAllCellLocators()
   }
 
   public getAllRowLocators(): RowLocator[] {
-    const gridName = this.gridName
     const { startRow, endRow } = this.toSorted().getCoords()
     const rowLocators: RowLocator[] = []
     for (let row = startRow; row <= endRow; row += 1) {
       rowLocators.push(new RowLocator({
-        gridName,
+        grid: this.grid,
         absRow: false,
         row,
       }))
@@ -121,7 +112,7 @@ export class RowRangeLocator extends CommonLocator {
 
   public getCellIdMatrix(colCount: number): CellLocator[][] {
     return RangeLocator
-      .fromCoords(this.gridName, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
+      .fromCoords(this.grid, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
       .getCellIdMatrix()
   }
 

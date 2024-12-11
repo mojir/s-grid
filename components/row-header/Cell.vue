@@ -18,7 +18,7 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-const rowLocator = computed(() => RowLocator.fromNumber(grid.value.name.value, row.value.index.value))
+const rowLocator = computed(() => RowLocator.fromNumber(grid.value, row.value.index.value))
 const rowId = computed(() => getDocumentRowId(rowLocator.value))
 const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value))
 
