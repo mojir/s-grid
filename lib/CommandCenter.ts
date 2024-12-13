@@ -60,14 +60,7 @@ export class CommandCenter {
     format,
   }
 
-  public constructor(private project: Project) {
-    this.registerCommands()
-    commandNames.forEach((name) => {
-      if (!this.commands.has(name)) {
-        throw Error(`Command ${name} not registered`)
-      }
-    })
-  }
+  public constructor(private project: Project) {}
 
   private registerCommand(command: Command<BuiltinCommandName>) {
     this.commands.set(command.name, command)
@@ -83,7 +76,7 @@ export class CommandCenter {
     return command.execute(...args)
   }
 
-  private registerCommands() {
+  public registerCommands() {
     const repl = this.project.repl
 
     this.registerCommand({
@@ -482,6 +475,12 @@ export class CommandCenter {
 
         grid.value.insertColsAfter(colRangeLocator)
       },
+    })
+
+    commandNames.forEach((name) => {
+      if (!this.commands.has(name)) {
+        throw Error(`Command ${name} not registered`)
+      }
     })
   }
 }

@@ -13,8 +13,8 @@ import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
 export class Project {
-  public readonly commandCenter = new CommandCenter(this)
   public readonly repl = new REPL(this)
+  public readonly commandCenter = new CommandCenter(this)
   public readonly aliases = new Aliases()
   public readonly clipboard = new ProjectClipboard(this)
   public readonly locator = new Locator(this)
@@ -36,6 +36,7 @@ export class Project {
       return this.grids.value
         .filter(grid => debugMode.value || !grid.hidden.value)
     })
+    this.commandCenter.registerCommands()
   }
 
   public importGrid(grid: GridDTO) {
