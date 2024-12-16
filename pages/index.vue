@@ -376,7 +376,16 @@ function onKeyDown(e: KeyboardEvent) {
   if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
     grid.value.editor.edit(e, false)
   }
-  if (e.key === 'Enter') {
+
+  if (e.key === 'z' && isMeta && !e.shiftKey) {
+    e.preventDefault()
+    project.history.undo()
+  }
+  else if (e.key === 'z' && isMeta && e.shiftKey) {
+    e.preventDefault()
+    project.history.redo()
+  }
+  else if (e.key === 'Enter') {
     e.preventDefault()
     if (saved || selection.value.selectedRange.value.size() > 1) {
       if (e.shiftKey) {
