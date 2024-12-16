@@ -16,7 +16,6 @@ watch(project.value.clipboard.hasStyleData, (hasData) => {
 
 function onUpdatePressed(value: boolean) {
   if (value) {
-    console.log('copying style selection', selection.value.toStringWithoutGrid())
     project.value.clipboard.copyStyleSelection(selection.value)
   }
   else {

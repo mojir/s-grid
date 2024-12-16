@@ -32,7 +32,6 @@ const { handleSubmit, resetForm } = useForm({
 })
 
 const submitForm = handleSubmit(({ name }) => {
-  console.log('submit', name)
   project.value.renameGrid(gridName.value, name)
   open.value = false
 })

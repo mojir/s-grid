@@ -43,6 +43,22 @@ export class Cell {
         grid.autoSetRowHeightByTarget(this.cellLocator)
       }
     })
+
+    watch(this.input, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'input', oldValue, newValue })
+    })
+    watch(this.backgroundColor, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'backgroundColor', oldValue, newValue })
+    })
+    watch(this.textColor, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'textColor', oldValue, newValue })
+    })
+    // watch(this.style, (newValue, oldValue) => {
+    //   this.project.history.registerChange({ cell: this, attribute: 'style', oldValue: { ...oldValue }, newValue: { ...newValue } })
+    // }, { deep: true })
+    watch(this.formatter, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'formatter', oldValue, newValue })
+    })
   }
 
   public setDTO(cellDTO: Partial<CellDTO>) {

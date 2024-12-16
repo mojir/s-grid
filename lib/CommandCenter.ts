@@ -32,6 +32,7 @@ const commandNames = [
   'InsertRowsBefore!',
   'MovePosition!',
   'MovePositionTo!',
+  'Redo!',
   'ResetSelection!',
   'RestartRepl!',
   'Select!',
@@ -43,6 +44,7 @@ const commandNames = [
   'SetRowHeight!',
   'SetStyle!',
   'SetTextColor!',
+  'Undo!',
 ] as const
 
 type BuiltinCommandName = typeof commandNames[number]
@@ -474,6 +476,22 @@ export class CommandCenter {
         )
 
         grid.value.insertColsAfter(colRangeLocator)
+      },
+    })
+
+    this.registerCommand({
+      name: 'Undo!',
+      description: 'Undo the last action',
+      execute: () => {
+        this.project.history.undo()
+      },
+    })
+
+    this.registerCommand({
+      name: 'Redo!',
+      description: 'Redo the last action',
+      execute: () => {
+        this.project.history.redo()
       },
     })
 

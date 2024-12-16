@@ -19,6 +19,11 @@ const { sidePanelOpen } = useSidePanel()
     />
 
     <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
+      <ToolbarUndoButton :project="project" />
+      <ToolbarRedoButton
+        :project="project"
+        class="mr-2"
+      />
       <ToolbarPaintButton
         :project="project"
         class="mr-2"

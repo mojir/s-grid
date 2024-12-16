@@ -9,6 +9,7 @@ import { transformLocators, type FormulaTransformation } from '../transformLocat
 import { getGridName } from '../utils'
 import { ProjectClipboard } from './ProjectClipboard'
 import { Locator } from './Locator'
+import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -20,6 +21,7 @@ export class Project {
   public readonly locator = new Locator(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
+  public readonly history = new History(this)
   public grids: Ref<Grid[]>
   public visibleGrids: ComputedRef<Grid[]>
 
@@ -37,6 +39,7 @@ export class Project {
         .filter(grid => debugMode.value || !grid.hidden.value)
     })
     this.commandCenter.registerCommands()
+    nextTick(() => this.history.start())
   }
 
   public importGrid(grid: GridDTO) {

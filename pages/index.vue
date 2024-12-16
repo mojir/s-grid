@@ -343,7 +343,6 @@ function onCellDblclick() {
 function shouldSave(e: KeyboardEvent) {
   return e.key === 'Enter'
     || e.key === 'Tab'
-    || e.key === 'Escape'
     || e.key === 'ArrowDown'
     || e.key === 'ArrowUp'
     || e.key === 'ArrowRight'
