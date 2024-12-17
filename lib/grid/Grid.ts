@@ -68,29 +68,30 @@ export class Grid {
       newGrid.hidden.value = grid.hidden
     }
 
-    Object.entries(grid.cells).forEach(([key, cell]) => {
+    Object.entries(grid.cells).forEach(([key, cellDTO]) => {
       // TODO use new regexp, to avoid the need of Locator
       const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
-      const CellView = newGrid.cells[cellLocator.row][cellLocator.col]
-      if (cell.input !== undefined) {
-        CellView.input.value = cell.input
+      const cell = newGrid.cells[cellLocator.row][cellLocator.col]
+      if (cellDTO.input !== undefined) {
+        cell.input.value = cellDTO.input
       }
-      if (cell.formatter !== undefined) {
-        CellView.formatter.value = cell.formatter
+      if (cellDTO.formatter !== undefined) {
+        cell.formatter.value = cellDTO.formatter
       }
-      if (cell.style !== undefined) {
-        CellView.style.value = CellStyle.fromDTO(cell.style)
+      if (cellDTO.style !== undefined) {
+        cell.style.value = CellStyle.fromDTO(cellDTO.style)
       }
-      if (cell.backgroundColor !== undefined) {
-        CellView.backgroundColor.value = cell.backgroundColor ? Color.fromDTO(cell.backgroundColor) : null
+      if (cellDTO.backgroundColor !== undefined) {
+        cell.backgroundColor.value = cellDTO.backgroundColor ? Color.fromDTO(cellDTO.backgroundColor) : null
       }
-      if (cell.textColor !== undefined) {
-        CellView.textColor.value = cell.textColor ? Color.fromDTO(cell.textColor) : null
+      if (cellDTO.textColor !== undefined) {
+        cell.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
       }
-      if (cell.alias !== undefined) {
-        project.aliases.setCell(cell.alias, CellView, true)
-      }
-      // TODO fix colors
+    })
+    Object.entries(grid.alias).forEach(([alias, key]) => {
+      const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
+      const cell = newGrid.cells[cellLocator.row][cellLocator.col]
+      project.aliases.setCell(alias, cell)
     })
     return newGrid
   }

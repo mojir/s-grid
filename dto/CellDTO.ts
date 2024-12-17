@@ -7,5 +7,4 @@ export type CellDTO = {
   style?: CellStyleDTO
   backgroundColor?: ColorDTO
   textColor?: ColorDTO
-  alias?: string
 }

@@ -7,9 +7,13 @@ export const builtinGrid: GridDTO = {
   hidden: true,
   rows: functions.length,
   cols: 2,
-  cells: functions.reduce((acc: Record<string, CellDTO>, { name, fn, description }, index) => {
-    acc[`A${index + 1}`] = { input: `=${fn}`, alias: name }
+  cells: functions.reduce((acc: Record<string, CellDTO>, { fn, description }, index) => {
+    acc[`A${index + 1}`] = { input: `=${fn}` }
     acc[`B${index + 1}`] = { input: description }
+    return acc
+  }, {}),
+  alias: functions.reduce((acc: Record<string, string>, { name }, index) => {
+    acc[name] = `A${index + 1}`
     return acc
   }, {}),
 }

@@ -77,9 +77,6 @@ export class Cell {
     if (cellDTO.textColor !== undefined) {
       this.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
     }
-    if (cellDTO.alias !== undefined) {
-      this.project.aliases.setCell(cellDTO.alias, this, true)
-    }
   }
 
   public getDTO(): CellDTO {
@@ -89,7 +86,6 @@ export class Cell {
       style: this.style.value.getDTO(),
       backgroundColor: this.backgroundColor.value?.getDTO(),
       textColor: this.textColor.value?.getDTO(),
-      alias: this.project.aliases.getAlias(this),
     }
   }
 

@@ -8,6 +8,7 @@ project.importGrid({
   rows: 10,
   cols: 10,
   cells: {},
+  alias: {},
 })
 project.selectGrid('Grid1')
 

@@ -74,8 +74,7 @@ export class ProjectClipboard {
       matrixForEach(styleClipboardValue.cells, (cellDTO, [row, col]) => {
         const cellLocator = CellLocator.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
         const cell = this.project.locator.getCellFromLocator(cellLocator)
-        const { alias, ...cellDTOWithoutAlias } = cellDTO
-        cell.setDTO(cellDTOWithoutAlias)
+        cell.setDTO(cellDTO)
       })
     })
   }
