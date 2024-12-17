@@ -1,5 +1,5 @@
 import { nameCharacterClass } from '@mojir/lits'
-import type { StyleFontSize } from '~/dto/CellStyleDTO'
+import type { StyleFontSize } from '~/dto/CellDTO'
 
 const colPart = '(\\$?)([A-Z]{1,2})' // Two groups
 const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups

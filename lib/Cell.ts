@@ -5,10 +5,9 @@ import type { Grid } from './grid/Grid'
 import type { CommandCenter } from './CommandCenter'
 import { CellLocator, isCellLocatorString } from './locators/CellLocator'
 import type { Project } from './project/Project'
-import { CellStyle } from './CellStyle'
-import { defaultFormatter } from './constants'
+import { defaultFontSize, defaultFormatter } from './constants'
 import type { LitsComposable } from '~/composables/use-lits'
-import type { CellDTO } from '~/dto/CellDTO'
+import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 export class Cell {
   private readonly project: Project
@@ -17,8 +16,13 @@ export class Cell {
 
   public readonly grid: Grid
   public readonly input = ref('')
-  public readonly formatter = ref<string | null>(defaultFormatter)
-  public readonly style = ref(new CellStyle())
+  public readonly formatter = ref<string>(defaultFormatter)
+  public readonly fontSize = ref<StyleFontSize>(defaultFontSize)
+  public readonly bold = ref<boolean>(false)
+  public readonly italic = ref<boolean>(false)
+  public readonly textDecoration = ref<StyleTextDecoration>('none')
+  public readonly justify = ref<StyleJustify>('auto')
+  public readonly align = ref<StyleAlign>('bottom')
   public readonly backgroundColor = ref<Color | null>(null)
   public readonly textColor = ref<Color | null>(null)
 
@@ -47,15 +51,30 @@ export class Cell {
     watch(this.input, (newValue, oldValue) => {
       this.project.history.registerChange({ cell: this, attribute: 'input', oldValue, newValue })
     })
+    watch(this.fontSize, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'fontSize', oldValue, newValue })
+    })
+    watch(this.bold, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'bold', oldValue, newValue })
+    })
+    watch(this.italic, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'italic', oldValue, newValue })
+    })
+    watch(this.textDecoration, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'textDecoration', oldValue, newValue })
+    })
+    watch(this.justify, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'justify', oldValue, newValue })
+    })
+    watch(this.align, (newValue, oldValue) => {
+      this.project.history.registerChange({ cell: this, attribute: 'align', oldValue, newValue })
+    })
     watch(this.backgroundColor, (newValue, oldValue) => {
       this.project.history.registerChange({ cell: this, attribute: 'backgroundColor', oldValue, newValue })
     })
     watch(this.textColor, (newValue, oldValue) => {
       this.project.history.registerChange({ cell: this, attribute: 'textColor', oldValue, newValue })
     })
-    // watch(this.style, (newValue, oldValue) => {
-    //   this.project.history.registerChange({ cell: this, attribute: 'style', oldValue: { ...oldValue }, newValue: { ...newValue } })
-    // }, { deep: true })
     watch(this.formatter, (newValue, oldValue) => {
       this.project.history.registerChange({ cell: this, attribute: 'formatter', oldValue, newValue })
     })
@@ -68,8 +87,23 @@ export class Cell {
     if (cellDTO.formatter !== undefined && cellDTO.formatter !== this.formatter.value) {
       this.formatter.value = cellDTO.formatter
     }
-    if (cellDTO.style !== undefined) {
-      this.style.value = CellStyle.fromDTO(cellDTO.style)
+    if (cellDTO.fontSize !== undefined && cellDTO.fontSize !== this.fontSize.value) {
+      this.fontSize.value = cellDTO.fontSize
+    }
+    if (cellDTO.bold !== undefined && cellDTO.bold !== this.bold.value) {
+      this.bold.value = cellDTO.bold
+    }
+    if (cellDTO.italic !== undefined && cellDTO.italic !== this.italic.value) {
+      this.italic.value = cellDTO.italic
+    }
+    if (cellDTO.textDecoration !== undefined && cellDTO.textDecoration !== this.textDecoration.value) {
+      this.textDecoration.value = cellDTO.textDecoration
+    }
+    if (cellDTO.justify !== undefined && cellDTO.justify !== this.justify.value) {
+      this.justify.value = cellDTO.justify
+    }
+    if (cellDTO.align !== undefined && cellDTO.align !== this.align.value) {
+      this.align.value = cellDTO.align
     }
     if (cellDTO.backgroundColor !== undefined) {
       this.backgroundColor.value = cellDTO.backgroundColor ? Color.fromDTO(cellDTO.backgroundColor) : null
@@ -83,7 +117,12 @@ export class Cell {
     return {
       input: this.input.value,
       formatter: this.formatter.value ?? undefined,
-      style: this.style.value.getDTO(),
+      fontSize: this.fontSize.value ?? undefined,
+      bold: this.bold.value ?? undefined,
+      italic: this.italic.value ?? undefined,
+      textDecoration: this.textDecoration.value ?? undefined,
+      justify: this.justify.value ?? undefined,
+      align: this.align.value ?? undefined,
       backgroundColor: this.backgroundColor.value?.getDTO(),
       textColor: this.textColor.value?.getDTO(),
     }
@@ -92,9 +131,14 @@ export class Cell {
   public clear() {
     this.input.value = ''
     this.formatter.value = defaultFormatter
+    this.fontSize.value = defaultFontSize
+    this.bold.value = false
+    this.italic.value = false
+    this.textDecoration.value = 'none'
+    this.justify.value = 'auto'
+    this.align.value = 'bottom'
     this.backgroundColor.value = null
     this.textColor.value = null
-    this.style.value = new CellStyle()
   }
 
   public formula = computed(() => this.input.value.startsWith('=') && this.input.value.length > 1 ? this.input.value.slice(1) : null)
@@ -208,7 +252,6 @@ export class Cell {
     const formatter = this.formatter.value
     if (formatter === null) {
       return this.output.value
-      // return defaultFormatter(this.output.value)
     }
 
     const lits = this.lits.value
@@ -253,15 +296,13 @@ export class Cell {
 
   public getDebugInfo() {
     return {
+      ...this.getDTO(),
       grid: this.grid.name.value,
       locator: this.cellLocator.toString(this.grid),
-      input: this.input.value,
       output: formatOutputValue(this.output.value),
       display: this.display.value,
-      formatter: this.formatter.value,
       row: this.cellLocator.row,
       col: this.cellLocator.col,
-      style: this.style.value.getDTO(),
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
       hasError: this.hasError.value,

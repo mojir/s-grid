@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StyleAlign } from '~/dto/CellStyleDTO'
+import type { StyleAlign } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -9,25 +9,25 @@ const props = defineProps<{
 const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const align = ref<StyleAlign>()
+const align = ref<StyleAlign>('auto')
 
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  align.value = grid.value.getStyle('align', newSelection)
+  align.value = grid.value.getAlign(newSelection) ?? 'auto'
 }, { immediate: true })
 
 function onUpdateTop(value: boolean) {
-  align.value = value ? 'top' : undefined
-  grid.value.setStyle('align', align.value, null)
+  align.value = value ? 'top' : 'auto'
+  grid.value.setAlign(align.value, null)
 }
 
 function onUpdateMiddle(value: boolean) {
-  align.value = value ? 'middle' : undefined
-  grid.value.setStyle('align', align.value, null)
+  align.value = value ? 'middle' : 'auto'
+  grid.value.setAlign(align.value, null)
 }
 
 function onUpdateBottom(value: boolean) {
-  align.value = value ? 'bottom' : undefined
-  grid.value.setStyle('align', align.value, null)
+  align.value = value ? 'bottom' : 'auto'
+  grid.value.setAlign(align.value, null)
 }
 </script>
 

@@ -11,7 +11,7 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const open = ref(false)
 
-const format = ref<string | null>(defaultFormatter)
+const format = ref<string>(defaultFormatter)
 const floatFormatter = '#(format ".4~f" %)'
 const fixed2Formatter = '#(format ".2f" %)'
 const integerFormatter = '#(format "d" %)'
@@ -27,7 +27,7 @@ const sek = computed(() => format.value === sekFormatter)
 const usd = computed(() => format.value === usdFormatter)
 
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  format.value = grid.value.getFormatter(newSelection)
+  format.value = grid.value.getFormatter(newSelection) ?? defaultFormatter
 }, { immediate: true })
 
 function setFloat() {

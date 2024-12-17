@@ -71,34 +71,33 @@ const cellStyle = computed(() => {
     overflow: 'hidden',
   }
 
-  const cellStyle = cell.value.style.value
-  style.fontSize = `${cellStyle.fontSize}px`
-  style.lineHeight = `${getLineHeight(cellStyle.fontSize) - 1}px`
-  if (cellStyle.bold) {
+  style.fontSize = `${cell.value.fontSize.value}px`
+  style.lineHeight = `${getLineHeight(cell.value.fontSize.value) - 1}px`
+  if (cell.value.bold.value) {
     style.fontWeight = 'bold'
   }
-  if (cellStyle.italic) {
+  if (cell.value.italic.value) {
     style.fontStyle = 'italic'
   }
-  if (cellStyle.textDecoration) {
-    if (cellStyle.textDecoration === 'underline') {
+  if (cell.value.textDecoration.value) {
+    if (cell.value.textDecoration.value === 'underline') {
       style.textDecoration = 'underline'
     }
-    else if (cellStyle.textDecoration === 'line-through') {
+    else if (cell.value.textDecoration.value === 'line-through') {
       style.textDecoration = 'line-through'
     }
   }
 
-  if (cellStyle.justify) {
-    if (cellStyle.justify === 'left') {
+  if (cell.value.justify.value) {
+    if (cell.value.justify.value === 'left') {
       style.textAlign = 'left'
       style.justifyContent = 'flex-start'
     }
-    else if (cellStyle.justify === 'center') {
+    else if (cell.value.justify.value === 'center') {
       style.textAlign = 'center'
       style.justifyContent = 'center'
     }
-    else if (cellStyle.justify === 'right') {
+    else if (cell.value.justify.value === 'right') {
       style.textAlign = 'right'
       style.justifyContent = 'flex-end'
     }
@@ -111,14 +110,14 @@ const cellStyle = computed(() => {
         : 'left'
   }
 
-  if (cellStyle.align) {
-    if (cellStyle.align === 'top') {
+  if (cell.value.align.value) {
+    if (cell.value.align.value === 'top') {
       style.alignItems = 'flex-start'
     }
-    else if (cellStyle.align === 'middle') {
+    else if (cell.value.align.value === 'middle') {
       style.alignItems = 'center'
     }
-    else if (cellStyle.align === 'bottom') {
+    else if (cell.value.align.value === 'bottom') {
       style.alignItems = 'flex-end'
     }
   }

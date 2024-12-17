@@ -8,14 +8,14 @@ const props = defineProps<{
 const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const italic = ref<boolean>()
+const italic = ref<boolean>(false)
 
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  italic.value = grid.value.getStyle('italic', newSelection) ?? undefined
+  italic.value = grid.value.getItalic(newSelection) ?? false
 }, { immediate: true })
 
 function onUpdateItalic(value: boolean) {
-  grid.value.setStyle('italic', value, null)
+  grid.value.setItalic(value, null)
   italic.value = value
 }
 </script>

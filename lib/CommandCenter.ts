@@ -6,12 +6,10 @@ import { getReferenceLocatorFromString, type Direction } from './locators/utils'
 import { isRowRangeLocatorString, RowRangeLocator } from './locators/RowRangeLocator'
 import { ColRangeLocator, isColRangeLocatorString } from './locators/ColRangeLocator'
 import { getColNumber, getRowNumber } from './utils'
-import type { CellStyle } from '~/lib/CellStyle'
-import { validCellStyle } from '~/lib/CellStyle'
 import { Color } from '~/lib/color'
 import type { Project } from '~/lib/project/Project'
 import { format } from '~/lib/litsInterop/format'
-import type { CellStyleName } from '~/dto/CellStyleDTO'
+import { isFontSize, isStyleAlign, isStyleJustify, isStyleTextDecoration } from '~/dto/CellDTO'
 
 const commandNames = [
   'Clear!',
@@ -42,7 +40,12 @@ const commandNames = [
   'SetFormatter!',
   'SetInput!',
   'SetRowHeight!',
-  'SetStyle!',
+  'SetFontSize!',
+  'SetBold!',
+  'SetItalic!',
+  'SetTextDecoration!',
+  'SetJustify!',
+  'SetAlign!',
   'SetTextColor!',
   'Undo!',
 ] as const
@@ -232,14 +235,14 @@ export class CommandCenter {
     })
 
     this.registerCommand({
-      name: 'SetStyle!',
-      execute: <T extends CellStyleName>(property: T, value: CellStyle[T], locatorString?: string) => {
-        const grid = this.project.currentGrid
-        if (!validCellStyle(property, value)) {
-          throw new Error(`Invalid cell style property: ${property}`)
+      name: 'SetFontSize!',
+      execute: (fontSize: number, locatorString?: string) => {
+        if (!isFontSize(fontSize)) {
+          throw new Error(`Invalid font size: ${fontSize}`)
         }
+        const grid = this.project.currentGrid
         if (!locatorString) {
-          grid.value.setStyle(property, value, null)
+          grid.value.setFontSize(fontSize, null)
           return
         }
 
@@ -247,9 +250,111 @@ export class CommandCenter {
         if (!locator) {
           throw new Error(`Invalid locator: ${locatorString}`)
         }
-        grid.value.setStyle(property, value, locator)
+        grid.value.setFontSize(fontSize, locator)
       },
-      description: 'Set the style of a cell or a range of cells. If no target is specified, set the style of all cells in the current selection.',
+      description: 'Set the font size of a cell or a range of cells. If no target is specified, set the font size of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetBold!',
+      execute: (value: boolean, locatorString?: string) => {
+        const grid = this.project.currentGrid
+        if (!locatorString) {
+          grid.value.setBold(value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setBold(value, locator)
+      },
+      description: 'Set the bold of a cell or a range of cells. If no target is specified, set the bold of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetItalic!',
+      execute: (value: boolean, locatorString?: string) => {
+        const grid = this.project.currentGrid
+        if (!locatorString) {
+          grid.value.setItalic(value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setItalic(value, locator)
+      },
+      description: 'Set the italic of a cell or a range of cells. If no target is specified, set the italic of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetTextDecoration!',
+      execute: (value: string, locatorString?: string) => {
+        if (!isStyleTextDecoration(value)) {
+          throw new Error(`Invalid text decoration: ${value}`)
+        }
+
+        const grid = this.project.currentGrid
+        if (!locatorString) {
+          grid.value.setTextDecoration(value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setTextDecoration(value, locator)
+      },
+      description: 'Set the text decoration of a cell or a range of cells. If no target is specified, set the text decoration of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetJustify!',
+      execute: (value: string, locatorString?: string) => {
+        if (!isStyleJustify(value)) {
+          throw new Error(`Invalid justify: ${value}`)
+        }
+
+        const grid = this.project.currentGrid
+        if (!locatorString) {
+          grid.value.setJustify(value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setJustify(value, locator)
+      },
+      description: 'Set the justify of a cell or a range of cells. If no target is specified, set the justify of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetAlign!',
+      execute: (value: string, locatorString?: string) => {
+        if (!isStyleAlign(value)) {
+          throw new Error(`Invalid align: ${value}`)
+        }
+
+        const grid = this.project.currentGrid
+        if (!locatorString) {
+          grid.value.setAlign(value, null)
+          return
+        }
+
+        const locator = getReferenceLocatorFromString(grid.value, locatorString)
+        if (!locator) {
+          throw new Error(`Invalid locator: ${locatorString}`)
+        }
+        grid.value.setAlign(value, locator)
+      },
+      description: 'Set the align of a cell or a range of cells. If no target is specified, set the align of all cells in the current selection.',
     })
 
     this.registerCommand({

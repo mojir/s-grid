@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type StyleFontSize, styleFontSizes } from '~/dto/CellStyleDTO'
+import { type StyleFontSize, styleFontSizes } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -11,7 +11,7 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const fontSize = ref<string | undefined>()
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  const selectedFontSize = grid.value.getStyle('fontSize', newSelection)
+  const selectedFontSize = grid.value.getFontSize(newSelection)
   fontSize.value = selectedFontSize ? String(selectedFontSize) : undefined
 }, { immediate: true })
 
@@ -21,7 +21,7 @@ function onUpdateFontSize(value: string) {
   }
   const numberValue = Number(value)
   fontSize.value = value
-  grid.value.setStyle('fontSize', numberValue as StyleFontSize, null)
+  grid.value.setFontSize(numberValue as StyleFontSize, null)
   grid.value.autoSetRowHeightByTarget()
 }
 </script>

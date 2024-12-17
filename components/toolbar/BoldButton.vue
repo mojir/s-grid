@@ -8,14 +8,14 @@ const props = defineProps<{
 const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const bold = ref<boolean>()
+const bold = ref<boolean>(false)
 
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  bold.value = grid.value.getStyle('bold', newSelection)
+  bold.value = grid.value.getBold(newSelection) || false
 }, { immediate: true })
 
 function onUpdateBold(value: boolean) {
-  grid.value.setStyle('bold', value, null)
+  grid.value.setBold(value, null)
   bold.value = value
 }
 </script>

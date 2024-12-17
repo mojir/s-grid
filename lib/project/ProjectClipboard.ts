@@ -41,7 +41,12 @@ export class ProjectClipboard {
       cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
         const cellDTO = this.project.locator.getCellFromLocator(cellLocator).getDTO()
         return {
-          style: cellDTO.style,
+          fontSize: cellDTO.fontSize,
+          bold: cellDTO.bold,
+          italic: cellDTO.italic,
+          textDecoration: cellDTO.textDecoration,
+          justify: cellDTO.justify,
+          align: cellDTO.align,
           backgroundColor: cellDTO.backgroundColor,
           textColor: cellDTO.textColor,
           formatter: cellDTO.formatter,

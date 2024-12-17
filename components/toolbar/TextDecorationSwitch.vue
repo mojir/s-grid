@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StyleTextDecoration } from '~/dto/CellStyleDTO'
+import type { StyleTextDecoration } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -9,20 +9,20 @@ const props = defineProps<{
 const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const textDecoration = ref<StyleTextDecoration>()
+const textDecoration = ref<StyleTextDecoration>('none')
 
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  textDecoration.value = grid.value.getStyle('textDecoration', newSelection)
+  textDecoration.value = grid.value.getTextDecoration(newSelection) ?? 'none'
 }, { immediate: true })
 
 function onUpdateUnderline(value: boolean) {
-  textDecoration.value = value ? 'underline' : undefined
-  grid.value.setStyle('textDecoration', textDecoration.value, null)
+  textDecoration.value = value ? 'underline' : 'none'
+  grid.value.setTextDecoration(textDecoration.value, null)
 }
 
 function onUpdateLineThrough(value: boolean) {
-  textDecoration.value = value ? 'line-through' : undefined
-  grid.value.setStyle('textDecoration', textDecoration.value, null)
+  textDecoration.value = value ? 'line-through' : 'none'
+  grid.value.setTextDecoration(textDecoration.value, null)
 }
 </script>
 

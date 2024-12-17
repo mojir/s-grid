@@ -1,5 +1,4 @@
 import { Cell } from '../Cell'
-import { CellStyle } from '../CellStyle'
 import { Col } from '../Col'
 import { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
@@ -17,7 +16,7 @@ import { getGridName } from '../utils'
 import { GridSelection } from './GridSelection'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
-import type { CellStyleName } from '~/dto/CellStyleDTO'
+import type { StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 export class Grid {
   public project: Project
@@ -78,8 +77,23 @@ export class Grid {
       if (cellDTO.formatter !== undefined) {
         cell.formatter.value = cellDTO.formatter
       }
-      if (cellDTO.style !== undefined) {
-        cell.style.value = CellStyle.fromDTO(cellDTO.style)
+      if (cellDTO.fontSize !== undefined) {
+        cell.fontSize.value = cellDTO.fontSize
+      }
+      if (cellDTO.bold !== undefined) {
+        cell.bold.value = cellDTO.bold
+      }
+      if (cellDTO.italic !== undefined) {
+        cell.italic.value = cellDTO.italic
+      }
+      if (cellDTO.textDecoration !== undefined) {
+        cell.textDecoration.value = cellDTO.textDecoration
+      }
+      if (cellDTO.justify !== undefined) {
+        cell.justify.value = cellDTO.justify
+      }
+      if (cellDTO.align !== undefined) {
+        cell.align.value = cellDTO.align
       }
       if (cellDTO.backgroundColor !== undefined) {
         cell.backgroundColor.value = cellDTO.backgroundColor ? Color.fromDTO(cellDTO.backgroundColor) : null
@@ -181,20 +195,85 @@ export class Grid {
     return cells.slice(1).every(cell => cell.textColor.value === color) ? color : null
   }
 
-  public setStyle<T extends CellStyleName>(property: T, value: CellStyle[T], locator: ReferenceLocator | null): void {
+  public setFontSize(fontSize: StyleFontSize, locator: ReferenceLocator | null): void {
     this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
-      cell.style.value[property] = value
+      cell.fontSize.value = fontSize
     })
   }
 
-  public getStyle<T extends CellStyleName>(property: T, locator: ReferenceLocator | null): CellStyle[T] {
+  public getFontSize(locator: ReferenceLocator | null): StyleFontSize | null {
     const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
-    const styleValue = cells[0]?.style.value[property]
+    const fontSize = cells[0]?.fontSize.value
 
-    return cells.slice(1).every(cell => cell.style.value[property] === styleValue) ? styleValue : undefined
+    return cells.slice(1).every(cell => cell.fontSize.value === fontSize) ? fontSize : null
   }
 
-  public setFormatter(formatter: string | null, locator: ReferenceLocator | null): void {
+  public setBold(bold: boolean, locator: ReferenceLocator | null): void {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+      cell.bold.value = bold
+    })
+  }
+
+  public getBold(locator: ReferenceLocator | null): boolean | null {
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const bold = cells[0]?.bold.value
+
+    return cells.slice(1).every(cell => cell.bold.value === bold) ? bold : null
+  }
+
+  public setItalic(italic: boolean, locator: ReferenceLocator | null): void {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+      cell.italic.value = italic
+    })
+  }
+
+  public getItalic(locator: ReferenceLocator | null): boolean | null {
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const italic = cells[0]?.italic.value
+
+    return cells.slice(1).every(cell => cell.italic.value === italic) ? italic : null
+  }
+
+  public setTextDecoration(textDecoration: StyleTextDecoration, locator: ReferenceLocator | null): void {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+      cell.textDecoration.value = textDecoration
+    })
+  }
+
+  public getTextDecoration(locator: ReferenceLocator | null): StyleTextDecoration | null {
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const textDecoration = cells[0]?.textDecoration.value
+
+    return cells.slice(1).every(cell => cell.textDecoration.value === textDecoration) ? textDecoration : null
+  }
+
+  public setAlign(align: StyleAlign, locator: ReferenceLocator | null): void {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+      cell.align.value = align
+    })
+  }
+
+  public getAlign(locator: ReferenceLocator | null): StyleAlign | null {
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const align = cells[0]?.align.value
+
+    return cells.slice(1).every(cell => cell.align.value === align) ? align : null
+  }
+
+  public setJustify(justify: StyleJustify, locator: ReferenceLocator | null): void {
+    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+      cell.justify.value = justify
+    })
+  }
+
+  public getJustify(locator: ReferenceLocator | null): StyleJustify | null {
+    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    const justify = cells[0]?.justify.value
+
+    return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
+  }
+
+  public setFormatter(formatter: string, locator: ReferenceLocator | null): void {
     this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
       cell.formatter.value = formatter
     })
@@ -275,7 +354,7 @@ export class Grid {
           return acc
         }
         const nbrOfLines = cell.display.value.split('\n').length
-        const lineHeight = getLineHeight(cell.style.value.fontSize) * nbrOfLines
+        const lineHeight = getLineHeight(cell.fontSize.value) * nbrOfLines
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
