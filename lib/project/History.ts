@@ -1,15 +1,33 @@
-import type { Cell } from '../Cell'
 import type { Project } from './Project'
 import type { CellDTO } from '~/dto/CellDTO'
 
-type CellChangeItem = {
-  cell: Cell
+export type CellChangeItem = {
+  type: 'cell'
+  gridName: string
+  row: number
+  col: number
   attribute: Exclude<keyof CellDTO, 'style' | 'alias'>
   oldValue: unknown
   newValue: unknown
 }
 
-type ChangeEntry = CellChangeItem
+export type RowChangeItem = {
+  type: 'rowHeight'
+  gridName: string
+  row: number
+  oldValue: number
+  newValue: number
+}
+
+export type ColChangeItem = {
+  type: 'colWidth'
+  gridName: string
+  col: number
+  oldValue: number
+  newValue: number
+}
+
+type ChangeEntry = CellChangeItem | RowChangeItem | ColChangeItem
 
 export class History {
   public constructor(private project: Project) {}
@@ -89,7 +107,18 @@ export class History {
   }
 
   private applyChange(change: ChangeEntry, method: 'undo' | 'redo'): void {
-    const { cell, attribute, oldValue, newValue } = change
-    cell.setDTO({ [attribute]: method === 'undo' ? oldValue : newValue })
+    if (change.type === 'cell') {
+      const grid = this.project.getGrid(change.gridName)
+      const cell = grid.cells[change.row][change.col]
+      cell.setDTO({ [change.attribute]: method === 'undo' ? change.oldValue : change.newValue })
+    }
+    else if (change.type === 'rowHeight') {
+      const grid = this.project.getGrid(change.gridName)
+      grid.rows.value[change.row].height.value = method === 'undo' ? change.oldValue : change.newValue
+    }
+    else if (change.type === 'colWidth') {
+      const grid = this.project.getGrid(change.gridName)
+      grid.cols.value[change.col].width.value = method === 'undo' ? change.oldValue : change.newValue
+    }
   }
 }

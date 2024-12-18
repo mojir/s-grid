@@ -36,8 +36,8 @@ export class Grid {
   constructor(project: Project, name: string, nbrOfRows: number, nbrOfCols: number) {
     this.name = ref(name)
     this.project = project
-    this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(row, defaultRowHeight)))
-    this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(col, defaultColWidth)))
+    this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
+    this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
     this.selection = new GridSelection(this.project, this)
     this.position = shallowRef(CellLocator.fromCoords(this, { row: 0, col: 0 }))
     this.editor = new CellEditor(this)
@@ -580,7 +580,7 @@ export class Grid {
     const row = rowRangeLocator.start.row
     const count = rowRangeLocator.size()
     const createdRows = Array.from({ length: count }, (_, index) => {
-      const rowInstance = new Row(row + index, defaultRowHeight)
+      const rowInstance = new Row(this, row + index, defaultRowHeight)
       this.cells.splice(row + index, 0, Array.from({ length: this.cols.value.length }, (_, col) =>
         new Cell(
           CellLocator.fromCoords(this, { row: row + index, col }),
@@ -664,7 +664,7 @@ export class Grid {
     const col = colRangeLocator.start.col
     const count = colRangeLocator.size()
     const createdCols = Array.from({ length: count }, (_, index) => {
-      return new Col(col + index, defaultColWidth)
+      return new Col(this, col + index, defaultColWidth)
     })
 
     const newCols = [

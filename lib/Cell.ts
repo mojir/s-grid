@@ -6,6 +6,7 @@ import type { CommandCenter } from './CommandCenter'
 import { CellLocator, isCellLocatorString } from './locators/CellLocator'
 import type { Project } from './project/Project'
 import { defaultFontSize, defaultFormatter } from './constants'
+import type { CellChangeItem } from './project/History'
 import type { LitsComposable } from '~/composables/use-lits'
 import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
@@ -22,7 +23,7 @@ export class Cell {
   public readonly italic = ref<boolean>(false)
   public readonly textDecoration = ref<StyleTextDecoration>('none')
   public readonly justify = ref<StyleJustify>('auto')
-  public readonly align = ref<StyleAlign>('bottom')
+  public readonly align = ref<StyleAlign>('auto')
   public readonly backgroundColor = ref<Color | null>(null)
   public readonly textColor = ref<Color | null>(null)
 
@@ -49,34 +50,34 @@ export class Cell {
     })
 
     watch(this.input, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'input', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('input', oldValue, newValue))
     })
     watch(this.fontSize, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'fontSize', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('fontSize', oldValue, newValue))
     })
     watch(this.bold, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'bold', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('bold', oldValue, newValue))
     })
     watch(this.italic, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'italic', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('italic', oldValue, newValue))
     })
     watch(this.textDecoration, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'textDecoration', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('textDecoration', oldValue, newValue))
     })
     watch(this.justify, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'justify', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('justify', oldValue, newValue))
     })
     watch(this.align, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'align', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('align', oldValue, newValue))
     })
     watch(this.backgroundColor, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'backgroundColor', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('backgroundColor', oldValue, newValue))
     })
     watch(this.textColor, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'textColor', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('textColor', oldValue, newValue))
     })
     watch(this.formatter, (newValue, oldValue) => {
-      this.project.history.registerChange({ cell: this, attribute: 'formatter', oldValue, newValue })
+      this.project.history.registerChange(this.createCellChange('formatter', oldValue, newValue))
     })
   }
 
@@ -306,6 +307,18 @@ export class Cell {
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
       hasError: this.hasError.value,
+    }
+  }
+
+  private createCellChange(attribute: CellChangeItem['attribute'], oldValue: unknown, newValue: unknown): CellChangeItem {
+    return {
+      type: 'cell',
+      gridName: this.grid.name.value,
+      row: this.cellLocator.row,
+      col: this.cellLocator.col,
+      attribute,
+      oldValue,
+      newValue,
     }
   }
 }
