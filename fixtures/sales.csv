@@ -32,4 +32,4 @@ Date,Product,Region,Quantity,Price,Total
 2024-02-14,Laptop,Glasgow,1,1449,=(* D32 E32)
 2024-02-15,Mobile Phone,Leeds,3,929,=(* D33 E33)
 2024-02-16,Tablet,London,2,639,=(* D34 E34)
-,,,,Sum,=(SUM F2-F34)
+,,,,Sum,=(SUM F2:F34)

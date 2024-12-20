@@ -97,7 +97,7 @@ export class RangeLocator extends CommonLocator {
   }
 
   public override toStringWithoutGrid(): string {
-    return `${this.start.toStringWithoutGrid()}-${this.end.toStringWithoutGrid()}`
+    return `${this.start.toStringWithoutGrid()}:${this.end.toStringWithoutGrid()}`
   }
 
   public size(): number {

@@ -1,10 +1,10 @@
-import { nameCharacterClass } from '@mojir/lits'
+import { identifierCharacterClass, identifierFirstCharacterClass } from '@mojir/lits'
 import type { StyleFontSize } from '~/dto/CellDTO'
 
 const colPart = '(\\$?)([A-Z]{1,2})' // Two groups
 const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups
 const cellPart = `${colPart}${rowPart}` // Four groups
-const gridPart = `(?:(?<grid>${nameCharacterClass}+)!)?` // One group
+const gridPart = `(?:(?<grid>${identifierFirstCharacterClass}${identifierCharacterClass}*)!)?` // One group
 const rangeStart = `(?<colStart>${colPart})|(?<rowStart>${rowPart})|(?<cellStart>${colPart}${rowPart})`
 const rangeEnd = `(?<colEnd>${colPart})|(?<rowEnd>${rowPart})|(?<cellEnd>${colPart}${rowPart})`
 
@@ -13,9 +13,9 @@ export const defaultNumberOfCols = 26
 export const cellLocatorRegExp = new RegExp(`^${gridPart}${cellPart}$`)
 export const rowLocatorRegExp = new RegExp(`^${gridPart}${rowPart}$`)
 export const colLocatorRegExp = new RegExp(`^${gridPart}${colPart}$`)
-export const rowRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${rowPart})-(?<end>${rowPart})$`)
-export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart})-(?<end>${colPart})$`)
-export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?:${rangeStart})-(?:${rangeEnd})$`)
+export const rowRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${rowPart}):(?<end>${rowPart})$`)
+export const colRangeLocatorRegExp = new RegExp(`^${gridPart}(?<start>${colPart}):(?<end>${colPart})$`)
+export const rangeLocatorRegExp = new RegExp(`^${gridPart}(?:${rangeStart}):(?:${rangeEnd})$`)
 
 export const defaultFormatter = '#(format ".4~f" %)'
 export const defaultFontSize: StyleFontSize = 14
