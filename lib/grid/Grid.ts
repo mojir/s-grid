@@ -179,7 +179,15 @@ export class Grid {
     const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const color = cells[0]?.backgroundColor.value ?? null
 
-    return cells.slice(1).every(cell => cell.backgroundColor.value === color) ? color : null
+    return cells.slice(1).every((cell) => {
+      const cellColor = cell.backgroundColor.value
+      if (cellColor !== null && color !== null) {
+        return cellColor.equals(color)
+      }
+      return cellColor === color
+    })
+      ? color
+      : null
   }
 
   public setTextColor(color: Color | null, locator: ReferenceLocator | null): void {
@@ -192,7 +200,15 @@ export class Grid {
     const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
     const color = cells[0]?.textColor.value ?? null
 
-    return cells.slice(1).every(cell => cell.textColor.value === color) ? color : null
+    return cells.slice(1).every((cell) => {
+      const cellColor = cell.textColor.value
+      if (cellColor !== null && color !== null) {
+        return cellColor.equals(color)
+      }
+      return cellColor === color
+    })
+      ? color
+      : null
   }
 
   public setFontSize(fontSize: StyleFontSize, locator: ReferenceLocator | null): void {

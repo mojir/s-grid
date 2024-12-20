@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import type { StyleAlign } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
@@ -11,8 +12,19 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const align = ref<StyleAlign>('auto')
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   align.value = grid.value.getAlign(newSelection) ?? 'auto'
+
+  const alignRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.align)
+
+  watchHandle?.stop()
+  watchHandle = watch(alignRefs, () => {
+    align.value = grid.value.getAlign(newSelection) || 'auto'
+  })
 }, { immediate: true })
 
 function onUpdateTop(value: boolean) {

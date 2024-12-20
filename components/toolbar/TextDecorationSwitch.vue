@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import type { StyleTextDecoration } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
@@ -11,8 +12,19 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const textDecoration = ref<StyleTextDecoration>('none')
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   textDecoration.value = grid.value.getTextDecoration(newSelection) ?? 'none'
+
+  const textDecorationRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.textDecoration)
+
+  watchHandle?.stop()
+  watchHandle = watch(textDecorationRefs, () => {
+    textDecoration.value = grid.value.getTextDecoration(newSelection) || 'none'
+  })
 }, { immediate: true })
 
 function onUpdateUnderline(value: boolean) {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import type { StyleJustify } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
@@ -11,8 +12,19 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const justify = ref<StyleJustify>('auto')
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   justify.value = grid.value.getJustify(newSelection) ?? 'auto'
+
+  const justifyRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.justify)
+
+  watchHandle?.stop()
+  watchHandle = watch(justifyRefs, () => {
+    justify.value = grid.value.getJustify(newSelection) || 'auto'
+  })
 }, { immediate: true })
 
 function onUpdateLeft(value: boolean) {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import { defaultFormatter } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
 
@@ -26,8 +27,19 @@ const percent = computed(() => format.value === percentFormatter)
 const sek = computed(() => format.value === sekFormatter)
 const usd = computed(() => format.value === usdFormatter)
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  format.value = grid.value.getFormatter(newSelection) ?? defaultFormatter
+  format.value = grid.value.getFormatter(newSelection) ?? ''
+
+  const formatterRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.formatter)
+
+  watchHandle?.stop()
+  watchHandle = watch(formatterRefs, () => {
+    format.value = grid.value.getFormatter(newSelection) || ''
+  })
 }, { immediate: true })
 
 function setFloat() {

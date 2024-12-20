@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -10,8 +11,19 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const italic = ref<boolean>(false)
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   italic.value = grid.value.getItalic(newSelection) ?? false
+
+  const italicRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.italic)
+
+  watchHandle?.stop()
+  watchHandle = watch(italicRefs, () => {
+    italic.value = grid.value.getItalic(newSelection) || false
+  })
 }, { immediate: true })
 
 function onUpdateItalic(value: boolean) {

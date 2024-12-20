@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import { type StyleFontSize, styleFontSizes } from '~/dto/CellDTO'
 import type { Project } from '~/lib/project/Project'
 
@@ -10,9 +11,22 @@ const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
 const fontSize = ref<string | undefined>()
+
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   const selectedFontSize = grid.value.getFontSize(newSelection)
   fontSize.value = selectedFontSize ? String(selectedFontSize) : undefined
+
+  const fontSizeRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.fontSize)
+
+  watchHandle?.stop()
+  watchHandle = watch(fontSizeRefs, () => {
+    const selectedFontSize = grid.value.getFontSize(newSelection)
+    fontSize.value = selectedFontSize ? String(selectedFontSize) : undefined
+  })
 }, { immediate: true })
 
 function onUpdateFontSize(value: string) {

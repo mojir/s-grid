@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WatchHandle } from 'vue'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -10,8 +11,19 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const bold = ref<boolean>(false)
 
+let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   bold.value = grid.value.getBold(newSelection) || false
+
+  const boldRefs = newSelection
+    .getAllCellLocators()
+    .map(locator => project.value.locator.getCellFromLocator(locator))
+    .map(cell => cell.bold)
+
+  watchHandle?.stop()
+  watchHandle = watch(boldRefs, () => {
+    bold.value = grid.value.getBold(newSelection) || false
+  })
 }, { immediate: true })
 
 function onUpdateBold(value: boolean) {
