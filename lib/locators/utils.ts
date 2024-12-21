@@ -26,7 +26,7 @@ export type Movement = {
   deltaCol?: number
 }
 
-export enum DocumetIdType {
+export enum DocumentIdType {
   Cell = 'cell',
   Row = 'row',
   Col = 'col',
@@ -35,24 +35,24 @@ export enum DocumetIdType {
 }
 
 export function getDocumentCellId(cellLocator: CellLocator): string {
-  return `${DocumetIdType.Cell}:${cellLocator.grid.name.value}:${cellLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.Cell}:${cellLocator.grid.name.value}:${cellLocator.toRelative().toStringWithoutGrid()}`
 }
 
 // TODO remove girdName parameter
 export function getDocumentRowId(rowLocator: RowLocator): string {
-  return `${DocumetIdType.Row}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.Row}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeRowId(rowLocator: RowLocator): string {
-  return `${DocumetIdType.ResizeRow}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.ResizeRow}:${rowLocator.grid.name.value}:${rowLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentColId(colLocator: ColLocator): string {
-  return `${DocumetIdType.Col}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.Col}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentResizeColId(colLocator: ColLocator): string {
-  return `${DocumetIdType.ResizeCol}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.ResizeCol}:${colLocator.grid.name.value}:${colLocator.toRelative().toStringWithoutGrid()}`
 }
 
 export type ReferenceLocator = CellLocator | RangeLocator

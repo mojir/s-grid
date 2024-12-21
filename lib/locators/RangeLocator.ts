@@ -3,7 +3,7 @@ import type { Grid } from '../grid/Grid'
 import { getColId, getRowId } from '../utils'
 import { CellLocator } from './CellLocator'
 import { ColLocator } from './ColLocator'
-import { CommonLocator } from './CommonLocator'
+import { CommonRangeLocator } from './CommonRangeLocator'
 
 import { RowLocator } from './RowLocator'
 import type { Movement } from './utils'
@@ -35,17 +35,23 @@ function getEndString(grid: Grid, { col, row, cell }: { col?: string, row?: stri
   return row ? `${getColId(grid.cols.value.length - 1)}${row}` : col ? `${col}${getRowId(grid.rows.value.length - 1)}` : cell!
 }
 
-export class RangeLocator extends CommonLocator {
+export class RangeLocator extends CommonRangeLocator {
   public readonly start: CellLocator
   public readonly end: CellLocator
+  public override readonly nbrOfCols: number
+  public override readonly nbrOfRows: number
+  public override readonly size: ComputedRef<number>
 
   private constructor(start: CellLocator, end: CellLocator) {
     if (start.grid !== end.grid) {
       throw new Error(`Cannot create cell range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.grid)
+    super(start.grid, start.row <= end.row && start.col <= end.col)
     this.start = start
     this.end = end
+    this.nbrOfCols = Math.abs((this.end.col - this.start.col + 1))
+    this.nbrOfRows = Math.abs((this.end.row - this.start.row + 1))
+    this.size = computed(() => this.nbrOfCols * this.nbrOfRows)
   }
 
   static fromString(grid: Grid, value: string): RangeLocator {
@@ -100,18 +106,21 @@ export class RangeLocator extends CommonLocator {
     return `${this.start.toStringWithoutGrid()}:${this.end.toStringWithoutGrid()}`
   }
 
-  public size(): number {
-    return Math.abs((this.end.row - this.start.row + 1) * (this.end.col - this.start.col + 1))
+  public override equals(other: RangeLocator): boolean {
+    const sorted = this.toSorted()
+    const otherSorted = other.toSorted()
+    return sorted.start.equals(otherSorted.start) && sorted.end.equals(otherSorted.end)
   }
 
-  public toSorted(): RangeLocator {
+  public override toSorted(): RangeLocator {
+    if (this.sorted) {
+      return this
+    }
+
     const start = this.start
     const end = this.end
 
-    if (start.row <= end.row && start.col <= end.col) {
-      return this
-    }
-    else if (start.col <= end.col && start.row > end.row) {
+    if (start.col <= end.col && start.row > end.row) {
       return new RangeLocator(
         new CellLocator({
           grid: this.grid,
@@ -305,12 +314,6 @@ export class RangeLocator extends CommonLocator {
       return false
     }
     return cellLocator.col === this.toSorted().end.col
-  }
-
-  public equals(other: RangeLocator): boolean {
-    const sorted = this.toSorted()
-    const otherSorted = other.toSorted()
-    return sorted.start.isSameCell(otherSorted.start) && sorted.end.isSameCell(otherSorted.end)
   }
 
   public move(movement: Movement): RangeLocator {

@@ -25,14 +25,14 @@ const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value))
 const deleteRowLabel = computed(() => {
   const rowRangeLocator = getAffectedRange()
   const row = rowRangeLocator.start.row
-  const count = rowRangeLocator.size()
+  const count = rowRangeLocator.nbrOfRows
   const start = getRowId(row)
   const end = getRowId(row + count - 1)
   return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
 })
 
 const insertBeforeRowLabel = computed(() => {
-  const count = getAffectedRange().size()
+  const count = getAffectedRange().nbrOfRows
   if (count === 1) {
     return 'Insert 1 row before'
   }
@@ -41,7 +41,7 @@ const insertBeforeRowLabel = computed(() => {
 })
 
 const insertAfterRowLabel = computed(() => {
-  const count = getAffectedRange().size()
+  const count = getAffectedRange().nbrOfRows
   if (count === 1) {
     return 'Insert 1 row after'
   }

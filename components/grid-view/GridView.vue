@@ -98,7 +98,7 @@ watch(grid, (grid) => {
       class="border-2 border-cell-border"
     />
     <GridRegion
-      v-if="grid.selection.selectedRange.value.size() > 1"
+      v-if="grid.selection.selectedRange.value.size.value > 1"
       :grid="grid"
       :region="grid.selection.selectedRange"
       class="border border-cell-border bg-selected-cell"

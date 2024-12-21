@@ -8,6 +8,7 @@ export abstract class CommonLocator {
   }
 
   abstract toStringWithoutGrid(): string
+  abstract equals(locator: CommonLocator): boolean
 
   public toStringWithGrid(): string {
     return `${this.grid.name.value}!${this.toStringWithoutGrid()}`

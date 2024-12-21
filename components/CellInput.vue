@@ -28,7 +28,7 @@ const selectedRange = computed(() => grid.value.selection.selectedRange.value)
 watch(selectedRange, (selection) => {
   const inputElement = inputRef.value
   if (grid.value.editor.editingLitsCode.value && inputElement && grid.value.editor.editing.value) {
-    const selectionValue = `${selection.size() === 1
+    const selectionValue = `${selection.size.value === 1
       ? selection.start.toStringWithoutGrid()
       : selection.toSorted().toStringWithoutGrid()} `
 

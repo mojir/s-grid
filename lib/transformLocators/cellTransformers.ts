@@ -62,7 +62,7 @@ export function transformMoveOnCell(cellGrid: Grid, cellLocator: CellLocator, { 
 
 export function transformRowDeleteOnCell(cellGrid: Grid, cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
   const row = rowRangeLocator.start.row
-  const count = rowRangeLocator.size()
+  const count = rowRangeLocator.nbrOfRows
   if (cellLocator.row >= row && cellLocator.row < row + count) {
     throw new Error(`Cell ${cellLocator.toString(cellGrid)} was deleted`)
   }
@@ -87,7 +87,7 @@ export function transformRowDeleteOnCell(cellGrid: Grid, cellLocator: CellLocato
 
 export function transformColDeleteOnCell(cellGrid: Grid, cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColDeleteTransformation): string {
   const col = colRangeLocator.start.col
-  const count = colRangeLocator.size()
+  const count = colRangeLocator.nbrOfCols
   if (cellLocator.col >= col && cellLocator.col < col + count) {
     throw new Error(`Cell ${cellLocator.toString(cellGrid)} was deleted`)
   }
@@ -112,7 +112,7 @@ export function transformColDeleteOnCell(cellGrid: Grid, cellLocator: CellLocato
 
 export function transformRowInsertBeforeOnCell(cellGrid: Grid, cellLocator: CellLocator, { rowRangeLocator, sourceGrid }: RowInsertBeforeTransformation): string {
   const row = rowRangeLocator.start.row
-  const count = rowRangeLocator.size()
+  const count = rowRangeLocator.nbrOfRows
 
   if (cellLocator.row >= row) {
     return transformMoveOnCell(
@@ -134,7 +134,7 @@ export function transformRowInsertBeforeOnCell(cellGrid: Grid, cellLocator: Cell
 
 export function transformColInsertBeforeOnCell(cellGrid: Grid, cellLocator: CellLocator, { colRangeLocator, sourceGrid }: ColInsertBeforeTransformation): string {
   const col = colRangeLocator.start.col
-  const count = colRangeLocator.size()
+  const count = colRangeLocator.nbrOfCols
   if (cellLocator.col >= col) {
     return transformMoveOnCell(
       cellGrid,

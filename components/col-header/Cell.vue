@@ -33,14 +33,14 @@ function getAffectedRange(): ColRangeLocator {
 const deleteColLabel = computed(() => {
   const colRangeLocator = getAffectedRange()
   const col = colRangeLocator.start.col
-  const count = colRangeLocator.size()
+  const count = colRangeLocator.nbrOfCols
   const start = getColId(col)
   const end = getColId(col + count - 1)
   return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
 })
 
 const insertBeforeColLabel = computed(() => {
-  const count = getAffectedRange().size()
+  const count = getAffectedRange().nbrOfCols
   if (count === 1) {
     return 'Insert 1 column before'
   }
@@ -49,7 +49,7 @@ const insertBeforeColLabel = computed(() => {
 })
 
 const insertAfterColLabel = computed(() => {
-  const count = getAffectedRange().size()
+  const count = getAffectedRange().nbrOfCols
   if (count === 1) {
     return 'Insert 1 column after'
   }

@@ -145,7 +145,7 @@ export class Grid {
 
   public movePositionTo(cellLocator: CellLocator) {
     const newPosition = cellLocator.clamp(this.gridRange.value)
-    if (newPosition.isSameCell(this.position.value)) {
+    if (newPosition.equals(this.position.value)) {
       return
     }
     this.position.value = newPosition
@@ -157,7 +157,7 @@ export class Grid {
 
   public movePosition(dir: Direction, wrap = false) {
     const selection = this.selection.selectedRange.value
-    const range = wrap && selection.size() > 1 ? selection : this.gridRange.value
+    const range = wrap && selection.size.value > 1 ? selection : this.gridRange.value
     this.movePositionTo(this.project.locator.locate(dir, this.position.value, range, wrap))
   }
 
@@ -441,7 +441,7 @@ export class Grid {
 
   public deleteRows(rowRangeLocator: RowRangeLocator) {
     const row = rowRangeLocator.start.row
-    const count = rowRangeLocator.size()
+    const count = rowRangeLocator.nbrOfRows
     if (count === this.rows.value.length) {
       throw new Error('Cannot delete all rows')
     }
@@ -498,7 +498,7 @@ export class Grid {
 
   public deleteCols(colRangeLocator: ColRangeLocator) {
     const col = colRangeLocator.start.col
-    const count = colRangeLocator.size()
+    const count = colRangeLocator.nbrOfCols
     if (count === this.cols.value.length) {
       throw new Error('Cannot delete all columns')
     }
@@ -575,10 +575,10 @@ export class Grid {
     )
     this.project.clipboard.copyStyleSelection(range)
 
-    this.insertRows(rowRangeLocator.move(rowRangeLocator.size()))
+    this.insertRows(rowRangeLocator.move(rowRangeLocator.nbrOfRows))
     const movement: Movement = {
       toGrid: this,
-      deltaRow: rowRangeLocator.size(),
+      deltaRow: rowRangeLocator.nbrOfRows,
       deltaCol: 0,
     }
     this.selection.moveSelection(movement)
@@ -594,7 +594,7 @@ export class Grid {
 
   private insertRows(rowRangeLocator: RowRangeLocator) {
     const row = rowRangeLocator.start.row
-    const count = rowRangeLocator.size()
+    const count = rowRangeLocator.nbrOfRows
     const createdRows = Array.from({ length: count }, (_, index) => {
       const rowInstance = new Row(this, row + index, defaultRowHeight)
       this.cells.splice(row + index, 0, Array.from({ length: this.cols.value.length }, (_, col) =>
@@ -665,11 +665,11 @@ export class Grid {
       CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
       CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
     )
-    this.insertCols(colRangeLocator.move(colRangeLocator.size()))
+    this.insertCols(colRangeLocator.move(colRangeLocator.nbrOfCols))
     const movement: Movement = {
       toGrid: this,
       deltaRow: 0,
-      deltaCol: colRangeLocator.size(),
+      deltaCol: colRangeLocator.nbrOfCols,
     }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
@@ -678,7 +678,7 @@ export class Grid {
 
   private insertCols(colRangeLocator: ColRangeLocator) {
     const col = colRangeLocator.start.col
-    const count = colRangeLocator.size()
+    const count = colRangeLocator.nbrOfCols
     const createdCols = Array.from({ length: count }, (_, index) => {
       return new Col(this, col + index, defaultColWidth)
     })

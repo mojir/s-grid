@@ -57,6 +57,10 @@ export class ColLocator extends CommonLocator {
     return `${this.absCol ? '$' : ''}${getColId(this.col)}`
   }
 
+  public override equals(locator: ColLocator): boolean {
+    return locator.grid === this.grid && locator.col === this.col
+  }
+
   public toRelative(): ColLocator {
     return new ColLocator({
       grid: this.grid,
@@ -82,9 +86,5 @@ export class ColLocator extends CommonLocator {
         absRow: this.absCol,
         row: row,
       }))
-  }
-
-  public isSameCol(other: ColLocator): boolean {
-    return this.grid === other.grid && this.col === other.col
   }
 }

@@ -34,7 +34,7 @@ export function transformRangeLocator({
 
 function transformRowDeleteOnRange(cellGrid: Grid, range: RangeLocator, { rowRangeLocator, sourceGrid }: RowDeleteTransformation): string {
   const startRowToDelete = rowRangeLocator.start.row
-  const deleteCount = rowRangeLocator.size()
+  const deleteCount = rowRangeLocator.nbrOfRows
   const { start, end } = range
   const startIsInDeletedRange
     = start.row >= startRowToDelete
@@ -143,7 +143,7 @@ function transformColDeleteOnRange(cellGrid: Grid, range: RangeLocator, { colRan
   const { start, end } = range
 
   const startColToDelete = colRangeLocator.start.col
-  const deleteCount = colRangeLocator.size()
+  const deleteCount = colRangeLocator.nbrOfCols
 
   const startIsInDeletedRange
     = start.col >= startColToDelete

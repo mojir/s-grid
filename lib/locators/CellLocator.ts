@@ -105,6 +105,10 @@ export class CellLocator extends CommonLocator {
     return `${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
+  public override equals(other: CellLocator): boolean {
+    return other.grid === this.grid && other.col === this.col && other.row === this.row
+  }
+
   public getRowLocator(): RowLocator {
     return new RowLocator({
       grid: this.grid,
@@ -145,14 +149,6 @@ export class CellLocator extends CommonLocator {
       absRow: this.absRow,
       row: clampedRow,
     })
-  }
-
-  public isSameCell(cellLocator: CellLocator): boolean {
-    return (
-      this.grid === cellLocator.grid
-      && this.col === cellLocator.col
-      && this.row === cellLocator.row
-    )
   }
 
   public move(movement: Movement): CellLocator {

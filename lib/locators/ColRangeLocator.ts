@@ -3,7 +3,7 @@ import type { Grid } from '../grid/Grid'
 import type { CellLocator } from './CellLocator'
 import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
-import { CommonLocator } from './CommonLocator'
+import { CommonRangeLocator } from './CommonRangeLocator'
 
 export function isColRangeLocatorString(value: string): boolean {
   return colRangeLocatorRegExp.test(value)
@@ -14,17 +14,22 @@ type Coords = {
   endCol: number
 }
 
-export class ColRangeLocator extends CommonLocator {
+export class ColRangeLocator extends CommonRangeLocator {
   public readonly start: ColLocator
   public readonly end: ColLocator
+  public override readonly nbrOfCols: number
+  public override readonly nbrOfRows = 1
+  public override readonly size: ComputedRef<number>
 
   private constructor(start: ColLocator, end: ColLocator) {
     if (start.grid !== end.grid) {
       throw new Error(`Cannot create col range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.grid)
+    super(start.grid, start.col <= end.col)
     this.start = start
     this.end = end
+    this.nbrOfCols = Math.abs((this.end.col - this.start.col + 1))
+    this.size = computed(() => this.nbrOfCols * this.grid.rows.value.length)
   }
 
   static fromString(grid: Grid, value: string): ColRangeLocator {
@@ -33,13 +38,13 @@ export class ColRangeLocator extends CommonLocator {
       throw new Error(`Invalid col range locator: ${value}`)
     }
     grid = match.groups.grid ? grid.project.getGrid(match.groups.grid) : grid
-    const startString = `${grid.name.value}!${match.groups.start}`
-    const endString = `${grid.name.value}!${match.groups.end}`
-    return new ColRangeLocator(ColLocator.fromString(grid, startString), ColLocator.fromString(grid, endString))
+    const start = ColLocator.fromString(grid, `${grid.name.value}!${match.groups.start}`)
+    const end = ColLocator.fromString(grid, `${grid.name.value}!${match.groups.end}`)
+    return new ColRangeLocator(start, end)
   }
 
-  static fromColLocator(rowLocator: ColLocator): ColRangeLocator {
-    return new ColRangeLocator(rowLocator, rowLocator)
+  static fromColLocator(colLocator: ColLocator): ColRangeLocator {
+    return new ColRangeLocator(colLocator, colLocator)
   }
 
   static fromColLocators(start: ColLocator, end: ColLocator): ColRangeLocator {
@@ -50,29 +55,20 @@ export class ColRangeLocator extends CommonLocator {
     return `${this.start.toStringWithoutGrid()}-${this.end.toStringWithoutGrid()}`
   }
 
-  public size(): number {
-    return Math.abs((this.end.col - this.start.col + 1))
+  public override equals(other: ColRangeLocator): boolean {
+    const sorted = this.toSorted()
+    const otherSorted = other.toSorted()
+    return sorted.start.equals(otherSorted.start) && sorted.end.equals(otherSorted.end)
   }
 
-  public toSorted(): ColRangeLocator {
-    const start = this.start
-    const end = this.end
-
-    if (start.col <= end.col) {
+  public override toSorted(): ColRangeLocator {
+    if (this.sorted) {
       return this
     }
     else {
       return new ColRangeLocator(
-        new ColLocator({
-          grid: this.grid,
-          absCol: end.absCol,
-          col: end.col,
-        }),
-        new ColLocator({
-          grid: this.grid,
-          absCol: start.absCol,
-          col: start.col,
-        }),
+        this.end,
+        this.start,
       )
     }
   }
@@ -126,11 +122,5 @@ export class ColRangeLocator extends CommonLocator {
     const { startCol, endCol } = this.toSorted().getCoords()
 
     return col >= startCol && col <= endCol
-  }
-
-  public equals(other: ColRangeLocator): boolean {
-    const sorted = this.toSorted()
-    const otherSorted = other.toSorted()
-    return sorted.start.isSameCol(otherSorted.start) && sorted.end.isSameCol(otherSorted.end)
   }
 }

@@ -1,7 +1,7 @@
 import { rowRangeLocatorRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
 import type { CellLocator } from './CellLocator'
-import { CommonLocator } from './CommonLocator'
+import { CommonRangeLocator } from './CommonRangeLocator'
 import { RangeLocator } from './RangeLocator'
 import { RowLocator } from './RowLocator'
 
@@ -14,17 +14,22 @@ type Coords = {
   endRow: number
 }
 
-export class RowRangeLocator extends CommonLocator {
+export class RowRangeLocator extends CommonRangeLocator {
   public readonly start: RowLocator
   public readonly end: RowLocator
+  public override readonly nbrOfRows: number
+  public override readonly nbrOfCols = 1
+  public override readonly size: ComputedRef<number>
 
   private constructor(start: RowLocator, end: RowLocator) {
     if (start.grid !== end.grid) {
       throw new Error(`Cannot create row range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.grid)
+    super(start.grid, start.row <= end.row)
     this.start = start
     this.end = end
+    this.nbrOfRows = Math.abs((this.end.row - this.start.row + 1))
+    this.size = computed(() => this.nbrOfRows * this.grid.rows.value.length)
   }
 
   static fromString(grid: Grid, value: string): RowRangeLocator {
@@ -50,29 +55,20 @@ export class RowRangeLocator extends CommonLocator {
     return `${this.start.toStringWithoutGrid()}-${this.end.toStringWithoutGrid()}`
   }
 
-  public size(): number {
-    return Math.abs((this.end.row - this.start.row + 1))
+  public override equals(other: RowRangeLocator): boolean {
+    const sorted = this.toSorted()
+    const otherSorted = other.toSorted()
+    return sorted.start.equals(otherSorted.start) && sorted.end.equals(otherSorted.end)
   }
 
-  public toSorted(): RowRangeLocator {
-    const start = this.start
-    const end = this.end
-
-    if (start.row <= end.row) {
+  public override toSorted(): RowRangeLocator {
+    if (this.sorted) {
       return this
     }
     else {
       return new RowRangeLocator(
-        new RowLocator({
-          grid: this.grid,
-          absRow: end.absRow,
-          row: end.row,
-        }),
-        new RowLocator({
-          grid: this.grid,
-          absRow: start.absRow,
-          row: start.row,
-        }),
+        this.end,
+        this.start,
       )
     }
   }
@@ -126,11 +122,5 @@ export class RowRangeLocator extends CommonLocator {
     const { startRow, endRow } = this.toSorted().getCoords()
 
     return row >= startRow && row <= endRow
-  }
-
-  public equals(other: RowRangeLocator): boolean {
-    const sorted = this.toSorted()
-    const otherSorted = other.toSorted()
-    return sorted.start.isSameRow(otherSorted.start) && sorted.end.isSameRow(otherSorted.end)
   }
 }

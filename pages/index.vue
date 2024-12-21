@@ -5,7 +5,7 @@ import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/li
 import { Project } from '~/lib/project/Project'
 import { whs, hs } from '~/lib/utils'
 import { RowLocator } from '~/lib/locators/RowLocator'
-import { DocumetIdType as DocumentIdType, type Direction } from '~/lib/locators/utils'
+import { DocumentIdType, type Direction } from '~/lib/locators/utils'
 import { CellLocator, isCellLocatorString } from '~/lib/locators/CellLocator'
 import { ColLocator } from '~/lib/locators/ColLocator'
 
@@ -169,7 +169,7 @@ function onMouseDown(event: MouseEvent) {
     }
     if (
       colResizeDblClicked
-      && colLocator.isSameCol(colResizeDblClicked.colLocator)
+      && colLocator.equals(colResizeDblClicked.colLocator)
       && Date.now() - colResizeDblClicked.time < dbClickTime
     ) {
       colResizeDblClicked.completed = true
@@ -204,7 +204,7 @@ function onMouseDown(event: MouseEvent) {
     }
     if (
       rowResizeDblClicked
-      && rowLocator.isSameRow(rowResizeDblClicked.rowLocator)
+      && rowLocator.equals(rowResizeDblClicked.rowLocator)
       && Date.now() - rowResizeDblClicked.time < dbClickTime
     ) {
       rowResizeDblClicked.completed = true
@@ -387,7 +387,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Enter') {
     e.preventDefault()
-    if (saved || selection.value.selectedRange.value.size() > 1) {
+    if (saved || selection.value.selectedRange.value.size.value > 1) {
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }
