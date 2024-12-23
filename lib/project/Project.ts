@@ -42,9 +42,9 @@ export class Project {
     nextTick(() => this.history.start())
   }
 
-  public importGrid(grid: GridDTO) {
-    const gridName = getGridName(grid.name)
-    const newGrid = Grid.fromDTO(this, grid)
+  public importGrid(gridDTO: GridDTO) {
+    const gridName = getGridName(gridDTO.name)
+    const newGrid = Grid.fromDTO(this, gridDTO)
 
     const existingGridIndex = this.grids.value.findIndex(grid => grid.name.value === gridName)
     if (existingGridIndex >= 0) {
@@ -60,23 +60,26 @@ export class Project {
         newGrid,
       ]
     }
-    this.selectGrid(gridName)
+    this.selectGrid(newGrid)
   }
 
-  public selectGrid(gridName: string) {
-    const index = this.grids.value.findIndex(grid => grid.name.value === getGridName(gridName))
+  public selectGrid(grid: Grid) {
+    const index = this.grids.value.findIndex(g => g === grid)
     if (index < 0) {
-      throw new Error(`Grid "${gridName}" does not exist`)
+      throw new Error(`Grid "${grid.name.value}" does not exist`)
     }
     this.currentGridIndex.value = index
   }
 
-  public removeGrid(gridName: string) {
-    const index = this.grids.value.findIndex(grid => grid.name.value === getGridName(gridName))
-    if (index < 0) {
-      throw new Error(`Grid "${gridName}" does not exist`)
+  public removeGrid(grid: Grid) {
+    if (!this.grids.value.includes(grid)) {
+      throw new Error(`Grid "${grid.name.value}" does not exist`)
     }
-    this.grids.value = this.grids.value.filter((_, i) => i !== index)
+    this.transformAllLocators({
+      type: 'gridDelete',
+      sourceGrid: grid,
+    })
+    this.grids.value = this.grids.value.filter(g => g !== grid)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
     let attempts = 0
     while (this.grids.value[this.currentGridIndex.value].hidden.value && attempts < this.grids.value.length) {
@@ -85,17 +88,12 @@ export class Project {
     }
   }
 
-  public renameGrid(oldName: string, newName: string) {
-    oldName = getGridName(oldName)
+  public renameGrid(grid: Grid, newName: string) {
     newName = getGridName(newName)
-    const grid = this.grids.value.find(grid => grid.name.value === oldName)
-    if (!grid) {
-      throw new Error(`Grid "${oldName}" does not exist`)
-    }
-    grid.name.value = getGridName(newName)
+    grid.name.value = newName
     this.transformAllLocators({
       type: 'renameGrid',
-      oldName,
+      sourceGrid: grid,
       newName,
     })
   }
@@ -119,9 +117,9 @@ export class Project {
         acc[value] = this.locator.getValueFromLocator(locator)
       }
       else {
-        const aliasCell = this.aliases.getCell(value)
+        const aliasCell = this.aliases.getLocator(value)
         if (aliasCell) {
-          acc[value] = aliasCell.value.output.value
+          acc[value] = this.locator.getCellFromLocator(aliasCell.value).output.value
         }
       }
 
@@ -130,6 +128,7 @@ export class Project {
   }
 
   public transformAllLocators(transformation: FormulaTransformation) {
+    this.aliases.transformAllLocators(transformation)
     for (const grid of this.grids.value) {
       matrixForEach(grid.cells, (cell) => {
         transformLocators(cell, transformation)

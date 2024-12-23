@@ -27,6 +27,7 @@ export function transformRangeLocator({
       return transformRowInsertBeforeOnRange(cellGrid, rangeLocator, transformation)
     case 'colInsertBefore':
       return transformColInsertBeforeOnRange(cellGrid, rangeLocator, transformation)
+    case 'gridDelete':
     case 'renameGrid':
       throw new Error('Should have been handled')
   }

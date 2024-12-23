@@ -10,7 +10,7 @@ project.importGrid({
   cells: {},
   alias: {},
 })
-project.selectGrid('Grid1')
+project.selectGrid(project.getGrid('Grid1'))
 
 const grid1 = project.currentGrid.value
 

@@ -170,9 +170,9 @@ export class Cell {
       if (isRangeLocatorString(identifier)) {
         return RangeLocator.fromString(this.grid, identifier)
       }
-      const aliasCell = this.project.aliases.getCell(identifier)
+      const aliasCell = this.project.aliases.getLocator(identifier)
       if (aliasCell) {
-        return aliasCell.value.cellLocator
+        return aliasCell.value
       }
       return []
     })
@@ -228,7 +228,7 @@ export class Cell {
       return '#ERR'
     }
     if (this.isFunction.value) {
-      const alias = this.project.aliases.getAlias(this)
+      const alias = this.project.aliases.getAlias(this.cellLocator)
 
       return `${alias ? `${alias} ` : ''}λ`
     }

@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import type { Project } from '~/lib/project/Project'
+import type { Grid } from '~/lib/grid/Grid'
 
 const props = defineProps<{
-  gridName: string
+  grid: Grid
   selected: boolean
   removable: boolean
-  project: Project
 }>()
 
-const { selected, removable, gridName, project } = toRefs(props)
+const { selected, removable, grid } = toRefs(props)
 
 const open = ref(false)
 const removeDialogOpen = ref(false)
@@ -16,7 +15,7 @@ const renameDialogOpen = ref(false)
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   if (!selected.value) {
-    project.value.selectGrid(gridName.value)
+    grid.value.project.selectGrid(grid.value)
   }
   else {
     open.value = true
@@ -31,7 +30,7 @@ function onContextMenu(e: MouseEvent) {
       'dark:bg-slate-700 bg-gray-200 font-bold cursor-default': selected,
       'dark:bg-slate-800 bg-gray-100 cursor-pointer': !selected,
     }"
-    @click="project.selectGrid(gridName)"
+    @click="grid.project.selectGrid(grid)"
     @contextmenu="onContextMenu"
   >
     <div class="whitespace-nowrap">
@@ -71,13 +70,11 @@ function onContextMenu(e: MouseEvent) {
     </DropdownMenu>
     <DialogRemoveGrid
       v-model:open="removeDialogOpen"
-      :grid-name="gridName"
-      :project="project"
+      :grid="grid"
     />
     <DialogRenameGrid
       v-model:open="renameDialogOpen"
-      :grid-name="gridName"
-      :project="project"
+      :grid="grid"
     />
   </div>
 </template>

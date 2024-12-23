@@ -37,7 +37,7 @@ defineProps<{
             v-for="grid of project.visibleGrids.value"
             :key="grid.name.value"
             :checked="project.currentGrid.value === grid"
-            @click="project.selectGrid(grid.name.value)"
+            @click="project.selectGrid(grid)"
           >
             {{ getGridDisplayName(grid.name.value) }}
           </DropdownMenuCheckboxItem>
@@ -49,10 +49,8 @@ defineProps<{
           :key="grid.name.value"
           :selected="grid === project.currentGrid.value"
           :removable="project.visibleGrids.value.length > 1"
-          :grid-name="grid.name.value"
+          :grid="grid"
           :project="project"
-          @select="project.selectGrid(grid.name.value)"
-          @remove="project.removeGrid(grid.name.value)"
         >
           {{ getGridDisplayName(grid.name.value) }}
         </FooterBarGridButton>

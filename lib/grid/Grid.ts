@@ -104,8 +104,7 @@ export class Grid {
     })
     Object.entries(grid.alias).forEach(([alias, key]) => {
       const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
-      const cell = newGrid.cells[cellLocator.row][cellLocator.col]
-      project.aliases.setCell(alias, cell)
+      project.aliases.setCell(alias, cellLocator)
     })
     return newGrid
   }
@@ -449,7 +448,7 @@ export class Grid {
     const newRows = this.rows.value.filter((_, index) => index < row || index >= row + count)
 
     this.cells.splice(row, count).flat().forEach((cell) => {
-      const aliasString = this.project.aliases.cellRemoved(cell)
+      const aliasString = this.project.aliases.cellRemoved(cell.cellLocator)
 
       if (aliasString) {
         const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
@@ -468,7 +467,7 @@ export class Grid {
 
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
-        const aliasString = this.project.aliases.getAlias(cell)
+        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
 
         if (aliasString) {
           const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
@@ -508,7 +507,7 @@ export class Grid {
     this.cells.reduce((acc: Cell[], row) => {
       return [...acc, ...row.splice(col, count)]
     }, []).forEach((cell) => {
-      const aliasString = this.project.aliases.cellRemoved(cell)
+      const aliasString = this.project.aliases.cellRemoved(cell.cellLocator)
 
       if (aliasString) {
         const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
@@ -528,7 +527,7 @@ export class Grid {
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
 
-        const aliasString = this.project.aliases.getAlias(cell)
+        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
 
         if (aliasString) {
           const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
@@ -622,7 +621,7 @@ export class Grid {
 
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
-        const aliasString = this.project.aliases.getAlias(cell)
+        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
 
         if (aliasString) {
           const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
@@ -711,7 +710,7 @@ export class Grid {
       for (let index = col + count; index < newCols.length; index++) {
         const cell = this.cells[row][index]
         cell.cellLocator = CellLocator.fromCoords(this, { row, col: index })
-        const aliasString = this.project.aliases.getAlias(cell)
+        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
 
         if (aliasString) {
           const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))

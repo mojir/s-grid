@@ -12,7 +12,7 @@ import { transformCellLocator } from './cellTransformers'
 export type RenameGridTransformation = {
   type: 'renameGrid'
   newName: string
-  oldName: string
+  sourceGrid: Grid
 }
 
 export type MoveTransformation = {
@@ -20,6 +20,11 @@ export type MoveTransformation = {
   type: 'move'
   range?: RangeLocator
   movement: Movement
+}
+
+export type GridDeleteTransformation = {
+  sourceGrid: Grid
+  type: 'gridDelete'
 }
 
 export type RowDeleteTransformation = {
@@ -46,7 +51,7 @@ export type ColInsertBeforeTransformation = {
   colRangeLocator: ColRangeLocator
 }
 
-export type FormulaTransformation = RenameGridTransformation | MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
+export type FormulaTransformation = GridDeleteTransformation | RenameGridTransformation | MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
 
 export function transformLocators(cell: Cell, transformation: FormulaTransformation): void {
   const formula = cell.formula.value
@@ -67,12 +72,23 @@ function transformIdentifier(cellGrid: Grid, identifier: string, transformation:
     return identifier
   }
 
+  if (transformation.type === 'gridDelete') {
+    if (!identifier.includes('!')) {
+      return identifier
+    }
+    const [gridName] = identifier.split('!')
+    if (gridName === transformation.sourceGrid.name.value) {
+      return `(throw "Grid \\"${gridName}\\" was deleted")`
+    }
+    return identifier
+  }
+
   if (transformation.type === 'renameGrid') {
     if (!identifier.includes('!')) {
       return identifier
     }
     const [gridName, rest] = identifier.split('!')
-    if (gridName !== transformation.oldName) {
+    if (gridName !== transformation.sourceGrid.name.value) {
       return identifier
     }
     return `${transformation.newName}!${rest}`
@@ -88,7 +104,7 @@ function transformIdentifier(cellGrid: Grid, identifier: string, transformation:
       return transformCellLocator({ cellGrid, transformation, cellLocator: locator })
     }
     if (locator instanceof RangeLocator) {
-      return transformRangeLocator({ cellGrid, transformation, rangeLocator: locator })
+      return transformRangeLocator({ cellGrid: cellGrid, transformation, rangeLocator: locator })
     }
     throw new Error(`Unsupported locator type: ${identifier}`)
   }

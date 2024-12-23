@@ -2,12 +2,11 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { z } from 'zod'
-import type { Project } from '~/lib/project/Project'
+import type { Grid } from '~/lib/grid/Grid'
 import { getGridName } from '~/lib/utils'
 
 const props = defineProps<{
-  project: Project
-  gridName: string
+  grid: Grid
 }>()
 
 const open = defineModel('open', {
@@ -15,16 +14,18 @@ const open = defineModel('open', {
   required: true,
 })
 
-const { gridName, project } = toRefs(props)
+const { grid } = toRefs(props)
+
+const currentGridName = computed(() => grid.value.name.value)
 
 const formSchema = z.object({
   name: z
     .string()
     .min(1, { message: 'Name is required.' })
-    .refine(newName => getGridName(newName) === getGridName(gridName.value) || !project.value.hasGrid(newName), {
+    .refine(newName => getGridName(newName) === getGridName(currentGridName.value) || !grid.value.project.hasGrid(newName), {
       message: 'A grid with this name already exists.',
     })
-    .default(gridName.value),
+    .default(currentGridName.value),
 })
 
 const { handleSubmit, resetForm } = useForm({
@@ -32,7 +33,7 @@ const { handleSubmit, resetForm } = useForm({
 })
 
 const submitForm = handleSubmit(({ name }) => {
-  project.value.renameGrid(gridName.value, name)
+  grid.value.project.renameGrid(grid.value, name)
   open.value = false
 })
 
@@ -47,10 +48,10 @@ watch(open, (value) => {
   <Dialog v-model:open="open">
     <DialogContent>
       <DialogTitle>
-        Rename {{ gridName }}
+        Rename {{ currentGridName }}
       </DialogTitle>
       <DialogDescription>
-        Please enter a new name for the grid "{{ gridName }}".
+        Please enter a new name for the grid "{{ currentGridName }}".
       </DialogDescription>
       <form
         @submit.prevent="submitForm"
