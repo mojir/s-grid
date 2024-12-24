@@ -18,8 +18,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const justifyRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.justify)
+    .map(locator => locator.getCell().justify)
 
   watchHandle?.stop()
   watchHandle = watch(justifyRefs, () => {

@@ -1,7 +1,10 @@
+import type { Cell } from '../Cell'
 import { rowRangeLocatorRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
-import type { CellLocator } from './CellLocator'
+import { CellLocator } from './CellLocator'
+import { ColLocator } from './ColLocator'
 import { CommonRangeLocator } from './CommonRangeLocator'
+import type { Locator } from './Locator'
 import { RangeLocator } from './RangeLocator'
 import { RowLocator } from './RowLocator'
 
@@ -14,7 +17,7 @@ type Coords = {
   endRow: number
 }
 
-export class RowRangeLocator extends CommonRangeLocator {
+export class RowRangeLocator extends CommonRangeLocator implements Locator {
   public readonly start: RowLocator
   public readonly end: RowLocator
   public override readonly nbrOfRows: number
@@ -25,9 +28,15 @@ export class RowRangeLocator extends CommonRangeLocator {
     if (start.grid !== end.grid) {
       throw new Error(`Cannot create row range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
-    super(start.grid, start.row <= end.row)
-    this.start = start
-    this.end = end
+    super(start.grid)
+    if (start.row <= end.row) {
+      this.start = start
+      this.end = end
+    }
+    else {
+      this.start = end
+      this.end = start
+    }
     this.nbrOfRows = Math.abs((this.end.row - this.start.row + 1))
     this.size = computed(() => this.nbrOfRows * this.grid.rows.value.length)
   }
@@ -51,26 +60,33 @@ export class RowRangeLocator extends CommonRangeLocator {
     return new RowRangeLocator(start, end)
   }
 
+  public getValue(): unknown {
+    return this.toRangeLocator().getValue()
+  }
+
+  public getCells(): Cell[] {
+    return this.toRangeLocator().getCells()
+  }
+
   public override toStringWithoutGrid(): string {
     return `${this.start.toStringWithoutGrid()}-${this.end.toStringWithoutGrid()}`
   }
 
-  public override equals(other: RowRangeLocator): boolean {
-    const sorted = this.toSorted()
-    const otherSorted = other.toSorted()
-    return sorted.start.equals(otherSorted.start) && sorted.end.equals(otherSorted.end)
+  public override equals(other: Locator): boolean {
+    return this.toRangeLocator().equals(other)
   }
 
-  public override toSorted(): RowRangeLocator {
-    if (this.sorted) {
-      return this
-    }
-    else {
-      return new RowRangeLocator(
-        this.end,
-        this.start,
-      )
-    }
+  public toRangeLocator(): RangeLocator {
+    return RangeLocator.fromCellLocators(
+      CellLocator.fromRowCol({
+        rowLocator: this.start,
+        colLocator: ColLocator.fromNumber(this.grid, 0),
+      }),
+      CellLocator.fromRowCol({
+        rowLocator: this.end,
+        colLocator: ColLocator.fromNumber(this.grid, this.grid.cols.value.length - 1),
+      }),
+    )
   }
 
   public move(count: number): RowRangeLocator {
@@ -89,12 +105,12 @@ export class RowRangeLocator extends CommonRangeLocator {
 
   public getAllCellLocators(colCount: number): CellLocator[] {
     return RangeLocator
-      .fromCoords(this.grid, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
+      .fromCoords(this.grid, { ...this.getCoords(), startCol: 0, endCol: colCount - 1 })
       .getAllCellLocators()
   }
 
   public getAllRowLocators(): RowLocator[] {
-    const { startRow, endRow } = this.toSorted().getCoords()
+    const { startRow, endRow } = this.getCoords()
     const rowLocators: RowLocator[] = []
     for (let row = startRow; row <= endRow; row += 1) {
       rowLocators.push(new RowLocator({
@@ -108,18 +124,18 @@ export class RowRangeLocator extends CommonRangeLocator {
 
   public getCellIdMatrix(colCount: number): CellLocator[][] {
     return RangeLocator
-      .fromCoords(this.grid, { ...this.toSorted().getCoords(), startCol: 0, endCol: colCount - 1 })
+      .fromCoords(this.grid, { ...this.getCoords(), startCol: 0, endCol: colCount - 1 })
       .getCellIdMatrix()
   }
 
   public containsCell(cellLocator: CellLocator): boolean {
-    const { startRow, endRow } = this.toSorted().getCoords()
+    const { startRow, endRow } = this.getCoords()
 
     return cellLocator.row >= startRow && cellLocator.row <= endRow
   }
 
   public containsRow(row: number): boolean {
-    const { startRow, endRow } = this.toSorted().getCoords()
+    const { startRow, endRow } = this.getCoords()
 
     return row >= startRow && row <= endRow
   }

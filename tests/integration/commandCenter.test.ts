@@ -40,5 +40,11 @@ describe('CommandCenter', () => {
       expect(project.currentGrid.value.cells[0][0].input.value).toBe('')
       expect(project.currentGrid.value.cells[1][0].input.value).toBe('')
     })
+    test('SetAlias!', async () => {
+      commandCenter.exec('SetInput!', '10', 'A1')
+      commandCenter.exec('SetAlias!', 'Foo', 'A1')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((commandCenter.exec('GetCell', 'Foo') as any).output).toBe(10)
+    })
   })
 })

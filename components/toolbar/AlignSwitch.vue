@@ -18,8 +18,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const alignRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.align)
+    .map(locator => locator.getCell().align)
 
   watchHandle?.stop()
   watchHandle = watch(alignRefs, () => {

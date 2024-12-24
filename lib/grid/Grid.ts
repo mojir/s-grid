@@ -10,7 +10,6 @@ import { RangeLocator } from '../locators/RangeLocator'
 import type { RowLocator } from '../locators/RowLocator'
 import type { RowRangeLocator } from '../locators/RowRangeLocator'
 import { getDocumentCellId, type Direction, type Movement, type ReferenceLocator } from '../locators/utils'
-import { matrixFilter } from '../matrix'
 import { Row } from '../Row'
 import { getGridName } from '../utils'
 import { GridSelection } from './GridSelection'
@@ -57,7 +56,7 @@ export class Grid {
       CellLocator.fromCoords(this, { row: 0, col: 0 }),
       CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
-    this.currentCell = computed(() => this.project.locator.getCellFromLocator(this.position.value))
+    this.currentCell = computed(() => this.position.value.getCell())
   }
 
   static fromDTO(project: Project, grid: GridDTO): Grid {
@@ -123,14 +122,16 @@ export class Grid {
   }
 
   public clear(locator: ReferenceLocator | null) {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    locator.getCells()
       .forEach((cell) => {
         cell.clear()
       })
   }
 
   public clearInput(locator: ReferenceLocator | null) {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    locator.getCells()
       .forEach((cell) => {
         cell.input.value = ''
       })
@@ -138,7 +139,7 @@ export class Grid {
 
   public clearAllCells() {
     this.gridRange.value.getAllCellLocators().forEach((cellLocator) => {
-      this.project.locator.getCellFromLocator(cellLocator).clear()
+      cellLocator.getCell().clear()
     })
   }
 
@@ -150,7 +151,8 @@ export class Grid {
     this.position.value = newPosition
 
     if (!this.selection.selectedRange.value.containsCell(newPosition)) {
-      this.selection.updateSelection(RangeLocator.fromCellLocator(newPosition))
+      const location = RangeLocator.fromCellLocator(newPosition)
+      this.selection.updateSelection(location.start, location.end)
     }
   }
 
@@ -162,20 +164,22 @@ export class Grid {
 
   public setInput(input: string, locator: ReferenceLocator | null) {
     locator = locator ?? this.selection.selectedRange.value
-    this.project.locator.getCellsFromLocator(locator)
+    locator.getCells()
       .forEach((cell) => {
         cell.input.value = input
       })
   }
 
   public setBackgroundColor(color: Color | null, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
 
   public getBackgroundColor(locator: ReferenceLocator | null): Color | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const color = cells[0]?.backgroundColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -190,13 +194,15 @@ export class Grid {
   }
 
   public setTextColor(color: Color | null, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.textColor.value = color
     })
   }
 
   public getTextColor(locator: ReferenceLocator | null): Color | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const color = cells[0]?.textColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -211,91 +217,105 @@ export class Grid {
   }
 
   public setFontSize(fontSize: StyleFontSize, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.fontSize.value = fontSize
     })
   }
 
   public getFontSize(locator: ReferenceLocator | null): StyleFontSize | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const fontSize = cells[0]?.fontSize.value
 
     return cells.slice(1).every(cell => cell.fontSize.value === fontSize) ? fontSize : null
   }
 
   public setBold(bold: boolean, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.bold.value = bold
     })
   }
 
   public getBold(locator: ReferenceLocator | null): boolean | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const bold = cells[0]?.bold.value
 
     return cells.slice(1).every(cell => cell.bold.value === bold) ? bold : null
   }
 
   public setItalic(italic: boolean, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.italic.value = italic
     })
   }
 
   public getItalic(locator: ReferenceLocator | null): boolean | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const italic = cells[0]?.italic.value
 
     return cells.slice(1).every(cell => cell.italic.value === italic) ? italic : null
   }
 
   public setTextDecoration(textDecoration: StyleTextDecoration, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.textDecoration.value = textDecoration
     })
   }
 
   public getTextDecoration(locator: ReferenceLocator | null): StyleTextDecoration | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const textDecoration = cells[0]?.textDecoration.value
 
     return cells.slice(1).every(cell => cell.textDecoration.value === textDecoration) ? textDecoration : null
   }
 
   public setAlign(align: StyleAlign, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.align.value = align
     })
   }
 
   public getAlign(locator: ReferenceLocator | null): StyleAlign | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const align = cells[0]?.align.value
 
     return cells.slice(1).every(cell => cell.align.value === align) ? align : null
   }
 
   public setJustify(justify: StyleJustify, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.justify.value = justify
     })
   }
 
   public getJustify(locator: ReferenceLocator | null): StyleJustify | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const justify = cells[0]?.justify.value
 
     return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
   }
 
   public setFormatter(formatter: string, locator: ReferenceLocator | null): void {
-    this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value).forEach((cell) => {
+    locator ??= this.selection.selectedRange.value
+    locator.getCells().forEach((cell) => {
       cell.formatter.value = formatter
     })
   }
 
   public getFormatter(locator: ReferenceLocator | null): string | null {
-    const cells = this.project.locator.getCellsFromLocator(locator ?? this.selection.selectedRange.value)
+    locator ??= this.selection.selectedRange.value
+    const cells = locator.getCells()
     const formatter = cells[0]?.formatter.value ?? null
 
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
@@ -383,7 +403,7 @@ export class Grid {
       : this.selection.selectedRange.value.getAllCellLocators()
 
     const rowIds = cellIds
-      .filter(cellLocator => this.project.locator.getCellFromLocator(cellLocator)?.display.value)
+      .filter(cellLocator => cellLocator.getCell().display.value)
       .reduce((acc: number[], cellLocator) => {
         if (!acc.includes(cellLocator.row)) {
           acc.push(cellLocator.row)
@@ -396,7 +416,7 @@ export class Grid {
   public autoSetColWidth(cols: number[]) {
     cols.forEach((col) => {
       const cells = this.getCellIdsFromColIndex(col)
-        .map(cellLocator => this.project.locator.getCellFromLocator(cellLocator))
+        .map(cellLocator => cellLocator.getCell())
 
       const newColWidth = cells.reduce((acc, cell) => {
         if (!cell.display.value) {
@@ -429,9 +449,7 @@ export class Grid {
     const startCellId = CellLocator.fromCoords(this, { row, col: 0 })
     const endCellId = CellLocator.fromCoords(this, { row, col: this.cols.value.length - 1 })
     const range = RangeLocator.fromCellLocators(startCellId, endCellId)
-    return range
-      .getAllCellLocators()
-      .flatMap(cellLocator => this.project.locator.getCellFromLocator(cellLocator) ?? [])
+    return range.getCells()
   }
 
   public resetSelection() {
@@ -448,17 +466,7 @@ export class Grid {
     const newRows = this.rows.value.filter((_, index) => index < row || index >= row + count)
 
     this.cells.splice(row, count).flat().forEach((cell) => {
-      const aliasString = this.project.aliases.cellRemoved(cell.cellLocator)
-
-      if (aliasString) {
-        const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-        dependants.forEach((dependantCell) => {
-          const input = dependantCell.input.value
-          dependantCell.input.value = ''
-          dependantCell.input.value = input
-        })
-      }
+      this.project.aliases.cellRemoved(cell)
     })
 
     for (let index = row; index < newRows.length; index++) {
@@ -467,17 +475,6 @@ export class Grid {
 
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
-        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
-
-        if (aliasString) {
-          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-          dependants.forEach((dependantCell) => {
-            const input = dependantCell.input.value
-            dependantCell.input.value = ''
-            dependantCell.input.value = input
-          })
-        }
       })
     }
 
@@ -507,17 +504,7 @@ export class Grid {
     this.cells.reduce((acc: Cell[], row) => {
       return [...acc, ...row.splice(col, count)]
     }, []).forEach((cell) => {
-      const aliasString = this.project.aliases.cellRemoved(cell.cellLocator)
-
-      if (aliasString) {
-        const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-        dependants.forEach((dependantCell) => {
-          const input = dependantCell.input.value
-          dependantCell.input.value = ''
-          dependantCell.input.value = input
-        })
-      }
+      this.project.aliases.cellRemoved(cell)
     })
 
     for (let index = col; index < newCols.length; index++) {
@@ -526,18 +513,6 @@ export class Grid {
 
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
-
-        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
-
-        if (aliasString) {
-          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-          dependants.forEach((dependantCell) => {
-            const input = dependantCell.input.value
-            dependantCell.input.value = ''
-            dependantCell.input.value = input
-          })
-        }
       })
     }
 
@@ -556,7 +531,6 @@ export class Grid {
   }
 
   public insertRowsBefore(rowRangeLocator: RowRangeLocator) {
-    rowRangeLocator = rowRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
       CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
       CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
@@ -567,7 +541,6 @@ export class Grid {
   }
 
   public insertRowsAfter(rowRangeLocator: RowRangeLocator) {
-    rowRangeLocator = rowRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
       CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
       CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
@@ -621,17 +594,6 @@ export class Grid {
 
       this.cells[index].forEach((cell, col) => {
         cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
-        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
-
-        if (aliasString) {
-          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-          dependants.forEach((dependantCell) => {
-            const input = dependantCell.input.value
-            dependantCell.input.value = ''
-            dependantCell.input.value = input
-          })
-        }
       })
     }
 
@@ -647,7 +609,6 @@ export class Grid {
   }
 
   public insertColsBefore(colRangeLocator: ColRangeLocator) {
-    colRangeLocator = colRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
       CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
       CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
@@ -659,7 +620,6 @@ export class Grid {
   }
 
   public insertColsAfter(colRangeLocator: ColRangeLocator) {
-    colRangeLocator = colRangeLocator.toSorted()
     const range = RangeLocator.fromCellLocators(
       CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
       CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
@@ -710,17 +670,6 @@ export class Grid {
       for (let index = col + count; index < newCols.length; index++) {
         const cell = this.cells[row][index]
         cell.cellLocator = CellLocator.fromCoords(this, { row, col: index })
-        const aliasString = this.project.aliases.getAlias(cell.cellLocator)
-
-        if (aliasString) {
-          const dependants = matrixFilter(this.cells, cell => cell.localReferences.value.includes(aliasString))
-
-          dependants.forEach((dependantCell) => {
-            const input = dependantCell.input.value
-            dependantCell.input.value = ''
-            dependantCell.input.value = input
-          })
-        }
       }
     }
 

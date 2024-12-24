@@ -18,8 +18,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const textDecorationRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.textDecoration)
+    .map(locator => locator.getCell().textDecoration)
 
   watchHandle?.stop()
   watchHandle = watch(textDecorationRefs, () => {

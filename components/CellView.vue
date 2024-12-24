@@ -27,10 +27,8 @@ const { debugMode } = useDebug()
 const colorMode = useColorMode()
 
 const cellLocator = computed(() => CellLocator.fromCoords(grid.value, { row: row.value.index.value, col: col.value.index.value }))
-const cell = computed(() => project.value.locator.getCellFromLocator(cellLocator.value))
-const cellContent = computed(() => {
-  return project.value.locator.getCellFromLocator(cellLocator.value).display
-})
+const cell = computed(() => cellLocator.value.getCell())
+const cellContent = computed(() => cellLocator.value.getCell().display)
 
 const cellId = computed(() => getDocumentCellId(cellLocator.value))
 

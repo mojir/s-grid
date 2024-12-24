@@ -38,6 +38,6 @@ describe('paint tool', () => {
     expect(grid.getTextColor(a2)).toEqual(color)
 
     // Input should not be copied
-    expect(project.locator.getCellFromLocator(a2).input.value).toBe('')
+    expect(a2.getCell().input.value).toBe('')
   })
 })

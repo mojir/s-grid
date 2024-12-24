@@ -19,8 +19,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const fontSizeRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.fontSize)
+    .map(locator => locator.getCell().fontSize)
 
   watchHandle?.stop()
   watchHandle = watch(fontSizeRefs, () => {

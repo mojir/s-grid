@@ -1,14 +1,18 @@
+import type { Cell } from '../Cell'
 import { colLocatorRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
 import { getColId, getColNumber } from '../utils'
 import { CellLocator } from './CellLocator'
 import { CommonLocator } from './CommonLocator'
+import type { Locator } from './Locator'
+import { RangeLocator } from './RangeLocator'
+import { RowLocator } from './RowLocator'
 
 export function isColLocatorString(value: string): boolean {
   return colLocatorRegExp.test(value)
 }
 
-export class ColLocator extends CommonLocator {
+export class ColLocator extends CommonLocator implements Locator {
   public readonly absCol: boolean
   public readonly col: number
 
@@ -57,8 +61,29 @@ export class ColLocator extends CommonLocator {
     return `${this.absCol ? '$' : ''}${getColId(this.col)}`
   }
 
-  public override equals(locator: ColLocator): boolean {
-    return locator.grid === this.grid && locator.col === this.col
+  public override equals(locator: Locator): boolean {
+    return this.toRangeLocator().equals(locator)
+  }
+
+  public toRangeLocator(): RangeLocator {
+    return RangeLocator.fromCellLocators(
+      CellLocator.fromRowCol({
+        rowLocator: RowLocator.fromNumber(this.grid, 0),
+        colLocator: this,
+      }),
+      CellLocator.fromRowCol({
+        rowLocator: RowLocator.fromNumber(this.grid, this.grid.rows.value.length - 1),
+        colLocator: this,
+      }),
+    )
+  }
+
+  public getValue(): unknown {
+    return this.toRangeLocator().getValue()
+  }
+
+  public getCells(): Cell[] {
+    return this.toRangeLocator().getCells()
   }
 
   public toRelative(): ColLocator {

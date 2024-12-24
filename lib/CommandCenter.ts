@@ -21,7 +21,7 @@ const commandNames = [
   'ExpandSelection!',
   'ExpandSelectionTo!',
   'GetCell',
-  'GetCell',
+  'GetCells',
   'GetSelection',
   'Help',
   'InsertColsAfter!',
@@ -208,17 +208,17 @@ export class CommandCenter {
       name: 'GetCell',
       execute: (cellLocatorString: string) => {
         const grid = this.project.currentGrid
-        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
-        return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
+        const cellLocator = this.project.aliases.getLocator(cellLocatorString)?.value ?? CellLocator.fromString(grid.value, cellLocatorString)
+        return cellLocator.getCell().getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
-      name: 'GetCell',
+      name: 'GetCells',
       execute: (cellLocatorString: string) => {
         const grid = this.project.currentGrid
         const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
-        return this.project.locator.getCellFromLocator(cellLocator).getDebugInfo()
+        return cellLocator.getCells().map(cell => cell.getDebugInfo())
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })

@@ -182,7 +182,7 @@ export class Cell {
     const allLocatorStrings = new Set<string>(this.localReferences.value)
 
     this.localReferenceLocators.value
-      .flatMap(locator => this.project.locator.getCellsFromLocator(locator))
+      .flatMap(locator => locator.getCells())
       .flatMap(cell => cell.references.value)
       .forEach(identifier => allLocatorStrings.add(identifier))
 
@@ -228,7 +228,9 @@ export class Cell {
       return '#ERR'
     }
     if (this.isFunction.value) {
-      const alias = this.project.aliases.getAlias(this.cellLocator)
+      // TODO, this is a temporary solution
+      // We can have many aliases for a cell, we should handle this
+      const alias = this.project.aliases.getAliases(this.cellLocator)[0]
 
       return `${alias ? `${alias} ` : ''}λ`
     }
@@ -262,7 +264,7 @@ export class Cell {
     ).map(identifier => identifier.symbol)
 
     identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(locator => this.project.locator.getCellsFromLocator(locator))
+      .flatMap(locator => locator.getCells())
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))

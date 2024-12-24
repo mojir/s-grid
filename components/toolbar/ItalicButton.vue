@@ -17,8 +17,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const italicRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.italic)
+    .map(locator => locator.getCell().italic)
 
   watchHandle?.stop()
   watchHandle = watch(italicRefs, () => {

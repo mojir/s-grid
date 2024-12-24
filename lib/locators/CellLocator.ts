@@ -1,17 +1,19 @@
 import { cellLocatorRegExp } from '../constants'
 import { getColId, getColNumber, getRowId, getRowNumber } from '../utils'
 import type { Grid } from '../grid/Grid'
+import type { Cell } from '../Cell'
 import { RangeLocator } from './RangeLocator'
 import { ColLocator } from './ColLocator'
 import { RowLocator } from './RowLocator'
 import type { Movement } from './utils'
 import { CommonLocator } from './CommonLocator'
+import type { Locator } from './Locator'
 
 export function isCellLocatorString(id: string): boolean {
   return cellLocatorRegExp.test(id)
 }
 
-export class CellLocator extends CommonLocator {
+export class CellLocator extends CommonLocator implements Locator {
   public readonly absCol: boolean
   public readonly col: number
   public readonly absRow: boolean
@@ -101,12 +103,27 @@ export class CellLocator extends CommonLocator {
     return RangeLocator.fromCellLocator(this)
   }
 
+  public getCell(): Cell {
+    return this.grid.cells[this.row][this.col]
+  }
+
+  public getValue(): unknown {
+    return this.getCell().output.value
+  }
+
+  public getCells(): Cell[] {
+    return [this.getCell()]
+  }
+
   public override toStringWithoutGrid(): string {
     return `${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
-  public override equals(other: CellLocator): boolean {
-    return other.grid === this.grid && other.col === this.col && other.row === this.row
+  public override equals(other: Locator): boolean {
+    if (other instanceof CellLocator) {
+      return other.grid === this.grid && other.col === this.col && other.row === this.row
+    }
+    return this.toRangeLocator().equals(other)
   }
 
   public getRowLocator(): RowLocator {
@@ -136,7 +153,7 @@ export class CellLocator extends CommonLocator {
   }
 
   public clamp(range: RangeLocator): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+    const { startRow, startCol, endRow, endCol } = range.getCoords()
     const clampedRow = Math.max(startRow, Math.min(this.row, endRow))
     const clampedCol = Math.max(startCol, Math.min(this.col, endCol))
     if (clampedRow === this.row && clampedCol === this.col) {

@@ -30,7 +30,7 @@ watch(selectedRange, (selection) => {
   if (grid.value.editor.editingLitsCode.value && inputElement && grid.value.editor.editing.value) {
     const selectionValue = `${selection.size.value === 1
       ? selection.start.toStringWithoutGrid()
-      : selection.toSorted().toStringWithoutGrid()} `
+      : selection.toStringWithoutGrid()} `
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0

@@ -1,4 +1,3 @@
-import type { Cell } from '../Cell'
 import type { Col } from '../Col'
 import { CellLocator } from '../locators/CellLocator'
 import { ColLocator } from '../locators/ColLocator'
@@ -6,77 +5,13 @@ import { ColRangeLocator } from '../locators/ColRangeLocator'
 import { RangeLocator } from '../locators/RangeLocator'
 import { RowLocator } from '../locators/RowLocator'
 import { RowRangeLocator } from '../locators/RowRangeLocator'
-import type { ReferenceLocator, AnyLocator, Direction } from '../locators/utils'
-import { matrixMap } from '../matrix'
+import type { AnyLocator, Direction } from '../locators/utils'
 import type { Row } from '../Row'
 import type { Project } from './Project'
 
 const pageSize = 40
-export class Locator {
+export class LocatorTool {
   constructor(private readonly project: Project) {}
-
-  public getValueFromLocator(locator: ReferenceLocator): unknown {
-    const grid = locator.grid
-    if (!grid) {
-      throw new Error(`Grid not found ${locator.toStringWithGrid()}`)
-    }
-    if (locator instanceof RangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof RowLocator) {
-      return locator
-        .getAllCellLocators(grid.cols.value.length)
-        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-    }
-    else if (locator instanceof ColLocator) {
-      return locator
-        .getAllCellLocators(grid.rows.value.length)
-        .map(cellLocator => this.getCellFromLocator(cellLocator).output.value)
-    }
-    else if (locator instanceof RowRangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(grid.cols.value.length),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof ColRangeLocator) {
-      return matrixMap(
-        locator.getCellIdMatrix(grid.rows.value.length),
-        cellLocator => this.getCellFromLocator(cellLocator).output.value,
-      )
-    }
-    else if (locator instanceof CellLocator) {
-      return this.getCellFromLocator(locator).output.value
-    }
-  }
-
-  public getCellFromLocator(cellLocator: CellLocator): Cell {
-    const grid = cellLocator.grid
-    const cell = grid.cells[cellLocator.row][cellLocator.col]
-    if (!cell) {
-      throw new Error(`Cell ${cellLocator.toStringWithGrid()} is out of range`)
-    }
-
-    return cell
-  }
-
-  public getCellsFromLocator(locator: ReferenceLocator): Cell[] {
-    const grid = locator.grid
-    return locator instanceof RangeLocator
-      ? locator.getAllCellLocators().map(cellLocator => this.getCellFromLocator(cellLocator))
-      : locator instanceof RowLocator
-        ? locator.getAllCellLocators(grid.cols.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-        : locator instanceof ColLocator
-          ? locator.getAllCellLocators(grid.rows.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-          : locator instanceof RowRangeLocator
-            ? locator.getAllCellLocators(grid.cols.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-            : locator instanceof ColRangeLocator
-              ? locator.getAllCellLocators(grid.rows.value.length).map(cellLocator => this.getCellFromLocator(cellLocator))
-              : [this.getCellFromLocator(locator)]
-  }
 
   public getRowsFromLocator(locator: AnyLocator): Row[] {
     const grid = locator.grid
@@ -120,66 +55,66 @@ export class Locator {
     return colLocators.map(colLocator => grid.cols.value[colLocator.col])
   }
 
-  public locate(dir: Direction, cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
+  public locate(dir: Direction, cellLocator: CellLocator, boundingRange: RangeLocator, wrap: boolean): CellLocator {
     switch (dir) {
-      case 'up': return this.cellUp(cellLocator, range, wrap)
-      case 'down': return this.cellDown(cellLocator, range, wrap)
-      case 'right': return this.cellRight(cellLocator, range, wrap)
-      case 'left': return this.cellLeft(cellLocator, range, wrap)
-      case 'top': return this.cellTop(cellLocator, range)
-      case 'bottom': return this.cellBottom(cellLocator, range)
-      case 'leftmost': return this.cellLeftmost(cellLocator, range)
-      case 'rightmost': return this.cellRightmost(cellLocator, range)
-      case 'pageDown': return this.cellPageDown(cellLocator, range)
-      case 'pageUp': return this.cellPageUp(cellLocator, range)
-      case 'pageLeft': return this.cellPageLeft(cellLocator, range)
-      case 'pageRight': return this.cellPageRight(cellLocator, range)
+      case 'up': return this.cellUp(cellLocator, boundingRange, wrap)
+      case 'down': return this.cellDown(cellLocator, boundingRange, wrap)
+      case 'right': return this.cellRight(cellLocator, boundingRange, wrap)
+      case 'left': return this.cellLeft(cellLocator, boundingRange, wrap)
+      case 'top': return this.cellTop(cellLocator, boundingRange)
+      case 'bottom': return this.cellBottom(cellLocator, boundingRange)
+      case 'leftmost': return this.cellLeftmost(cellLocator, boundingRange)
+      case 'rightmost': return this.cellRightmost(cellLocator, boundingRange)
+      case 'pageDown': return this.cellPageDown(cellLocator, boundingRange)
+      case 'pageUp': return this.cellPageUp(cellLocator, boundingRange)
+      case 'pageLeft': return this.cellPageLeft(cellLocator, boundingRange)
+      case 'pageRight': return this.cellPageRight(cellLocator, boundingRange)
       default: throw new Error(`Unsupported direction: ${dir}`)
     }
   }
 
-  public getSurroundingCorners(locator: CellLocator, range: RangeLocator): CellLocator[] {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+  public getSurroundingCorners(cellLocator: CellLocator, boundingRange: RangeLocator): CellLocator[] {
+    const { startRow, startCol, endRow, endCol } = boundingRange.getCoords()
 
-    const upperRow = Math.max(startRow, locator.row - 2)
-    const lowerRow = Math.min(endRow, locator.row + 2)
-    const leftCol = Math.max(startCol, locator.col - 1)
-    const rightCol = Math.min(endCol, locator.col + 1)
+    const upperRow = Math.max(startRow, cellLocator.row - 2)
+    const lowerRow = Math.min(endRow, cellLocator.row + 2)
+    const leftCol = Math.max(startCol, cellLocator.col - 1)
+    const rightCol = Math.min(endCol, cellLocator.col + 1)
 
     return [
-      CellLocator.fromCoords(locator.grid, { row: upperRow, col: leftCol }),
-      CellLocator.fromCoords(locator.grid, { row: upperRow, col: rightCol }),
-      CellLocator.fromCoords(locator.grid, { row: lowerRow, col: leftCol }),
-      CellLocator.fromCoords(locator.grid, { row: lowerRow, col: rightCol }),
+      CellLocator.fromCoords(cellLocator.grid, { row: upperRow, col: leftCol }),
+      CellLocator.fromCoords(cellLocator.grid, { row: upperRow, col: rightCol }),
+      CellLocator.fromCoords(cellLocator.grid, { row: lowerRow, col: leftCol }),
+      CellLocator.fromCoords(cellLocator.grid, { row: lowerRow, col: rightCol }),
     ]
   }
 
-  public getSurroundingRows(locator: CellLocator, range: RangeLocator): RowLocator[] {
-    const { startRow, endRow } = range.toSorted().getCoords()
+  public getSurroundingRows(cellLocator: CellLocator, boundingRange: RangeLocator): RowLocator[] {
+    const { startRow, endRow } = boundingRange.getCoords()
 
-    const upperRow = Math.max(startRow, locator.row - 2)
-    const lowerRow = Math.min(endRow, locator.row + 2)
+    const upperRow = Math.max(startRow, cellLocator.row - 2)
+    const lowerRow = Math.min(endRow, cellLocator.row + 2)
 
     return [
-      RowLocator.fromNumber(locator.grid, upperRow),
-      RowLocator.fromNumber(locator.grid, lowerRow),
+      RowLocator.fromNumber(cellLocator.grid, upperRow),
+      RowLocator.fromNumber(cellLocator.grid, lowerRow),
     ]
   }
 
-  public getSurroundingCols(locator: CellLocator, range: RangeLocator): ColLocator[] {
-    const { startCol, endCol } = range.toSorted().getCoords()
+  public getSurroundingCols(cellLocator: CellLocator, boundingRange: RangeLocator): ColLocator[] {
+    const { startCol, endCol } = boundingRange.getCoords()
 
-    const leftCol = Math.max(startCol, locator.col - 1)
-    const rightCol = Math.min(endCol, locator.col + 1)
+    const leftCol = Math.max(startCol, cellLocator.col - 1)
+    const rightCol = Math.min(endCol, cellLocator.col + 1)
 
     return [
-      ColLocator.fromNumber(locator.grid, leftCol),
-      ColLocator.fromNumber(locator.grid, rightCol),
+      ColLocator.fromNumber(cellLocator.grid, leftCol),
+      ColLocator.fromNumber(cellLocator.grid, rightCol),
     ]
   }
 
   private cellUp(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+    const { startRow, startCol, endRow, endCol } = range.getCoords()
     let row = cellLocator.row - 1
     let col = cellLocator.col
     if (row < startRow) {
@@ -198,7 +133,7 @@ export class Locator {
   }
 
   private cellDown(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+    const { startRow, startCol, endRow, endCol } = range.getCoords()
     let row = cellLocator.row + 1
     let col = cellLocator.col
     if (row > endRow) {
@@ -217,7 +152,7 @@ export class Locator {
   }
 
   private cellRight(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+    const { startRow, startCol, endRow, endCol } = range.getCoords()
     let row = cellLocator.row
     let col = cellLocator.col + 1
     if (col > endCol) {
@@ -236,7 +171,7 @@ export class Locator {
   }
 
   private cellLeft(cellLocator: CellLocator, range: RangeLocator, wrap: boolean): CellLocator {
-    const { startRow, startCol, endRow, endCol } = range.toSorted().getCoords()
+    const { startRow, startCol, endRow, endCol } = range.getCoords()
     let row = cellLocator.row
     let col = cellLocator.col - 1
     if (col < startCol) {
@@ -255,22 +190,22 @@ export class Locator {
   }
 
   private cellTop(cellLocator: CellLocator, range: RangeLocator): CellLocator {
-    const { startRow } = range.toSorted().getCoords()
+    const { startRow } = range.getCoords()
     return CellLocator.fromCoords(cellLocator.grid, { row: startRow, col: cellLocator.col })
   }
 
   private cellBottom(cellLocator: CellLocator, range: RangeLocator): CellLocator {
-    const { endRow } = range.toSorted().getCoords()
+    const { endRow } = range.getCoords()
     return CellLocator.fromCoords(cellLocator.grid, { row: endRow, col: cellLocator.col })
   }
 
   private cellLeftmost(cellLocator: CellLocator, range: RangeLocator): CellLocator {
-    const { startCol } = range.toSorted().getCoords()
+    const { startCol } = range.getCoords()
     return CellLocator.fromCoords(cellLocator.grid, { row: cellLocator.row, col: startCol })
   }
 
   private cellRightmost(cellLocator: CellLocator, range: RangeLocator): CellLocator {
-    const { endCol } = range.toSorted().getCoords()
+    const { endCol } = range.getCoords()
     return CellLocator.fromCoords(cellLocator.grid, { row: cellLocator.row, col: endCol })
   }
 
@@ -279,22 +214,22 @@ export class Locator {
       throw new Error(`Cell ${cellLocator.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopRow = Math.max(range.toSorted().getCoords().startRow, cellLocator.row - pageSize)
+    const stopRow = Math.max(range.getCoords().startRow, cellLocator.row - pageSize)
 
     if (cellLocator.row === stopRow) {
       return cellLocator
     }
-    const hasInput = this.getCellFromLocator(cellLocator).input.value !== ''
+    const hasInput = cellLocator.getCell().input.value !== ''
     const above = this.cellUp(cellLocator, range, false)
     if (above.row === stopRow) {
       return above
     }
-    const aboveHasInput = this.getCellFromLocator(above).input.value !== ''
+    const aboveHasInput = above.getCell().input.value !== ''
     if (hasInput && !aboveHasInput) {
       let current = above
       do {
         current = this.cellUp(current, range, false)
-      } while (current.row !== stopRow && this.getCellFromLocator(current).input.value === '')
+      } while (current.row !== stopRow && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && aboveHasInput) {
@@ -303,7 +238,7 @@ export class Locator {
       do {
         previous = current
         current = this.cellUp(current, range, false)
-        if (this.getCellFromLocator(current).input.value === '') {
+        if (current.getCell().input.value === '') {
           return previous
         }
       } while (current.row !== stopRow)
@@ -311,7 +246,7 @@ export class Locator {
     }
     else {
       let current = above
-      while (current.row !== stopRow && this.getCellFromLocator(current).input.value === '') {
+      while (current.row !== stopRow && current.getCell().input.value === '') {
         current = this.cellUp(current, range, false)
       }
       return current
@@ -323,22 +258,22 @@ export class Locator {
       throw new Error(`Cell ${cellLocator.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopRow = Math.min(range.toSorted().getCoords().endRow, cellLocator.row + pageSize)
+    const stopRow = Math.min(range.getCoords().endRow, cellLocator.row + pageSize)
 
     if (cellLocator.row === stopRow) {
       return cellLocator
     }
-    const hasInput = this.getCellFromLocator(cellLocator).input.value !== ''
+    const hasInput = cellLocator.getCell().input.value !== ''
     const below = this.cellDown(cellLocator, range, false)
     if (below.row === stopRow) {
       return below
     }
-    const belowHasInput = this.getCellFromLocator(below).input.value !== ''
+    const belowHasInput = below.getCell().input.value !== ''
     if (hasInput && !belowHasInput) {
       let current = below
       do {
         current = this.cellDown(current, range, false)
-      } while (current.row !== stopRow && this.getCellFromLocator(current).input.value === '')
+      } while (current.row !== stopRow && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && belowHasInput) {
@@ -347,7 +282,7 @@ export class Locator {
       do {
         previous = current
         current = this.cellDown(current, range, false)
-        if (this.getCellFromLocator(current).input.value === '') {
+        if (current.getCell().input.value === '') {
           return previous
         }
       } while (current.row !== stopRow)
@@ -355,7 +290,7 @@ export class Locator {
     }
     else {
       let current = below
-      while (current.row !== stopRow && this.getCellFromLocator(current).input.value === '') {
+      while (current.row !== stopRow && current.getCell().input.value === '') {
         current = this.cellDown(current, range, false)
       }
       return current
@@ -367,22 +302,22 @@ export class Locator {
       throw new Error(`Cell ${cellLocator.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopCol = Math.max(range.toSorted().getCoords().startCol, cellLocator.col - pageSize)
+    const stopCol = Math.max(range.getCoords().startCol, cellLocator.col - pageSize)
 
     if (cellLocator.col === stopCol) {
       return cellLocator
     }
-    const hasInput = this.getCellFromLocator(cellLocator).input.value !== ''
+    const hasInput = cellLocator.getCell().input.value !== ''
     const leftOf = this.cellLeft(cellLocator, range, false)
     if (leftOf.col === stopCol) {
       return leftOf
     }
-    const leftOfHasInput = this.getCellFromLocator(leftOf).input.value !== ''
+    const leftOfHasInput = leftOf.getCell().input.value !== ''
     if (hasInput && !leftOfHasInput) {
       let current = leftOf
       do {
         current = this.cellLeft(current, range, false)
-      } while (current.col !== stopCol && this.getCellFromLocator(current).input.value === '')
+      } while (current.col !== stopCol && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && leftOfHasInput) {
@@ -391,7 +326,7 @@ export class Locator {
       do {
         previous = current
         current = this.cellLeft(current, range, false)
-        if (this.getCellFromLocator(current).input.value === '') {
+        if (current.getCell().input.value === '') {
           return previous
         }
       } while (current.col !== stopCol)
@@ -399,7 +334,7 @@ export class Locator {
     }
     else {
       let current = leftOf
-      while (current.col !== stopCol && this.getCellFromLocator(current).input.value === '') {
+      while (current.col !== stopCol && current.getCell().input.value === '') {
         current = this.cellLeft(current, range, false)
       }
       return current
@@ -411,22 +346,22 @@ export class Locator {
       throw new Error(`Cell ${cellLocator.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopCol = Math.min(range.toSorted().getCoords().endCol, cellLocator.col + pageSize)
+    const stopCol = Math.min(range.getCoords().endCol, cellLocator.col + pageSize)
 
     if (cellLocator.col === stopCol) {
       return cellLocator
     }
-    const hasInput = this.getCellFromLocator(cellLocator).input.value !== ''
+    const hasInput = cellLocator.getCell().input.value !== ''
     const rightOf = this.cellRight(cellLocator, range, false)
     if (rightOf.col === stopCol) {
       return rightOf
     }
-    const rightOfHasInput = this.getCellFromLocator(rightOf).input.value !== ''
+    const rightOfHasInput = rightOf.getCell().input.value !== ''
     if (hasInput && !rightOfHasInput) {
       let current = rightOf
       do {
         current = this.cellRight(current, range, false)
-      } while (current.col !== stopCol && this.getCellFromLocator(current).input.value === '')
+      } while (current.col !== stopCol && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && rightOfHasInput) {
@@ -435,7 +370,7 @@ export class Locator {
       do {
         previous = current
         current = this.cellRight(current, range, false)
-        if (this.getCellFromLocator(current).input.value === '') {
+        if (current.getCell().input.value === '') {
           return previous
         }
       } while (current.col !== stopCol)
@@ -443,7 +378,7 @@ export class Locator {
     }
     else {
       let current = rightOf
-      while (current.col !== stopCol && this.getCellFromLocator(current).input.value === '') {
+      while (current.col !== stopCol && current.getCell().input.value === '') {
         current = this.cellRight(current, range, false)
       }
       return current

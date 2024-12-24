@@ -17,8 +17,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const boldRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.bold)
+    .map(locator => locator.getCell().bold)
 
   watchHandle?.stop()
   watchHandle = watch(boldRefs, () => {

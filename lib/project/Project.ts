@@ -7,8 +7,9 @@ import { matrixForEach } from '../matrix'
 import { REPL } from '../REPL'
 import { transformLocators, type FormulaTransformation } from '../transformLocators'
 import { getGridName } from '../utils'
+import type { Cell } from '../Cell'
 import { ProjectClipboard } from './ProjectClipboard'
-import { Locator } from './Locator'
+import { LocatorTool } from './LocatorTool'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
@@ -16,9 +17,9 @@ import type { GridDTO } from '~/dto/GridDTO'
 export class Project {
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
-  public readonly aliases = new Aliases()
+  public readonly aliases = new Aliases(this)
   public readonly clipboard = new ProjectClipboard(this)
-  public readonly locator = new Locator(this)
+  public readonly locator = new LocatorTool(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public readonly history = new History(this)
@@ -114,12 +115,12 @@ export class Project {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
       const locator = getReferenceLocatorFromString(grid, value)
       if (locator) {
-        acc[value] = this.locator.getValueFromLocator(locator)
+        acc[value] = locator.getValue()
       }
       else {
         const aliasCell = this.aliases.getLocator(value)
         if (aliasCell) {
-          acc[value] = this.locator.getCellFromLocator(aliasCell.value).output.value
+          acc[value] = aliasCell.value.getValue()
         }
       }
 
@@ -128,7 +129,7 @@ export class Project {
   }
 
   public transformAllLocators(transformation: FormulaTransformation) {
-    this.aliases.transformAllLocators(transformation)
+    this.aliases.transformLocators(transformation)
     for (const grid of this.grids.value) {
       matrixForEach(grid.cells, (cell) => {
         transformLocators(cell, transformation)
@@ -146,5 +147,9 @@ export class Project {
 
   public hasGrid(gridName: string): boolean {
     return !!this.grids.value.find(grid => grid.name.value === getGridName(gridName))
+  }
+
+  public getAllCells(): Cell[] {
+    return this.grids.value.flatMap(grid => grid.cells).flat()
   }
 }

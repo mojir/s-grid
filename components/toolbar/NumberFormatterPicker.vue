@@ -33,8 +33,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const formatterRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.formatter)
+    .map(locator => locator.getCell().formatter)
 
   watchHandle?.stop()
   watchHandle = watch(formatterRefs, () => {

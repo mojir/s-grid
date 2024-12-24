@@ -48,7 +48,8 @@ onUnmounted(() => {
 })
 
 function resetSelection() {
-  selection.value.updateSelection(RangeLocator.fromCellLocator(grid.value.position.value))
+  const location = RangeLocator.fromCellLocator(grid.value.position.value)
+  selection.value.updateSelection(location.start, location.end)
 }
 
 const dbClickTime: number = 300

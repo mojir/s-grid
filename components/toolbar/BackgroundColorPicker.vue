@@ -19,8 +19,7 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
   const bgColorRefs = newSelection
     .getAllCellLocators()
-    .map(locator => project.value.locator.getCellFromLocator(locator))
-    .map(cell => cell.backgroundColor)
+    .map(locator => locator.getCell().backgroundColor)
 
   watchHandle?.stop()
   watchHandle = watch(bgColorRefs, () => {
