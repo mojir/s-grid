@@ -31,7 +31,7 @@ const commandNames = [
   'ResetSelection!',
   'RestartRepl!',
   'Select!',
-  'SetAlias!',
+  'AddAlias!',
   'SetBackgroundColor!',
   'SetColWidth!',
   'SetFormatter!',
@@ -193,7 +193,10 @@ export class CommandCenter {
       execute: (cellreferenceString: string) => {
         const grid = this.project.currentGrid
         const reference = this.project.aliases.getReference(cellreferenceString)?.value ?? CellReference.fromString(grid.value, cellreferenceString)
-        return reference.getCell().getDebugInfo()
+        if (reference instanceof CellReference) {
+          return reference.getCell().getDebugInfo()
+        }
+        throw new Error(`Invalid reference: ${cellreferenceString}`)
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
@@ -216,10 +219,13 @@ export class CommandCenter {
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
-      name: 'SetAlias!',
-      execute: (alias: string, cellreferenceString?: string) => {
-        const grid = this.project.currentGrid
-        const reference = (cellreferenceString && CellReference.fromString(grid.value, cellreferenceString)) || grid.value.position.value
+      name: 'AddAlias!',
+      execute: (alias: string, referenceString?: string) => {
+        const grid = this.project.currentGrid.value
+        const reference = referenceString ? getReferenceFromString(grid, referenceString) : grid.position.value
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
+        }
         this.project.aliases.setCell(alias, reference)
       },
       description: 'Create an alias for a cell',

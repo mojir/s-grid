@@ -42,7 +42,7 @@ describe('CommandCenter', () => {
     })
     test('SetAlias!', async () => {
       commandCenter.exec('SetInput!', '10', 'A1')
-      commandCenter.exec('SetAlias!', 'Foo', 'A1')
+      commandCenter.exec('AddAlias!', 'Foo', 'A1')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((commandCenter.exec('GetCell', 'Foo') as any).output).toBe(10)
     })

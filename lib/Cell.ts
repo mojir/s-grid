@@ -230,9 +230,10 @@ export class Cell {
     if (this.isFunction.value) {
       // TODO, this is a temporary solution
       // We can have many aliases for a cell, we should handle this
-      const alias = this.project.aliases.getAliases(this.cellReference)[0]
+      // const alias = this.project.aliases.getAliases(this.cellReference)[0]
 
-      return `${alias ? `${alias} ` : ''}λ`
+      // return `${alias ? `${alias} ` : ''}λ`
+      return 'λ'
     }
 
     const formattedOutput = this.formatOutput()

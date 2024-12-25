@@ -442,9 +442,9 @@ export class Grid {
 
     const newRows = this.rows.value.filter((_, index) => index < row || index >= row + count)
 
-    this.cells.splice(row, count).flat().forEach((cell) => {
-      this.project.aliases.cellRemoved(cell)
-    })
+    // this.cells.splice(row, count).flat().forEach((cell) => {
+    //   this.project.aliases.cellRemoved(cell)
+    // })
 
     for (let index = row; index < newRows.length; index++) {
       const row = newRows[index]
@@ -475,11 +475,11 @@ export class Grid {
 
     const newCols = this.cols.value.filter((_, index) => index < col || index >= col + count)
 
-    this.cells.reduce((acc: Cell[], row) => {
-      return [...acc, ...row.splice(col, count)]
-    }, []).forEach((cell) => {
-      this.project.aliases.cellRemoved(cell)
-    })
+    // this.cells.reduce((acc: Cell[], row) => {
+    //   return [...acc, ...row.splice(col, count)]
+    // }, []).forEach((cell) => {
+    //   this.project.aliases.cellRemoved(cell)
+    // })
 
     for (let index = col; index < newCols.length; index++) {
       const col = newCols[index]
