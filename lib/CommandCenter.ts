@@ -1,11 +1,8 @@
 import type { JsFunction } from '@mojir/lits'
-import { CellLocator } from './locators/CellLocator'
-import { ColLocator, isColLocatorString } from './locators/ColLocator'
-import { isRowLocatorString, RowLocator } from './locators/RowLocator'
-import { getReferenceLocatorFromString, type Direction } from './locators/utils'
-import { isRowRangeLocatorString, RowRangeLocator } from './locators/RowRangeLocator'
-import { ColRangeLocator, isColRangeLocatorString } from './locators/ColRangeLocator'
-import { getColNumber, getRowNumber } from './utils'
+import { CellReference, isCellReferenceString } from './reference/CellReference'
+import { getReferenceFromString, type Direction } from './reference/utils'
+import { getColIndex, getRowIndex } from './utils'
+import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import { Color } from '~/lib/color'
 import type { Project } from '~/lib/project/Project'
 import { format } from '~/lib/litsInterop/format'
@@ -86,62 +83,49 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'CreateNamedFunction!',
-      execute: (alias: string, input: string, cellLocatorString?: string) => {
+      execute: (alias: string, input: string, cellReferenceString?: string) => {
         const grid = this.project.currentGrid
-        const locator = (cellLocatorString && CellLocator.fromString(grid.value, cellLocatorString)) || grid.value.position.value
-        this.project.aliases.setCell(alias, locator)
-        grid.value.setInput(input, locator)
+        const reference = (cellReferenceString && CellReference.fromString(grid.value, cellReferenceString)) || grid.value.position.value
+        this.project.aliases.setCell(alias, reference)
+        grid.value.setInput(input, reference)
       },
       description: 'Clear the current cell',
     })
 
     this.registerCommand({
       name: 'SetRowHeight!',
-      execute: (height: number, locatorString?: string) => {
+      execute: (height: number, row?: number, count?: number) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (row === undefined) {
           grid.value.setRowHeight(height, null)
           return
         }
-        const rowRangeLocator: RowRangeLocator | undefined = isRowRangeLocatorString(locatorString)
-          ? RowRangeLocator.fromString(grid.value, locatorString)
-          : isRowLocatorString(locatorString)
-            ? RowRangeLocator.fromRowLocators(
-                RowLocator.fromString(grid.value, locatorString),
-                RowLocator.fromString(grid.value, locatorString),
-              )
-            : undefined
-
-        if (!rowRangeLocator) {
-          throw new Error(`Invalid row locator: ${locatorString}`)
+        count = count ?? 1
+        if (count < 1) {
+          throw new Error('Count must be greater than 0')
         }
-        grid.value.setRowHeight(height, rowRangeLocator)
+
+        const rangeReference = RangeReference.fromRowIndex(grid.value, row, count)
+        grid.value.setRowHeight(height, rangeReference)
       },
       description: 'Set row height',
     })
 
     this.registerCommand({
       name: 'SetColWidth!',
-      execute: (width: number, locatorString?: string) => {
+      execute: (width: number, col?: number, count?: number) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (col === undefined) {
           grid.value.setColWidth(width, null)
           return
         }
-
-        const colRangeLocator: ColRangeLocator | undefined = isColRangeLocatorString(locatorString)
-          ? ColRangeLocator.fromString(grid.value, locatorString)
-          : isColLocatorString(locatorString)
-            ? ColRangeLocator.fromColLocators(
-                ColLocator.fromString(grid.value, locatorString),
-                ColLocator.fromString(grid.value, locatorString),
-              )
-            : undefined
-
-        if (!colRangeLocator) {
-          throw new Error(`Invalid col locator: ${locatorString}`)
+        count = count ?? 1
+        if (count < 1) {
+          throw new Error('Count must be greater than 0')
         }
-        grid.value.setColWidth(width, colRangeLocator)
+
+        const rangeReference = RangeReference.fromColIndex(grid.value, col, count)
+        grid.value.setRowHeight(width, rangeReference)
       },
       description: 'Set column width',
     })
@@ -156,43 +140,43 @@ export class CommandCenter {
     })
     this.registerCommand({
       name: 'MovePositionTo!',
-      execute: (cellLocatorString: string) => {
+      execute: (cellReferenceString: string) => {
         const grid = this.project.currentGrid
-        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
-        grid.value.movePositionTo(cellLocator)
+        const reference = CellReference.fromString(grid.value, cellReferenceString)
+        grid.value.movePositionTo(reference)
       },
       description: 'Move the position to a specific cell',
     })
     this.registerCommand({
       name: 'SetInput!',
-      execute: (input: string, locatorString?: string) => {
+      execute: (input: string, referenceString?: string) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setInput(input, null)
           return
         }
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setInput(input, locator)
+        grid.value.setInput(input, reference)
       },
       description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
     })
     this.registerCommand({
       name: 'Clear!',
-      execute: (locatorString?: string) => {
+      execute: (referenceString?: string) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.clear(null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.clear(locator)
+        grid.value.clear(reference)
       },
       description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
     })
@@ -206,207 +190,216 @@ export class CommandCenter {
     })
     this.registerCommand({
       name: 'GetCell',
-      execute: (cellLocatorString: string) => {
+      execute: (cellreferenceString: string) => {
         const grid = this.project.currentGrid
-        const cellLocator = this.project.aliases.getLocator(cellLocatorString)?.value ?? CellLocator.fromString(grid.value, cellLocatorString)
-        return cellLocator.getCell().getDebugInfo()
+        const reference = this.project.aliases.getReference(cellreferenceString)?.value ?? CellReference.fromString(grid.value, cellreferenceString)
+        return reference.getCell().getDebugInfo()
       },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
       name: 'GetCells',
-      execute: (cellLocatorString: string) => {
+      execute: (referenceString: string) => {
         const grid = this.project.currentGrid
-        const cellLocator = CellLocator.fromString(grid.value, cellLocatorString)
-        return cellLocator.getCells().map(cell => cell.getDebugInfo())
+        if (isCellReferenceString(referenceString)) {
+          const reference = CellReference.fromString(grid.value, referenceString)
+          return [reference.getCell().getDebugInfo()]
+        }
+        else if (isRangeReferenceString(referenceString)) {
+          const rangeReference = RangeReference.fromString(grid.value, referenceString)
+          return rangeReference.getCells().map(cell => cell.getDebugInfo())
+        }
+        else {
+          throw new Error(`Invalid reference: ${referenceString}`)
+        }
       },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
       name: 'SetAlias!',
-      execute: (alias: string, cellLocatorString?: string) => {
+      execute: (alias: string, cellreferenceString?: string) => {
         const grid = this.project.currentGrid
-        const cellLocator = (cellLocatorString && CellLocator.fromString(grid.value, cellLocatorString)) || grid.value.position.value
-        this.project.aliases.setCell(alias, cellLocator)
+        const reference = (cellreferenceString && CellReference.fromString(grid.value, cellreferenceString)) || grid.value.position.value
+        this.project.aliases.setCell(alias, reference)
       },
       description: 'Create an alias for a cell',
     })
 
     this.registerCommand({
       name: 'SetFontSize!',
-      execute: (fontSize: number, locatorString?: string) => {
+      execute: (fontSize: number, referenceString?: string) => {
         if (!isFontSize(fontSize)) {
           throw new Error(`Invalid font size: ${fontSize}`)
         }
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setFontSize(fontSize, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setFontSize(fontSize, locator)
+        grid.value.setFontSize(fontSize, reference)
       },
       description: 'Set the font size of a cell or a range of cells. If no target is specified, set the font size of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetBold!',
-      execute: (value: boolean, locatorString?: string) => {
+      execute: (value: boolean, referenceString?: string) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setBold(value, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setBold(value, locator)
+        grid.value.setBold(value, reference)
       },
       description: 'Set the bold of a cell or a range of cells. If no target is specified, set the bold of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetItalic!',
-      execute: (value: boolean, locatorString?: string) => {
+      execute: (value: boolean, referenceString?: string) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setItalic(value, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setItalic(value, locator)
+        grid.value.setItalic(value, reference)
       },
       description: 'Set the italic of a cell or a range of cells. If no target is specified, set the italic of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetTextDecoration!',
-      execute: (value: string, locatorString?: string) => {
+      execute: (value: string, referenceString?: string) => {
         if (!isStyleTextDecoration(value)) {
           throw new Error(`Invalid text decoration: ${value}`)
         }
 
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setTextDecoration(value, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setTextDecoration(value, locator)
+        grid.value.setTextDecoration(value, reference)
       },
       description: 'Set the text decoration of a cell or a range of cells. If no target is specified, set the text decoration of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetJustify!',
-      execute: (value: string, locatorString?: string) => {
+      execute: (value: string, referenceString?: string) => {
         if (!isStyleJustify(value)) {
           throw new Error(`Invalid justify: ${value}`)
         }
 
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setJustify(value, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setJustify(value, locator)
+        grid.value.setJustify(value, reference)
       },
       description: 'Set the justify of a cell or a range of cells. If no target is specified, set the justify of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetAlign!',
-      execute: (value: string, locatorString?: string) => {
+      execute: (value: string, referenceString?: string) => {
         if (!isStyleAlign(value)) {
           throw new Error(`Invalid align: ${value}`)
         }
 
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setAlign(value, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setAlign(value, locator)
+        grid.value.setAlign(value, reference)
       },
       description: 'Set the align of a cell or a range of cells. If no target is specified, set the align of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetBackgroundColor!',
-      execute: (hexCode: string, locatorString?: string) => {
+      execute: (hexCode: string, referenceString?: string) => {
         const grid = this.project.currentGrid
         const color = Color.fromHex(hexCode)
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setBackgroundColor(color, null)
           return
         }
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setBackgroundColor(color, locator)
+        grid.value.setBackgroundColor(color, reference)
       },
       description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetTextColor!',
-      execute: (hexCode: string, locatorString?: string) => {
+      execute: (hexCode: string, referenceString?: string) => {
         const grid = this.project.currentGrid
         const color = Color.fromHex(hexCode)
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setTextColor(color, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
 
-        grid.value.setTextColor(color, locator)
+        grid.value.setTextColor(color, reference)
       },
       description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
     })
 
     this.registerCommand({
       name: 'SetFormatter!',
-      execute: (formatter: string, locatorString?: string) => {
+      execute: (formatter: string, referenceString?: string) => {
         const grid = this.project.currentGrid
-        if (!locatorString) {
+        if (!referenceString) {
           grid.value.setFormatter(formatter, null)
           return
         }
 
-        const locator = getReferenceLocatorFromString(grid.value, locatorString)
-        if (!locator) {
-          throw new Error(`Invalid locator: ${locatorString}`)
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setFormatter(formatter, locator)
+        grid.value.setFormatter(formatter, reference)
       },
       description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
     })
@@ -437,7 +430,7 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'ExpandSelectionTo!',
-      execute: (target: CellLocator | string) => {
+      execute: (target: CellReference | string) => {
         const grid = this.project.currentGrid
         grid.value.selection.expandSelectionTo(target)
       },
@@ -483,15 +476,11 @@ export class CommandCenter {
       description: 'Delete rows',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowNumber(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
+        const startRowIndex = getRowIndex(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
-        const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(grid.value, startRow),
-          RowLocator.fromNumber(grid.value, endRow),
-        )
-        grid.value.deleteRows(rowRangeLocator)
+        grid.value.deleteRows(startRow, endRow - startRow + 1)
       },
     })
 
@@ -499,16 +488,12 @@ export class CommandCenter {
       name: 'DeleteCols!',
       description: 'Delete cols',
       execute: (startColStringId: string, endColStringId?: string) => {
-        const startColIndex = getColNumber(startColStringId)
-        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
+        const startColIndex = getColIndex(startColStringId)
+        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const grid = this.project.currentGrid
         const endCol = Math.max(startColIndex, endColIndex)
-        const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(grid.value, startCol),
-          ColLocator.fromNumber(grid.value, endCol),
-        )
-        grid.value.deleteCols(colRangeLocator)
+        grid.value.deleteCols(startCol, endCol - startCol + 1)
       },
     })
 
@@ -517,15 +502,11 @@ export class CommandCenter {
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowNumber(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
+        const startRowIndex = getRowIndex(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
-        const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(grid.value, startRow),
-          RowLocator.fromNumber(grid.value, endRow),
-        )
-        grid.value.insertRowsBefore(rowRangeLocator)
+        grid.value.insertRowsBefore(startRow, endRow - startRow + 1)
       },
     })
 
@@ -534,15 +515,11 @@ export class CommandCenter {
       description: 'Insert rows before',
       execute: (startRowStringId: string, endRowStringId?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowNumber(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowNumber(endRowStringId) : startRowIndex
+        const startRowIndex = getRowIndex(startRowStringId)
+        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
         const startRow = Math.min(startRowIndex, endRowIndex)
         const endRow = Math.max(startRowIndex, endRowIndex)
-        const rowRangeLocator = RowRangeLocator.fromRowLocators(
-          RowLocator.fromNumber(grid.value, startRow),
-          RowLocator.fromNumber(grid.value, endRow),
-        )
-        grid.value.insertRowsAfter(rowRangeLocator)
+        grid.value.insertRowsAfter(startRow, endRow - startRow + 1)
       },
     })
 
@@ -551,16 +528,11 @@ export class CommandCenter {
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
         const grid = this.project.currentGrid
-        const startColIndex = getColNumber(startColStringId)
-        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
+        const startColIndex = getColIndex(startColStringId)
+        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const endCol = Math.max(startColIndex, endColIndex)
-        const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(grid.value, startCol),
-          ColLocator.fromNumber(grid.value, endCol),
-        )
-
-        grid.value.insertColsBefore(colRangeLocator)
+        grid.value.insertColsBefore(startCol, endCol - startCol + 1)
       },
     })
 
@@ -569,16 +541,11 @@ export class CommandCenter {
       description: 'Insert columns before',
       execute: (startColStringId: string, endColStringId?: string) => {
         const grid = this.project.currentGrid
-        const startColIndex = getColNumber(startColStringId)
-        const endColIndex = endColStringId ? getColNumber(endColStringId) : startColIndex
+        const startColIndex = getColIndex(startColStringId)
+        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
         const startCol = Math.min(startColIndex, endColIndex)
         const endCol = Math.max(startColIndex, endColIndex)
-        const colRangeLocator = ColRangeLocator.fromColLocators(
-          ColLocator.fromNumber(grid.value, startCol),
-          ColLocator.fromNumber(grid.value, endCol),
-        )
-
-        grid.value.insertColsAfter(colRangeLocator)
+        grid.value.insertColsAfter(startCol, endCol - startCol + 1)
       },
     })
 

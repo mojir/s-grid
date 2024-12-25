@@ -16,9 +16,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   justify.value = grid.value.getJustify(newSelection) ?? 'auto'
 
-  const justifyRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().justify)
+  const justifyRefs = newSelection.getCells().map(cell => cell.justify)
 
   watchHandle?.stop()
   watchHandle = watch(justifyRefs, () => {

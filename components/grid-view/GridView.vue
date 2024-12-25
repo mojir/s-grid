@@ -2,28 +2,28 @@
 import { watch, type WatchHandle } from 'vue'
 import { hs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
-import type { CellLocator } from '~/lib/locators/CellLocator'
-import { getDocumentCellId, getDocumentColId, getDocumentRowId } from '~/lib/locators/utils'
+import type { CellReference } from '~/lib/reference/CellReference'
+import { getDocumentCellId, getDocumentColId, getDocumentRowId } from '~/lib/reference/utils'
 
 const props = defineProps<{
   project: Project
 }>()
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', cellLocator: CellLocator): void
+  (e: 'cell-dblclick', cellReference: CellReference): void
 }>()
 
 const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const referencedLocators = computed(() => {
-  return grid.value.currentCell.value.localReferenceLocators.value.filter((locator) => {
-    return locator.grid === grid.value
+const localReferenceList = computed(() => {
+  return grid.value.currentCell.value.referenceList.value.filter((reference) => {
+    return reference.grid === grid.value
   })
 })
 watch(grid.value.position, (newPosition) => {
-  project.value.locator.getSurroundingCorners(newPosition, grid.value.gridRange.value)
-    .map(locator => document.getElementById(getDocumentCellId(locator)))
+  newPosition.getSurroundingCorners(grid.value.gridRange.value)
+    .map(reference => document.getElementById(getDocumentCellId(reference)))
     .forEach(element => element?.scrollIntoView({
       block: 'nearest',
       inline: 'nearest',
@@ -48,20 +48,20 @@ watch(grid, (grid) => {
     const elements: (HTMLElement | null)[] = []
 
     if (oldStart.row !== newStart.row) {
-      elements.push(...project.value.locator.getSurroundingRows(newStart, grid.gridRange.value)
-        .map(locator => document.getElementById(getDocumentRowId(locator))))
+      elements.push(...newStart.getSurroundingRowIndices(grid.gridRange.value)
+        .map(row => document.getElementById(getDocumentRowId(grid, row))))
     }
     else if (oldStart.col !== newStart.col) {
-      elements.push(...project.value.locator.getSurroundingCols(newStart, grid.gridRange.value)
-        .map(locator => document.getElementById(getDocumentColId(locator))))
+      elements.push(...newStart.getSurroundingColIndices(grid.gridRange.value)
+        .map(col => document.getElementById(getDocumentColId(grid, col))))
     }
     else if (oldEnd.row !== newEnd.row) {
-      elements.push(...project.value.locator.getSurroundingRows(newEnd, grid.gridRange.value)
-        .map(locator => document.getElementById(getDocumentRowId(locator))))
+      elements.push(...newEnd.getSurroundingRowIndices(grid.gridRange.value)
+        .map(row => document.getElementById(getDocumentRowId(grid, row))))
     }
     else if (oldEnd.col !== newEnd.col) {
-      elements.push(...project.value.locator.getSurroundingCols(newEnd, grid.gridRange.value)
-        .map(locator => document.getElementById(getDocumentColId(locator))))
+      elements.push(...newEnd.getSurroundingColIndices(grid.gridRange.value)
+        .map(col => document.getElementById(getDocumentColId(grid, col))))
     }
     elements.forEach(element => element?.scrollIntoView({ block: 'nearest', inline: 'nearest' }))
   })
@@ -107,7 +107,7 @@ watch(grid, (grid) => {
       v-if="grid.editor.editing.value"
     >
       <GridRegion
-        v-for="region of referencedLocators"
+        v-for="region of localReferenceList"
         :key="region.toStringWithoutGrid()"
         :grid="grid"
         :region="shallowRef(region)"

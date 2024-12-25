@@ -15,9 +15,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   italic.value = grid.value.getItalic(newSelection) ?? false
 
-  const italicRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().italic)
+  const italicRefs = newSelection.getCells().map(cell => cell.italic)
 
   watchHandle?.stop()
   watchHandle = watch(italicRefs, () => {

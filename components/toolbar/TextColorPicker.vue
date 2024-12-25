@@ -17,9 +17,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   textColor.value = grid.value.getTextColor(newSelection)
 
-  const textColorRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().textColor)
+  const textColorRefs = newSelection.getCells().map(cell => cell.textColor)
 
   watchHandle?.stop()
   watchHandle = watch(textColorRefs, () => {

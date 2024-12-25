@@ -5,8 +5,8 @@ import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
 import { getLineHeight } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
-import { CellLocator } from '~/lib/locators/CellLocator'
-import { getDocumentCellId } from '~/lib/locators/utils'
+import { CellReference } from '~/lib/reference/CellReference'
+import { getDocumentCellId } from '~/lib/reference/utils'
 
 const props = defineProps<{
   project: Project
@@ -15,7 +15,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'cell-dblclick', cellLocator: CellLocator): void
+  (e: 'cell-dblclick', cellReference: CellReference): void
 }>()
 
 const { project, row, col } = toRefs(props)
@@ -26,11 +26,11 @@ const repl = project.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
 
-const cellLocator = computed(() => CellLocator.fromCoords(grid.value, { row: row.value.index.value, col: col.value.index.value }))
-const cell = computed(() => cellLocator.value.getCell())
-const cellContent = computed(() => cellLocator.value.getCell().display)
+const reference = computed(() => CellReference.fromCoords(grid.value, { row: row.value.index.value, col: col.value.index.value }))
+const cell = computed(() => reference.value.getCell())
+const cellContent = computed(() => reference.value.getCell().display)
 
-const cellId = computed(() => getDocumentCellId(cellLocator.value))
+const cellId = computed(() => getDocumentCellId(reference.value))
 
 const cellBackgroundColor = computed<Color | null>(() => {
   const bg = cell.value.backgroundColor.value
@@ -146,7 +146,7 @@ function inspectCell(e: MouseEvent) {
     e.preventDefault()
     sidePanelOpen.value = true
     currentTab.value = 'repl'
-    repl.run(`(GetCell "${cellLocator.value.toStringWithGrid()}") ;; Inspecting Cell`)
+    repl.run(`(GetCell "${reference.value.toStringWithGrid()}") ;; Inspecting Cell`)
   }
 }
 </script>
@@ -157,7 +157,7 @@ function inspectCell(e: MouseEvent) {
       :id="cellId"
       :style="cellStyle"
       class="px-1 h-full relative flex box-border text-sm whitespace-pre"
-      @dblclick="emit('cell-dblclick', cellLocator)"
+      @dblclick="emit('cell-dblclick', reference)"
       @click="inspectCell"
     >
       {{ cellContent }}

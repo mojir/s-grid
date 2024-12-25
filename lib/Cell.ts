@@ -1,9 +1,9 @@
 import { isLitsFunction } from '@mojir/lits'
 import { Color } from './color'
-import { isRangeLocatorString, RangeLocator } from './locators/RangeLocator'
+import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import type { Grid } from './grid/Grid'
 import type { CommandCenter } from './CommandCenter'
-import { CellLocator, isCellLocatorString } from './locators/CellLocator'
+import { CellReference, isCellReferenceString } from './reference/CellReference'
 import type { Project } from './project/Project'
 import { defaultFontSize, defaultFormatter } from './constants'
 import type { CellChangeItem } from './project/History'
@@ -28,7 +28,7 @@ export class Cell {
   public readonly textColor = ref<Color | null>(null)
 
   constructor(
-    public cellLocator: CellLocator,
+    public cellReference: CellReference,
     {
       project,
       grid,
@@ -45,7 +45,7 @@ export class Cell {
 
     watch(this.display, (newValue, oldValue) => {
       if ((!oldValue && newValue) || oldValue.split('\n').length !== newValue.split('\n').length) {
-        grid.autoSetRowHeightByTarget(this.cellLocator)
+        grid.autoSetRowHeightByTarget(this.cellReference)
       }
     })
 
@@ -143,7 +143,7 @@ export class Cell {
   }
 
   public formula = computed(() => this.input.value.startsWith('=') && this.input.value.length > 1 ? this.input.value.slice(1) : null)
-  public localReferenceLocators = computed(() => this.getLocatorsFromUnresolvedIdentifiers(this.localReferences.value))
+  public referenceList = computed(() => this.getReferencesFromUnresolvedIdentifiers(this.localReferences.value))
 
   public localReferences = computed<string[]>(() => {
     const input = this.input.value
@@ -162,15 +162,15 @@ export class Cell {
     this.input.value = `=${formula}`
   }
 
-  private getLocatorsFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
+  private getReferencesFromUnresolvedIdentifiers(unresolvedIdentifiers: string[]) {
     return unresolvedIdentifiers.flatMap((identifier) => {
-      if (isCellLocatorString(identifier)) {
-        return CellLocator.fromString(this.grid, identifier)
+      if (isCellReferenceString(identifier)) {
+        return CellReference.fromString(this.grid, identifier)
       }
-      if (isRangeLocatorString(identifier)) {
-        return RangeLocator.fromString(this.grid, identifier)
+      if (isRangeReferenceString(identifier)) {
+        return RangeReference.fromString(this.grid, identifier)
       }
-      const aliasCell = this.project.aliases.getLocator(identifier)
+      const aliasCell = this.project.aliases.getReference(identifier)
       if (aliasCell) {
         return aliasCell.value
       }
@@ -179,14 +179,14 @@ export class Cell {
   }
 
   private references = computed<string[]>(() => {
-    const allLocatorStrings = new Set<string>(this.localReferences.value)
+    const allReferenceStrings = new Set<string>(this.localReferences.value)
 
-    this.localReferenceLocators.value
-      .flatMap(locator => locator.getCells())
+    this.referenceList.value
+      .flatMap(reference => reference.getCells())
       .flatMap(cell => cell.references.value)
-      .forEach(identifier => allLocatorStrings.add(identifier))
+      .forEach(identifier => allReferenceStrings.add(identifier))
 
-    return Array.from(allLocatorStrings)
+    return Array.from(allReferenceStrings)
   })
 
   public output = computed(() => {
@@ -230,7 +230,7 @@ export class Cell {
     if (this.isFunction.value) {
       // TODO, this is a temporary solution
       // We can have many aliases for a cell, we should handle this
-      const alias = this.project.aliases.getAliases(this.cellLocator)[0]
+      const alias = this.project.aliases.getAliases(this.cellReference)[0]
 
       return `${alias ? `${alias} ` : ''}λ`
     }
@@ -263,8 +263,8 @@ export class Cell {
       lits.analyze(formatter, { jsFunctions: this.commandCenter.jsFunctions }).unresolvedIdentifiers,
     ).map(identifier => identifier.symbol)
 
-    identifiers.push(...this.getLocatorsFromUnresolvedIdentifiers(identifiers)
-      .flatMap(locator => locator.getCells())
+    identifiers.push(...this.getReferencesFromUnresolvedIdentifiers(identifiers)
+      .flatMap(reference => reference.getCells())
       .flatMap(cell => cell.references.value))
 
     const uniqueIdentifiers = Array.from(new Set(identifiers))
@@ -301,11 +301,11 @@ export class Cell {
     return {
       ...this.getDTO(),
       grid: this.grid.name.value,
-      locator: this.cellLocator.toString(this.grid),
+      reference: this.cellReference.toString(this.grid),
       output: formatOutputValue(this.output.value),
       display: this.display.value,
-      row: this.cellLocator.row,
-      col: this.cellLocator.col,
+      row: this.cellReference.row,
+      col: this.cellReference.col,
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
       hasError: this.hasError.value,
@@ -316,8 +316,8 @@ export class Cell {
     return {
       type: 'cell',
       gridName: this.grid.name.value,
-      row: this.cellLocator.row,
-      col: this.cellLocator.col,
+      row: this.cellReference.row,
+      col: this.cellReference.col,
       attribute,
       oldValue,
       newValue,

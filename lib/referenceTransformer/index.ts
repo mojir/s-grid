@@ -1,13 +1,11 @@
 import { isLitsError } from '@mojir/lits'
-import { isRangeLocatorString, RangeLocator } from '../locators/RangeLocator'
-import { getReferenceLocatorFromString, type Movement } from '../locators/utils'
-import type { RowRangeLocator } from '../locators/RowRangeLocator'
-import { CellLocator, isCellLocatorString } from '../locators/CellLocator'
-import type { ColRangeLocator } from '../locators/ColRangeLocator'
+import { isRangeReferenceString, RangeReference } from '../reference/RangeReference'
+import { getReferenceFromString, type Movement } from '../reference/utils'
+import { CellReference, isCellReferenceString } from '../reference/CellReference'
 import type { Cell } from '../Cell'
 import type { Grid } from '../grid/Grid'
-import { transformRangeLocator } from './rangeTransformers'
-import { transformCellLocator } from './cellTransformers'
+import { transformRangeReference } from './rangeTransformers'
+import { transformCellReference } from './cellReferenceTransformer'
 
 export type RenameGridTransformation = {
   type: 'renameGrid'
@@ -18,7 +16,7 @@ export type RenameGridTransformation = {
 export type MoveTransformation = {
   sourceGrid: Grid
   type: 'move'
-  range?: RangeLocator
+  range?: RangeReference
   movement: Movement
 }
 
@@ -30,30 +28,34 @@ export type GridDeleteTransformation = {
 export type RowDeleteTransformation = {
   sourceGrid: Grid
   type: 'rowDelete'
-  rowRangeLocator: RowRangeLocator
+  row: number
+  count: number
 }
 
 export type ColDeleteTransformation = {
   sourceGrid: Grid
   type: 'colDelete'
-  colRangeLocator: ColRangeLocator
+  col: number
+  count: number
 }
 
 export type RowInsertBeforeTransformation = {
   sourceGrid: Grid
   type: 'rowInsertBefore'
-  rowRangeLocator: RowRangeLocator
+  row: number
+  count: number
 }
 
 export type ColInsertBeforeTransformation = {
   sourceGrid: Grid
   type: 'colInsertBefore'
-  colRangeLocator: ColRangeLocator
+  col: number
+  count: number
 }
 
 export type FormulaTransformation = GridDeleteTransformation | RenameGridTransformation | MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
 
-export function transformLocators(cell: Cell, transformation: FormulaTransformation): void {
+export function transformReferences(cell: Cell, transformation: FormulaTransformation): void {
   const formula = cell.formula.value
   if (!formula) {
     return
@@ -68,7 +70,7 @@ export function transformLocators(cell: Cell, transformation: FormulaTransformat
 }
 
 function transformIdentifier(cellGrid: Grid, identifier: string, transformation: FormulaTransformation): string {
-  if (!isCellLocatorString(identifier) && !isRangeLocatorString(identifier)) {
+  if (!isCellReferenceString(identifier) && !isRangeReferenceString(identifier)) {
     return identifier
   }
 
@@ -94,19 +96,19 @@ function transformIdentifier(cellGrid: Grid, identifier: string, transformation:
     return `${transformation.newName}!${rest}`
   }
 
-  const locator = getReferenceLocatorFromString(transformation.sourceGrid, identifier)
-  if (!locator) {
+  const reference = getReferenceFromString(transformation.sourceGrid, identifier)
+  if (!reference) {
     return identifier
   }
 
   try {
-    if (locator instanceof CellLocator) {
-      return transformCellLocator({ cellGrid, transformation, cellLocator: locator })
+    if (reference instanceof CellReference) {
+      return transformCellReference({ cellGrid, transformation, cellReference: reference })
     }
-    if (locator instanceof RangeLocator) {
-      return transformRangeLocator({ cellGrid: cellGrid, transformation, rangeLocator: locator })
+    if (reference instanceof RangeReference) {
+      return transformRangeReference({ cellGrid: cellGrid, transformation, rangeReference: reference })
     }
-    throw new Error(`Unsupported locator type: ${identifier}`)
+    throw new Error(`Unsupported reference type: ${identifier}`)
   }
   catch (error) {
     if (isLitsError(error)) {

@@ -1,46 +1,46 @@
 import type { Cell } from './Cell'
-import type { CellLocator } from './locators/CellLocator'
+import type { CellReference } from './reference/CellReference'
 import type { Project } from './project/Project'
-import type { FormulaTransformation } from './transformLocators'
+import type { FormulaTransformation } from './referenceTransformer'
 
 export class Aliases {
-  private cellAliases = new Map<string, Ref<CellLocator>>()
+  private cellAliases = new Map<string, Ref<CellReference>>()
   private lookup = new Map<string, Set<string>>()
 
   constructor(private project: Project) {}
 
-  public setCell(alias: string, cellLocator: CellLocator, force = false) {
+  public setCell(alias: string, cellReference: CellReference, force = false) {
     const existingCell = this.cellAliases.get(alias)
     if (existingCell && !force) {
       throw new Error(`Alias ${alias} already exists`)
     }
 
-    this.addLookup(cellLocator, alias)
-    const cellRef = shallowRef(cellLocator)
+    this.addLookup(cellReference, alias)
+    const cellRef = shallowRef(cellReference)
     if (existingCell) {
-      existingCell.value = cellLocator
+      existingCell.value = cellReference
     }
     else {
       this.cellAliases.set(alias, cellRef)
     }
   }
 
-  private addLookup(cellLocator: CellLocator, alias: string) {
-    const existing = this.lookup.get(cellLocator.toStringWithGrid())
+  private addLookup(cellReference: CellReference, alias: string) {
+    const existing = this.lookup.get(cellReference.toStringWithGrid())
     if (existing) {
       existing.add(alias)
     }
     else {
-      this.lookup.set(cellLocator.toStringWithGrid(), new Set([alias]))
+      this.lookup.set(cellReference.toStringWithGrid(), new Set([alias]))
     }
   }
 
-  public getLocator(alias: string): Ref<CellLocator> | undefined {
+  public getReference(alias: string): Ref<CellReference> | undefined {
     return this.cellAliases.get(alias)
   }
 
-  public getAliases(cellLocator: CellLocator): string[] {
-    const aliasSet = this.lookup.get(cellLocator.toStringWithGrid())
+  public getAliases(cellReference: CellReference): string[] {
+    const aliasSet = this.lookup.get(cellReference.toStringWithGrid())
     if (!aliasSet) {
       return []
     }
@@ -50,7 +50,7 @@ export class Aliases {
   }
 
   public cellRemoved(cell: Cell) {
-    const aliasSet = this.lookup.get(cell.cellLocator.toStringWithGrid())
+    const aliasSet = this.lookup.get(cell.cellReference.toStringWithGrid())
     if (!aliasSet) {
       return
     }
@@ -59,9 +59,9 @@ export class Aliases {
   }
 
   public removeAlias(alias: string) {
-    const cellLocator = this.cellAliases.get(alias)
-    if (cellLocator) {
-      this.lookup.delete(cellLocator.value.toStringWithGrid())
+    const reference = this.cellAliases.get(alias)
+    if (reference) {
+      this.lookup.delete(reference.value.toStringWithGrid())
       this.cellAliases.delete(alias)
       console.log('delete', alias)
       if (alias) {
@@ -74,46 +74,46 @@ export class Aliases {
     }
   }
 
-  public transformLocators(transformation: FormulaTransformation) {
+  public transformReferences(transformation: FormulaTransformation) {
     this.cellAliases
       .entries()
-      .filter(([, locator]) => locator.value.grid === transformation.sourceGrid)
-      .forEach(([alias, locator]) => {
+      .filter(([, reference]) => reference.value.grid === transformation.sourceGrid)
+      .forEach(([alias, reference]) => {
         switch (transformation.type) {
           case 'gridDelete':
             this.cellAliases.delete(alias)
-            this.lookup.delete(locator.value.toStringWithGrid())
+            this.lookup.delete(reference.value.toStringWithGrid())
             break
           case 'move':
-            if (transformation.range && !transformation.range.containsCell(locator.value)) {
+            if (transformation.range && !transformation.range.containsCell(reference.value)) {
               return
             }
-            locator.value = locator.value.move(transformation.movement)
+            reference.value = reference.value.move(transformation.movement)
             break
           case 'rowDelete':
-            if (transformation.rowRangeLocator.containsCell(locator.value)) {
+            if (reference.value.row >= transformation.row && reference.value.row < transformation.row + transformation.count) {
               this.removeAlias(alias)
             }
-            else if (locator.value.row > transformation.rowRangeLocator.end.row) {
-              locator.value = locator.value.move({ deltaRow: -transformation.rowRangeLocator.nbrOfRows, toGrid: transformation.sourceGrid })
+            else if (reference.value.row >= transformation.row + transformation.count) {
+              reference.value = reference.value.move({ deltaRow: -transformation.count, toGrid: transformation.sourceGrid })
             }
             break
           case 'rowInsertBefore':
-            if (locator.value.row >= transformation.rowRangeLocator.start.row) {
-              locator.value = locator.value.move({ deltaRow: transformation.rowRangeLocator.nbrOfRows, toGrid: transformation.sourceGrid })
+            if (reference.value.row >= transformation.row + transformation.count) {
+              reference.value = reference.value.move({ deltaRow: transformation.count, toGrid: transformation.sourceGrid })
             }
             break
           case 'colDelete':
-            if (transformation.colRangeLocator.containsCell(locator.value)) {
+            if (reference.value.col >= transformation.col && reference.value.col < transformation.col + transformation.count) {
               this.removeAlias(alias)
             }
-            else if (locator.value.col > transformation.colRangeLocator.end.col) {
-              locator.value = locator.value.move({ deltaCol: -transformation.colRangeLocator.nbrOfCols, toGrid: transformation.sourceGrid })
+            else if (reference.value.col >= transformation.col + transformation.count) {
+              reference.value = reference.value.move({ deltaCol: -transformation.count, toGrid: transformation.sourceGrid })
             }
             break
           case 'colInsertBefore':
-            if (locator.value.col >= transformation.colRangeLocator.start.col) {
-              locator.value = locator.value.move({ deltaCol: transformation.colRangeLocator.nbrOfCols, toGrid: transformation.sourceGrid })
+            if (reference.value.col >= transformation.col) {
+              reference.value = reference.value.move({ deltaCol: transformation.count, toGrid: transformation.sourceGrid })
             }
             break
         }

@@ -1,4 +1,4 @@
-import { colLocatorRegExp, rowLocatorRegExp } from '../constants'
+import { colIdRegExp, maxNumberOfCols, maxNumberOfRows, rowIdRegExp } from '../constants'
 
 export { cn } from './cn'
 export { hs, whs, ws } from './cssUtils'
@@ -12,22 +12,21 @@ export function getGridDisplayName(gridName: string): string {
 }
 
 export function getRowId(rowIndex: number): string {
-  if (rowIndex < 9999 && rowIndex >= 0) {
-    return `${rowIndex + 1}` as string
+  if (rowIndex < 0 || rowIndex >= maxNumberOfRows) {
+    throw new Error(`Row index ${rowIndex} is out of range`)
   }
-  throw new Error(`Row index ${rowIndex} is out of range`)
+  return `${rowIndex + 1}` as string
 }
 
-export function getRowNumber(rowLocator: string): number {
-  const match = rowLocator.match(rowLocatorRegExp)
-  if (!match) {
-    throw new Error(`Invalid row string: ${rowLocator}`)
+export function getRowIndex(rowId: string): number {
+  if (!rowIdRegExp.test(rowId)) {
+    throw new Error(`Invalid row id: ${rowId}`)
   }
-  return Number(match[3]) - 1
+  return Number(rowId) - 1
 }
 
 export function getColId(col: number): string {
-  if (col < 0 || col >= 26 * 26) {
+  if (col < 0 || col >= maxNumberOfCols) {
     throw new Error(`Col ${col} is out of range`)
   }
   let result = ''
@@ -38,11 +37,12 @@ export function getColId(col: number): string {
   return result
 }
 
-export function getColNumber(colLocator: string): number {
-  const match = colLocator.match(colLocatorRegExp)
-  if (!match) {
-    throw new Error(`Invalid col string: ${colLocator}`)
+export function getColIndex(colId: string): number {
+  if (!colIdRegExp.test(colId)) {
+    throw new Error(`Invalid col id: ${colId}`)
   }
-
-  return match[3].split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0)
+  if (colId.length === 1) {
+    return colId.charCodeAt(0) - 65
+  }
+  return colId.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0) + 26
 }

@@ -1,20 +1,20 @@
-import { CellLocator } from '../locators/CellLocator'
-import type { Movement } from '../locators/utils'
+import { CellReference } from '../reference/CellReference'
+import type { Movement } from '../reference/utils'
 import type { Project } from './Project'
-import type { RangeLocator } from '~/lib/locators/RangeLocator'
+import type { RangeReference } from '~/lib/reference/RangeReference'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
-import { transformLocators } from '~/lib/transformLocators'
+import { transformReferences } from '~/lib/referenceTransformer'
 import type { CellDTO } from '~/dto/CellDTO'
 
 type InternalClipboard<T> = {
-  range: RangeLocator
+  range: RangeReference
   cells: T[][]
 }
 
 export class ProjectClipboard {
   private readonly clipboard = shallowRef<InternalClipboard<CellDTO> | null>(null)
   private readonly styleClipboard = shallowRef<InternalClipboard<CellDTO> | null>(null)
-  private readonly cutCellIds = shallowRef<CellLocator[] | null>(null)
+  private readonly cutCellIds = shallowRef<CellReference[] | null>(null)
   public hasStyleData = computed(() => !!this.styleClipboard.value)
 
   constructor(private project: Project) {
@@ -24,22 +24,22 @@ export class ProjectClipboard {
     this.styleClipboard.value = null
   }
 
-  public copyRange(range: RangeLocator) {
+  public copyRange(range: RangeReference) {
     if (this.cutCellIds.value !== null) {
       this.cutCellIds.value = null
     }
 
     this.clipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), cellLocator => cellLocator.getCell().getDTO()),
+      cells: matrixMap(range.getCellIdMatrix(), reference => reference.getCell().getDTO()),
     }
   }
 
-  public copyStyleSelection(range: RangeLocator) {
+  public copyStyleSelection(range: RangeReference) {
     this.styleClipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), (cellLocator) => {
-        const cellDTO = cellLocator.getCell().getDTO()
+      cells: matrixMap(range.getCellIdMatrix(), (reference) => {
+        const cellDTO = reference.getCell().getDTO()
         return {
           fontSize: cellDTO.fontSize,
           bold: cellDTO.bold,
@@ -55,12 +55,12 @@ export class ProjectClipboard {
     }
   }
 
-  public cutSelection(range: RangeLocator) {
+  public cutSelection(range: RangeReference) {
     this.copyRange(range)
-    this.cutCellIds.value = range.getAllCellLocators()
+    this.cutCellIds.value = range.getAllCellReferences()
   }
 
-  public pasteSelection(targetRange: RangeLocator) {
+  public pasteSelection(targetRange: RangeReference) {
     if (this.cutCellIds.value) {
       this.cutPasteSelection(targetRange)
     }
@@ -69,7 +69,7 @@ export class ProjectClipboard {
     }
   }
 
-  public pasteStyleSelection(targetRange: RangeLocator) {
+  public pasteStyleSelection(targetRange: RangeReference) {
     const styleClipboardValue = this.styleClipboard.value
     if (!styleClipboardValue) {
       return
@@ -77,14 +77,14 @@ export class ProjectClipboard {
     this.styleClipboard.value = null
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
       matrixForEach(styleClipboardValue.cells, (cellDTO, [row, col]) => {
-        const cellLocator = CellLocator.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
-        const cell = cellLocator.getCell()
+        const reference = CellReference.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
+        const cell = reference.getCell()
         cell.setDTO(cellDTO)
       })
     })
   }
 
-  private getPastePositions(sourceRange: RangeLocator, targetRange: RangeLocator): CellLocator[] {
+  private getPastePositions(sourceRange: RangeReference, targetRange: RangeReference): CellReference[] {
     const grid = targetRange.start.grid
 
     const selectionWidth = targetRange.end.col - targetRange.start.col + 1
@@ -93,15 +93,15 @@ export class ProjectClipboard {
     const rangeWidth = sourceRange.end.col - sourceRange.start.col + 1
     const rangeHeight = sourceRange.end.row - sourceRange.start.row + 1
 
-    const result: CellLocator[] = []
+    const result: CellReference[] = []
     const startRow = targetRange.start.row
     const startCol = targetRange.start.col
     let row = startRow
     let col = startCol
-    // Populate result array with the positions (CellLocator) to paste the clipboard
+    // Populate result array with the positions (CellReference) to paste the clipboard
     do {
       do {
-        result.push(CellLocator.fromCoords(grid, { row, col }))
+        result.push(CellReference.fromCoords(grid, { row, col }))
         col += rangeWidth
       } while (col - startCol + rangeWidth <= selectionWidth)
       row += rangeHeight
@@ -111,21 +111,21 @@ export class ProjectClipboard {
     return result
   }
 
-  private cutPasteSelection(targetRange: RangeLocator) {
+  private cutPasteSelection(targetRange: RangeReference) {
     if (!this.cutCellIds.value || !this.clipboard.value) {
       return
     }
 
-    this.cutCellIds.value.forEach((cellLocator) => {
-      cellLocator.grid.clear(cellLocator)
+    this.cutCellIds.value.forEach((reference) => {
+      reference.grid.clear(reference)
     })
 
     const toPosition = targetRange.start
 
     const clipboardCells = this.clipboard.value.cells
     matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
-      const cellLocator = CellLocator.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
-      const cell = cellLocator.getCell()
+      const reference = CellReference.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
+      const cell = reference.getCell()
       cell.setDTO(cellDTO)
     })
     const fromRange = this.clipboard.value.range
@@ -136,7 +136,7 @@ export class ProjectClipboard {
       deltaCol: toPosition.col - fromPosition.col,
     }
 
-    this.project.transformAllLocators({
+    this.project.transformAllReferences({
       sourceGrid: fromRange.start.grid,
       type: 'move',
       movement,
@@ -147,7 +147,7 @@ export class ProjectClipboard {
     this.cutCellIds.value = null
   }
 
-  private copyPasteSelection(targetRange: RangeLocator) {
+  private copyPasteSelection(targetRange: RangeReference) {
     if (!this.clipboard.value) {
       return
     }
@@ -168,7 +168,7 @@ export class ProjectClipboard {
       matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
         const cell = fromGrid.cells[toPosition.row + row][toPosition.col + col]
         cell.setDTO(cellDTO)
-        transformLocators(
+        transformReferences(
           cell,
           {
             sourceGrid: fromPosition.grid,

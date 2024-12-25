@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { CellLocator } from '~/lib/locators/CellLocator'
+import { CellReference } from '~/lib/reference/CellReference'
 import { Project } from '~/lib/project/Project'
 
 const project = new Project()
@@ -14,37 +14,37 @@ project.selectGrid(project.getGrid('Grid1'))
 
 const grid1 = project.currentGrid.value
 
-describe('CellLocator', () => {
+describe('CellReference', () => {
   test('fromString', () => {
-    const locator = CellLocator.fromString(grid1, 'A1')
-    expect(locator.grid.name.value).toBe('Grid1')
-    expect(locator.row).toBe(0)
-    expect(locator.col).toBe(0)
-    expect(locator.absRow).toBe(false)
-    expect(locator.absCol).toBe(false)
+    const reference = CellReference.fromString(grid1, 'A1')
+    expect(reference.grid.name.value).toBe('Grid1')
+    expect(reference.row).toBe(0)
+    expect(reference.col).toBe(0)
+    expect(reference.absRow).toBe(false)
+    expect(reference.absCol).toBe(false)
   })
   test('fromString with absolute row', () => {
-    const locator = CellLocator.fromString(grid1, '$A1')
-    expect(locator.grid.name.value).toBe('Grid1')
-    expect(locator.absCol).toBe(true)
-    expect(locator.col).toBe(0)
-    expect(locator.absRow).toBe(false)
-    expect(locator.row).toBe(0)
+    const reference = CellReference.fromString(grid1, '$A1')
+    expect(reference.grid.name.value).toBe('Grid1')
+    expect(reference.absCol).toBe(true)
+    expect(reference.col).toBe(0)
+    expect(reference.absRow).toBe(false)
+    expect(reference.row).toBe(0)
   })
   test('fromString with absolute col', () => {
-    const locator = CellLocator.fromString(grid1, 'A$1')
-    expect(locator.grid.name.value).toBe('Grid1')
-    expect(locator.col).toBe(0)
-    expect(locator.absCol).toBe(false)
-    expect(locator.row).toBe(0)
-    expect(locator.absRow).toBe(true)
+    const reference = CellReference.fromString(grid1, 'A$1')
+    expect(reference.grid.name.value).toBe('Grid1')
+    expect(reference.col).toBe(0)
+    expect(reference.absCol).toBe(false)
+    expect(reference.row).toBe(0)
+    expect(reference.absRow).toBe(true)
   })
   test('fromString with external grid', () => {
-    const locator = CellLocator.fromString(grid1, 'Grid2!$A$1')
-    expect(locator.grid.name.value).toBe('Grid2')
-    expect(locator.absCol).toBe(true)
-    expect(locator.col).toBe(0)
-    expect(locator.absRow).toBe(true)
-    expect(locator.row).toBe(0)
+    const reference = CellReference.fromString(grid1, 'Grid2!$A$1')
+    expect(reference.grid.name.value).toBe('Grid2')
+    expect(reference.absCol).toBe(true)
+    expect(reference.col).toBe(0)
+    expect(reference.absRow).toBe(true)
+    expect(reference.row).toBe(0)
   })
 })

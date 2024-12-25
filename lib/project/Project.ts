@@ -2,14 +2,13 @@ import { Aliases } from '../Aliases'
 import { builtinGrid } from '../builtinGrid'
 import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
 import { Grid } from '../grid/Grid'
-import { getReferenceLocatorFromString } from '../locators/utils'
+import { getReferenceFromString } from '../reference/utils'
 import { matrixForEach } from '../matrix'
 import { REPL } from '../REPL'
-import { transformLocators, type FormulaTransformation } from '../transformLocators'
+import { transformReferences, type FormulaTransformation } from '../referenceTransformer'
 import { getGridName } from '../utils'
 import type { Cell } from '../Cell'
 import { ProjectClipboard } from './ProjectClipboard'
-import { LocatorTool } from './LocatorTool'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
@@ -19,7 +18,6 @@ export class Project {
   public readonly commandCenter = new CommandCenter(this)
   public readonly aliases = new Aliases(this)
   public readonly clipboard = new ProjectClipboard(this)
-  public readonly locator = new LocatorTool(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public readonly history = new History(this)
@@ -76,7 +74,7 @@ export class Project {
     if (!this.grids.value.includes(grid)) {
       throw new Error(`Grid "${grid.name.value}" does not exist`)
     }
-    this.transformAllLocators({
+    this.transformAllReferences({
       type: 'gridDelete',
       sourceGrid: grid,
     })
@@ -92,7 +90,7 @@ export class Project {
   public renameGrid(grid: Grid, newName: string) {
     newName = getGridName(newName)
     grid.name.value = newName
-    this.transformAllLocators({
+    this.transformAllReferences({
       type: 'renameGrid',
       sourceGrid: grid,
       newName,
@@ -113,14 +111,14 @@ export class Project {
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {
     return [...unresolvedIdentifiers].reduce((acc: Record<string, unknown>, value) => {
-      const locator = getReferenceLocatorFromString(grid, value)
-      if (locator) {
-        acc[value] = locator.getValue()
+      const reference = getReferenceFromString(grid, value)
+      if (reference) {
+        acc[value] = reference.getOutput()
       }
       else {
-        const aliasCell = this.aliases.getLocator(value)
+        const aliasCell = this.aliases.getReference(value)
         if (aliasCell) {
-          acc[value] = aliasCell.value.getValue()
+          acc[value] = aliasCell.value.getOutput()
         }
       }
 
@@ -128,11 +126,11 @@ export class Project {
     }, {})
   }
 
-  public transformAllLocators(transformation: FormulaTransformation) {
-    this.aliases.transformLocators(transformation)
+  public transformAllReferences(transformation: FormulaTransformation) {
+    this.aliases.transformReferences(transformation)
     for (const grid of this.grids.value) {
       matrixForEach(grid.cells, (cell) => {
-        transformLocators(cell, transformation)
+        transformReferences(cell, transformation)
       })
     }
   }

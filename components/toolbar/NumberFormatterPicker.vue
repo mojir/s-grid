@@ -31,9 +31,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   format.value = grid.value.getFormatter(newSelection) ?? ''
 
-  const formatterRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().formatter)
+  const formatterRefs = newSelection.getCells().map(cell => cell.formatter)
 
   watchHandle?.stop()
   watchHandle = watch(formatterRefs, () => {

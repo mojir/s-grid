@@ -16,9 +16,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   align.value = grid.value.getAlign(newSelection) ?? 'auto'
 
-  const alignRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().align)
+  const alignRefs = newSelection.getCells().map(cell => cell.align)
 
   watchHandle?.stop()
   watchHandle = watch(alignRefs, () => {

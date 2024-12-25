@@ -4,9 +4,8 @@ import { getColId, whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
-import { ColLocator } from '~/lib/locators/ColLocator'
-import { getDocumentColId, getDocumentResizeColId } from '~/lib/locators/utils'
-import { ColRangeLocator } from '~/lib/locators/ColRangeLocator'
+import { getDocumentColId, getDocumentResizeColId } from '~/lib/reference/utils'
+import { RangeReference } from '~/lib/reference/RangeReference'
 
 const props = defineProps<{
   project: Project
@@ -18,25 +17,24 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-const colLocator = computed(() => ColLocator.fromNumber(grid.value, col.value.index.value))
-const colId = computed(() => getDocumentColId(colLocator.value))
-const resizeColId = computed(() => getDocumentResizeColId(colLocator.value))
+const colId = computed(() => getDocumentColId(grid.value, col.value.index.value))
+const resizeColId = computed(() => getDocumentResizeColId(grid.value, col.value.index.value))
 
-function getAffectedRange(): ColRangeLocator {
+function getAffectedRange(): RangeReference {
   const selectedRange = grid.value.selection.selectedCols.value
   if (!selectedRange || !grid.value.selection.isColSelected(col.value.index.value)) {
-    return ColRangeLocator.fromColLocator(colLocator.value)
+    return RangeReference.fromColIndex(grid.value, col.value.index.value)
   }
   return selectedRange
 }
 
 const deleteColLabel = computed(() => {
-  const colRangeLocator = getAffectedRange()
-  const col = colRangeLocator.start.col
-  const count = colRangeLocator.nbrOfCols
-  const start = getColId(col)
-  const end = getColId(col + count - 1)
-  return start === end ? `Remove column ${start}` : `Remove columns ${start} - ${end}`
+  const rangeReference = getAffectedRange()
+  const col = rangeReference.start.col
+  const count = rangeReference.nbrOfCols
+  const startId = getColId(col)
+  const endId = getColId(col + count - 1)
+  return startId === endId ? `Remove column ${startId}` : `Remove columns ${startId} - ${endId}`
 })
 
 const insertBeforeColLabel = computed(() => {
@@ -58,15 +56,18 @@ const insertAfterColLabel = computed(() => {
 })
 
 function removeCol() {
-  grid.value.deleteCols(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.deleteCols(start.col, end.col - start.col + 1)
 }
 
 function insertBeforeCol() {
-  grid.value.insertColsBefore(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.insertColsBefore(start.col, end.col - start.col + 1)
 }
 
 function insertAfterCol() {
-  grid.value.insertColsAfter(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.insertColsAfter(start.col, end.col - start.col + 1)
 }
 
 const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsCol(col.value.index.value))

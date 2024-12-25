@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import type { Grid } from '~/lib/grid/Grid'
-import type { RangeLocator } from '~/lib/locators/RangeLocator'
-import type { ReferenceLocator } from '~/lib/locators/utils'
+import type { RangeReference } from '~/lib/reference/RangeReference'
+import type { Reference } from '~/lib/reference/utils'
 
 const props = defineProps<{
   grid: Grid
-  region: Ref<ReferenceLocator>
+  region: Ref<Reference>
   active?: boolean
 }>()
 
 const { grid } = toRefs(props)
 
-const range = computed<RangeLocator>(() => {
-  const range = props.region.value.toRangeLocator()
-  return range
+const range = computed<RangeReference>(() => {
+  return props.region.value.toRangeReference()
 })
+
 const top = computed(() => {
   const prevRows = grid.value.rows.value.slice(0, range.value.start.row)
   return prevRows.reduce((acc, row) => acc + row.height.value, 0)

@@ -3,13 +3,9 @@ import { Col } from '../Col'
 import { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { Project } from '../project/Project'
-import { CellLocator } from '../locators/CellLocator'
-import type { ColLocator } from '../locators/ColLocator'
-import type { ColRangeLocator } from '../locators/ColRangeLocator'
-import { RangeLocator } from '../locators/RangeLocator'
-import type { RowLocator } from '../locators/RowLocator'
-import type { RowRangeLocator } from '../locators/RowRangeLocator'
-import { getDocumentCellId, type Direction, type Movement, type ReferenceLocator } from '../locators/utils'
+import { CellReference } from '../reference/CellReference'
+import { RangeReference } from '../reference/RangeReference'
+import { getDocumentCellId, type Direction, type Movement, type Reference } from '../reference/utils'
 import { Row } from '../Row'
 import { getGridName } from '../utils'
 import { GridSelection } from './GridSelection'
@@ -26,10 +22,10 @@ export class Grid {
   public cols: Ref<Col[]>
   public readonly cells: Cell[][]
   public readonly currentCell: ComputedRef<Cell>
-  public readonly position: Ref<CellLocator>
-  public readonly gridRange: ComputedRef<RangeLocator>
+  public readonly position: Ref<CellReference>
+  public readonly gridRange: ComputedRef<RangeReference>
   public readonly editor: CellEditor
-  public hoveredCell = ref<CellLocator | null>(null)
+  public hoveredCell = ref<CellReference | null>(null)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
   constructor(project: Project, name: string, nbrOfRows: number, nbrOfCols: number) {
@@ -38,12 +34,12 @@ export class Grid {
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
     this.selection = new GridSelection(this.project, this)
-    this.position = shallowRef(CellLocator.fromCoords(this, { row: 0, col: 0 }))
+    this.position = shallowRef(CellReference.fromCoords(this, { row: 0, col: 0 }))
     this.editor = new CellEditor(this)
 
     this.cells = Array.from({ length: this.rows.value.length }, (_, row) =>
       Array.from({ length: this.cols.value.length }, (_, col) =>
-        new Cell(CellLocator.fromCoords(this, { row, col }),
+        new Cell(CellReference.fromCoords(this, { row, col }),
           {
             project: this.project,
             grid: this,
@@ -52,9 +48,9 @@ export class Grid {
         ),
       ),
     )
-    this.gridRange = computed(() => RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this, { row: 0, col: 0 }),
-      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
+    this.gridRange = computed(() => RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { row: 0, col: 0 }),
+      CellReference.fromCoords(this, { row: this.rows.value.length - 1, col: this.cols.value.length - 1 }),
     ))
     this.currentCell = computed(() => this.position.value.getCell())
   }
@@ -67,9 +63,9 @@ export class Grid {
     }
 
     Object.entries(grid.cells).forEach(([key, cellDTO]) => {
-      // TODO use new regexp, to avoid the need of Locator
-      const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
-      const cell = newGrid.cells[cellLocator.row][cellLocator.col]
+      // TODO use new regexp, to avoid the need of Reference
+      const reference = CellReference.fromString(newGrid, key) as CellReference
+      const cell = newGrid.cells[reference.row][reference.col]
       if (cellDTO.input !== undefined) {
         cell.input.value = cellDTO.input
       }
@@ -102,8 +98,8 @@ export class Grid {
       }
     })
     Object.entries(grid.alias).forEach(([alias, key]) => {
-      const cellLocator = CellLocator.fromString(newGrid, key) as CellLocator
-      project.aliases.setCell(alias, cellLocator)
+      const reference = CellReference.fromString(newGrid, key) as CellReference
+      project.aliases.setCell(alias, reference)
     })
     return newGrid
   }
@@ -121,37 +117,37 @@ export class Grid {
     return this.scrollPosition
   }
 
-  public clear(locator: ReferenceLocator | null) {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells()
+  public clear(reference: Reference | null) {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells()
       .forEach((cell) => {
         cell.clear()
       })
   }
 
-  public clearInput(locator: ReferenceLocator | null) {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells()
+  public clearInput(reference: Reference | null) {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells()
       .forEach((cell) => {
         cell.input.value = ''
       })
   }
 
   public clearAllCells() {
-    this.gridRange.value.getAllCellLocators().forEach((cellLocator) => {
-      cellLocator.getCell().clear()
+    this.gridRange.value.getAllCellReferences().forEach((reference) => {
+      reference.getCell().clear()
     })
   }
 
-  public movePositionTo(cellLocator: CellLocator) {
-    const newPosition = cellLocator.clamp(this.gridRange.value)
+  public movePositionTo(cellReference: CellReference) {
+    const newPosition = cellReference.clamp(this.gridRange.value)
     if (newPosition.equals(this.position.value)) {
       return
     }
     this.position.value = newPosition
 
     if (!this.selection.selectedRange.value.containsCell(newPosition)) {
-      const location = RangeLocator.fromCellLocator(newPosition)
+      const location = RangeReference.fromCellReference(newPosition)
       this.selection.updateSelection(location.start, location.end)
     }
   }
@@ -159,27 +155,27 @@ export class Grid {
   public movePosition(dir: Direction, wrap = false) {
     const selection = this.selection.selectedRange.value
     const range = wrap && selection.size.value > 1 ? selection : this.gridRange.value
-    this.movePositionTo(this.project.locator.locate(dir, this.position.value, range, wrap))
+    this.movePositionTo(this.position.value.moveInDirection(dir, range, wrap))
   }
 
-  public setInput(input: string, locator: ReferenceLocator | null) {
-    locator = locator ?? this.selection.selectedRange.value
-    locator.getCells()
+  public setInput(input: string, reference: Reference | null) {
+    reference = reference ?? this.selection.selectedRange.value
+    reference.getCells()
       .forEach((cell) => {
         cell.input.value = input
       })
   }
 
-  public setBackgroundColor(color: Color | null, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setBackgroundColor(color: Color | null, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
 
-  public getBackgroundColor(locator: ReferenceLocator | null): Color | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getBackgroundColor(reference: Reference | null): Color | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const color = cells[0]?.backgroundColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -193,16 +189,16 @@ export class Grid {
       : null
   }
 
-  public setTextColor(color: Color | null, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setTextColor(color: Color | null, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.textColor.value = color
     })
   }
 
-  public getTextColor(locator: ReferenceLocator | null): Color | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getTextColor(reference: Reference | null): Color | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const color = cells[0]?.textColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -216,167 +212,150 @@ export class Grid {
       : null
   }
 
-  public setFontSize(fontSize: StyleFontSize, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setFontSize(fontSize: StyleFontSize, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.fontSize.value = fontSize
     })
   }
 
-  public getFontSize(locator: ReferenceLocator | null): StyleFontSize | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getFontSize(reference: Reference | null): StyleFontSize | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const fontSize = cells[0]?.fontSize.value
 
     return cells.slice(1).every(cell => cell.fontSize.value === fontSize) ? fontSize : null
   }
 
-  public setBold(bold: boolean, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setBold(bold: boolean, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.bold.value = bold
     })
   }
 
-  public getBold(locator: ReferenceLocator | null): boolean | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getBold(reference: Reference | null): boolean | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const bold = cells[0]?.bold.value
 
     return cells.slice(1).every(cell => cell.bold.value === bold) ? bold : null
   }
 
-  public setItalic(italic: boolean, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setItalic(italic: boolean, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.italic.value = italic
     })
   }
 
-  public getItalic(locator: ReferenceLocator | null): boolean | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getItalic(reference: Reference | null): boolean | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const italic = cells[0]?.italic.value
 
     return cells.slice(1).every(cell => cell.italic.value === italic) ? italic : null
   }
 
-  public setTextDecoration(textDecoration: StyleTextDecoration, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setTextDecoration(textDecoration: StyleTextDecoration, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.textDecoration.value = textDecoration
     })
   }
 
-  public getTextDecoration(locator: ReferenceLocator | null): StyleTextDecoration | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getTextDecoration(reference: Reference | null): StyleTextDecoration | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const textDecoration = cells[0]?.textDecoration.value
 
     return cells.slice(1).every(cell => cell.textDecoration.value === textDecoration) ? textDecoration : null
   }
 
-  public setAlign(align: StyleAlign, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setAlign(align: StyleAlign, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.align.value = align
     })
   }
 
-  public getAlign(locator: ReferenceLocator | null): StyleAlign | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getAlign(reference: Reference | null): StyleAlign | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const align = cells[0]?.align.value
 
     return cells.slice(1).every(cell => cell.align.value === align) ? align : null
   }
 
-  public setJustify(justify: StyleJustify, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setJustify(justify: StyleJustify, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.justify.value = justify
     })
   }
 
-  public getJustify(locator: ReferenceLocator | null): StyleJustify | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getJustify(reference: Reference | null): StyleJustify | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const justify = cells[0]?.justify.value
 
     return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
   }
 
-  public setFormatter(formatter: string, locator: ReferenceLocator | null): void {
-    locator ??= this.selection.selectedRange.value
-    locator.getCells().forEach((cell) => {
+  public setFormatter(formatter: string, reference: Reference | null): void {
+    reference ??= this.selection.selectedRange.value
+    reference.getCells().forEach((cell) => {
       cell.formatter.value = formatter
     })
   }
 
-  public getFormatter(locator: ReferenceLocator | null): string | null {
-    locator ??= this.selection.selectedRange.value
-    const cells = locator.getCells()
+  public getFormatter(reference: Reference | null): string | null {
+    reference ??= this.selection.selectedRange.value
+    const cells = reference.getCells()
     const formatter = cells[0]?.formatter.value ?? null
 
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
   }
 
-  public setRowHeight(height: number, rowRangeLocator: RowRangeLocator | null): void {
-    const locator = rowRangeLocator ?? this.selection.selectedRange.value
-    this.project.locator.getRowsFromLocator(locator).forEach((row) => {
-      row.height.value = height
+  public setRowHeight(height: number, rowIndex: RangeReference | null): void {
+    const reference = rowIndex ?? this.selection.selectedRange.value
+    reference.getAllRowIndices().forEach((row) => {
+      this.rows.value[row].height.value = height
     })
   }
 
-  public setColWidth(width: number, colRangeLocator: ColRangeLocator | null): void {
-    const locator = colRangeLocator ?? this.selection.selectedRange.value
-    this.project.locator.getColsFromLocator(locator).forEach((col) => {
-      col.width.value = width
+  public setColWidth(width: number, rangeReference: RangeReference | null): void {
+    rangeReference ??= this.selection.selectedRange.value
+    rangeReference.getAllColIndices().forEach((col) => {
+      this.cols.value[col].width.value = width
     })
   }
 
-  public getRow(rowLocator: RowLocator): Row {
-    if (rowLocator.grid !== this) {
-      throw new Error(`Row ${rowLocator.toStringWithGrid()} is not in grid ${this.name.value}`)
+  public getSelectedRowsWithRowIndex(rowIndex: number): number[] {
+    const { start, end, grid } = this.selection.selectedRange.value
+
+    if (
+      grid === this
+      && start.col === 0
+      && end.col === this.cols.value.length - 1
+      && rowIndex >= start.row
+      && rowIndex <= end.row) {
+      return this.rows.value.slice(start.row, end.row + 1).map(row => row.index.value)
     }
 
-    const row = this.rows.value[rowLocator.row]
-
-    if (!row) {
-      throw new Error(`Row ${rowLocator.toStringWithGrid()} not found`)
-    }
-    return row
-  }
-
-  public getCol(colLocator: ColLocator): Col {
-    if (colLocator.grid !== this) {
-      throw new Error(`Col ${colLocator.toStringWithGrid()} is not in grid ${this.name.value}`)
-    }
-    const col = this.cols.value[colLocator.col]
-
-    if (!col) {
-      throw new Error(`Col ${colLocator.toStringWithGrid()} not found`)
-    }
-    return col
-  }
-
-  public getSelectedRowsWithRowId(rowLocator: RowLocator, selection: RangeLocator): Row[] {
-    if (selection.start.col === 0 && selection.end.col === this.cols.value.length - 1) {
-      const row = rowLocator.row
-      if (row >= selection.start.row && row <= selection.end.row) {
-        return this.rows.value.slice(selection.start.row, selection.end.row + 1)
-      }
-    }
     return []
   }
 
-  public getSelectedColsWithColId(colLocator: ColLocator, selection: RangeLocator): Col[] {
-    if (selection.start.row === 0 && selection.end.row === this.rows.value.length - 1) {
-      const col = colLocator.col
-      if (col >= selection.start.col && col <= selection.end.col) {
-        return this.cols.value.slice(selection.start.col, selection.end.col + 1)
-      }
+  public getSelectedColsWithColIndex(col: number): number[] {
+    const { start, end, grid } = this.selection.selectedRange.value
+    if (
+      grid === this
+      && start.row === 0
+      && end.row === this.rows.value.length - 1
+      && col >= start.col && col <= end.col) {
+      return this.cols.value.slice(start.col, end.col + 1).map(col => col.index.value)
     }
+
     return []
   }
 
@@ -397,16 +376,16 @@ export class Grid {
     })
   }
 
-  public autoSetRowHeightByTarget(target?: CellLocator) {
+  public autoSetRowHeightByTarget(target?: CellReference) {
     const cellIds = target
       ? [target]
-      : this.selection.selectedRange.value.getAllCellLocators()
+      : this.selection.selectedRange.value.getAllCellReferences()
 
     const rowIds = cellIds
-      .filter(cellLocator => cellLocator.getCell().display.value)
-      .reduce((acc: number[], cellLocator) => {
-        if (!acc.includes(cellLocator.row)) {
-          acc.push(cellLocator.row)
+      .filter(reference => reference.getCell().display.value)
+      .reduce((acc: number[], reference) => {
+        if (!acc.includes(reference.row)) {
+          acc.push(reference.row)
         }
         return acc
       }, [])
@@ -416,13 +395,13 @@ export class Grid {
   public autoSetColWidth(cols: number[]) {
     cols.forEach((col) => {
       const cells = this.getCellIdsFromColIndex(col)
-        .map(cellLocator => cellLocator.getCell())
+        .map(reference => reference.getCell())
 
       const newColWidth = cells.reduce((acc, cell) => {
         if (!cell.display.value) {
           return acc
         }
-        const elem = document.getElementById(getDocumentCellId(cell.cellLocator))
+        const elem = document.getElementById(getDocumentCellId(cell.cellReference))
         if (!elem) {
           return acc
         }
@@ -446,9 +425,9 @@ export class Grid {
   }
 
   public getRowCells(row: number): Cell[] {
-    const startCellId = CellLocator.fromCoords(this, { row, col: 0 })
-    const endCellId = CellLocator.fromCoords(this, { row, col: this.cols.value.length - 1 })
-    const range = RangeLocator.fromCellLocators(startCellId, endCellId)
+    const startCellId = CellReference.fromCoords(this, { row, col: 0 })
+    const endCellId = CellReference.fromCoords(this, { row, col: this.cols.value.length - 1 })
+    const range = RangeReference.fromCellReferences(startCellId, endCellId)
     return range.getCells()
   }
 
@@ -456,9 +435,7 @@ export class Grid {
     this.selection.select(this.position.value)
   }
 
-  public deleteRows(rowRangeLocator: RowRangeLocator) {
-    const row = rowRangeLocator.start.row
-    const count = rowRangeLocator.nbrOfRows
+  public deleteRows(row: number, count: number) {
     if (count === this.rows.value.length) {
       throw new Error('Cannot delete all rows')
     }
@@ -474,17 +451,18 @@ export class Grid {
       row.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
+        cell.cellReference = CellReference.fromCoords(this, { row: index, col })
       })
     }
 
     this.rows.value = newRows
 
-    this.project.transformAllLocators(
+    this.project.transformAllReferences(
       {
         sourceGrid: this,
         type: 'rowDelete',
-        rowRangeLocator,
+        row,
+        count,
       },
     )
 
@@ -492,10 +470,8 @@ export class Grid {
     this.position.value = this.selection.selectedRange.value.start
   }
 
-  public deleteCols(colRangeLocator: ColRangeLocator) {
-    const col = colRangeLocator.start.col
-    const count = colRangeLocator.nbrOfCols
-    if (count === this.cols.value.length) {
+  public deleteCols(col: number, count: number) {
+    if (col === 0 && count >= this.cols.value.length) {
       throw new Error('Cannot delete all columns')
     }
 
@@ -512,17 +488,18 @@ export class Grid {
       col.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
+        cell.cellReference = CellReference.fromCoords(this, { row: index, col })
       })
     }
 
     this.cols.value = newCols
 
-    this.project.transformAllLocators(
+    this.project.transformAllReferences(
       {
         sourceGrid: this,
         type: 'colDelete',
-        colRangeLocator,
+        col,
+        count,
       },
     )
 
@@ -530,27 +507,27 @@ export class Grid {
     this.position.value = this.selection.selectedRange.value.start
   }
 
-  public insertRowsBefore(rowRangeLocator: RowRangeLocator) {
-    const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
-      CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
+  public insertRowsBefore(row: number, count: number) {
+    const range = RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { row, col: 0 }),
+      CellReference.fromCoords(this, { row: row + count - 1, col: this.cols.value.length - 1 }),
     )
     this.project.clipboard.copyStyleSelection(range)
-    this.insertRows(rowRangeLocator)
+    this.insertRows(row, count)
     this.project.clipboard.pasteStyleSelection(range)
   }
 
-  public insertRowsAfter(rowRangeLocator: RowRangeLocator) {
-    const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this, { row: rowRangeLocator.start.row, col: 0 }),
-      CellLocator.fromCoords(this, { row: rowRangeLocator.end.row, col: this.cols.value.length - 1 }),
+  public insertRowsAfter(row: number, count: number) {
+    const range = RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { row, col: 0 }),
+      CellReference.fromCoords(this, { row: row + count - 1, col: this.cols.value.length - 1 }),
     )
     this.project.clipboard.copyStyleSelection(range)
 
-    this.insertRows(rowRangeLocator.move(rowRangeLocator.nbrOfRows))
+    this.insertRows(row + count, count)
     const movement: Movement = {
       toGrid: this,
-      deltaRow: rowRangeLocator.nbrOfRows,
+      deltaRow: count,
       deltaCol: 0,
     }
     this.selection.moveSelection(movement)
@@ -558,20 +535,18 @@ export class Grid {
     this.project.clipboard.pasteStyleSelection(range.move(movement))
   }
 
-  private getCellIdsFromColIndex(col: number): CellLocator[] {
-    const startCellId = CellLocator.fromCoords(this, { row: 0, col })
-    const endCellId = CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col })
-    return RangeLocator.fromCellLocators(startCellId, endCellId).getAllCellLocators()
+  private getCellIdsFromColIndex(col: number): CellReference[] {
+    const startCellId = CellReference.fromCoords(this, { row: 0, col })
+    const endCellId = CellReference.fromCoords(this, { row: this.rows.value.length - 1, col })
+    return RangeReference.fromCellReferences(startCellId, endCellId).getAllCellReferences()
   }
 
-  private insertRows(rowRangeLocator: RowRangeLocator) {
-    const row = rowRangeLocator.start.row
-    const count = rowRangeLocator.nbrOfRows
+  private insertRows(row: number, count: number) {
     const createdRows = Array.from({ length: count }, (_, index) => {
       const rowInstance = new Row(this, row + index, defaultRowHeight)
       this.cells.splice(row + index, 0, Array.from({ length: this.cols.value.length }, (_, col) =>
         new Cell(
-          CellLocator.fromCoords(this, { row: row + index, col }),
+          CellReference.fromCoords(this, { row: row + index, col }),
           {
             project: this.project,
             grid: this,
@@ -593,51 +568,50 @@ export class Grid {
       row.index.value = index
 
       this.cells[index].forEach((cell, col) => {
-        cell.cellLocator = CellLocator.fromCoords(this, { row: index, col })
+        cell.cellReference = CellReference.fromCoords(this, { row: index, col })
       })
     }
 
-    this.project.transformAllLocators(
+    this.project.transformAllReferences(
       {
         sourceGrid: this,
         type: 'rowInsertBefore',
-        rowRangeLocator,
+        row,
+        count,
       },
     )
 
     this.rows.value = newRows
   }
 
-  public insertColsBefore(colRangeLocator: ColRangeLocator) {
-    const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
-      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+  public insertColsBefore(col: number, count: number) {
+    const range = RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { row: 0, col }),
+      CellReference.fromCoords(this, { row: this.rows.value.length - 1, col: col + count - 1 }),
     )
 
     this.project.clipboard.copyStyleSelection(range)
-    this.insertCols(colRangeLocator)
+    this.insertCols(col, count)
     this.project.clipboard.pasteStyleSelection(range)
   }
 
-  public insertColsAfter(colRangeLocator: ColRangeLocator) {
-    const range = RangeLocator.fromCellLocators(
-      CellLocator.fromCoords(this, { row: 0, col: colRangeLocator.start.col }),
-      CellLocator.fromCoords(this, { row: this.rows.value.length - 1, col: colRangeLocator.end.col }),
+  public insertColsAfter(col: number, count: number) {
+    const range = RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { row: 0, col }),
+      CellReference.fromCoords(this, { row: this.rows.value.length - 1, col: col + count - 1 }),
     )
-    this.insertCols(colRangeLocator.move(colRangeLocator.nbrOfCols))
+    this.insertCols(col + count, count)
     const movement: Movement = {
       toGrid: this,
       deltaRow: 0,
-      deltaCol: colRangeLocator.nbrOfCols,
+      deltaCol: count,
     }
     this.selection.moveSelection(movement)
     this.position.value = this.selection.selectedRange.value.start
     this.project.clipboard.pasteStyleSelection(range.move(movement))
   }
 
-  private insertCols(colRangeLocator: ColRangeLocator) {
-    const col = colRangeLocator.start.col
-    const count = colRangeLocator.nbrOfCols
+  private insertCols(col: number, count: number) {
     const createdCols = Array.from({ length: count }, (_, index) => {
       return new Col(this, col + index, defaultColWidth)
     })
@@ -651,7 +625,7 @@ export class Grid {
     this.cells.forEach((cellRow, row) => {
       cellRow.splice(col, 0, ...Array.from({ length: count }, (_, index) =>
         new Cell(
-          CellLocator.fromCoords(this, { row, col: col + index }),
+          CellReference.fromCoords(this, { row, col: col + index }),
           {
             project: this.project,
             grid: this,
@@ -669,15 +643,16 @@ export class Grid {
     for (let row = 0; row < this.cells.length; row++) {
       for (let index = col + count; index < newCols.length; index++) {
         const cell = this.cells[row][index]
-        cell.cellLocator = CellLocator.fromCoords(this, { row, col: index })
+        cell.cellReference = CellReference.fromCoords(this, { row, col: index })
       }
     }
 
-    this.project.transformAllLocators(
+    this.project.transformAllReferences(
       {
         sourceGrid: this,
         type: 'colInsertBefore',
-        colRangeLocator,
+        col,
+        count,
       },
     )
 

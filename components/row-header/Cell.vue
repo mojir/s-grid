@@ -4,9 +4,8 @@ import { rowHeaderWidth } from '~/lib/constants'
 import type { Row } from '~/lib/Row'
 import { getRowId, whs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
-import { RowLocator } from '~/lib/locators/RowLocator'
-import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/locators/utils'
-import { RowRangeLocator } from '~/lib/locators/RowRangeLocator'
+import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/reference/utils'
+import { RangeReference } from '~/lib/reference/RangeReference'
 
 const props = defineProps<{
   project: Project
@@ -18,14 +17,13 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const everthingSelected = computed(() => grid.value.selection.selectedRange.value.equals(grid.value.gridRange.value))
 
-const rowLocator = computed(() => RowLocator.fromNumber(grid.value, row.value.index.value))
-const rowId = computed(() => getDocumentRowId(rowLocator.value))
-const resizeRowId = computed(() => getDocumentResizeRowId(rowLocator.value))
+const rowId = computed(() => getDocumentRowId(grid.value, row.value.index.value))
+const resizeRowId = computed(() => getDocumentResizeRowId(grid.value, row.value.index.value))
 
 const deleteRowLabel = computed(() => {
-  const rowRangeLocator = getAffectedRange()
-  const row = rowRangeLocator.start.row
-  const count = rowRangeLocator.nbrOfRows
+  const rangeReference = getAffectedRange()
+  const row = rangeReference.start.row
+  const count = rangeReference.nbrOfRows
   const start = getRowId(row)
   const end = getRowId(row + count - 1)
   return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
@@ -49,24 +47,27 @@ const insertAfterRowLabel = computed(() => {
   return `Insert ${count} rows after`
 })
 
-function getAffectedRange(): RowRangeLocator {
+function getAffectedRange(): RangeReference {
   const selectedRange = grid.value.selection.selectedRows.value
   if (!selectedRange || !grid.value.selection.isRowSelected(row.value.index.value)) {
-    return RowRangeLocator.fromRowLocator(rowLocator.value)
+    return RangeReference.fromRowIndex(grid.value, row.value.index.value)
   }
   return selectedRange
 }
 
 function removeRow() {
-  grid.value.deleteRows(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.deleteRows(start.row, end.row - start.row + 1)
 }
 
 function insertBeforeRow() {
-  grid.value.insertRowsBefore(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.insertRowsBefore(start.row, end.row - start.row + 1)
 }
 
 function insertAfterRow() {
-  grid.value.insertRowsAfter(getAffectedRange())
+  const { start, end } = getAffectedRange()
+  grid.value.insertRowsAfter(start.row, end.row - start.row + 1)
 }
 
 const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRow(row.value.index.value))

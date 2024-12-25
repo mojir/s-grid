@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Color } from '~/lib/color'
-import { CellLocator } from '~/lib/locators/CellLocator'
-import { RangeLocator } from '~/lib/locators/RangeLocator'
+import { CellReference } from '~/lib/reference/CellReference'
+import { RangeReference } from '~/lib/reference/RangeReference'
 import { Project } from '~/lib/project/Project'
 
 const project = new Project()
@@ -9,8 +9,8 @@ const project = new Project()
 describe('paint tool', () => {
   it('copies styles from one cell to another', async () => {
     const grid = project.currentGrid.value
-    const a1 = CellLocator.fromString(grid, 'A1')
-    const a2 = CellLocator.fromString(grid, 'A2')
+    const a1 = CellReference.fromString(grid, 'A1')
+    const a2 = CellReference.fromString(grid, 'A2')
     const bgColor = Color.fromHex('#ff0000')
     const color = Color.fromHex('#00ff00')
 
@@ -25,8 +25,8 @@ describe('paint tool', () => {
     grid.setTextColor(color, a1)
 
     grid.position.value = a1
-    project.clipboard.copyStyleSelection(RangeLocator.fromCellLocator(a1))
-    project.clipboard.pasteStyleSelection(RangeLocator.fromCellLocator(a2))
+    project.clipboard.copyStyleSelection(RangeReference.fromCellReference(a1))
+    project.clipboard.pasteStyleSelection(RangeReference.fromCellReference(a2))
 
     expect(grid.getAlign(a2)).toBe('middle')
     expect(grid.getJustify(a2)).toBe('center')

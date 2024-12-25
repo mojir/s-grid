@@ -16,9 +16,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   textDecoration.value = grid.value.getTextDecoration(newSelection) ?? 'none'
 
-  const textDecorationRefs = newSelection
-    .getAllCellLocators()
-    .map(locator => locator.getCell().textDecoration)
+  const textDecorationRefs = newSelection.getCells().map(cell => cell.textDecoration)
 
   watchHandle?.stop()
   watchHandle = watch(textDecorationRefs, () => {

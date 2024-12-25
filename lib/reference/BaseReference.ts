@@ -1,6 +1,7 @@
 import type { Grid } from '../grid/Grid'
+import type { Reference } from './utils'
 
-export abstract class CommonLocator {
+export abstract class BaseReference {
   readonly grid: Grid
 
   constructor(grid: Grid) {
@@ -8,7 +9,8 @@ export abstract class CommonLocator {
   }
 
   abstract toStringWithoutGrid(): string
-  abstract equals(locator: CommonLocator): boolean
+  abstract equals(reference: Reference): boolean
+  abstract getOutput(): unknown
 
   public toStringWithGrid(): string {
     return `${this.grid.name.value}!${this.toStringWithoutGrid()}`
