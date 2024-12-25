@@ -1,9 +1,8 @@
 import { CellReference } from '../reference/CellReference'
-import type { Movement } from '../reference/utils'
 import type { Project } from './Project'
 import type { RangeReference } from '~/lib/reference/RangeReference'
 import { matrixForEach, matrixMap } from '~/lib/matrix'
-import { transformReferences } from '~/lib/referenceTransformer'
+import { transformLitsPrograms } from '~/lib/transformer/litsTransformer'
 import type { CellDTO } from '~/dto/CellDTO'
 
 type InternalClipboard<T> = {
@@ -130,17 +129,14 @@ export class ProjectClipboard {
     })
     const fromRange = this.clipboard.value.range
     const fromPosition = fromRange.start
-    const movement: Movement = {
-      toGrid: toPosition.grid,
-      deltaRow: toPosition.row - fromPosition.row,
-      deltaCol: toPosition.col - fromPosition.col,
-    }
 
     this.project.transformAllReferences({
-      sourceGrid: fromRange.start.grid,
       type: 'move',
-      movement,
+      grid: fromPosition.grid,
       range: fromRange,
+      toGrid: toPosition.grid,
+      toRow: toPosition.row,
+      toCol: toPosition.col,
     })
 
     this.clipboard.value = null
@@ -159,23 +155,20 @@ export class ProjectClipboard {
       const clipboardCells = this.clipboard.value.cells
       const range = this.clipboard.value.range
       const fromPosition = range.start
-      const movement: Movement = {
-        toGrid: toPosition.grid,
-        deltaRow: toPosition.row - fromPosition.row,
-        deltaCol: toPosition.col - fromPosition.col,
-      }
 
       matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
         const cell = fromGrid.cells[toPosition.row + row][toPosition.col + col]
         cell.setDTO(cellDTO)
-        transformReferences(
+        transformLitsPrograms({
           cell,
-          {
-            sourceGrid: fromPosition.grid,
+          transformation: {
             type: 'move',
-            movement,
+            grid: fromPosition.grid,
+            toGrid: toPosition.grid,
+            toRow: toPosition.row,
+            toCol: toPosition.col,
           },
-        )
+        })
       })
     })
   }

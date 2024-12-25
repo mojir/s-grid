@@ -4,13 +4,13 @@ import type { Grid } from '../grid/Grid'
 import type { Cell } from '../Cell'
 import { RangeReference } from './RangeReference'
 import type { Direction, Reference, Movement } from './utils'
-import { BaseReference } from './BaseReference'
 
 export function isCellReferenceString(id: string): boolean {
   return cellReferenceRegExp.test(id)
 }
 
-export class CellReference extends BaseReference {
+export class CellReference {
+  public readonly grid: Grid
   public readonly absCol: boolean
   public readonly col: number
   public readonly absRow: boolean
@@ -44,7 +44,7 @@ export class CellReference extends BaseReference {
       throw new Error(`Row ${row} is out of range`)
     }
 
-    super(grid)
+    this.grid = grid
     this.absCol = absCol
     this.col = col
     this.absRow = absRow
@@ -137,11 +137,19 @@ export class CellReference extends BaseReference {
     return this.getCell().output.value
   }
 
-  public override toStringWithoutGrid(): string {
+  public toString(currentGrid: Grid): string {
+    return this.grid === currentGrid ? this.toStringWithoutGrid() : this.toStringWithGrid()
+  }
+
+  public toStringWithoutGrid(): string {
     return `${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
   }
 
-  public override equals(other: Reference): boolean {
+  public toStringWithGrid(): string {
+    return `${this.grid.name.value}!${this.toStringWithoutGrid()}`
+  }
+
+  public equals(other: Reference): boolean {
     if (other.grid !== this.grid) {
       return false
     }

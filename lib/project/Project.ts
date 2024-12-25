@@ -5,9 +5,10 @@ import { Grid } from '../grid/Grid'
 import { getReferenceFromString } from '../reference/utils'
 import { matrixForEach } from '../matrix'
 import { REPL } from '../REPL'
-import { transformReferences, type FormulaTransformation } from '../referenceTransformer'
+import { transformLitsPrograms } from '../transformer/litsTransformer'
 import { getGridName } from '../utils'
 import type { Cell } from '../Cell'
+import type { Transformation } from '../transformer'
 import { ProjectClipboard } from './ProjectClipboard'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
@@ -76,7 +77,7 @@ export class Project {
     }
     this.transformAllReferences({
       type: 'gridDelete',
-      sourceGrid: grid,
+      grid,
     })
     this.grids.value = this.grids.value.filter(g => g !== grid)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
@@ -92,7 +93,7 @@ export class Project {
     grid.name.value = newName
     this.transformAllReferences({
       type: 'renameGrid',
-      sourceGrid: grid,
+      grid,
       newName,
     })
   }
@@ -126,11 +127,11 @@ export class Project {
     }, {})
   }
 
-  public transformAllReferences(transformation: FormulaTransformation) {
+  public transformAllReferences(transformation: Transformation) {
     this.aliases.transformReferences(transformation)
     for (const grid of this.grids.value) {
       matrixForEach(grid.cells, (cell) => {
-        transformReferences(cell, transformation)
+        transformLitsPrograms({ cell, transformation })
       })
     }
   }

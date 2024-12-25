@@ -4,7 +4,6 @@ import type { Grid } from '../grid/Grid'
 import { matrixMap } from '../matrix'
 import { getColId, getRowId } from '../utils'
 import { CellReference } from './CellReference'
-import { BaseReference } from './BaseReference'
 import type { Reference, Movement } from './utils'
 
 export function isRangeReferenceString(value: string): boolean {
@@ -34,7 +33,8 @@ function getEndString(grid: Grid, { col, row, cell }: { col?: string, row?: stri
   return row ? `${getColId(grid.cols.value.length - 1)}${row}` : col ? `${col}${getRowId(grid.rows.value.length - 1)}` : cell!
 }
 
-export class RangeReference extends BaseReference {
+export class RangeReference {
+  public readonly grid: Grid
   public readonly start: CellReference
   public readonly end: CellReference
   public readonly nbrOfCols: number
@@ -46,7 +46,7 @@ export class RangeReference extends BaseReference {
       throw new Error(`Cannot create cell range from different grids: ${start.toStringWithGrid()} - ${end.toStringWithGrid()}`)
     }
 
-    super(start.grid)
+    this.grid = start.grid
 
     if (start.col <= end.col && start.row <= end.row) {
       this.start = start
@@ -170,11 +170,19 @@ export class RangeReference extends BaseReference {
     return this.getAllCellReferences().map(reference => reference.getCell())
   }
 
-  public override toStringWithoutGrid(): string {
+  public toString(currentGrid: Grid): string {
+    return this.grid === currentGrid ? this.toStringWithoutGrid() : this.toStringWithGrid()
+  }
+
+  public toStringWithoutGrid(): string {
     return `${this.start.toStringWithoutGrid()}:${this.end.toStringWithoutGrid()}`
   }
 
-  public override equals(other: Reference): boolean {
+  public toStringWithGrid(): string {
+    return `${this.grid.name.value}!${this.toStringWithoutGrid()}`
+  }
+
+  public equals(other: Reference): boolean {
     if (other.grid !== this.grid) {
       return false
     }

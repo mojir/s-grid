@@ -1,7 +1,7 @@
 import type { Cell } from './Cell'
 import type { CellReference } from './reference/CellReference'
 import type { Project } from './project/Project'
-import type { FormulaTransformation } from './referenceTransformer'
+import type { Transformation } from './transformer'
 
 export class Aliases {
   private cellAliases = new Map<string, Ref<CellReference>>()
@@ -74,11 +74,11 @@ export class Aliases {
     }
   }
 
-  public transformReferences(transformation: FormulaTransformation) {
+  public transformReferences(transformation: Transformation) {
     this.cellAliases
       .entries()
-      .filter(([, reference]) => reference.value.grid === transformation.sourceGrid)
       .forEach(([alias, reference]) => {
+        const grid = reference.value.grid
         switch (transformation.type) {
           case 'gridDelete':
             this.cellAliases.delete(alias)
@@ -88,19 +88,23 @@ export class Aliases {
             if (transformation.range && !transformation.range.containsCell(reference.value)) {
               return
             }
-            reference.value = reference.value.move(transformation.movement)
+            reference.value = reference.value.move({
+              toGrid: transformation.grid,
+              deltaCol: (transformation.toCol ?? reference.value.col) - reference.value.col,
+              deltaRow: (transformation.toRow ?? reference.value.row) - reference.value.row,
+            })
             break
           case 'rowDelete':
             if (reference.value.row >= transformation.row && reference.value.row < transformation.row + transformation.count) {
               this.removeAlias(alias)
             }
             else if (reference.value.row >= transformation.row + transformation.count) {
-              reference.value = reference.value.move({ deltaRow: -transformation.count, toGrid: transformation.sourceGrid })
+              reference.value = reference.value.move({ deltaRow: -transformation.count, toGrid: reference.value.grid })
             }
             break
           case 'rowInsertBefore':
             if (reference.value.row >= transformation.row + transformation.count) {
-              reference.value = reference.value.move({ deltaRow: transformation.count, toGrid: transformation.sourceGrid })
+              reference.value = reference.value.move({ deltaRow: transformation.count, toGrid: grid })
             }
             break
           case 'colDelete':
@@ -108,12 +112,12 @@ export class Aliases {
               this.removeAlias(alias)
             }
             else if (reference.value.col >= transformation.col + transformation.count) {
-              reference.value = reference.value.move({ deltaCol: -transformation.count, toGrid: transformation.sourceGrid })
+              reference.value = reference.value.move({ deltaCol: -transformation.count, toGrid: grid })
             }
             break
           case 'colInsertBefore':
             if (reference.value.col >= transformation.col) {
-              reference.value = reference.value.move({ deltaCol: transformation.count, toGrid: transformation.sourceGrid })
+              reference.value = reference.value.move({ deltaCol: transformation.count, toGrid: grid })
             }
             break
         }

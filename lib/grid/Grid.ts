@@ -457,14 +457,12 @@ export class Grid {
 
     this.rows.value = newRows
 
-    this.project.transformAllReferences(
-      {
-        sourceGrid: this,
-        type: 'rowDelete',
-        row,
-        count,
-      },
-    )
+    this.project.transformAllReferences({
+      type: 'rowDelete',
+      grid: this,
+      row,
+      count,
+    })
 
     this.selection.clampSelection(this.gridRange.value)
     this.position.value = this.selection.selectedRange.value.start
@@ -494,14 +492,12 @@ export class Grid {
 
     this.cols.value = newCols
 
-    this.project.transformAllReferences(
-      {
-        sourceGrid: this,
-        type: 'colDelete',
-        col,
-        count,
-      },
-    )
+    this.project.transformAllReferences({
+      type: 'colDelete',
+      grid: this,
+      col,
+      count,
+    })
 
     this.selection.clampSelection(this.gridRange.value)
     this.position.value = this.selection.selectedRange.value.start
@@ -572,14 +568,12 @@ export class Grid {
       })
     }
 
-    this.project.transformAllReferences(
-      {
-        sourceGrid: this,
-        type: 'rowInsertBefore',
-        row,
-        count,
-      },
-    )
+    this.project.transformAllReferences({
+      type: 'rowInsertBefore',
+      grid: this,
+      row,
+      count,
+    })
 
     this.rows.value = newRows
   }
@@ -647,14 +641,12 @@ export class Grid {
       }
     }
 
-    this.project.transformAllReferences(
-      {
-        sourceGrid: this,
-        type: 'colInsertBefore',
-        col,
-        count,
-      },
-    )
+    this.project.transformAllReferences({
+      type: 'colInsertBefore',
+      grid: this,
+      col,
+      count,
+    })
 
     this.cols.value = newCols
   }
