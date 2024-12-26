@@ -45,6 +45,7 @@ export class Aliases {
   public transformReferences(transformation: Transformation) {
     this.referenceAliases
       .entries()
+      .filter(([_, reference]) => reference.value.grid === transformation.grid)
       .forEach(([alias, reference]) => {
         try {
           console.log('transform 1', alias, reference.value.toStringWithGrid())

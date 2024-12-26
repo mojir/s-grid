@@ -440,22 +440,17 @@ export class Grid {
       throw new Error('Cannot delete all rows')
     }
 
-    const newRows = this.rows.value.filter((_, index) => index < row || index >= row + count)
+    this.cells.splice(row, count)
 
-    // this.cells.splice(row, count).flat().forEach((cell) => {
-    //   this.project.aliases.cellRemoved(cell)
-    // })
+    this.rows.value = this.rows.value.filter((_, index) => index < row || index >= row + count)
 
-    for (let index = row; index < newRows.length; index++) {
-      const row = newRows[index]
+    this.rows.value.forEach((row, index) => {
       row.index.value = index
 
       this.cells[index].forEach((cell, col) => {
         cell.cellReference = CellReference.fromCoords(this, { row: index, col })
       })
-    }
-
-    this.rows.value = newRows
+    })
 
     this.project.transformAllReferences({
       type: 'rowDelete',
@@ -473,24 +468,18 @@ export class Grid {
       throw new Error('Cannot delete all columns')
     }
 
-    const newCols = this.cols.value.filter((_, index) => index < col || index >= col + count)
+    this.cells.forEach((row) => {
+      row.splice(col, count)
+    }, [])
 
-    // this.cells.reduce((acc: Cell[], row) => {
-    //   return [...acc, ...row.splice(col, count)]
-    // }, []).forEach((cell) => {
-    //   this.project.aliases.cellRemoved(cell)
-    // })
+    this.cols.value = this.cols.value.filter((_, index) => index < col || index >= col + count)
 
-    for (let index = col; index < newCols.length; index++) {
-      const col = newCols[index]
+    this.cols.value.forEach((col, index) => {
       col.index.value = index
-
       this.cells[index].forEach((cell, col) => {
         cell.cellReference = CellReference.fromCoords(this, { row: index, col })
       })
-    }
-
-    this.cols.value = newCols
+    })
 
     this.project.transformAllReferences({
       type: 'colDelete',
