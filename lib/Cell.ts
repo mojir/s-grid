@@ -302,7 +302,7 @@ export class Cell {
     return {
       ...this.getDTO(),
       grid: this.grid.name.value,
-      reference: this.cellReference.toString(this.grid),
+      reference: this.cellReference.toStringForGrid(this.grid),
       output: formatOutputValue(this.output.value),
       display: this.display.value,
       row: this.cellReference.row,

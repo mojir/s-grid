@@ -72,7 +72,7 @@ function transformIdentifier({
   }
 
   try {
-    return transformReference(reference, transformation).toString(cellGrid)
+    return transformReference(reference, transformation).toStringForGrid(cellGrid)
   }
   catch (error) {
     if (isLitsError(error)) {

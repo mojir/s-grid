@@ -137,7 +137,7 @@ export class CellReference {
     return this.getCell().output.value
   }
 
-  public toString(currentGrid: Grid): string {
+  public toStringForGrid(currentGrid: Grid): string {
     return this.grid === currentGrid ? this.toStringWithoutGrid() : this.toStringWithGrid()
   }
 

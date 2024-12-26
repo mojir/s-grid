@@ -1,6 +1,7 @@
 import type { Project } from './project/Project'
 import type { Transformation } from './transformer'
 import type { Reference } from './reference/utils'
+import { transformReference } from './transformer/referenceTransformer'
 
 export class Aliases {
   private referenceAliases = new Map<string, Ref<Reference>>()
@@ -45,7 +46,14 @@ export class Aliases {
     this.referenceAliases
       .entries()
       .forEach(([alias, reference]) => {
-        console.log('transform', transformation, alias, reference.value)
+        try {
+          console.log('transform 1', alias, reference.value.toStringWithGrid())
+          reference.value = transformReference(reference.value, transformation)
+          console.log('transform 2', alias, reference.value.toStringWithGrid())
+        }
+        catch {
+          this.removeAlias(alias)
+        }
       })
   }
 }

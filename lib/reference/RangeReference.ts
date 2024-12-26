@@ -170,7 +170,7 @@ export class RangeReference {
     return this.getAllCellReferences().map(reference => reference.getCell())
   }
 
-  public toString(currentGrid: Grid): string {
+  public toStringForGrid(currentGrid: Grid): string {
     return this.grid === currentGrid ? this.toStringWithoutGrid() : this.toStringWithGrid()
   }
 
