@@ -105,6 +105,7 @@ export class GridSelection {
   public selectRowRange(fromRow: Row, toRow: Row) {
     this.selectionEndpoints.start.value = CellReference.fromCoords(this.grid, { row: fromRow.index.value, col: 0 })
     this.selectionEndpoints.end.value = CellReference.fromCoords(this.grid, { row: toRow.index.value, col: this.gridRange.value.end.col })
+    this.scrollDisabled = true
   }
 
   public select(target: string | RangeReference | CellReference) {
