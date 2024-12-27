@@ -94,13 +94,12 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetRowHeight!',
-      execute: (height: number, rowIndex?: number, count?: number) => {
+      execute: (height: number, rowIndex?: number, count = 1) => {
         const grid = this.project.currentGrid
         if (rowIndex === undefined) {
           grid.value.setRowHeight(height, null)
           return
         }
-        count = count ?? 1
         if (count < 1) {
           throw new Error('Count must be greater than 0')
         }
@@ -113,13 +112,12 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetColWidth!',
-      execute: (width: number, colIndex?: number, count?: number) => {
+      execute: (width: number, colIndex?: number, count = 1) => {
         const grid = this.project.currentGrid
         if (colIndex === undefined) {
           grid.value.setColWidth(width, null)
           return
         }
-        count = count ?? 1
         if (count < 1) {
           throw new Error('Count must be greater than 0')
         }

@@ -25,14 +25,15 @@ export function getRowIndex(rowId: string): number {
   return Number(rowId) - 1
 }
 
-export function getColId(col: number): string {
-  if (col < 0 || col >= maxNumberOfCols) {
-    throw new Error(`Col ${col} is out of range`)
+export function getColId(colIndex: number): string {
+  if (colIndex < 0 || colIndex >= maxNumberOfCols) {
+    throw new Error(`Col ${colIndex} is out of range`)
   }
   let result = ''
-  while (col >= 0) {
-    result = String.fromCharCode((col % 26) + 65) + result
-    col = Math.floor(col / 26) - 1
+  let index = colIndex
+  while (index >= 0) {
+    result = String.fromCharCode((index % 26) + 65) + result
+    index = Math.floor(index / 26) - 1
   }
   return result
 }

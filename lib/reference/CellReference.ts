@@ -51,13 +51,13 @@ export class CellReference {
     this.rowIndex = rowIndex
   }
 
-  static fromString(grid: Grid, str: string): CellReference {
+  static fromString(defaultGrid: Grid, str: string): CellReference {
     const match = str.match(cellReferenceRegExp)
     if (!match) {
       throw new Error(`Invalid cell reference: ${str}`)
     }
 
-    grid = match[1] ? grid.project.getGrid(match[1]) : grid
+    const grid = match[1] ? defaultGrid.project.getGrid(match[1]) : defaultGrid
     const absCol = !!match[2]
     const colId = match[3]!
     const colIndex = getColIndex(colId)

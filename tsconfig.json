@@ -1,7 +1,27 @@
 {
-  // https://nuxt.com/docs/guide/concepts/typescript
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "noUncheckedIndexedAccess": true
+    // Strictness flags
+    "strict": true,
+    
+    // Additional strict checks
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    // "noPropertyAccessFromIndexSignature": true,
+    
+    // Error reporting
+    // "exactOptionalPropertyTypes": true,
+    "noErrorTruncation": true,
+    
+    // Module resolution
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    
+    // // Additional type checking
+    "forceConsistentCasingInFileNames": true,
+
+    "skipLibCheck": true,
   }
 }

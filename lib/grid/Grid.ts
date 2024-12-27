@@ -148,16 +148,14 @@ export class Grid {
   }
 
   public clear(reference: Reference | null) {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells()
+    (reference ?? this.selection.selectedRange.value).getCells()
       .forEach((cell) => {
         cell.clear()
       })
   }
 
   public clearInput(reference: Reference | null) {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells()
+    (reference ?? this.selection.selectedRange.value).getCells()
       .forEach((cell) => {
         cell.input.value = ''
       })
@@ -189,23 +187,20 @@ export class Grid {
   }
 
   public setInput(input: string, reference: Reference | null) {
-    reference = reference ?? this.selection.selectedRange.value
-    reference.getCells()
+    (reference ?? this.selection.selectedRange.value).getCells()
       .forEach((cell) => {
         cell.input.value = input
       })
   }
 
   public setBackgroundColor(color: Color | null, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
 
   public getBackgroundColor(reference: Reference | null): Color | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const color = cells[0]?.backgroundColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -220,15 +215,13 @@ export class Grid {
   }
 
   public setTextColor(color: Color | null, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.textColor.value = color
     })
   }
 
   public getTextColor(reference: Reference | null): Color | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const color = cells[0]?.textColor.value ?? null
 
     return cells.slice(1).every((cell) => {
@@ -243,15 +236,13 @@ export class Grid {
   }
 
   public setFontSize(fontSize: StyleFontSize, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.fontSize.value = fontSize
     })
   }
 
   public getFontSize(reference: Reference | null): StyleFontSize | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const fontSize = cells[0]?.fontSize.value
     if (fontSize === undefined) {
       return null
@@ -261,15 +252,13 @@ export class Grid {
   }
 
   public setBold(bold: boolean, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.bold.value = bold
     })
   }
 
   public getBold(reference: Reference | null): boolean | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const bold = cells[0]?.bold.value
     if (bold === undefined) {
       return null
@@ -279,15 +268,13 @@ export class Grid {
   }
 
   public setItalic(italic: boolean, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.italic.value = italic
     })
   }
 
   public getItalic(reference: Reference | null): boolean | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const italic = cells[0]?.italic.value
 
     if (italic === undefined) {
@@ -298,15 +285,13 @@ export class Grid {
   }
 
   public setTextDecoration(textDecoration: StyleTextDecoration, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.textDecoration.value = textDecoration
     })
   }
 
   public getTextDecoration(reference: Reference | null): StyleTextDecoration | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const textDecoration = cells[0]?.textDecoration.value
 
     if (textDecoration === undefined) {
@@ -317,15 +302,13 @@ export class Grid {
   }
 
   public setAlign(align: StyleAlign, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.align.value = align
     })
   }
 
   public getAlign(reference: Reference | null): StyleAlign | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const align = cells[0]?.align.value
 
     if (align === undefined) {
@@ -336,15 +319,13 @@ export class Grid {
   }
 
   public setJustify(justify: StyleJustify, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.justify.value = justify
     })
   }
 
   public getJustify(reference: Reference | null): StyleJustify | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const justify = cells[0]?.justify.value
 
     if (justify === undefined) {
@@ -355,15 +336,13 @@ export class Grid {
   }
 
   public setFormatter(formatter: string, reference: Reference | null): void {
-    reference ??= this.selection.selectedRange.value
-    reference.getCells().forEach((cell) => {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.formatter.value = formatter
     })
   }
 
   public getFormatter(reference: Reference | null): string | null {
-    reference ??= this.selection.selectedRange.value
-    const cells = reference.getCells()
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const formatter = cells[0]?.formatter.value ?? null
 
     return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
@@ -375,8 +354,7 @@ export class Grid {
   }
 
   public setColWidth(width: number, rangeReference: RangeReference | null): void {
-    rangeReference ??= this.selection.selectedRange.value
-    rangeReference.getAllCols().forEach(col => col.setWidth(width))
+    (rangeReference ?? this.selection.selectedRange.value).getAllCols().forEach(col => col.setWidth(width))
   }
 
   public getSelectedRowsWithRowIndex(rowIndex: number): number[] {

@@ -88,12 +88,12 @@ export class Project {
   }
 
   public renameGrid(grid: Grid, newName: string) {
-    newName = getGridName(newName)
-    grid.name.value = newName
+    const newGridName = getGridName(newName)
+    grid.name.value = newGridName
     this.transformAllReferences({
       type: 'renameGrid',
       grid,
-      newName,
+      newName: newGridName,
     })
   }
 

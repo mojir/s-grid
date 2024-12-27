@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import type { ColorDTO } from '~/dto/ColorDTO'
 
 type Tripple = [number, number, number]
