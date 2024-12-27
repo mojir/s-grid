@@ -56,7 +56,7 @@ function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
       if (nextTabIndex < 0) {
         nextTabIndex += tabs.value.length
       }
-      currentTab.value = tabs.value[nextTabIndex].id
+      currentTab.value = tabs.value[nextTabIndex]!.id
       return true
     }
   }

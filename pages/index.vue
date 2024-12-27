@@ -131,7 +131,7 @@ function onMouseDown(event: MouseEvent) {
 
   const [type, , cellReferenceString] = targetId.split(':')
   if (type === DocumentIdType.Cell) {
-    const reference = CellReference.fromString(grid.value, cellReferenceString)
+    const reference = CellReference.fromString(grid.value, cellReferenceString!)
     if (isRightClick && selection.value.selectedRange.value.containsCell(reference)) {
       return
     }
@@ -159,7 +159,7 @@ function onMouseDown(event: MouseEvent) {
     mouseDownStart.value = {
       colIndex,
     }
-    const col = grid.value.cols.value[colIndex]
+    const col = grid.value.getCol(colIndex)
     if (col) {
       resetSelection()
       if (!grid.value.editor.editingLitsCode.value) {
@@ -170,7 +170,7 @@ function onMouseDown(event: MouseEvent) {
   }
   if (type === DocumentIdType.ResizeCol) {
     const colIndex = Number(cellReferenceString)
-    const col = grid.value.cols.value[colIndex]
+    const col = grid.value.getCol(colIndex)
     const x = event.clientX
     const rect = gridWrapper.value!.getBoundingClientRect()
     colResizing.value = {
@@ -199,7 +199,7 @@ function onMouseDown(event: MouseEvent) {
     mouseDownStart.value = {
       rowIndex,
     }
-    const row = grid.value.rows.value[rowIndex]
+    const row = grid.value.getRow(rowIndex)
     if (row) {
       resetSelection()
       if (!grid.value.editor.editingLitsCode.value) {
@@ -210,7 +210,7 @@ function onMouseDown(event: MouseEvent) {
   }
   if (type === DocumentIdType.ResizeRow) {
     const rowIndex = Number(cellReferenceString)
-    const row = grid.value.rows.value[rowIndex]
+    const row = grid.value.getRow(rowIndex)
     const y = event.clientY
     rowResizing.value = {
       rowIndex,
@@ -273,14 +273,14 @@ function onMouseUp(event: MouseEvent) {
   else if (rowResizing.value) {
     const { rowIndex, startY, y } = rowResizing.value
 
-    const row = grid.value.rows.value[rowIndex]
+    const row = grid.value.getRow(rowIndex)
     const height = row.height.value + y.value - startY
-    row.height.value = height
+    row.setHeight(height)
 
     grid.value.getSelectedRowsWithRowIndex(rowIndex)
-      .filter(row => row !== rowIndex)
-      .forEach((row) => {
-        grid.value.rows.value[row].height.value = height
+      .filter(index => index !== rowIndex)
+      .forEach((index) => {
+        grid.value.getRow(index).setHeight(height)
       })
     rowResizing.value = null
   }
@@ -295,14 +295,14 @@ function onMouseUp(event: MouseEvent) {
 
   else if (colResizing.value) {
     const { colIndex, startX, x } = colResizing.value
-    const col = grid.value.cols.value[colIndex]
+    const col = grid.value.getCol(colIndex)
     const width = col.width.value + x.value - startX
-    col.width.value = width
+    col.setWidth(width)
 
     grid.value.getSelectedColsWithColIndex(colIndex)
       .filter(col => col !== colIndex)
       .forEach((col) => {
-        grid.value.cols.value[col].width.value = width
+        grid.value.getCol(col).setWidth(width)
       })
     colResizing.value = null
   }
@@ -321,7 +321,7 @@ function onMouseEnter(event: MouseEvent) {
 
   const [type, , cellReferenceString] = targetId.split(':')
 
-  const reference = type === DocumentIdType.Cell ? CellReference.fromString(grid.value, cellReferenceString) : null
+  const reference = type === DocumentIdType.Cell ? CellReference.fromString(grid.value, cellReferenceString!) : null
   if (reference) {
     hoveredCell.value = reference
   }
@@ -332,7 +332,7 @@ function onMouseEnter(event: MouseEvent) {
     else if (isColIdentifier(mouseDownStart.value) && type === DocumentIdType.Col) {
       const colIndex = Number(cellReferenceString)
       const fromCol = grid.value.cols.value[mouseDownStart.value.colIndex]
-      const toCol = grid.value.cols.value[colIndex]
+      const toCol = grid.value.getCol(colIndex)
       if (fromCol && toCol) {
         selection.value.selectColRange(fromCol, toCol)
       }
@@ -340,7 +340,7 @@ function onMouseEnter(event: MouseEvent) {
     else if (isRowIdentifier(mouseDownStart.value) && type === DocumentIdType.Row) {
       const rowIndex = Number(cellReferenceString)
       const fromRow = grid.value.rows.value[mouseDownStart.value.rowIndex]
-      const toRow = grid.value.rows.value[rowIndex]
+      const toRow = grid.value.getRow(rowIndex)
       if (fromRow && toRow) {
         selection.value.selectRowRange(fromRow, toRow)
       }

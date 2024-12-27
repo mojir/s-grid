@@ -7,5 +7,8 @@ export function matrixForEach<T>(matrix: T[][], callback: (value: T, position: [
 }
 
 export function matrixFilter<T>(matrix: T[][], callback: (value: T, position: [number, number], matrix: T[][]) => boolean): T[] {
-  return matrix.flat().filter((value, index) => callback(value, [Math.floor(index / matrix[0].length), index % matrix[0].length], matrix))
+  if (matrix.length === 0 || matrix[0]!.length === 0) {
+    return []
+  }
+  return matrix.flat().filter((value, index) => callback(value, [Math.floor(index / matrix[0]!.length), index % matrix[0]!.length], matrix))
 }

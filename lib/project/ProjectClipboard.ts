@@ -169,7 +169,12 @@ export class ProjectClipboard {
       const fromPosition = range.start
 
       matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
-        const cell = fromGrid.cells[toPosition.rowIndex + rowIndex][toPosition.colIndex + colIndex]
+        const toRowIndex = toPosition.rowIndex + rowIndex
+        const toColIndex = toPosition.colIndex + colIndex
+        const cell = fromGrid.getCell({ rowIndex: toRowIndex, colIndex: toColIndex })
+        if (!cell) {
+          throw new Error(`Cell not found at rowIndex=${toRowIndex}, colIndex=${toColIndex}`)
+        }
         cell.setDTO(cellDTO)
         transformLitsPrograms({
           cell,

@@ -31,7 +31,6 @@ export class Aliases {
     const reference = this.referenceAliases.get(alias)
     if (reference) {
       this.referenceAliases.delete(alias)
-      console.log('delete', alias)
       if (alias) {
         const dependants = this.project.getAllCells().filter(cell => cell.localReferences.value.includes(alias))
 
@@ -48,9 +47,7 @@ export class Aliases {
       .filter(([_, reference]) => reference.value.grid === transformation.grid)
       .forEach(([alias, reference]) => {
         try {
-          console.log('transform 1', alias, reference.value.toStringWithGrid())
           reference.value = transformReference(reference.value, transformation)
-          console.log('transform 2', alias, reference.value.toStringWithGrid())
         }
         catch {
           this.removeAlias(alias)

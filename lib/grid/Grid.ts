@@ -20,7 +20,7 @@ export class Grid {
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
   public cols: Ref<Col[]>
-  public readonly cells: Cell[][]
+  private readonly cells: Cell[][]
   public readonly currentCell: ComputedRef<Cell>
   public readonly position: Ref<CellReference>
   public readonly gridRange: ComputedRef<RangeReference>
@@ -64,8 +64,8 @@ export class Grid {
 
     Object.entries(grid.cells).forEach(([key, cellDTO]) => {
       // TODO use new regexp, to avoid the need of Reference
-      const reference = CellReference.fromString(newGrid, key) as CellReference
-      const cell = newGrid.cells[reference.rowIndex][reference.colIndex]
+      const cell = CellReference.fromString(newGrid, key).getCell()
+
       if (cellDTO.input !== undefined) {
         cell.input.value = cellDTO.input
       }
@@ -102,6 +102,36 @@ export class Grid {
       project.aliases.setCell(alias, reference)
     })
     return newGrid
+  }
+
+  public getCell({ rowIndex, colIndex }: { rowIndex: number, colIndex: number }): Cell {
+    const cell = this.cells[rowIndex]?.[colIndex]
+
+    if (!cell) {
+      throw new Error(`Cell not found: rowIndex=${rowIndex}, colIndex=${colIndex}`)
+    }
+
+    return cell
+  }
+
+  public getAllCells(): Cell[] {
+    return this.cells.flat()
+  }
+
+  public getRow(rowIndex: number): Row {
+    const row = this.rows.value[rowIndex]
+    if (!row) {
+      throw new Error(`Row not found: index=${rowIndex}`)
+    }
+    return row
+  }
+
+  public getCol(colIndex: number): Col {
+    const col = this.cols.value[colIndex]
+    if (!col) {
+      throw new Error(`Col not found: index=${colIndex}`)
+    }
+    return col
   }
 
   public setScrollPosition(value: { scrollTop?: number, scrollLeft?: number }) {
@@ -223,6 +253,9 @@ export class Grid {
     reference ??= this.selection.selectedRange.value
     const cells = reference.getCells()
     const fontSize = cells[0]?.fontSize.value
+    if (fontSize === undefined) {
+      return null
+    }
 
     return cells.slice(1).every(cell => cell.fontSize.value === fontSize) ? fontSize : null
   }
@@ -238,6 +271,9 @@ export class Grid {
     reference ??= this.selection.selectedRange.value
     const cells = reference.getCells()
     const bold = cells[0]?.bold.value
+    if (bold === undefined) {
+      return null
+    }
 
     return cells.slice(1).every(cell => cell.bold.value === bold) ? bold : null
   }
@@ -254,6 +290,10 @@ export class Grid {
     const cells = reference.getCells()
     const italic = cells[0]?.italic.value
 
+    if (italic === undefined) {
+      return null
+    }
+
     return cells.slice(1).every(cell => cell.italic.value === italic) ? italic : null
   }
 
@@ -268,6 +308,10 @@ export class Grid {
     reference ??= this.selection.selectedRange.value
     const cells = reference.getCells()
     const textDecoration = cells[0]?.textDecoration.value
+
+    if (textDecoration === undefined) {
+      return null
+    }
 
     return cells.slice(1).every(cell => cell.textDecoration.value === textDecoration) ? textDecoration : null
   }
@@ -284,6 +328,10 @@ export class Grid {
     const cells = reference.getCells()
     const align = cells[0]?.align.value
 
+    if (align === undefined) {
+      return null
+    }
+
     return cells.slice(1).every(cell => cell.align.value === align) ? align : null
   }
 
@@ -298,6 +346,10 @@ export class Grid {
     reference ??= this.selection.selectedRange.value
     const cells = reference.getCells()
     const justify = cells[0]?.justify.value
+
+    if (justify === undefined) {
+      return null
+    }
 
     return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
   }
@@ -319,16 +371,12 @@ export class Grid {
 
   public setRowHeight(height: number, rowIndex: RangeReference | null): void {
     const reference = rowIndex ?? this.selection.selectedRange.value
-    reference.getAllRowIndices().forEach((row) => {
-      this.rows.value[row].height.value = height
-    })
+    reference.getAllRows().forEach(row => row.setHeight(height))
   }
 
   public setColWidth(width: number, rangeReference: RangeReference | null): void {
     rangeReference ??= this.selection.selectedRange.value
-    rangeReference.getAllColIndices().forEach((col) => {
-      this.cols.value[col].width.value = width
-    })
+    rangeReference.getAllCols().forEach(col => col.setWidth(width))
   }
 
   public getSelectedRowsWithRowIndex(rowIndex: number): number[] {
@@ -367,7 +415,11 @@ export class Grid {
         : this.selection.selectedRange.value.getAllRowIndices()
 
     rowsIndices.forEach((rowIndex) => {
-      const cells = this.getRowCells(rowIndex)
+      const cells = this.getRow(rowIndex)?.toRangeReference().getCells()
+
+      if (!cells) {
+        throw new Error(`Row not found: index=${rowIndex}`)
+      }
 
       const maxLineHeight = cells.reduce((acc, cell) => {
         if (!cell.display.value) {
@@ -378,7 +430,7 @@ export class Grid {
         return lineHeight > acc ? lineHeight : acc
       }, 0)
 
-      this.rows.value[rowIndex].height.value = Math.max(maxLineHeight, defaultRowHeight)
+      this.getRow(rowIndex).setHeight(Math.max(maxLineHeight, defaultRowHeight))
     })
   }
 
@@ -410,15 +462,8 @@ export class Grid {
         return
       }
 
-      this.cols.value[colIndex].width.value = newColWidth
+      this.getCol(colIndex).setWidth(newColWidth)
     })
-  }
-
-  public getRowCells(rowIndex: number): Cell[] {
-    const startCellId = CellReference.fromCoords(this, { rowIndex: rowIndex, colIndex: 0 })
-    const endCellId = CellReference.fromCoords(this, { rowIndex: rowIndex, colIndex: this.cols.value.length - 1 })
-    const range = RangeReference.fromCellReferences(startCellId, endCellId)
-    return range.getCells()
   }
 
   public resetSelection() {
@@ -438,9 +483,9 @@ export class Grid {
     const rows = this.rows.value
 
     for (let rowIndex = rowIndexToDelete; rowIndex < rows.length; rowIndex += 1) {
-      rows[rowIndex].index.value = rowIndex
+      this.getRow(rowIndex).setIndex(rowIndex)
       for (let colIndex = 0; colIndex < cols.length; colIndex += 1) {
-        this.cells[rowIndex][colIndex].cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -470,9 +515,9 @@ export class Grid {
     const rows = this.rows.value
 
     for (let colIndex = colIndexToDelete; colIndex < cols.length; colIndex += 1) {
-      cols[colIndex].index.value = colIndex
+      this.getCol(colIndex).setIndex(colIndex)
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-        this.cells[rowIndex][colIndex].cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -547,9 +592,9 @@ export class Grid {
     const rows = this.rows.value
 
     for (let rowIndex = rowInsertIndex + count; rowIndex < rows.length; rowIndex += 1) {
-      rows[rowIndex].index.value = rowIndex
+      this.getRow(rowIndex).setIndex(rowIndex)
       for (let colIndex = 0; colIndex < cols.length; colIndex += 1) {
-        this.cells[rowIndex][colIndex].cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -616,9 +661,9 @@ export class Grid {
     const rows = this.rows.value
 
     for (let colIndex = colInsertIndex + count; colIndex < cols.length; colIndex += 1) {
-      cols[colIndex].index.value = colIndex
+      this.getCol(colIndex).setIndex(colIndex)
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-        this.cells[rowIndex][colIndex].cellReference = CellReference.fromCoords(
+        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(
           this,
           { rowIndex: rowIndex, colIndex },
         )

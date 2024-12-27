@@ -109,16 +109,18 @@ export class History {
   private applyChange(change: ChangeEntry, method: 'undo' | 'redo'): void {
     if (change.type === 'cell') {
       const grid = this.project.getGrid(change.gridName)
-      const cell = grid.cells[change.rowIndex][change.colIndex]
+      const cell = grid.getCell(change)
       cell.setDTO({ [change.attribute]: method === 'undo' ? change.oldValue : change.newValue })
     }
     else if (change.type === 'rowHeight') {
       const grid = this.project.getGrid(change.gridName)
-      grid.rows.value[change.rowIndex].height.value = method === 'undo' ? change.oldValue : change.newValue
+      const row = grid.getRow(change.rowIndex)
+      row.setHeight(method === 'undo' ? change.oldValue : change.newValue)
     }
     else if (change.type === 'colWidth') {
       const grid = this.project.getGrid(change.gridName)
-      grid.cols.value[change.colIndex].width.value = method === 'undo' ? change.oldValue : change.newValue
+      const col = grid.getCol(change.colIndex)
+      col.setWidth(method === 'undo' ? change.oldValue : change.newValue)
     }
   }
 }

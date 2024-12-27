@@ -59,10 +59,10 @@ export class CellReference {
 
     grid = match[1] ? grid.project.getGrid(match[1]) : grid
     const absCol = !!match[2]
-    const colId = match[3]
+    const colId = match[3]!
     const colIndex = getColIndex(colId)
     const absRow = !!match[4]
-    const rowId = match[5]
+    const rowId = match[5]!
     const rowIndex = getRowIndex(rowId)
     return new CellReference({
       grid,
@@ -125,11 +125,7 @@ export class CellReference {
   }
 
   public getCell(): Cell {
-    const cell = this.grid.cells[this.rowIndex][this.colIndex]
-    if (!cell) {
-      throw new Error(`Cell ${this.toStringWithGrid()} does not exist`)
-    }
-    return cell
+    return this.grid.getCell(this)
   }
 
   public getCells(): Cell[] {

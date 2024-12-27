@@ -19,26 +19,26 @@ describe('CommandCenter', () => {
   describe('commands', () => {
     test('SetInput!', () => {
       commandCenter.exec('SetInput!', 'Hello', 'A1')
-      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Hello')
+      expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Hello')
     })
     test('Clear!', async () => {
       const persons = (await getTestFixtures()).persons
       project.importGrid(persons)
-      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Albert')
-      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Albert')
+      expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Berta')
       commandCenter.exec('Clear!', 'A1')
-      expect(project.currentGrid.value.cells[0][0].input.value).toBe('')
-      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('')
+      expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Berta')
     })
     test('ClearAllCells!', async () => {
       const persons = (await getTestFixtures()).persons
 
       project.importGrid(persons)
-      expect(project.currentGrid.value.cells[0][0].input.value).toBe('Albert')
-      expect(project.currentGrid.value.cells[1][0].input.value).toBe('Berta')
+      expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Albert')
+      expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Berta')
       commandCenter.exec('ClearAllCells!', 'A1')
-      expect(project.currentGrid.value.cells[0][0].input.value).toBe('')
-      expect(project.currentGrid.value.cells[1][0].input.value).toBe('')
+      expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('')
+      expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('')
     })
     test('SetAlias!', async () => {
       commandCenter.exec('SetInput!', '10', 'A1')

@@ -1,7 +1,9 @@
 import type { Cell } from '../Cell'
+import type { Col } from '../Col'
 import { rangeRangeRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
 import { matrixMap } from '../matrix'
+import type { Row } from '../Row'
 import { getColId, getRowId } from '../utils'
 import { CellReference } from './CellReference'
 import type { Reference, Movement } from './utils'
@@ -291,6 +293,10 @@ export class RangeReference {
     return rowIndices
   }
 
+  public getAllRows(): Row[] {
+    return this.getAllRowIndices().map(rowIndex => this.grid.rows.value[rowIndex]!)
+  }
+
   public getAllColIndices(): number[] {
     const colIndices: number[] = []
 
@@ -301,6 +307,10 @@ export class RangeReference {
     }
 
     return colIndices
+  }
+
+  public getAllCols(): Col[] {
+    return this.getAllColIndices().map(colIndex => this.grid.cols.value[colIndex]!)
   }
 
   public getCellIdMatrix(): CellReference[][] {

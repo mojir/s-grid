@@ -180,7 +180,7 @@ ${command.description}`
     if (this.historyIndex === -1) {
       return ''
     }
-    return this.history.value[this.history.value.length - this.historyIndex - 1].program ?? ''
+    return this.history.value[this.history.value.length - this.historyIndex - 1]?.program ?? ''
   }
 
   private getPreviousHistoryCommand() {

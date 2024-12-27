@@ -3,7 +3,6 @@ import { builtinGrid } from '../builtinGrid'
 import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
 import { Grid } from '../grid/Grid'
 import { getReferenceFromString } from '../reference/utils'
-import { matrixForEach } from '../matrix'
 import { REPL } from '../REPL'
 import { transformLitsPrograms } from '../transformer/litsTransformer'
 import { getGridName } from '../utils'
@@ -82,7 +81,7 @@ export class Project {
     this.grids.value = this.grids.value.filter(g => g !== grid)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
     let attempts = 0
-    while (this.grids.value[this.currentGridIndex.value].hidden.value && attempts < this.grids.value.length) {
+    while (this.grids.value[this.currentGridIndex.value]?.hidden.value && attempts < this.grids.value.length) {
       this.currentGridIndex.value = (this.currentGridIndex.value + 1) % this.grids.value.length
       attempts += 1
     }
@@ -129,11 +128,9 @@ export class Project {
 
   public transformAllReferences(transformation: Transformation) {
     this.aliases.transformReferences(transformation)
-    for (const grid of this.grids.value) {
-      matrixForEach(grid.cells, (cell) => {
-        transformLitsPrograms({ cell, transformation })
-      })
-    }
+    this.getAllCells().forEach((cell) => {
+      transformLitsPrograms({ cell, transformation })
+    })
   }
 
   public getGrid(gridName: string): Grid {
@@ -149,6 +146,6 @@ export class Project {
   }
 
   public getAllCells(): Cell[] {
-    return this.grids.value.flatMap(grid => grid.cells).flat()
+    return this.grids.value.flatMap(grid => grid.getAllCells())
   }
 }
