@@ -26,22 +26,22 @@ describe('utils', () => {
   test('getColIndex', () => {
     expect(getColIndex('A')).toBe(0)
     expect(getColIndex('Z')).toBe(25)
-    expect(getColIndex(`AA`)).toBe(26)
+    expect(getColIndex('AA')).toBe(26)
     expect(() => getColIndex('')).toThrow()
-    expect(() => getColIndex(`ZZZ`)).toThrow()
+    expect(() => getColIndex('ZZZ')).toThrow()
   })
 
   test('getColId', () => {
     expect(getColId(0)).toBe('A')
-    expect(getColId(26)).toBe(`AA`)
-    expect(getColId(2 * 26)).toBe(`BA`)
-    expect(getColId(25 * 26)).toBe(`YA`)
-    expect(getColId(maxNumberOfCols - 1)).toBe(`ZZ`)
+    expect(getColId(26)).toBe('AA')
+    expect(getColId(2 * 26)).toBe('BA')
+    expect(getColId(25 * 26)).toBe('YA')
+    expect(getColId(maxNumberOfCols - 1)).toBe('ZZ')
     expect(() => getColId(-1)).toThrow()
     expect(() => getColId(maxNumberOfCols)).toThrow()
   })
 
-  test(`all col variants`, () => {
+  test('all col variants', () => {
     for (let i = 0; i < maxNumberOfCols; i += 1) {
       expect(getColIndex(getColId(i))).toBe(i)
     }

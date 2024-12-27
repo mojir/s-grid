@@ -16,6 +16,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint . --fix",
+    "lint:no-fix": "eslint .",
     "typecheck": "nuxt typecheck",
     "clean": "nuxt cleanup"
   },

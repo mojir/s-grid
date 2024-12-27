@@ -81,6 +81,6 @@ function transformIdentifier({
     if (error instanceof Error) {
       return `(throw "${error.message}")`
     }
-    return `(throw "Unknown error")`
+    return '(throw "Unknown error")'
   }
 }
