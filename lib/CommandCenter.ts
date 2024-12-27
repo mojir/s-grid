@@ -94,9 +94,9 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetRowHeight!',
-      execute: (height: number, row?: number, count?: number) => {
+      execute: (height: number, rowIndex?: number, count?: number) => {
         const grid = this.project.currentGrid
-        if (row === undefined) {
+        if (rowIndex === undefined) {
           grid.value.setRowHeight(height, null)
           return
         }
@@ -105,7 +105,7 @@ export class CommandCenter {
           throw new Error('Count must be greater than 0')
         }
 
-        const rangeReference = RangeReference.fromRowIndex(grid.value, row, count)
+        const rangeReference = RangeReference.fromRowIndex(grid.value, rowIndex, count)
         grid.value.setRowHeight(height, rangeReference)
       },
       description: 'Set row height',
@@ -113,9 +113,9 @@ export class CommandCenter {
 
     this.registerCommand({
       name: 'SetColWidth!',
-      execute: (width: number, col?: number, count?: number) => {
+      execute: (width: number, colIndex?: number, count?: number) => {
         const grid = this.project.currentGrid
-        if (col === undefined) {
+        if (colIndex === undefined) {
           grid.value.setColWidth(width, null)
           return
         }
@@ -124,7 +124,7 @@ export class CommandCenter {
           throw new Error('Count must be greater than 0')
         }
 
-        const rangeReference = RangeReference.fromColIndex(grid.value, col, count)
+        const rangeReference = RangeReference.fromColIndex(grid.value, colIndex, count)
         grid.value.setRowHeight(width, rangeReference)
       },
       description: 'Set column width',
@@ -447,7 +447,11 @@ export class CommandCenter {
       name: 'Select!',
       execute: (target: string) => {
         const grid = this.project.currentGrid
-        grid.value.selection.select(target)
+        const reference = getReferenceFromString(grid.value, target)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${target}`)
+        }
+        grid.value.selection.select(reference.toRangeReference())
       },
       description: 'Select a cell or a range',
     })
@@ -480,78 +484,78 @@ export class CommandCenter {
     this.registerCommand({
       name: 'DeleteRows!',
       description: 'Delete rows',
-      execute: (startRowStringId: string, endRowStringId?: string) => {
+      execute: (rowId1: string, rowId2?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowIndex(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
-        const startRow = Math.min(startRowIndex, endRowIndex)
-        const endRow = Math.max(startRowIndex, endRowIndex)
-        grid.value.deleteRows(startRow, endRow - startRow + 1)
+        const rowIndex1 = getRowIndex(rowId1)
+        const rowIndex2 = rowId2 ? getRowIndex(rowId2) : rowIndex1
+        const startRowIndex = Math.min(rowIndex1, rowIndex2)
+        const endRowIndex = Math.max(rowIndex1, rowIndex2)
+        grid.value.deleteRows(startRowIndex, endRowIndex - startRowIndex + 1)
       },
     })
 
     this.registerCommand({
       name: 'DeleteCols!',
       description: 'Delete cols',
-      execute: (startColStringId: string, endColStringId?: string) => {
-        const startColIndex = getColIndex(startColStringId)
-        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
-        const startCol = Math.min(startColIndex, endColIndex)
+      execute: (colId1: string, colId2?: string) => {
         const grid = this.project.currentGrid
-        const endCol = Math.max(startColIndex, endColIndex)
-        grid.value.deleteCols(startCol, endCol - startCol + 1)
+        const colIndex1 = getColIndex(colId1)
+        const colIndex2 = colId2 ? getColIndex(colId2) : colIndex1
+        const startColIndex = Math.min(colIndex1, colIndex2)
+        const endColIndex = Math.max(colIndex1, colIndex2)
+        grid.value.deleteCols(startColIndex, endColIndex - startColIndex + 1)
       },
     })
 
     this.registerCommand({
       name: 'InsertRowsBefore!',
       description: 'Insert rows before',
-      execute: (startRowStringId: string, endRowStringId?: string) => {
+      execute: (rowId1: string, rowId2?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowIndex(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
-        const startRow = Math.min(startRowIndex, endRowIndex)
-        const endRow = Math.max(startRowIndex, endRowIndex)
-        grid.value.insertRowsBefore(startRow, endRow - startRow + 1)
+        const rowIndex1 = getRowIndex(rowId1)
+        const rowIndex2 = rowId2 ? getRowIndex(rowId2) : rowIndex1
+        const startRowIndex = Math.min(rowIndex1, rowIndex2)
+        const endRowIndex = Math.max(rowIndex1, rowIndex2)
+        grid.value.insertRowsBefore(startRowIndex, endRowIndex - startRowIndex + 1)
       },
     })
 
     this.registerCommand({
       name: 'InsertRowsAfter!',
       description: 'Insert rows before',
-      execute: (startRowStringId: string, endRowStringId?: string) => {
+      execute: (rowId1: string, rowId2?: string) => {
         const grid = this.project.currentGrid
-        const startRowIndex = getRowIndex(startRowStringId)
-        const endRowIndex = endRowStringId ? getRowIndex(endRowStringId) : startRowIndex
-        const startRow = Math.min(startRowIndex, endRowIndex)
-        const endRow = Math.max(startRowIndex, endRowIndex)
-        grid.value.insertRowsAfter(startRow, endRow - startRow + 1)
+        const rowIndex1 = getRowIndex(rowId1)
+        const rowIndex2 = rowId2 ? getRowIndex(rowId2) : rowIndex1
+        const startRowIndex = Math.min(rowIndex1, rowIndex2)
+        const endRowIndex = Math.max(rowIndex1, rowIndex2)
+        grid.value.insertRowsAfter(startRowIndex, endRowIndex - startRowIndex + 1)
       },
     })
 
     this.registerCommand({
       name: 'InsertColsBefore!',
       description: 'Insert columns before',
-      execute: (startColStringId: string, endColStringId?: string) => {
+      execute: (colId1: string, colId2?: string) => {
         const grid = this.project.currentGrid
-        const startColIndex = getColIndex(startColStringId)
-        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
-        const startCol = Math.min(startColIndex, endColIndex)
-        const endCol = Math.max(startColIndex, endColIndex)
-        grid.value.insertColsBefore(startCol, endCol - startCol + 1)
+        const colIndex1 = getColIndex(colId1)
+        const colIndex2 = colId2 ? getColIndex(colId2) : colIndex1
+        const startColIndex = Math.min(colIndex1, colIndex2)
+        const endColIndex = Math.max(colIndex1, colIndex2)
+        grid.value.insertColsBefore(startColIndex, endColIndex - startColIndex + 1)
       },
     })
 
     this.registerCommand({
       name: 'InsertColsAfter!',
       description: 'Insert columns before',
-      execute: (startColStringId: string, endColStringId?: string) => {
+      execute: (colStringId1: string, colStringId2?: string) => {
         const grid = this.project.currentGrid
-        const startColIndex = getColIndex(startColStringId)
-        const endColIndex = endColStringId ? getColIndex(endColStringId) : startColIndex
-        const startCol = Math.min(startColIndex, endColIndex)
-        const endCol = Math.max(startColIndex, endColIndex)
-        grid.value.insertColsAfter(startCol, endCol - startCol + 1)
+        const colIndex1 = getColIndex(colStringId1)
+        const colIndex2 = colStringId2 ? getColIndex(colStringId2) : colIndex1
+        const startColIndex = Math.min(colIndex1, colIndex2)
+        const endColIndex = Math.max(colIndex1, colIndex2)
+        grid.value.insertColsAfter(startColIndex, endColIndex - startColIndex + 1)
       },
     })
 

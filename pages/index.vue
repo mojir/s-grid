@@ -139,7 +139,7 @@ function onMouseDown(event: MouseEvent) {
     selection.value.selecting.value = true
     mouseDownStart.value = reference
     if (grid.value.editor.editingLitsCode.value) {
-      selection.value.select(reference)
+      selection.value.select(reference.toRangeReference())
     }
     else {
       grid.value.editor.save()
@@ -266,7 +266,7 @@ function onMouseUp(event: MouseEvent) {
     const { rowIndex } = rowResizeDblClicked
     const rows = new Set(grid.value.getSelectedRowsWithRowIndex(rowIndex))
     rows.add(rowIndex)
-    grid.value.autoSetRowHeight(Array.from(rows))
+    grid.value.autoSetRowHeight({ rowIndices: Array.from(rows) })
     rowResizeDblClicked = null
     rowResizing.value = null
   }
@@ -403,7 +403,7 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key === 'Enter') {
     e.preventDefault()
-    if (saved || selection.value.selectedRange.value.size.value > 1) {
+    if (saved || selection.value.selectedRange.value.size() > 1) {
       if (e.shiftKey) {
         grid.value.movePosition('up', true)
       }

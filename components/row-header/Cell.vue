@@ -22,15 +22,15 @@ const resizeRowId = computed(() => getDocumentResizeRowId(grid.value, row.value.
 
 const deleteRowLabel = computed(() => {
   const rangeReference = getAffectedRange()
-  const row = rangeReference.start.row
-  const count = rangeReference.nbrOfRows
-  const start = getRowId(row)
-  const end = getRowId(row + count - 1)
-  return start === end ? `Remove row ${start}` : `Remove rows ${start} - ${end}`
+  const rowIndex = rangeReference.start.rowIndex
+  const count = rangeReference.rowCount()
+  const startRowId = getRowId(rowIndex)
+  const endRowId = getRowId(rowIndex + count - 1)
+  return startRowId === endRowId ? `Remove row ${startRowId}` : `Remove rows ${startRowId} - ${endRowId}`
 })
 
 const insertBeforeRowLabel = computed(() => {
-  const count = getAffectedRange().nbrOfRows
+  const count = getAffectedRange().rowCount()
   if (count === 1) {
     return 'Insert 1 row before'
   }
@@ -39,7 +39,7 @@ const insertBeforeRowLabel = computed(() => {
 })
 
 const insertAfterRowLabel = computed(() => {
-  const count = getAffectedRange().nbrOfRows
+  const count = getAffectedRange().rowCount()
   if (count === 1) {
     return 'Insert 1 row after'
   }
@@ -57,20 +57,20 @@ function getAffectedRange(): RangeReference {
 
 function removeRow() {
   const { start, end } = getAffectedRange()
-  grid.value.deleteRows(start.row, end.row - start.row + 1)
+  grid.value.deleteRows(start.rowIndex, end.rowIndex - start.rowIndex + 1)
 }
 
 function insertBeforeRow() {
   const { start, end } = getAffectedRange()
-  grid.value.insertRowsBefore(start.row, end.row - start.row + 1)
+  grid.value.insertRowsBefore(start.rowIndex, end.rowIndex - start.rowIndex + 1)
 }
 
 function insertAfterRow() {
   const { start, end } = getAffectedRange()
-  grid.value.insertRowsAfter(start.row, end.row - start.row + 1)
+  grid.value.insertRowsAfter(start.rowIndex, end.rowIndex - start.rowIndex + 1)
 }
 
-const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRow(row.value.index.value))
+const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsRowIndex(row.value.index.value))
 const isSelected = computed(() => grid.value.selection.isRowSelected(row.value.index.value))
 
 const cellStyle = computed(() => {

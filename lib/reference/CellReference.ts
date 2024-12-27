@@ -12,43 +12,43 @@ export function isCellReferenceString(id: string): boolean {
 export class CellReference {
   public readonly grid: Grid
   public readonly absCol: boolean
-  public readonly col: number
+  public readonly colIndex: number
   public readonly absRow: boolean
-  public readonly row: number
+  public readonly rowIndex: number
 
   public constructor(
     {
       grid,
       absCol,
-      col,
+      colIndex,
       absRow,
-      row,
+      rowIndex,
     }: {
       grid: Grid
       absCol: boolean
-      col: number
+      colIndex: number
       absRow: boolean
-      row: number
+      rowIndex: number
     },
   ) {
-    if (col < 0) {
-      throw new Error(`Col ${col} is out of range`)
+    if (colIndex < 0) {
+      throw new Error(`Col ${colIndex} is out of range`)
     }
-    if (row < 0) {
-      throw new Error(`Row ${row} is out of range`)
+    if (rowIndex < 0) {
+      throw new Error(`Row ${rowIndex} is out of range`)
     }
-    if (col > maxNumberOfCols) {
-      throw new Error(`Col ${col} is out of range`)
+    if (colIndex > maxNumberOfCols) {
+      throw new Error(`Col ${colIndex} is out of range`)
     }
-    if (row > maxNumberOfRows) {
-      throw new Error(`Row ${row} is out of range`)
+    if (rowIndex > maxNumberOfRows) {
+      throw new Error(`Row ${rowIndex} is out of range`)
     }
 
     this.grid = grid
     this.absCol = absCol
-    this.col = col
+    this.colIndex = colIndex
     this.absRow = absRow
-    this.row = row
+    this.rowIndex = rowIndex
   }
 
   static fromString(grid: Grid, str: string): CellReference {
@@ -60,60 +60,63 @@ export class CellReference {
     grid = match[1] ? grid.project.getGrid(match[1]) : grid
     const absCol = !!match[2]
     const colId = match[3]
-    const col = getColIndex(colId)
+    const colIndex = getColIndex(colId)
     const absRow = !!match[4]
     const rowId = match[5]
-    const row = getRowIndex(rowId)
+    const rowIndex = getRowIndex(rowId)
     return new CellReference({
       grid,
       absCol,
-      col,
+      colIndex,
       absRow,
-      row,
+      rowIndex,
     })
   }
 
-  static fromCoords(grid: Grid, { row, col }: { row: number, col: number }): CellReference {
+  static fromCoords(
+    grid: Grid,
+    { rowIndex, colIndex }: { rowIndex: number, colIndex: number },
+  ): CellReference {
     return new CellReference({
       grid,
       absCol: false,
-      col,
+      colIndex,
       absRow: false,
-      row,
+      rowIndex,
     })
   }
 
   public getSurroundingRowIndices(boundingRange: RangeReference): number[] {
-    const { startRow, endRow } = boundingRange.getCoords()
+    const { startRowIndex, endRowIndex } = boundingRange.getCoords()
 
     return [
-      Math.max(startRow, this.row - 2),
-      Math.min(endRow, this.row + 2),
+      Math.max(startRowIndex, this.rowIndex - 2),
+      Math.min(endRowIndex, this.rowIndex + 2),
     ]
   }
 
   public getSurroundingColIndices(boundingRange: RangeReference): number[] {
-    const { startCol, endCol } = boundingRange.getCoords()
+    const { startColIndex, endColIndex } = boundingRange.getCoords()
 
     return [
-      Math.max(startCol, this.col - 1),
-      Math.min(endCol, this.col + 1),
+      Math.max(startColIndex, this.colIndex - 1),
+      Math.min(endColIndex, this.colIndex + 1),
     ]
   }
 
   public getSurroundingCorners(boundingRange: RangeReference): CellReference[] {
-    const { startRow, startCol, endRow, endCol } = boundingRange.getCoords()
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = boundingRange.getCoords()
 
-    const upperRow = Math.max(startRow, this.row - 2)
-    const lowerRow = Math.min(endRow, this.row + 2)
-    const leftCol = Math.max(startCol, this.col - 1)
-    const rightCol = Math.min(endCol, this.col + 1)
+    const upperRow = Math.max(startRowIndex, this.rowIndex - 2)
+    const lowerRow = Math.min(endRowIndex, this.rowIndex + 2)
+    const leftCol = Math.max(startColIndex, this.colIndex - 1)
+    const rightCol = Math.min(endColIndex, this.colIndex + 1)
 
     return [
-      CellReference.fromCoords(this.grid, { row: upperRow, col: leftCol }),
-      CellReference.fromCoords(this.grid, { row: upperRow, col: rightCol }),
-      CellReference.fromCoords(this.grid, { row: lowerRow, col: leftCol }),
-      CellReference.fromCoords(this.grid, { row: lowerRow, col: rightCol }),
+      CellReference.fromCoords(this.grid, { rowIndex: upperRow, colIndex: leftCol }),
+      CellReference.fromCoords(this.grid, { rowIndex: upperRow, colIndex: rightCol }),
+      CellReference.fromCoords(this.grid, { rowIndex: lowerRow, colIndex: leftCol }),
+      CellReference.fromCoords(this.grid, { rowIndex: lowerRow, colIndex: rightCol }),
     ]
   }
 
@@ -122,7 +125,7 @@ export class CellReference {
   }
 
   public getCell(): Cell {
-    const cell = this.grid.cells[this.row][this.col]
+    const cell = this.grid.cells[this.rowIndex][this.colIndex]
     if (!cell) {
       throw new Error(`Cell ${this.toStringWithGrid()} does not exist`)
     }
@@ -142,7 +145,7 @@ export class CellReference {
   }
 
   public toStringWithoutGrid(): string {
-    return `${this.absCol ? '$' : ''}${getColId(this.col)}${this.absRow ? '$' : ''}${getRowId(this.row)}`
+    return `${this.absCol ? '$' : ''}${getColId(this.colIndex)}${this.absRow ? '$' : ''}${getRowId(this.rowIndex)}`
   }
 
   public toStringWithGrid(): string {
@@ -155,7 +158,7 @@ export class CellReference {
     }
 
     if (other instanceof CellReference) {
-      return other.grid === this.grid && other.col === this.col && other.row === this.row
+      return other.grid === this.grid && other.colIndex === this.colIndex && other.rowIndex === this.rowIndex
     }
 
     return other.toRangeReference().equals(other)
@@ -165,25 +168,25 @@ export class CellReference {
     return new CellReference({
       grid: this.grid,
       absCol: false,
-      col: this.col,
+      colIndex: this.colIndex,
       absRow: false,
-      row: this.row,
+      rowIndex: this.rowIndex,
     })
   }
 
   public clamp(boundingRange: RangeReference): CellReference {
-    const { startRow, startCol, endRow, endCol } = boundingRange.getCoords()
-    const clampedRow = Math.max(startRow, Math.min(this.row, endRow))
-    const clampedCol = Math.max(startCol, Math.min(this.col, endCol))
-    if (clampedRow === this.row && clampedCol === this.col) {
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = boundingRange.getCoords()
+    const clampedRow = Math.max(startRowIndex, Math.min(this.rowIndex, endRowIndex))
+    const clampedCol = Math.max(startColIndex, Math.min(this.colIndex, endColIndex))
+    if (clampedRow === this.rowIndex && clampedCol === this.colIndex) {
       return this
     }
     return new CellReference({
       grid: this.grid,
       absCol: this.absCol,
-      col: clampedCol,
+      colIndex: clampedCol,
       absRow: this.absRow,
-      row: clampedRow,
+      rowIndex: clampedRow,
     })
   }
 
@@ -191,9 +194,9 @@ export class CellReference {
     const reference = new CellReference({
       grid: movement.toGrid,
       absCol: this.absCol,
-      col: this.col + (movement.deltaCol ?? 0),
+      colIndex: this.colIndex + (movement.deltaCol ?? 0),
       absRow: this.absRow,
-      row: this.row + (movement.deltaRow ?? 0),
+      rowIndex: this.rowIndex + (movement.deltaRow ?? 0),
     })
     if (reference.equals(reference.clamp(this.grid.gridRange.value))) {
       return reference
@@ -220,99 +223,99 @@ export class CellReference {
   }
 
   private cellUp(range: RangeReference, wrap: boolean): CellReference {
-    const { startRow, startCol, endRow, endCol } = range.getCoords()
-    let row = this.row - 1
-    let col = this.col
-    if (row < startRow) {
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = range.getCoords()
+    let rowIndex = this.rowIndex - 1
+    let colIndex = this.colIndex
+    if (rowIndex < startRowIndex) {
       if (wrap) {
-        row = endRow
-        col -= 1
-        if (col < startCol) {
-          col = endCol
+        rowIndex = endRowIndex
+        colIndex -= 1
+        if (colIndex < startColIndex) {
+          colIndex = endColIndex
         }
       }
       else {
-        row = startRow
+        rowIndex = startRowIndex
       }
     }
-    return CellReference.fromCoords(this.grid, { row, col })
+    return CellReference.fromCoords(this.grid, { rowIndex, colIndex })
   }
 
   private cellDown(range: RangeReference, wrap: boolean): CellReference {
-    const { startRow, startCol, endRow, endCol } = range.getCoords()
-    let row = this.row + 1
-    let col = this.col
-    if (row > endRow) {
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = range.getCoords()
+    let rowIndex = this.rowIndex + 1
+    let colIndex = this.colIndex
+    if (rowIndex > endRowIndex) {
       if (wrap) {
-        row = startRow
-        col += 1
-        if (col > endCol) {
-          col = startCol
+        rowIndex = startRowIndex
+        colIndex += 1
+        if (colIndex > endColIndex) {
+          colIndex = startColIndex
         }
       }
       else {
-        row = endRow
+        rowIndex = endRowIndex
       }
     }
-    return CellReference.fromCoords(this.grid, { row, col })
+    return CellReference.fromCoords(this.grid, { rowIndex, colIndex })
   }
 
   private cellRight(range: RangeReference, wrap: boolean): CellReference {
-    const { startRow, startCol, endRow, endCol } = range.getCoords()
-    let row = this.row
-    let col = this.col + 1
-    if (col > endCol) {
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = range.getCoords()
+    let rowIndex = this.rowIndex
+    let colIndex = this.colIndex + 1
+    if (colIndex > endColIndex) {
       if (wrap) {
-        col = startCol
-        row += 1
-        if (row > endRow) {
-          row = startRow
+        colIndex = startColIndex
+        rowIndex += 1
+        if (rowIndex > endRowIndex) {
+          rowIndex = startRowIndex
         }
       }
       else {
-        col = endCol
+        colIndex = endColIndex
       }
     }
-    return CellReference.fromCoords(this.grid, { row, col })
+    return CellReference.fromCoords(this.grid, { rowIndex, colIndex })
   }
 
   private cellLeft(range: RangeReference, wrap: boolean): CellReference {
-    const { startRow, startCol, endRow, endCol } = range.getCoords()
-    let row = this.row
-    let col = this.col - 1
-    if (col < startCol) {
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = range.getCoords()
+    let rowIndex = this.rowIndex
+    let colIndex = this.colIndex - 1
+    if (colIndex < startColIndex) {
       if (wrap) {
-        col = endCol
-        row -= 1
-        if (row < startRow) {
-          row = endRow
+        colIndex = endColIndex
+        rowIndex -= 1
+        if (rowIndex < startRowIndex) {
+          rowIndex = endRowIndex
         }
       }
       else {
-        col = startCol
+        colIndex = startColIndex
       }
     }
-    return CellReference.fromCoords(this.grid, { row, col })
+    return CellReference.fromCoords(this.grid, { rowIndex, colIndex })
   }
 
   private cellTop(range: RangeReference): CellReference {
-    const { startRow } = range.getCoords()
-    return CellReference.fromCoords(this.grid, { row: startRow, col: this.col })
+    const { startRowIndex } = range.getCoords()
+    return CellReference.fromCoords(this.grid, { rowIndex: startRowIndex, colIndex: this.colIndex })
   }
 
   private cellBottom(range: RangeReference): CellReference {
-    const { endRow } = range.getCoords()
-    return CellReference.fromCoords(this.grid, { row: endRow, col: this.col })
+    const { endRowIndex } = range.getCoords()
+    return CellReference.fromCoords(this.grid, { rowIndex: endRowIndex, colIndex: this.colIndex })
   }
 
   private cellLeftmost(range: RangeReference): CellReference {
-    const { startCol } = range.getCoords()
-    return CellReference.fromCoords(this.grid, { row: this.row, col: startCol })
+    const { startColIndex } = range.getCoords()
+    return CellReference.fromCoords(this.grid, { rowIndex: this.rowIndex, colIndex: startColIndex })
   }
 
   private cellRightmost(range: RangeReference): CellReference {
-    const { endCol } = range.getCoords()
-    return CellReference.fromCoords(this.grid, { row: this.row, col: endCol })
+    const { endColIndex } = range.getCoords()
+    return CellReference.fromCoords(this.grid, { rowIndex: this.rowIndex, colIndex: endColIndex })
   }
 
   private cellPageUp(range: RangeReference): CellReference {
@@ -320,14 +323,14 @@ export class CellReference {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopRow = Math.max(range.getCoords().startRow, this.row - pageSize)
+    const stopRow = Math.max(range.getCoords().startRowIndex, this.rowIndex - pageSize)
 
-    if (this.row === stopRow) {
+    if (this.rowIndex === stopRow) {
       return this
     }
     const hasInput = this.getCell().input.value !== ''
     const above = this.cellUp(range, false)
-    if (above.row === stopRow) {
+    if (above.rowIndex === stopRow) {
       return above
     }
     const aboveHasInput = above.getCell().input.value !== ''
@@ -335,7 +338,7 @@ export class CellReference {
       let current = above
       do {
         current = current.cellUp(range, false)
-      } while (current.row !== stopRow && current.getCell().input.value === '')
+      } while (current.rowIndex !== stopRow && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && aboveHasInput) {
@@ -347,12 +350,12 @@ export class CellReference {
         if (current.getCell().input.value === '') {
           return previous
         }
-      } while (current.row !== stopRow)
+      } while (current.rowIndex !== stopRow)
       return current
     }
     else {
       let current = above
-      while (current.row !== stopRow && current.getCell().input.value === '') {
+      while (current.rowIndex !== stopRow && current.getCell().input.value === '') {
         current = current.cellUp(range, false)
       }
       return current
@@ -364,14 +367,14 @@ export class CellReference {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopRow = Math.min(range.getCoords().endRow, this.row + pageSize)
+    const stopRow = Math.min(range.getCoords().endRowIndex, this.rowIndex + pageSize)
 
-    if (this.row === stopRow) {
+    if (this.rowIndex === stopRow) {
       return this
     }
     const hasInput = this.getCell().input.value !== ''
     const below = this.cellDown(range, false)
-    if (below.row === stopRow) {
+    if (below.rowIndex === stopRow) {
       return below
     }
     const belowHasInput = below.getCell().input.value !== ''
@@ -379,7 +382,7 @@ export class CellReference {
       let current = below
       do {
         current = current.cellDown(range, false)
-      } while (current.row !== stopRow && current.getCell().input.value === '')
+      } while (current.rowIndex !== stopRow && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && belowHasInput) {
@@ -391,12 +394,12 @@ export class CellReference {
         if (current.getCell().input.value === '') {
           return previous
         }
-      } while (current.row !== stopRow)
+      } while (current.rowIndex !== stopRow)
       return current
     }
     else {
       let current = below
-      while (current.row !== stopRow && current.getCell().input.value === '') {
+      while (current.rowIndex !== stopRow && current.getCell().input.value === '') {
         current = current.cellDown(range, false)
       }
       return current
@@ -408,14 +411,14 @@ export class CellReference {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopCol = Math.max(range.getCoords().startCol, this.col - pageSize)
+    const stopCol = Math.max(range.getCoords().startColIndex, this.colIndex - pageSize)
 
-    if (this.col === stopCol) {
+    if (this.colIndex === stopCol) {
       return this
     }
     const hasInput = this.getCell().input.value !== ''
     const leftOf = this.cellLeft(range, false)
-    if (leftOf.col === stopCol) {
+    if (leftOf.colIndex === stopCol) {
       return leftOf
     }
     const leftOfHasInput = leftOf.getCell().input.value !== ''
@@ -423,7 +426,7 @@ export class CellReference {
       let current = leftOf
       do {
         current = current.cellLeft(range, false)
-      } while (current.col !== stopCol && current.getCell().input.value === '')
+      } while (current.colIndex !== stopCol && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && leftOfHasInput) {
@@ -435,12 +438,12 @@ export class CellReference {
         if (current.getCell().input.value === '') {
           return previous
         }
-      } while (current.col !== stopCol)
+      } while (current.colIndex !== stopCol)
       return current
     }
     else {
       let current = leftOf
-      while (current.col !== stopCol && current.getCell().input.value === '') {
+      while (current.colIndex !== stopCol && current.getCell().input.value === '') {
         current = current.cellLeft(range, false)
       }
       return current
@@ -452,14 +455,14 @@ export class CellReference {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
-    const stopCol = Math.min(range.getCoords().endCol, this.col + pageSize)
+    const stopCol = Math.min(range.getCoords().endColIndex, this.colIndex + pageSize)
 
-    if (this.col === stopCol) {
+    if (this.colIndex === stopCol) {
       return this
     }
     const hasInput = this.getCell().input.value !== ''
     const rightOf = this.cellRight(range, false)
-    if (rightOf.col === stopCol) {
+    if (rightOf.colIndex === stopCol) {
       return rightOf
     }
     const rightOfHasInput = rightOf.getCell().input.value !== ''
@@ -467,7 +470,7 @@ export class CellReference {
       let current = rightOf
       do {
         current = current.cellRight(range, false)
-      } while (current.col !== stopCol && current.getCell().input.value === '')
+      } while (current.colIndex !== stopCol && current.getCell().input.value === '')
       return current
     }
     else if (hasInput && rightOfHasInput) {
@@ -479,12 +482,12 @@ export class CellReference {
         if (current.getCell().input.value === '') {
           return previous
         }
-      } while (current.col !== stopCol)
+      } while (current.colIndex !== stopCol)
       return current
     }
     else {
       let current = rightOf
-      while (current.col !== stopCol && current.getCell().input.value === '') {
+      while (current.colIndex !== stopCol && current.getCell().input.value === '') {
         current = current.cellRight(range, false)
       }
       return current

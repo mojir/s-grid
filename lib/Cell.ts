@@ -45,7 +45,7 @@ export class Cell {
 
     watch(this.display, (newValue, oldValue) => {
       if ((!oldValue && newValue) || oldValue.split('\n').length !== newValue.split('\n').length) {
-        grid.autoSetRowHeightByTarget(this.cellReference)
+        grid.autoSetRowHeight({ cellReference: this.cellReference })
       }
     })
 
@@ -305,8 +305,8 @@ export class Cell {
       reference: this.cellReference.toStringForGrid(this.grid),
       output: formatOutputValue(this.output.value),
       display: this.display.value,
-      row: this.cellReference.row,
-      col: this.cellReference.col,
+      rowIndex: this.cellReference.rowIndex,
+      colIndex: this.cellReference.colIndex,
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
       hasError: this.hasError.value,
@@ -317,8 +317,8 @@ export class Cell {
     return {
       type: 'cell',
       gridName: this.grid.name.value,
-      row: this.cellReference.row,
-      col: this.cellReference.col,
+      rowIndex: this.cellReference.rowIndex,
+      colIndex: this.cellReference.colIndex,
       attribute,
       oldValue,
       newValue,

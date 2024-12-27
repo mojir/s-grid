@@ -13,7 +13,7 @@ const selectionLabel = computed(() => {
   if (grid.value.editor.editing.value) {
     return grid.value.position.value.toStringWithoutGrid()
   }
-  if (grid.value.selection.selectedRange.value.size.value === 1) {
+  if (grid.value.selection.selectedRange.value.size() === 1) {
     return grid.value.selection.selectedRange.value.start.toStringWithoutGrid()
   }
   return grid.value.selection.selectedRange.value.toStringWithoutGrid()

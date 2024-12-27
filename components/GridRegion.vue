@@ -16,22 +16,22 @@ const range = computed<RangeReference>(() => {
 })
 
 const top = computed(() => {
-  const prevRows = grid.value.rows.value.slice(0, range.value.start.row)
+  const prevRows = grid.value.rows.value.slice(0, range.value.start.rowIndex)
   return prevRows.reduce((acc, row) => acc + row.height.value, 0)
 })
 
 const left = computed(() => {
-  const prevCols = grid.value.cols.value.slice(0, range.value.start.col)
+  const prevCols = grid.value.cols.value.slice(0, range.value.start.colIndex)
   return prevCols.reduce((acc, col) => acc + col.width.value, 0)
 })
 
 const height = computed(() => {
-  const rows = grid.value.rows.value.slice(range.value.start.row, range.value.end.row + 1)
+  const rows = grid.value.rows.value.slice(range.value.start.rowIndex, range.value.end.rowIndex + 1)
   return rows.reduce((acc, row) => acc + row.height.value, 0) + 1
 })
 
 const width = computed(() => {
-  const cols = grid.value.cols.value.slice(range.value.start.col, range.value.end.col + 1)
+  const cols = grid.value.cols.value.slice(range.value.start.colIndex, range.value.end.colIndex + 1)
   return cols.reduce((acc, col) => acc + col.width.value, 0) + 1
 })
 </script>

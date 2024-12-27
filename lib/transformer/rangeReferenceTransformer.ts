@@ -30,15 +30,15 @@ export function transformRangeReference({
   }
 }
 
-function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, grid }: RowDeleteTransformation): RangeReference {
+function rangeTransformRowDelete(rangeReference: RangeReference, { rowIndex, count, grid }: RowDeleteTransformation): RangeReference {
   const { start, end } = rangeReference
   const startIsInDeletedRange
-    = start.row >= row
-    && start.row < row + count
+    = start.rowIndex >= rowIndex
+    && start.rowIndex < rowIndex + count
 
   const endIsInDeletedRange
-    = end.row >= row
-    && end.row < row + count
+    = end.rowIndex >= rowIndex
+    && end.rowIndex < rowIndex + count
 
   // range reference is enclosed in deleted row range
   if (startIsInDeletedRange && endIsInDeletedRange) {
@@ -52,14 +52,14 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
       {
         type: 'move',
         grid,
-        toRow: row,
+        toRowIndex: rowIndex,
       })
     const newEnd = cellTransformMove(
       end,
       {
         type: 'move',
         grid,
-        toRow: end.row - count,
+        toRowIndex: end.rowIndex - count,
       },
     )
 
@@ -73,7 +73,7 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
       {
         type: 'move',
         grid,
-        toRow: row - 1,
+        toRowIndex: rowIndex - 1,
       },
     )
 
@@ -82,8 +82,8 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
 
   // no range reference endpoints (start-end) are inside deleted row range
 
-  const startIsBelowDeletedRange = start.row >= row + count
-  const endIsBelowDeletedRange = end.row >= row + count
+  const startIsBelowDeletedRange = start.rowIndex >= rowIndex + count
+  const endIsBelowDeletedRange = end.rowIndex >= rowIndex + count
 
   const newStart: CellReference = startIsBelowDeletedRange
     ? cellTransformMove(
@@ -91,7 +91,7 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
         {
           type: 'move',
           grid,
-          toRow: start.row - count,
+          toRowIndex: start.rowIndex - count,
         },
       )
     : start
@@ -102,7 +102,7 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
         {
           type: 'move',
           grid,
-          toRow: end.row - count,
+          toRowIndex: end.rowIndex - count,
         },
       )
     : end
@@ -110,16 +110,16 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { row, count, g
   return RangeReference.fromCellReferences(newStart, newEnd)
 }
 
-function rangeTransformColDelete(rangeReference: RangeReference, { col, count, grid }: ColDeleteTransformation): RangeReference {
+function rangeTransformColDelete(rangeReference: RangeReference, { colIndex, count, grid }: ColDeleteTransformation): RangeReference {
   const { start, end } = rangeReference
 
   const startIsInDeletedRange
-    = start.col >= col
-    && start.col < col + count
+    = start.colIndex >= colIndex
+    && start.colIndex < colIndex + count
 
   const endIsInDeletedRange
-    = end.col >= col
-    && end.col < col + count
+    = end.colIndex >= colIndex
+    && end.colIndex < colIndex + count
 
   // range reference is enclosed in deleted col range
   if (startIsInDeletedRange && endIsInDeletedRange) {
@@ -133,7 +133,7 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
       {
         type: 'move',
         grid,
-        toCol: col,
+        toColIndex: colIndex,
       },
     )
     const newEnd = cellTransformMove(
@@ -141,7 +141,7 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
       {
         type: 'move',
         grid,
-        toCol: end.col - count,
+        toColIndex: end.colIndex - count,
       },
     )
 
@@ -155,7 +155,7 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
       {
         type: 'move',
         grid,
-        toCol: col - 1,
+        toColIndex: colIndex - 1,
       },
     )
 
@@ -164,8 +164,8 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
 
   // no range reference endpoints (start-end) are inside deleted col range
 
-  const startIsRightOfDeletedRange = start.col >= col + count
-  const endIsRightOfDeletedRange = end.col >= col + count
+  const startIsRightOfDeletedRange = start.colIndex >= colIndex + count
+  const endIsRightOfDeletedRange = end.colIndex >= colIndex + count
 
   const newStart: CellReference = startIsRightOfDeletedRange
     ? cellTransformMove(
@@ -173,7 +173,7 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
         {
           type: 'move',
           grid,
-          toCol: start.col - count,
+          toColIndex: start.colIndex - count,
         },
       )
     : start
@@ -183,7 +183,7 @@ function rangeTransformColDelete(rangeReference: RangeReference, { col, count, g
         {
           type: 'move',
           grid,
-          toCol: end.col - count,
+          toColIndex: end.colIndex - count,
         },
       )
     : end

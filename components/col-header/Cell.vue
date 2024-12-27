@@ -30,15 +30,15 @@ function getAffectedRange(): RangeReference {
 
 const deleteColLabel = computed(() => {
   const rangeReference = getAffectedRange()
-  const col = rangeReference.start.col
-  const count = rangeReference.nbrOfCols
-  const startId = getColId(col)
-  const endId = getColId(col + count - 1)
+  const colIndex = rangeReference.start.colIndex
+  const count = rangeReference.colCount()
+  const startId = getColId(colIndex)
+  const endId = getColId(colIndex + count - 1)
   return startId === endId ? `Remove column ${startId}` : `Remove columns ${startId} - ${endId}`
 })
 
 const insertBeforeColLabel = computed(() => {
-  const count = getAffectedRange().nbrOfCols
+  const count = getAffectedRange().colCount()
   if (count === 1) {
     return 'Insert 1 column before'
   }
@@ -47,7 +47,7 @@ const insertBeforeColLabel = computed(() => {
 })
 
 const insertAfterColLabel = computed(() => {
-  const count = getAffectedRange().nbrOfCols
+  const count = getAffectedRange().colCount()
   if (count === 1) {
     return 'Insert 1 column after'
   }
@@ -57,20 +57,20 @@ const insertAfterColLabel = computed(() => {
 
 function removeCol() {
   const { start, end } = getAffectedRange()
-  grid.value.deleteCols(start.col, end.col - start.col + 1)
+  grid.value.deleteCols(start.colIndex, end.colIndex - start.colIndex + 1)
 }
 
 function insertBeforeCol() {
   const { start, end } = getAffectedRange()
-  grid.value.insertColsBefore(start.col, end.col - start.col + 1)
+  grid.value.insertColsBefore(start.colIndex, end.colIndex - start.colIndex + 1)
 }
 
 function insertAfterCol() {
   const { start, end } = getAffectedRange()
-  grid.value.insertColsAfter(start.col, end.col - start.col + 1)
+  grid.value.insertColsAfter(start.colIndex, end.colIndex - start.colIndex + 1)
 }
 
-const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsCol(col.value.index.value))
+const hasSelectedCell = computed(() => grid.value.selection.selectedRange.value.containsColIndex(col.value.index.value))
 const isSelected = computed(() => grid.value.selection.isColSelected(col.value.index.value))
 
 const cellStyle = computed(() => {

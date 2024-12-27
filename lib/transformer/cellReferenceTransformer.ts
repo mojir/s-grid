@@ -32,96 +32,96 @@ export function transformCellReference({
   }
 }
 
-export function cellTransformMove(cellReference: CellReference, { grid, toGrid, toCol, toRow, range }: MoveTransformation): CellReference {
+export function cellTransformMove(cellReference: CellReference, { grid, toGrid, toColIndex: toCol, toRowIndex: toRow, range }: MoveTransformation): CellReference {
   if (range && !range.containsCell(cellReference)) {
     return cellReference
   }
 
-  const row = cellReference.absRow
-    ? cellReference.row
+  const rowIndex = cellReference.absRow
+    ? cellReference.rowIndex
     : cellReference.move(
       {
         toGrid: toGrid ?? grid,
-        deltaRow: (toRow ?? cellReference.row) - cellReference.row,
+        deltaRow: (toRow ?? cellReference.rowIndex) - cellReference.rowIndex,
       },
-    ).row
+    ).rowIndex
 
-  const col = cellReference.absCol
-    ? cellReference.col
+  const colIndex = cellReference.absCol
+    ? cellReference.colIndex
     : cellReference.move(
       {
         toGrid: toGrid ?? grid,
-        deltaCol: (toCol ?? cellReference.col) - cellReference.col,
+        deltaCol: (toCol ?? cellReference.colIndex) - cellReference.colIndex,
       },
-    ).col
+    ).colIndex
 
   return new CellReference({
     grid: toGrid ?? grid,
     absRow: cellReference.absRow,
     absCol: cellReference.absCol,
-    row,
-    col,
+    rowIndex,
+    colIndex,
   })
 }
 
-export function cellTransformRowDelete(cellReference: CellReference, { row, count, grid }: RowDeleteTransformation): CellReference {
-  if (cellReference.row >= row && cellReference.row < row + count) {
+export function cellTransformRowDelete(cellReference: CellReference, { rowIndex, count, grid }: RowDeleteTransformation): CellReference {
+  if (cellReference.rowIndex >= rowIndex && cellReference.rowIndex < rowIndex + count) {
     throw new Error(`Cell ${cellReference.toStringWithGrid()} was deleted`)
   }
 
-  if (cellReference.row >= row + count) {
+  if (cellReference.rowIndex >= rowIndex + count) {
     return cellTransformMove(
       cellReference,
       {
         type: 'move',
         grid,
-        toRow: cellReference.row - count,
+        toRowIndex: cellReference.rowIndex - count,
       },
     )
   }
   return cellReference
 }
 
-export function cellTransformColDelete(cellReference: CellReference, { col, count, grid }: ColDeleteTransformation): CellReference {
-  if (cellReference.col >= col && cellReference.col < col + count) {
+export function cellTransformColDelete(cellReference: CellReference, { colIndex, count, grid }: ColDeleteTransformation): CellReference {
+  if (cellReference.colIndex >= colIndex && cellReference.colIndex < colIndex + count) {
     throw new Error(`Cell ${cellReference.toStringWithGrid()} was deleted`)
   }
 
-  if (cellReference.col >= col + count) {
+  if (cellReference.colIndex >= colIndex + count) {
     return cellTransformMove(
       cellReference,
       {
         type: 'move',
         grid,
-        toCol: cellReference.col - count,
+        toColIndex: cellReference.colIndex - count,
       },
     )
   }
   return cellReference
 }
 
-export function cellTransformRowInsertBefore(cellReference: CellReference, { row, count, grid }: RowInsertBeforeTransformation): CellReference {
-  if (cellReference.row >= row) {
+export function cellTransformRowInsertBefore(cellReference: CellReference, { rowIndex, count, grid }: RowInsertBeforeTransformation): CellReference {
+  if (cellReference.rowIndex >= rowIndex) {
     return cellTransformMove(
       cellReference,
       {
         type: 'move',
         grid,
-        toRow: cellReference.row + count,
+        toRowIndex: cellReference.rowIndex + count,
       },
     )
   }
   return cellReference
 }
 
-export function cellTransformColInsertBefore(cellReference: CellReference, { col, count, grid }: ColInsertBeforeTransformation): CellReference {
-  if (cellReference.col >= col) {
+export function cellTransformColInsertBefore(cellReference: CellReference, { colIndex, count, grid }: ColInsertBeforeTransformation): CellReference {
+  if (cellReference.colIndex >= colIndex) {
     return cellTransformMove(
       cellReference,
       {
         type: 'move',
         grid,
-        toCol: cellReference.col + count,
+        toColIndex: cellReference.colIndex + count,
       },
     )
   }

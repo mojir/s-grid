@@ -17,35 +17,35 @@ export type MoveTransformation = {
   type: 'move'
   range?: RangeReference
   toGrid?: Grid
-  toRow?: number
-  toCol?: number
+  toRowIndex?: number
+  toColIndex?: number
 }
 
 export type RowDeleteTransformation = {
   grid: Grid
   type: 'rowDelete'
-  row: number
+  rowIndex: number
   count: number
 }
 
 export type ColDeleteTransformation = {
   grid: Grid
   type: 'colDelete'
-  col: number
+  colIndex: number
   count: number
 }
 
 export type RowInsertBeforeTransformation = {
   grid: Grid
   type: 'rowInsertBefore'
-  row: number
+  rowIndex: number
   count: number
 }
 
 export type ColInsertBeforeTransformation = {
   grid: Grid
   type: 'colInsertBefore'
-  col: number
+  colIndex: number
   count: number
 }
 

@@ -19,10 +19,10 @@ export function isRangeReferenceString(value: string): boolean {
 }
 
 type Coords = {
-  startRow: number
-  startCol: number
-  endRow: number
-  endCol: number
+  startRowIndex: number
+  startColIndex: number
+  endRowIndex: number
+  endColIndex: number
 }
 
 function getStartString({ col, row, cell }: { col?: string, row?: string, cell?: string }): string {
@@ -30,16 +30,17 @@ function getStartString({ col, row, cell }: { col?: string, row?: string, cell?:
 }
 
 function getEndString(grid: Grid, { col, row, cell }: { col?: string, row?: string, cell?: string }): string {
-  return row ? `${getColId(grid.cols.value.length - 1)}${row}` : col ? `${col}${getRowId(grid.rows.value.length - 1)}` : cell!
+  return row
+    ? `${getColId(grid.cols.value.length - 1)}${row}`
+    : col
+      ? `${col}${getRowId(grid.rows.value.length - 1)}`
+      : cell!
 }
 
 export class RangeReference {
   public readonly grid: Grid
   public readonly start: CellReference
   public readonly end: CellReference
-  public readonly nbrOfCols: number
-  public readonly nbrOfRows: number
-  public readonly size: ComputedRef<number>
 
   private constructor(start: CellReference, end: CellReference) {
     if (start.grid !== end.grid) {
@@ -48,50 +49,58 @@ export class RangeReference {
 
     this.grid = start.grid
 
-    if (start.col <= end.col && start.row <= end.row) {
+    if (start.colIndex <= end.colIndex && start.rowIndex <= end.rowIndex) {
       this.start = start
       this.end = end
     }
-    else if (start.col <= end.col && start.row > end.row) {
+    else if (start.colIndex <= end.colIndex && start.rowIndex > end.rowIndex) {
       this.start = new CellReference({
         grid: this.grid,
         absCol: start.absCol,
-        col: start.col,
+        colIndex: start.colIndex,
         absRow: end.absRow,
-        row: end.row,
+        rowIndex: end.rowIndex,
       })
       this.end = new CellReference({
         grid: this.grid,
         absCol: end.absCol,
-        col: end.col,
+        colIndex: end.colIndex,
         absRow: start.absRow,
-        row: start.row,
+        rowIndex: start.rowIndex,
       })
     }
-    else if (start.col > end.col && start.row <= end.row) {
+    else if (start.colIndex > end.colIndex && start.rowIndex <= end.rowIndex) {
       this.start = new CellReference({
         grid: this.grid,
         absCol: end.absCol,
-        col: end.col,
+        colIndex: end.colIndex,
         absRow: start.absRow,
-        row: start.row,
+        rowIndex: start.rowIndex,
       })
       this.end = new CellReference({
         grid: this.grid,
         absCol: start.absCol,
-        col: start.col,
+        colIndex: start.colIndex,
         absRow: end.absRow,
-        row: end.row,
+        rowIndex: end.rowIndex,
       })
     }
     else {
       this.start = end
       this.end = start
     }
+  }
 
-    this.nbrOfCols = this.end.col - this.start.col + 1
-    this.nbrOfRows = this.end.row - this.start.row + 1
-    this.size = computed(() => this.nbrOfCols * this.nbrOfRows)
+  public rowCount(): number {
+    return this.end.rowIndex - this.start.rowIndex + 1
+  }
+
+  public colCount(): number {
+    return this.end.colIndex - this.start.colIndex + 1
+  }
+
+  public size(): number {
+    return this.rowCount() * this.colCount()
   }
 
   static fromString(grid: Grid, str: string): RangeReference {
@@ -138,24 +147,55 @@ export class RangeReference {
   }
 
   static fromCoords(grid: Grid, coords: Coords): RangeReference {
-    const { startRow, startCol, endRow, endCol } = coords
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = coords
     return new RangeReference(
-      new CellReference({ row: startRow, col: startCol, absRow: false, absCol: false, grid }),
-      new CellReference({ row: endRow, col: endCol, absRow: false, absCol: false, grid }),
+      new CellReference({ rowIndex: startRowIndex,
+        colIndex: startColIndex,
+        absRow: false,
+        absCol: false,
+        grid,
+      }),
+      new CellReference({ rowIndex: endRowIndex,
+        colIndex: endColIndex,
+        absRow: false,
+        absCol: false,
+        grid,
+      }),
     )
   }
 
-  static fromColIndex(grid: Grid, col: number, count = 1): RangeReference {
+  static fromColIndex(grid: Grid, colIndex: number, count = 1): RangeReference {
     return new RangeReference(
-      new CellReference({ grid, absCol: false, col, absRow: false, row: 0 }),
-      new CellReference({ grid, absCol: false, col: col + count - 1, absRow: false, row: grid.rows.value.length - 1 }),
+      new CellReference({
+        grid,
+        absCol: false,
+        colIndex: colIndex,
+        absRow: false,
+        rowIndex: 0,
+      }),
+      new CellReference({
+        grid,
+        absCol: false,
+        colIndex: colIndex + count - 1,
+        absRow: false, rowIndex: grid.rows.value.length - 1,
+      }),
     )
   }
 
-  static fromRowIndex(grid: Grid, row: number, count = 1): RangeReference {
+  static fromRowIndex(grid: Grid, rowIndex: number, count = 1): RangeReference {
     return new RangeReference(
-      new CellReference({ grid, absCol: false, col: 0, absRow: false, row }),
-      new CellReference({ grid, absCol: false, col: grid.cols.value.length - 1, absRow: false, row: row + count - 1 }),
+      new CellReference({ grid,
+        absCol: false,
+        colIndex: 0,
+        absRow: false,
+        rowIndex,
+      }),
+      new CellReference({ grid,
+        absCol: false,
+        colIndex: grid.cols.value.length - 1,
+        absRow: false,
+        rowIndex: rowIndex + count - 1,
+      }),
     )
   }
 
@@ -196,16 +236,18 @@ export class RangeReference {
 
   public getCoords(): Coords {
     return {
-      startRow: this.start.row,
-      startCol: this.start.col,
-      endRow: this.end.row,
-      endCol: this.end.col,
+      startRowIndex: this.start.rowIndex,
+      startColIndex: this.start.colIndex,
+      endRowIndex: this.end.rowIndex,
+      endColIndex: this.end.colIndex,
     }
   }
 
   public clamp(range: RangeReference): RangeReference {
     if (this.grid !== range.grid) {
-      throw new Error(`Cannot clamp cell range from different grids: ${this.toStringWithGrid()} and ${range.toStringWithGrid()}`)
+      throw new Error(
+        `Cannot clamp cell range from different grids: ${this.toStringWithGrid()} and ${range.toStringWithGrid()}`,
+      )
     }
     const clampedStart = this.start.clamp(range)
     const clampedEnd = this.end.clamp(range)
@@ -216,16 +258,16 @@ export class RangeReference {
   public getAllCellReferences(): CellReference[] {
     const cellReferences: CellReference[] = []
 
-    const { startRow, startCol, endRow, endCol } = this.getCoords()
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = this.getCoords()
 
-    for (let row = startRow; row <= endRow; row += 1) {
-      for (let col = startCol; col <= endCol; col += 1) {
+    for (let rowIndex = startRowIndex; rowIndex <= endRowIndex; rowIndex += 1) {
+      for (let colIndex = startColIndex; colIndex <= endColIndex; colIndex += 1) {
         cellReferences.push(new CellReference({
           grid: this.grid,
           absCol: false,
-          col,
+          colIndex,
           absRow: false,
-          row,
+          rowIndex,
         }))
       }
     }
@@ -238,43 +280,43 @@ export class RangeReference {
   }
 
   public getAllRowIndices(): number[] {
-    const rows: number[] = []
+    const rowIndices: number[] = []
 
-    const { startRow, endRow } = this.getCoords()
+    const { startRowIndex, endRowIndex } = this.getCoords()
 
-    for (let row = startRow; row <= endRow; row += 1) {
-      rows.push(row)
+    for (let rowIndex = startRowIndex; rowIndex <= endRowIndex; rowIndex += 1) {
+      rowIndices.push(rowIndex)
     }
 
-    return rows
+    return rowIndices
   }
 
   public getAllColIndices(): number[] {
-    const cols: number[] = []
+    const colIndices: number[] = []
 
-    const { startCol, endCol } = this.getCoords()
+    const { startColIndex, endColIndex } = this.getCoords()
 
-    for (let col = startCol; col <= endCol; col += 1) {
-      cols.push(col)
+    for (let colIndex = startColIndex; colIndex <= endColIndex; colIndex += 1) {
+      colIndices.push(colIndex)
     }
 
-    return cols
+    return colIndices
   }
 
   public getCellIdMatrix(): CellReference[][] {
-    const { startRow, startCol, endRow, endCol } = this.getCoords()
+    const { startRowIndex, startColIndex, endRowIndex, endColIndex } = this.getCoords()
 
     const matrix: CellReference[][] = []
-    for (let row = startRow; row <= endRow; row++) {
+    for (let rowIndex = startRowIndex; rowIndex <= endRowIndex; rowIndex += 1) {
       const rowArray: CellReference[] = []
       matrix.push(rowArray)
-      for (let col = startCol; col <= endCol; col++) {
+      for (let colIndex = startColIndex; colIndex <= endColIndex; colIndex += 1) {
         rowArray.push(new CellReference({
           grid: this.grid,
           absCol: false,
-          col,
+          colIndex,
           absRow: false,
-          row,
+          rowIndex,
         }))
       }
     }
@@ -285,46 +327,46 @@ export class RangeReference {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.row >= this.start.row
-      && cellReference.row <= this.end.row
-      && cellReference.col >= this.start.col
-      && cellReference.col <= this.end.col
+    return cellReference.rowIndex >= this.start.rowIndex
+      && cellReference.rowIndex <= this.end.rowIndex
+      && cellReference.colIndex >= this.start.colIndex
+      && cellReference.colIndex <= this.end.colIndex
   }
 
-  public containsRow(row: number): boolean {
-    return row >= this.start.row && row <= this.end.row
+  public containsRowIndex(rowIndex: number): boolean {
+    return rowIndex >= this.start.rowIndex && rowIndex <= this.end.rowIndex
   }
 
-  public containsCol(col: number): boolean {
-    return col >= this.start.col && col <= this.end.col
+  public containsColIndex(colIndex: number): boolean {
+    return colIndex >= this.start.colIndex && colIndex <= this.end.colIndex
   }
 
   public isCellInTopRow(cellReference: CellReference): boolean {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.row === this.start.row
+    return cellReference.rowIndex === this.start.rowIndex
   }
 
   public isCellBottomRow(cellReference: CellReference): boolean {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.row === this.end.row
+    return cellReference.rowIndex === this.end.rowIndex
   }
 
   public isCellIdLeftColumn(cellReference: CellReference): boolean {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.col === this.start.col
+    return cellReference.colIndex === this.start.colIndex
   }
 
   public isCellIdRightColumn(cellReference: CellReference): boolean {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.col === this.end.col
+    return cellReference.colIndex === this.end.colIndex
   }
 
   public move(movement: Movement): RangeReference {

@@ -75,8 +75,14 @@ export class ProjectClipboard {
     }
     this.styleClipboard.value = null
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
-      matrixForEach(styleClipboardValue.cells, (cellDTO, [row, col]) => {
-        const reference = CellReference.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
+      matrixForEach(styleClipboardValue.cells, (cellDTO, [rowIndex, colIndex]) => {
+        const reference = CellReference.fromCoords(
+          toPosition.grid,
+          {
+            rowIndex: toPosition.rowIndex + rowIndex,
+            colIndex: toPosition.colIndex + colIndex,
+          },
+        )
         const cell = reference.getCell()
         cell.setDTO(cellDTO)
       })
@@ -86,26 +92,26 @@ export class ProjectClipboard {
   private getPastePositions(sourceRange: RangeReference, targetRange: RangeReference): CellReference[] {
     const grid = targetRange.start.grid
 
-    const selectionWidth = targetRange.end.col - targetRange.start.col + 1
-    const selectionHeight = targetRange.end.row - targetRange.start.row + 1
+    const selectionWidth = targetRange.end.colIndex - targetRange.start.colIndex + 1
+    const selectionHeight = targetRange.end.rowIndex - targetRange.start.rowIndex + 1
 
-    const rangeWidth = sourceRange.end.col - sourceRange.start.col + 1
-    const rangeHeight = sourceRange.end.row - sourceRange.start.row + 1
+    const rangeWidth = sourceRange.end.colIndex - sourceRange.start.colIndex + 1
+    const rangeHeight = sourceRange.end.rowIndex - sourceRange.start.rowIndex + 1
 
     const result: CellReference[] = []
-    const startRow = targetRange.start.row
-    const startCol = targetRange.start.col
-    let row = startRow
-    let col = startCol
+    const startRowIndex = targetRange.start.rowIndex
+    const startColIndex = targetRange.start.colIndex
+    let rowIndex = startRowIndex
+    let colIndex = startColIndex
     // Populate result array with the positions (CellReference) to paste the clipboard
     do {
       do {
-        result.push(CellReference.fromCoords(grid, { row, col }))
-        col += rangeWidth
-      } while (col - startCol + rangeWidth <= selectionWidth)
-      row += rangeHeight
-      col = startCol
-    } while (row - startRow + rangeHeight <= selectionHeight)
+        result.push(CellReference.fromCoords(grid, { rowIndex: rowIndex, colIndex }))
+        colIndex += rangeWidth
+      } while (colIndex - startColIndex + rangeWidth <= selectionWidth)
+      rowIndex += rangeHeight
+      colIndex = startColIndex
+    } while (rowIndex - startRowIndex + rangeHeight <= selectionHeight)
 
     return result
   }
@@ -122,8 +128,14 @@ export class ProjectClipboard {
     const toPosition = targetRange.start
 
     const clipboardCells = this.clipboard.value.cells
-    matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
-      const reference = CellReference.fromCoords(toPosition.grid, { row: toPosition.row + row, col: toPosition.col + col })
+    matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
+      const reference = CellReference.fromCoords(
+        toPosition.grid,
+        {
+          rowIndex: toPosition.rowIndex + rowIndex,
+          colIndex: toPosition.colIndex + colIndex,
+        },
+      )
       const cell = reference.getCell()
       cell.setDTO(cellDTO)
     })
@@ -135,8 +147,8 @@ export class ProjectClipboard {
       grid: fromPosition.grid,
       range: fromRange,
       toGrid: toPosition.grid,
-      toRow: toPosition.row,
-      toCol: toPosition.col,
+      toRowIndex: toPosition.rowIndex,
+      toColIndex: toPosition.colIndex,
     })
 
     this.clipboard.value = null
@@ -156,8 +168,8 @@ export class ProjectClipboard {
       const range = this.clipboard.value.range
       const fromPosition = range.start
 
-      matrixForEach(clipboardCells, (cellDTO, [row, col]) => {
-        const cell = fromGrid.cells[toPosition.row + row][toPosition.col + col]
+      matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
+        const cell = fromGrid.cells[toPosition.rowIndex + rowIndex][toPosition.colIndex + colIndex]
         cell.setDTO(cellDTO)
         transformLitsPrograms({
           cell,
@@ -165,8 +177,8 @@ export class ProjectClipboard {
             type: 'move',
             grid: fromPosition.grid,
             toGrid: toPosition.grid,
-            toRow: toPosition.row,
-            toCol: toPosition.col,
+            toRowIndex: toPosition.rowIndex,
+            toColIndex: toPosition.colIndex,
           },
         })
       })

@@ -47,21 +47,21 @@ watch(grid, (grid) => {
 
     const elements: (HTMLElement | null)[] = []
 
-    if (oldStart.row !== newStart.row) {
+    if (oldStart.rowIndex !== newStart.rowIndex) {
       elements.push(...newStart.getSurroundingRowIndices(grid.gridRange.value)
-        .map(row => document.getElementById(getDocumentRowId(grid, row))))
+        .map(rowIndex => document.getElementById(getDocumentRowId(grid, rowIndex))))
     }
-    else if (oldStart.col !== newStart.col) {
+    else if (oldStart.colIndex !== newStart.colIndex) {
       elements.push(...newStart.getSurroundingColIndices(grid.gridRange.value)
-        .map(col => document.getElementById(getDocumentColId(grid, col))))
+        .map(colIndex => document.getElementById(getDocumentColId(grid, colIndex))))
     }
-    else if (oldEnd.row !== newEnd.row) {
+    else if (oldEnd.rowIndex !== newEnd.rowIndex) {
       elements.push(...newEnd.getSurroundingRowIndices(grid.gridRange.value)
-        .map(row => document.getElementById(getDocumentRowId(grid, row))))
+        .map(rowIndex => document.getElementById(getDocumentRowId(grid, rowIndex))))
     }
-    else if (oldEnd.col !== newEnd.col) {
+    else if (oldEnd.colIndex !== newEnd.colIndex) {
       elements.push(...newEnd.getSurroundingColIndices(grid.gridRange.value)
-        .map(col => document.getElementById(getDocumentColId(grid, col))))
+        .map(colIndex => document.getElementById(getDocumentColId(grid, colIndex))))
     }
     elements.forEach(element => element?.scrollIntoView({ block: 'nearest', inline: 'nearest' }))
   })
@@ -98,7 +98,7 @@ watch(grid, (grid) => {
       class="border-2 border-cell-border"
     />
     <GridRegion
-      v-if="grid.selection.selectedRange.value.size.value > 1"
+      v-if="grid.selection.selectedRange.value.size() > 1"
       :grid="grid"
       :region="grid.selection.selectedRange"
       class="border border-cell-border bg-selected-cell"

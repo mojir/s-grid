@@ -26,7 +26,7 @@ const repl = project.value.repl
 const { debugMode } = useDebug()
 const colorMode = useColorMode()
 
-const reference = computed(() => CellReference.fromCoords(grid.value, { row: row.value.index.value, col: col.value.index.value }))
+const reference = computed(() => CellReference.fromCoords(grid.value, { rowIndex: row.value.index.value, colIndex: col.value.index.value }))
 const cell = computed(() => reference.value.getCell())
 const cellContent = computed(() => reference.value.getCell().display)
 
@@ -86,19 +86,17 @@ const cellStyle = computed(() => {
     }
   }
 
-  if (cell.value.justify.value) {
-    if (cell.value.justify.value === 'left') {
-      style.textAlign = 'left'
-      style.justifyContent = 'flex-start'
-    }
-    else if (cell.value.justify.value === 'center') {
-      style.textAlign = 'center'
-      style.justifyContent = 'center'
-    }
-    else if (cell.value.justify.value === 'right') {
-      style.textAlign = 'right'
-      style.justifyContent = 'flex-end'
-    }
+  if (cell.value.justify.value === 'left') {
+    style.textAlign = 'left'
+    style.justifyContent = 'flex-start'
+  }
+  else if (cell.value.justify.value === 'center') {
+    style.textAlign = 'center'
+    style.justifyContent = 'center'
+  }
+  else if (cell.value.justify.value === 'right') {
+    style.textAlign = 'right'
+    style.justifyContent = 'flex-end'
   }
   else {
     style.justifyContent = cell.value.isNumber.value
@@ -108,16 +106,14 @@ const cellStyle = computed(() => {
         : 'left'
   }
 
-  if (cell.value.align.value) {
-    if (cell.value.align.value === 'top') {
-      style.alignItems = 'flex-start'
-    }
-    else if (cell.value.align.value === 'middle') {
-      style.alignItems = 'center'
-    }
-    else if (cell.value.align.value === 'bottom') {
-      style.alignItems = 'flex-end'
-    }
+  if (cell.value.align.value === 'top') {
+    style.alignItems = 'flex-start'
+  }
+  else if (cell.value.align.value === 'middle') {
+    style.alignItems = 'center'
+  }
+  else if (cell.value.align.value === 'bottom') {
+    style.alignItems = 'flex-end'
   }
   else {
     style.alignItems = 'flex-end'
