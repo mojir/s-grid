@@ -227,7 +227,7 @@ export class Cell {
     if (this.output.value instanceof Error) {
       return '#ERR'
     }
-    if (this.isFunction.value) {
+    if (isLitsFunction(this.output.value)) {
       // TODO, this is a temporary solution
       // We can have many aliases for a cell, we should handle this
       // const alias = this.project.aliases.getAliases(this.cellReference)[0]
@@ -292,10 +292,6 @@ export class Cell {
 
   public hasError = computed(() => {
     return this.output.value instanceof Error
-  })
-
-  public isFunction = computed(() => {
-    return isLitsFunction(this.output.value)
   })
 
   public getDebugInfo() {

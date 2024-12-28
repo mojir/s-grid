@@ -1,6 +1,12 @@
 import type { Grid } from '../grid/Grid'
 import type { RangeReference } from '../reference/RangeReference'
 
+export type RenameIdentifierTransformation = {
+  type: 'renameIdentifier'
+  oldIdentifier: string
+  newIdentifier: string
+}
+
 export type RenameGridTransformation = {
   grid: Grid
   type: 'renameGrid'
@@ -49,4 +55,13 @@ export type ColInsertBeforeTransformation = {
   count: number
 }
 
-export type Transformation = GridDeleteTransformation | RenameGridTransformation | MoveTransformation | RowDeleteTransformation | ColDeleteTransformation | RowInsertBeforeTransformation | ColInsertBeforeTransformation
+export type ReferenceTransformation =
+  | GridDeleteTransformation
+  | RenameGridTransformation
+  | MoveTransformation
+  | RowDeleteTransformation
+  | ColDeleteTransformation
+  | RowInsertBeforeTransformation
+  | ColInsertBeforeTransformation
+
+export type Transformation = ReferenceTransformation | RenameIdentifierTransformation

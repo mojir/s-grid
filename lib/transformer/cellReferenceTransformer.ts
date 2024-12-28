@@ -2,7 +2,7 @@ import { CellReference } from '../reference/CellReference'
 import type {
   ColDeleteTransformation,
   ColInsertBeforeTransformation,
-  Transformation,
+  ReferenceTransformation,
   MoveTransformation,
   RowDeleteTransformation,
   RowInsertBeforeTransformation,
@@ -13,7 +13,7 @@ export function transformCellReference({
   transformation,
 }: {
   cellReference: CellReference
-  transformation: Transformation
+  transformation: ReferenceTransformation
 }): CellReference {
   switch (transformation.type) {
     case 'move':

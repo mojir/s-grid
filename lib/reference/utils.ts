@@ -59,3 +59,7 @@ export function getReferenceFromString(grid: Grid, referenceString: string): Ref
       ? RangeReference.fromString(grid, referenceString)
       : null
 }
+
+export function isReferenceString(referenceString: string): boolean {
+  return isCellReferenceString(referenceString) || isRangeReferenceString(referenceString)
+}

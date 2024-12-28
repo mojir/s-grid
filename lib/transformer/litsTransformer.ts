@@ -19,14 +19,23 @@ export function transformLitsPrograms({
     return
   }
   const lits = useLits().value
+  const unresolvedIdentifiers = new Set(Array.from(
+    lits.analyze(formula, { jsFunctions: cell.grid.project.commandCenter.jsFunctions }).unresolvedIdentifiers,
+  ).map(identifier => identifier.symbol))
+
   const tokenStream = lits.tokenize(formula)
   const transformedTokenStream = lits.transform(
     tokenStream,
-    identifier => transformIdentifier({
-      cellGrid: cell.grid,
-      identifier,
-      transformation,
-    }),
+    (identifier) => {
+      if (!unresolvedIdentifiers.has(identifier)) {
+        return identifier
+      }
+      return transformIdentifier({
+        cellGrid: cell.grid,
+        identifier,
+        transformation,
+      })
+    },
   )
   cell.setFormula(lits.untokenize(transformedTokenStream))
 }
@@ -40,6 +49,13 @@ function transformIdentifier({
   identifier: string
   transformation: Transformation
 }): string {
+  if (transformation.type === 'renameIdentifier') {
+    if (identifier === transformation.oldIdentifier) {
+      return transformation.newIdentifier
+    }
+    return identifier
+  }
+
   if (!isCellReferenceString(identifier) && !isRangeReferenceString(identifier)) {
     return identifier
   }

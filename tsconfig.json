@@ -13,7 +13,7 @@
     
     // Error reporting
     // "exactOptionalPropertyTypes": true,
-    "noErrorTruncation": true,
+    // "noErrorTruncation": true,
     
     // Module resolution
     "isolatedModules": true,

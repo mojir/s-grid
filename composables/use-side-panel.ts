@@ -1,12 +1,13 @@
 const { debugMode } = useDebug()
 
-type TabId = 'repl' | 'settings' | 'debug'
+type TabId = 'repl' | 'settings' | 'debug' | 'alias'
 type Tab = {
   id: TabId
   name: string
 }
 const allTabs = readonly(ref<Tab[]>([
   { id: 'repl', name: 'Lisp REPL' },
+  { id: 'alias', name: 'Alias' },
   { id: 'settings', name: 'Settings' },
   { id: 'debug', name: 'Debug' },
 ]))

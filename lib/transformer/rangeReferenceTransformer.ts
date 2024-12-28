@@ -1,14 +1,14 @@
 import type { CellReference } from '../reference/CellReference'
 import { RangeReference } from '../reference/RangeReference'
 import { cellTransformColInsertBefore, cellTransformMove, cellTransformRowInsertBefore } from './cellReferenceTransformer'
-import type { ColDeleteTransformation, ColInsertBeforeTransformation, Transformation, RowDeleteTransformation, RowInsertBeforeTransformation } from '.'
+import type { ColDeleteTransformation, ColInsertBeforeTransformation, ReferenceTransformation, RowDeleteTransformation, RowInsertBeforeTransformation } from '.'
 
 export function transformRangeReference({
   rangeReference,
   transformation,
 }: {
   rangeReference: RangeReference
-  transformation: Transformation
+  transformation: ReferenceTransformation
 }): RangeReference {
   switch (transformation.type) {
     case 'move':

@@ -1,49 +1,100 @@
 import type { Project } from './project/Project'
-import type { Transformation } from './transformer'
-import type { Reference } from './reference/utils'
+import type { ReferenceTransformation } from './transformer'
+import { isReferenceString, type Reference } from './reference/utils'
 import { transformReference } from './transformer/referenceTransformer'
 
+const aliasNameRegexp = /^[A-Z][a-zA-Z0-9_-]*$/
+
+export function isAliasName(alias: string): boolean {
+  if (isReferenceString(alias)) {
+    return false
+  }
+  return aliasNameRegexp.test(alias)
+}
 export class Aliases {
-  private referenceAliases = new Map<string, Ref<Reference>>()
+  public aliases = shallowRef<Record<string, Ref<Reference>>>({})
+
+  public visibleAliases = computed(() => Object.entries(this.aliases.value)
+    .filter(([_, reference]) => !reference.value.grid.hidden.value)
+    .reduce((acc: Record<string, Ref<Reference>>, [alias, reference]) => {
+      acc[alias] = reference
+      return acc
+    }, {}),
+  )
 
   constructor(private project: Project) {}
 
-  public setCell(alias: string, reference: Reference, force = false) {
-    const existingCell = this.referenceAliases.get(alias)
-    if (existingCell && !force) {
-      throw new Error(`Alias ${alias} already exists`)
+  public setAlias(alias: string, reference: Reference) {
+    if (!isAliasName(alias)) {
+      throw new Error(`Invalid alias name: ${alias}`)
     }
+    const existingCell = this.aliases.value[alias]
 
     const referenceRef = shallowRef(reference)
     if (existingCell) {
       existingCell.value = reference
     }
     else {
-      this.referenceAliases.set(alias, referenceRef)
-    }
-  }
-
-  public getReference(alias: string): Ref<Reference> | undefined {
-    return this.referenceAliases.get(alias)
-  }
-
-  public removeAlias(alias: string) {
-    const reference = this.referenceAliases.get(alias)
-    if (reference) {
-      this.referenceAliases.delete(alias)
-      if (alias) {
-        const dependants = this.project.getAllCells().filter(cell => cell.localReferences.value.includes(alias))
-
-        dependants.forEach((dependantCell) => {
-          dependantCell.input.value = `=(throw "Reference to removed alias ${alias}"))`
-        })
+      this.aliases.value = {
+        ...this.aliases.value,
+        [alias]: referenceRef,
       }
     }
   }
 
-  public transformReferences(transformation: Transformation) {
-    this.referenceAliases
-      .entries()
+  public editAlias(alias: string, { newAlias, newReference }: { newAlias: string, newReference: Reference }) {
+    if (!isAliasName(alias)) {
+      throw new Error(`Invalid alias name: ${alias}`)
+    }
+
+    const reference = this.aliases.value[alias]
+    if (!reference) {
+      throw new Error(`Alias ${alias} does not exist`)
+    }
+
+    console.log('editAlias', alias, newAlias)
+
+    this.setAlias(newAlias, newReference)
+
+    this.project.transformAllReferences({
+      type: 'renameIdentifier',
+      oldIdentifier: alias,
+      newIdentifier: newAlias,
+    })
+
+    if (alias !== newAlias) {
+      this.removeAlias(alias)
+    }
+  }
+
+  public getReference(alias: string): Ref<Reference> | undefined {
+    return this.aliases.value[alias]
+  }
+
+  public removeAlias(alias: string) {
+    if (!isAliasName(alias)) {
+      throw new Error(`Invalid alias name: ${alias}`)
+    }
+
+    const reference = this.aliases.value[alias]
+    if (reference) {
+      this.aliases.value = Object.entries(this.aliases.value)
+        .filter(([a]) => a !== alias)
+        .reduce((acc: Record<string, Ref<Reference>>, [a, reference]) => {
+          acc[a] = reference
+          return acc
+        }, {})
+
+      const dependants = this.project.getAllCells().filter(cell => cell.localReferences.value.includes(alias))
+
+      dependants.forEach((dependantCell) => {
+        dependantCell.input.value = `=(throw "Alias removed: ${alias}")`
+      })
+    }
+  }
+
+  public transformReferences(transformation: ReferenceTransformation) {
+    Object.entries(this.aliases.value)
       .filter(([_, reference]) => reference.value.grid === transformation.grid)
       .forEach(([alias, reference]) => {
         try {

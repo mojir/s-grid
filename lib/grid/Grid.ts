@@ -99,7 +99,7 @@ export class Grid {
     })
     Object.entries(grid.alias).forEach(([alias, key]) => {
       const reference = CellReference.fromString(newGrid, key) as CellReference
-      project.aliases.setCell(alias, reference)
+      project.aliases.setAlias(alias, reference)
     })
     return newGrid
   }

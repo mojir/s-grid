@@ -127,7 +127,9 @@ export class Project {
   }
 
   public transformAllReferences(transformation: Transformation) {
-    this.aliases.transformReferences(transformation)
+    if (transformation.type !== 'renameIdentifier') {
+      this.aliases.transformReferences(transformation)
+    }
     this.getAllCells().forEach((cell) => {
       transformLitsPrograms({ cell, transformation })
     })
