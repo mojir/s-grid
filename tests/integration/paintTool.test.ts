@@ -7,7 +7,6 @@ import { Project } from '~/lib/project/Project'
 const project = new Project({
   grids: [
     {
-      alias: {},
       cells: {},
       rows: 99,
       cols: 26,

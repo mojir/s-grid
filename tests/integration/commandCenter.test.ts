@@ -10,7 +10,6 @@ beforeEach(() => {
   project = new Project({
     grids: [
       {
-        alias: {},
         cells: {},
         rows: 99,
         cols: 26,

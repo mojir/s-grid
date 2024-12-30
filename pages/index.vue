@@ -23,7 +23,6 @@ function isColIdentifier(value: unknown): value is ColIdentifier {
 const project = new Project({
   grids: [
     {
-      alias: {},
       cells: {},
       rows: 99,
       cols: 26,

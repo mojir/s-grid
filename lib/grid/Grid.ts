@@ -92,10 +92,6 @@ export class Grid {
         cell.textColor.value = cellDTO.textColor ? Color.fromDTO(cellDTO.textColor) : null
       }
     })
-    Object.entries(grid.alias).forEach(([alias, key]) => {
-      const reference = CellReference.fromString(newGrid, key) as CellReference
-      project.aliases.setAlias(alias, reference)
-    })
     return newGrid
   }
 
