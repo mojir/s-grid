@@ -7,13 +7,8 @@ const props = defineProps<{
   project: Project
 }>()
 
-const { debugMode } = useDebug()
-
 const aliases = computed(() => {
-  return Object.entries(debugMode.value
-    ? project.value.aliases.aliases.value
-    : project.value.aliases.visibleAliases.value,
-  )
+  return Object.entries(project.value.aliases.aliases.value)
     .map(([alias, reference]) => ({ alias, reference: reference.value }))
 })
 

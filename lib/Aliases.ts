@@ -1,6 +1,6 @@
 import type { Project } from './project/Project'
 import type { ReferenceTransformation } from './transformer'
-import { isReferenceString, type Reference } from './reference/utils'
+import { getReferenceFromStringWithGrid, isReferenceString, type Reference } from './reference/utils'
 import { transformReference } from './transformer/referenceTransformer'
 
 const aliasNameRegexp = /^[A-Z][a-zA-Z0-9_-]*$/
@@ -14,15 +14,12 @@ export function isAliasName(alias: string): boolean {
 export class Aliases {
   public aliases = shallowRef<Record<string, Ref<Reference>>>({})
 
-  public visibleAliases = computed(() => Object.entries(this.aliases.value)
-    .filter(([_, reference]) => !reference.value.grid.hidden.value)
-    .reduce((acc: Record<string, Ref<Reference>>, [alias, reference]) => {
-      acc[alias] = reference
-      return acc
-    }, {}),
-  )
-
-  constructor(private project: Project) {}
+  constructor(private project: Project, aliases: Record<string, string>) {
+    Object.entries(aliases).forEach(([alias, referenceString]) => {
+      const reference = getReferenceFromStringWithGrid(project, referenceString)
+      this.setAlias(alias, reference)
+    })
+  }
 
   public setAlias(alias: string, reference: Reference) {
     if (!isAliasName(alias)) {

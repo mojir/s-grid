@@ -18,7 +18,7 @@ export class Row {
 
     watch(this._height, (newValue, oldValue) => {
       this.grid.project.history.registerChange({
-        type: 'rowHeight',
+        type: 'rowChange',
         gridName: this.grid.name.value,
         rowIndex: this._index.value,
         oldValue,

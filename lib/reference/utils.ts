@@ -1,4 +1,5 @@
 import type { Grid } from '../grid/Grid'
+import type { Project } from '../project/Project'
 import { CellReference, isCellReferenceString } from './CellReference'
 import { isRangeReferenceString, RangeReference } from './RangeReference'
 
@@ -52,12 +53,25 @@ export function getDocumentResizeColId(grid: Grid, colIndex: number): string {
   return `${DocumentIdType.ResizeCol}:${grid.name.value}:${colIndex}`
 }
 
-export function getReferenceFromString(grid: Grid, referenceString: string): Reference | null {
+export function getReferenceFromString(currenctGrid: Grid, referenceString: string): Reference | null {
+  return isCellReferenceString(referenceString)
+    ? CellReference.fromString(currenctGrid, referenceString)
+    : isRangeReferenceString(referenceString)
+      ? RangeReference.fromString(currenctGrid, referenceString)
+      : null
+}
+
+export function getReferenceFromStringWithGrid(project: Project, referenceString: string): Reference {
+  if (!isReferenceString(referenceString)) {
+    throw new Error(`Invalid reference string: ${referenceString}`)
+  }
+
+  const gridName = referenceString.split('!')[0]!
+  const grid = project.getGridByName(gridName)
+
   return isCellReferenceString(referenceString)
     ? CellReference.fromString(grid, referenceString)
-    : isRangeReferenceString(referenceString)
-      ? RangeReference.fromString(grid, referenceString)
-      : null
+    : RangeReference.fromString(grid, referenceString)
 }
 
 export function isReferenceString(referenceString: string): boolean {

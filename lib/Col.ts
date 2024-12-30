@@ -19,7 +19,7 @@ export class Col {
 
     watch(this._width, (newValue, oldValue) => {
       this.grid.project.history.registerChange({
-        type: 'colWidth',
+        type: 'colChange',
         gridName: this.grid.name.value,
         colIndex: this._index.value,
         oldValue,

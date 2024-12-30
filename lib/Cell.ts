@@ -2,7 +2,6 @@ import { isLitsFunction } from '@mojir/lits'
 import { Color } from './color'
 import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import type { Grid } from './grid/Grid'
-import type { CommandCenter } from './CommandCenter'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import type { Project } from './project/Project'
 import { defaultFontSize, defaultFormatter } from './constants'
@@ -12,7 +11,6 @@ import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecorat
 
 export class Cell {
   private readonly project: Project
-  private readonly commandCenter: CommandCenter
   private readonly lits: LitsComposable
 
   public readonly grid: Grid
@@ -32,15 +30,12 @@ export class Cell {
     {
       project,
       grid,
-      commandCenter,
     }: {
       project: Project
       grid: Grid
-      commandCenter: CommandCenter
     }) {
     this.project = project
     this.grid = grid
-    this.commandCenter = commandCenter
     this.lits = useLits()
 
     watch(this.display, (newValue, oldValue) => {
@@ -149,10 +144,8 @@ export class Cell {
     const input = this.input.value
 
     if (this.formula.value !== null) {
-      const lits = this.lits.value
       const program = input.slice(1)
-      const { unresolvedIdentifiers } = lits.analyze(program, { jsFunctions: this.commandCenter.jsFunctions })
-      return Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol)
+      return Array.from(this.lits.getUnresolvedIdentifers(program))
     }
 
     return []
@@ -201,11 +194,9 @@ export class Cell {
     }
 
     if (this.formula.value !== null) {
-      const lits = this.lits.value
       try {
         const values = this.project.getValuesFromUndefinedIdentifiers(this.references.value, this.grid)
-        const result = lits.run(this.formula.value, { values, jsFunctions: this.commandCenter.jsFunctions })
-        return result
+        return this.lits.run(this.formula.value, { values })
       }
       catch (error) {
         return error
@@ -258,11 +249,7 @@ export class Cell {
       return this.output.value
     }
 
-    const lits = this.lits.value
-
-    const identifiers = Array.from(
-      lits.analyze(formatter, { jsFunctions: this.commandCenter.jsFunctions }).unresolvedIdentifiers,
-    ).map(identifier => identifier.symbol)
+    const identifiers = Array.from(this.lits.getUnresolvedIdentifers(formatter))
 
     identifiers.push(...this.getReferencesFromUnresolvedIdentifiers(identifiers)
       .flatMap(reference => reference.getCells())
@@ -272,13 +259,14 @@ export class Cell {
 
     try {
       const values = this.project.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
-      const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
+      const fn = this.lits.run(formatter, { values })
+      // const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {
         return this.output.value
       }
 
-      const result = lits.apply(fn, [this.output.value], { values, jsFunctions: this.commandCenter.jsFunctions })
+      const result = this.lits.apply(fn, [this.output.value], { values })
       return result
     }
     catch (error) {
@@ -311,7 +299,7 @@ export class Cell {
 
   private createCellChange(attribute: CellChangeItem['attribute'], oldValue: unknown, newValue: unknown): CellChangeItem {
     return {
-      type: 'cell',
+      type: 'cellChange',
       gridName: this.grid.name.value,
       rowIndex: this.cellReference.rowIndex,
       colIndex: this.cellReference.colIndex,

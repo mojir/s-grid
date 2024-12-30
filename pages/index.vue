@@ -20,7 +20,19 @@ function isColIdentifier(value: unknown): value is ColIdentifier {
   return !!value && (value as ColIdentifier).colIndex !== undefined
 }
 
-const project = new Project()
+const project = new Project({
+  grids: [
+    {
+      alias: {},
+      cells: {},
+      rows: 99,
+      cols: 26,
+      name: 'Grid1',
+    },
+  ],
+  currentGridIndex: 0,
+  aliases: {},
+})
 const grid = project.currentGrid
 const selection = computed(() => grid.value.selection)
 const { sidePanelHandleKeyDown } = useSidePanel()

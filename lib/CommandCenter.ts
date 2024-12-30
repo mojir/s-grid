@@ -1,11 +1,9 @@
-import type { JsFunction } from '@mojir/lits'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import { getReferenceFromString, type Direction } from './reference/utils'
 import { getColIndex, getRowIndex } from './utils'
 import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import { Color } from '~/lib/color'
 import type { Project } from '~/lib/project/Project'
-import { format } from '~/lib/litsInterop/format'
 import { isFontSize, isStyleAlign, isStyleJustify, isStyleTextDecoration } from '~/dto/CellDTO'
 
 const commandNames = [
@@ -58,15 +56,13 @@ type Command<T extends string> = {
 
 export class CommandCenter {
   public commands = new Map<string, Command<string>>()
-  public jsFunctions: Record<string, JsFunction> = {
-    format,
-  }
+  private lits = useLits()
 
   public constructor(private project: Project) {}
 
   private registerCommand(command: Command<BuiltinCommandName>) {
     this.commands.set(command.name, command)
-    this.jsFunctions[command.name] = { fn: (...args: unknown[]) => this.exec(command.name, ...args) }
+    this.lits.registerJsFunction(command.name, { fn: (...args: unknown[]) => this.exec(command.name, ...args) })
   }
 
   public exec(name: BuiltinCommandName, ...args: unknown[]) {

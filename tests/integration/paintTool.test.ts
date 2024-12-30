@@ -4,7 +4,19 @@ import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
 import { Project } from '~/lib/project/Project'
 
-const project = new Project()
+const project = new Project({
+  grids: [
+    {
+      alias: {},
+      cells: {},
+      rows: 99,
+      cols: 26,
+      name: 'Grid1',
+    },
+  ],
+  currentGridIndex: 0,
+  aliases: {},
+})
 
 describe('paint tool', () => {
   it('copies styles from one cell to another', async () => {

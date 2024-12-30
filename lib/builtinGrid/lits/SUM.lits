@@ -1,1 +1,0 @@
-#(reduce + 0 (AS_FLAT_RANGE %))

@@ -2,30 +2,38 @@ import type { Project } from './Project'
 import type { CellDTO } from '~/dto/CellDTO'
 
 export type CellChangeItem = {
-  type: 'cell'
+  type: 'cellChange'
   gridName: string
   rowIndex: number
   colIndex: number
-  attribute: Exclude<keyof CellDTO, 'style' | 'alias'>
+  attribute: keyof CellDTO
   oldValue: unknown
   newValue: unknown
 }
 
-export type RowChangeItem = {
-  type: 'rowHeight'
+type RowChangeItem = {
+  type: 'rowChange'
   gridName: string
   rowIndex: number
   oldValue: number
   newValue: number
 }
 
-export type ColChangeItem = {
-  type: 'colWidth'
+type ColChangeItem = {
+  type: 'colChange'
   gridName: string
   colIndex: number
   oldValue: number
   newValue: number
 }
+
+// type GridChangeItem = {
+//   type: 'gridChange'
+//   gridName: string
+//   colIndex: number
+//   oldValue: number
+//   newValue: number
+// }
 
 type ChangeEntry = CellChangeItem | RowChangeItem | ColChangeItem
 
@@ -107,18 +115,18 @@ export class History {
   }
 
   private applyChange(change: ChangeEntry, method: 'undo' | 'redo'): void {
-    if (change.type === 'cell') {
-      const grid = this.project.getGrid(change.gridName)
+    if (change.type === 'cellChange') {
+      const grid = this.project.getGridByName(change.gridName)
       const cell = grid.getCell(change)
       cell.setDTO({ [change.attribute]: method === 'undo' ? change.oldValue : change.newValue })
     }
-    else if (change.type === 'rowHeight') {
-      const grid = this.project.getGrid(change.gridName)
+    else if (change.type === 'rowChange') {
+      const grid = this.project.getGridByName(change.gridName)
       const row = grid.getRow(change.rowIndex)
       row.setHeight(method === 'undo' ? change.oldValue : change.newValue)
     }
-    else if (change.type === 'colWidth') {
-      const grid = this.project.getGrid(change.gridName)
+    else if (change.type === 'colChange') {
+      const grid = this.project.getGridByName(change.gridName)
       const col = grid.getCol(change.colIndex)
       col.setWidth(method === 'undo' ? change.oldValue : change.newValue)
     }

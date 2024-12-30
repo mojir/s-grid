@@ -1,0 +1,4 @@
+(defn AVERAGE [input]
+  (/
+    (SUM input)
+    (COUNT input)))

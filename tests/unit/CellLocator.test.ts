@@ -2,7 +2,19 @@ import { describe, expect, test } from 'vitest'
 import { CellReference } from '~/lib/reference/CellReference'
 import { Project } from '~/lib/project/Project'
 
-const project = new Project()
+const project = new Project({
+  grids: [
+    {
+      alias: {},
+      cells: {},
+      rows: 99,
+      cols: 26,
+      name: 'Grid1',
+    },
+  ],
+  currentGridIndex: 0,
+  aliases: {},
+})
 project.importGrid({
   name: 'Grid2',
   rows: 10,
@@ -10,7 +22,7 @@ project.importGrid({
   cells: {},
   alias: {},
 })
-project.selectGrid(project.getGrid('Grid1'))
+project.selectGrid(project.getGridByName('Grid1'))
 
 const grid1 = project.currentGrid.value
 

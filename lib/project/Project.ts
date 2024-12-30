@@ -1,5 +1,4 @@
 import { Aliases } from '../Aliases'
-import { builtinGrid } from '../builtinGrid'
 import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
 import { Grid } from '../grid/Grid'
 import { getReferenceFromString } from '../reference/utils'
@@ -12,31 +11,32 @@ import { ProjectClipboard } from './ProjectClipboard'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
+import type { ProjectDTO } from '~/dto/ProjectDTO'
 
 export class Project {
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
-  public readonly aliases = new Aliases(this)
+  public readonly aliases: Aliases
   public readonly clipboard = new ProjectClipboard(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public readonly history = new History(this)
   public grids: Ref<Grid[]>
-  public visibleGrids: ComputedRef<Grid[]>
 
-  constructor() {
-    this.grids = shallowRef([
-      new Grid(this, getGridName('Grid1'), defaultNumberOfRows, defaultNumberOfCols),
-      Grid.fromDTO(this, builtinGrid),
-    ])
+  public constructor(projectDTO: ProjectDTO) {
+    if (projectDTO.grids.length === 0) {
+      throw new Error('Project must have at least one grid')
+    }
+    if (projectDTO.currentGridIndex < 0 || projectDTO.currentGridIndex >= projectDTO.grids.length) {
+      throw new Error('Invalid currentGridIndex')
+    }
+
+    this.grids = shallowRef(projectDTO.grids.map(gridDTO => Grid.fromDTO(this, gridDTO)))
+    this.currentGridIndex = ref(projectDTO.currentGridIndex)
     this.currentGrid = computed(() => {
       return this.grids.value[this.currentGridIndex.value]!
     })
-    this.visibleGrids = computed(() => {
-      const { debugMode } = useDebug()
-      return this.grids.value
-        .filter(grid => debugMode.value || !grid.hidden.value)
-    })
+    this.aliases = new Aliases(this, projectDTO.aliases)
     this.commandCenter.registerCommands()
     nextTick(() => this.history.start())
   }
@@ -80,11 +80,6 @@ export class Project {
     })
     this.grids.value = this.grids.value.filter(g => g !== grid)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
-    let attempts = 0
-    while (this.grids.value[this.currentGridIndex.value]?.hidden.value && attempts < this.grids.value.length) {
-      this.currentGridIndex.value = (this.currentGridIndex.value + 1) % this.grids.value.length
-      attempts += 1
-    }
   }
 
   public renameGrid(grid: Grid, newName: string) {
@@ -98,7 +93,7 @@ export class Project {
   }
 
   public addGrid() {
-    let gridIndex = this.grids.value.filter(grid => !grid.hidden).length + 1
+    let gridIndex = this.grids.value.length + 1
     let gridName = `Grid${gridIndex}`
     while (this.grids.value.find(grid => grid.name.value === getGridName(gridName))) {
       gridIndex += 1
@@ -135,7 +130,7 @@ export class Project {
     })
   }
 
-  public getGrid(gridName: string): Grid {
+  public getGridByName(gridName: string): Grid {
     const grid = this.grids.value.find(grid => grid.name.value === getGridName(gridName))
     if (!grid) {
       throw new Error(`Grid not found ${gridName}`)

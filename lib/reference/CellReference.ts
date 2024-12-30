@@ -57,7 +57,7 @@ export class CellReference {
       throw new Error(`Invalid cell reference: ${str}`)
     }
 
-    const grid = match[1] ? defaultGrid.project.getGrid(match[1]) : defaultGrid
+    const grid = match[1] ? defaultGrid.project.getGridByName(match[1]) : defaultGrid
     const absCol = !!match[2]
     const colId = match[3]!
     const colIndex = getColIndex(colId)

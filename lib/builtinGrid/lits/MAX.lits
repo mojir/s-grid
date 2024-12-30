@@ -1,4 +1,0 @@
-#(let [numbers (AS_FLAT_RANGE %)]
-   (if (empty? numbers)
-     0
-     (reduce max numbers)))

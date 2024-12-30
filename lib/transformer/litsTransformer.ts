@@ -18,10 +18,8 @@ export function transformLitsPrograms({
   if (!formula) {
     return
   }
-  const lits = useLits().value
-  const unresolvedIdentifiers = new Set(Array.from(
-    lits.analyze(formula, { jsFunctions: cell.grid.project.commandCenter.jsFunctions }).unresolvedIdentifiers,
-  ).map(identifier => identifier.symbol))
+  const lits = useLits()
+  const unresolvedIdentifiers = lits.getUnresolvedIdentifers(formula)
 
   const tokenStream = lits.tokenize(formula)
   const transformedTokenStream = lits.transform(

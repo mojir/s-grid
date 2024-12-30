@@ -1,0 +1,6 @@
+(defn TOARRAY [input] 
+  (filter
+    number?
+    (if (array? input)
+      (flatten input)
+      [input])))

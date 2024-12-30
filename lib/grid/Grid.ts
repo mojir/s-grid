@@ -15,7 +15,6 @@ import type { StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } fro
 
 export class Grid {
   public project: Project
-  public readonly hidden = ref(false)
   public readonly name: Ref<string>
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
@@ -43,7 +42,6 @@ export class Grid {
           {
             project: this.project,
             grid: this,
-            commandCenter: this.project.commandCenter,
           },
         ),
       ),
@@ -58,9 +56,6 @@ export class Grid {
   static fromDTO(project: Project, grid: GridDTO): Grid {
     const gridName = getGridName(grid.name)
     const newGrid = new Grid(project, gridName, grid.rows, grid.cols)
-    if (grid.hidden !== undefined) {
-      newGrid.hidden.value = grid.hidden
-    }
 
     Object.entries(grid.cells).forEach(([key, cellDTO]) => {
       // TODO use new regexp, to avoid the need of Reference
@@ -553,7 +548,6 @@ export class Grid {
           {
             project: this.project,
             grid: this,
-            commandCenter: this.project.commandCenter,
           },
         ),
       ))
@@ -629,7 +623,6 @@ export class Grid {
           {
             project: this.project,
             grid: this,
-            commandCenter: this.project.commandCenter,
           },
         ),
       ))

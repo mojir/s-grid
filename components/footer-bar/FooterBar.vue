@@ -34,7 +34,7 @@ defineProps<{
         </DropdownMenuTrigger>
         <DropdownMenuContent class="flex flex-col max-h-96 overflow-y-auto">
           <DropdownMenuCheckboxItem
-            v-for="grid of project.visibleGrids.value"
+            v-for="grid of project.grids.value"
             :key="grid.name.value"
             :checked="project.currentGrid.value === grid"
             @click="project.selectGrid(grid)"
@@ -45,10 +45,10 @@ defineProps<{
       </DropdownMenu>
       <div class="flex overflow-auto h-full">
         <FooterBarGridButton
-          v-for="grid of project.visibleGrids.value"
+          v-for="grid of project.grids.value"
           :key="grid.name.value"
           :selected="grid === project.currentGrid.value"
-          :removable="project.visibleGrids.value.length > 1"
+          :removable="project.grids.value.length > 1"
           :grid="grid"
           :project="project"
         >

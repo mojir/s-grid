@@ -1,0 +1,2 @@
+(defn SUM [input]
+  (reduce + 0 (TOARRAY input)))

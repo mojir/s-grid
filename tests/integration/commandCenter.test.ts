@@ -7,7 +7,19 @@ let project: Project
 let commandCenter: CommandCenter
 
 beforeEach(() => {
-  project = new Project()
+  project = new Project({
+    grids: [
+      {
+        alias: {},
+        cells: {},
+        rows: 99,
+        cols: 26,
+        name: 'Grid1',
+      },
+    ],
+    currentGridIndex: 0,
+    aliases: {},
+  })
   commandCenter = project.commandCenter
 })
 

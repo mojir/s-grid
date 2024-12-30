@@ -143,11 +143,10 @@ ${command.description}`
   public run(program: string) {
     let result
     try {
-      const { unresolvedIdentifiers } = this.lits.value.analyze(program, { jsFunctions: this.project.commandCenter.jsFunctions })
-      const values = this.project.getValuesFromUndefinedIdentifiers(Array.from(unresolvedIdentifiers).map(identifier => identifier.symbol), this.project.currentGrid.value)
-      result = this.lits.value.run(program, {
+      const unresolvedIdentifiers = Array.from(this.lits.getUnresolvedIdentifers(program))
+      const values = this.project.getValuesFromUndefinedIdentifiers(unresolvedIdentifiers, this.project.currentGrid.value)
+      result = this.lits.run(program, {
         values,
-        jsFunctions: this.project.commandCenter.jsFunctions,
         globalContext: this.globalContext,
       })
     }
