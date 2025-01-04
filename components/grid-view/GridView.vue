@@ -93,13 +93,11 @@ watch(grid, (grid) => {
     </gridViewMenu>
 
     <GridRegion
-      :grid="grid"
       :region="grid.position"
       class="border-2 border-cell-border"
     />
     <GridRegion
       v-if="grid.selection.selectedRange.value.size() > 1"
-      :grid="grid"
       :region="grid.selection.selectedRange"
       class="border border-cell-border bg-selected-cell"
     />
@@ -109,7 +107,6 @@ watch(grid, (grid) => {
       <GridRegion
         v-for="region of localReferenceList"
         :key="region.toStringWithoutGrid()"
-        :grid="grid"
         :region="shallowRef(region)"
         class="bg-referenced-cell"
       />
@@ -117,10 +114,14 @@ watch(grid, (grid) => {
     <GridRegion
       v-if="grid.editor.editing.value"
       active
-      :grid="grid"
       :region="grid.position"
     >
       <CellInput :grid="grid" />
     </GridRegion>
+    <DiagramView
+      v-for="([key, diagram]) in Object.entries(project.diagrams.diagrams.value)"
+      :key="key"
+      :diagram="diagram"
+    />
   </div>
 </template>

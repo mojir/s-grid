@@ -7,6 +7,7 @@ import { transformLitsPrograms } from '../transformer/litsTransformer'
 import { getGridName } from '../utils'
 import type { Cell } from '../Cell'
 import type { Transformation } from '../transformer'
+import { Diagrams } from '../Diagrams'
 import { ProjectClipboard } from './ProjectClipboard'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
@@ -17,6 +18,7 @@ export class Project {
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
   public readonly aliases: Aliases
+  public readonly diagrams: Diagrams
   public readonly clipboard = new ProjectClipboard(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
@@ -37,6 +39,7 @@ export class Project {
       return this.grids.value[this.currentGridIndex.value]!
     })
     this.aliases = new Aliases(this, projectDTO.aliases)
+    this.diagrams = new Diagrams(this, {})
     this.commandCenter.registerCommands()
     nextTick(() => this.history.start())
   }
@@ -83,12 +86,19 @@ export class Project {
   }
 
   public renameGrid(grid: Grid, newName: string) {
+    const oldGridName = grid.name.value
     const newGridName = getGridName(newName)
-    grid.name.value = newGridName
     this.transformAllReferences({
       type: 'renameGrid',
       grid,
       newName: newGridName,
+    })
+    grid.name.value = newGridName
+    this.history.registerChange({
+      type: 'gridChange',
+      attribute: 'name',
+      oldValue: oldGridName,
+      newValue: newGridName,
     })
   }
 
@@ -124,6 +134,7 @@ export class Project {
   public transformAllReferences(transformation: Transformation) {
     if (transformation.type !== 'renameIdentifier') {
       this.aliases.transformReferences(transformation)
+      this.diagrams.transformReferences(transformation)
     }
     this.getAllCells().forEach((cell) => {
       transformLitsPrograms({ cell, transformation })

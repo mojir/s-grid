@@ -57,6 +57,10 @@ function scrollToBottom() {
         v-if="currentTab === 'alias'"
         :project="project"
       />
+      <SidePanelDiagramTab
+        v-if="currentTab === 'diagrams'"
+        :project="project"
+      />
       <SidePanelDebugTab
         v-if="currentTab === 'debug'"
         :project="project"

@@ -27,15 +27,20 @@ type ColChangeItem = {
   newValue: number
 }
 
-// type GridChangeItem = {
-//   type: 'gridChange'
-//   gridName: string
-//   colIndex: number
-//   oldValue: number
-//   newValue: number
-// }
+type GridChangeItem = {
+  type: 'gridChange'
+  attribute: 'name'
+  oldValue: unknown
+  newValue: unknown
+}
 
-type ChangeEntry = CellChangeItem | RowChangeItem | ColChangeItem
+type ChangeEntry = CellChangeItem | RowChangeItem | ColChangeItem | GridChangeItem
+
+function assertString(value: unknown): asserts value is string {
+  if (typeof value !== 'string') {
+    throw new Error(`value was not a string: ${value}`)
+  }
+}
 
 export class History {
   public constructor(private project: Project) {}
@@ -129,6 +134,22 @@ export class History {
       const grid = this.project.getGridByName(change.gridName)
       const col = grid.getCol(change.colIndex)
       col.setWidth(method === 'undo' ? change.oldValue : change.newValue)
+    }
+    else if (change.type === 'gridChange') {
+      const { attribute, newValue, oldValue } = change
+      switch (attribute) {
+        case 'name':
+          assertString(newValue)
+          assertString(oldValue)
+
+          if (method === 'undo') {
+            this.project.renameGrid(this.project.getGridByName(newValue), oldValue)
+          }
+          else {
+            this.project.renameGrid(this.project.getGridByName(oldValue), newValue)
+          }
+          break
+      }
     }
   }
 }
