@@ -1,40 +1,31 @@
 <script setup lang="ts">
-import type { Project } from '~/lib/project/Project'
+import type { Diagram } from '~/lib/Diagram'
 
 const props = defineProps<{
-  project: Project
-  diagramName: string
+  diagram: Diagram | null
 }>()
 
-const open = defineModel('open', {
-  type: Boolean,
-  required: true,
-})
+const emit = defineEmits<{
+  (e: 'cancel' | 'remove'): void
+}>()
 
-const { project, diagramName } = toRefs(props)
-
-function removeDiagram() {
-  project.value.diagrams.removeDiagram(diagramName.value)
-  open.value = false
-}
+const { diagram } = toRefs(props)
 </script>
 
 <template>
-  <Dialog v-model:open="open">
+  <Dialog>
     <DialogContent>
       <DialogTitle>
         Remove Diagram
       </DialogTitle>
       <DialogDescription>
-        Are you sure you want to remove the diagram "{{ diagramName }}"?
+        Are you sure you want to remove the diagram "{{ diagram?.name.value }}"?
       </DialogDescription>
       <DialogFooter>
-        <DialogClose>
+        <DialogClose @click="emit('cancel')">
           Cancel
         </DialogClose>
-        <Button
-          @click="removeDiagram"
-        >
+        <Button @click="emit('remove')">
           Remove
         </Button>
       </DialogFooter>

@@ -49,8 +49,6 @@ export class Aliases {
       throw new Error(`Alias ${alias} does not exist`)
     }
 
-    console.log('editAlias', alias, newAlias)
-
     this.setAlias(newAlias, newReference)
 
     this.project.transformAllReferences({

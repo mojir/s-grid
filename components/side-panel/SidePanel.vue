@@ -32,6 +32,7 @@ function scrollToBottom() {
 
 <template>
   <div
+    id="side-panel"
     class="fixed top-0 bottom-0 right-0 w-[500px] flex-grow duration-300 box-border bg-grid border-l dark:border-slate-800 border-gray-300 transition-[right]  max-w-full"
     :style="{ 'z-index': 1000 }"
     :class="{
@@ -57,7 +58,7 @@ function scrollToBottom() {
         v-if="currentTab === 'alias'"
         :project="project"
       />
-      <SidePanelDiagramTab
+      <SidePanelTabDiagram
         v-if="currentTab === 'diagrams'"
         :project="project"
       />

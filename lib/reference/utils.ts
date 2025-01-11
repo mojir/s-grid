@@ -1,3 +1,4 @@
+import type { Diagram } from '../Diagram'
 import type { Grid } from '../grid/Grid'
 import type { Project } from '../project/Project'
 import { CellReference, isCellReferenceString } from './CellReference'
@@ -31,26 +32,31 @@ export enum DocumentIdType {
   Col = 'col',
   ResizeRow = 'resize-row',
   ResizeCol = 'resize-col',
+  Diagram = 'diagram',
+}
+
+export function getDiagramId(diagram: Diagram): string {
+  return `${DocumentIdType.Diagram}|${diagram.name.value}`
 }
 
 export function getDocumentCellId(cellReference: CellReference): string {
-  return `${DocumentIdType.Cell}:${cellReference.grid.name.value}:${cellReference.toRelative().toStringWithoutGrid()}`
+  return `${DocumentIdType.Cell}|${cellReference.grid.name.value}|${cellReference.toRelative().toStringWithoutGrid()}`
 }
 
 export function getDocumentRowId(grid: Grid, rowIndex: number): string {
-  return `${DocumentIdType.Row}:${grid.name.value}:${rowIndex}`
+  return `${DocumentIdType.Row}|${grid.name.value}|${rowIndex}`
 }
 
 export function getDocumentResizeRowId(grid: Grid, rowIndex: number): string {
-  return `${DocumentIdType.ResizeRow}:${grid.name.value}:${rowIndex}`
+  return `${DocumentIdType.ResizeRow}|${grid.name.value}|${rowIndex}`
 }
 
 export function getDocumentColId(grid: Grid, colIndex: number): string {
-  return `${DocumentIdType.Col}:${grid.name.value}:${colIndex}`
+  return `${DocumentIdType.Col}|${grid.name.value}|${colIndex}`
 }
 
 export function getDocumentResizeColId(grid: Grid, colIndex: number): string {
-  return `${DocumentIdType.ResizeCol}:${grid.name.value}:${colIndex}`
+  return `${DocumentIdType.ResizeCol}|${grid.name.value}|${colIndex}`
 }
 
 export function getReferenceFromString(currenctGrid: Grid, referenceString: string): Reference | null {

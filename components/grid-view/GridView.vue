@@ -119,8 +119,9 @@ watch(grid, (grid) => {
       <CellInput :grid="grid" />
     </GridRegion>
     <DiagramView
-      v-for="([key, diagram]) in Object.entries(project.diagrams.diagrams.value)"
-      :key="key"
+      v-for="diagram in project.diagrams.currentDiagrams.value"
+      :key="diagram.name.value"
+      :project="project"
       :diagram="diagram"
     />
   </div>

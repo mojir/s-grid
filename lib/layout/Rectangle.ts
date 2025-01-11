@@ -1,6 +1,7 @@
 import type { Reference } from '../reference/utils'
+import type { Dimensions, Position } from '.'
 
-export class Rectangle {
+export class Rectangle implements Position, Dimensions {
   public readonly x: number
   public readonly y: number
   public readonly width: number
@@ -15,6 +16,10 @@ export class Rectangle {
 
   public area(): number {
     return this.width * this.height
+  }
+
+  public static fromPositionAndDimensions({ position, dimensions }: { position: Position, dimensions: Dimensions }): Rectangle {
+    return new Rectangle(position.x, position.y, dimensions.width, dimensions.height)
   }
 
   public static fromReference(reference: Reference): Rectangle {

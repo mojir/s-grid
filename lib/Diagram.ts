@@ -1,32 +1,25 @@
-import type { CellReference } from './reference/CellReference'
+import type { Grid } from './grid/Grid'
+import type { Rectangle } from './layout/Rectangle'
 import type { RangeReference } from './reference/RangeReference'
 
 export class Diagram {
-  public dataReference: Ref<RangeReference>
-  public title: string
-  public width = 500
-  public height = 300
-  public anchor: CellReference
-  public offsetX: number
-  public offsetY: number
+  public readonly name = ref('')
+  public readonly grid: Ref<Grid>
+  public readonly rectangle: Ref<Rectangle>
+  public readonly dataReference = shallowRef<RangeReference | null>(null)
+  public readonly title = ref('')
 
   constructor({
-    anchor,
-    offsetX,
-    offsetY,
-    dataReference,
-    title,
+    name,
+    grid,
+    rectangle,
   }: {
-    anchor: CellReference
-    offsetX: number
-    offsetY: number
-    dataReference: RangeReference
-    title: string
+    name: string
+    grid: Grid
+    rectangle: Rectangle
   }) {
-    this.dataReference = shallowRef(dataReference)
-    this.title = title
-    this.anchor = anchor
-    this.offsetX = offsetX
-    this.offsetY = offsetY
+    this.name.value = name
+    this.grid = shallowRef(grid)
+    this.rectangle = shallowRef(rectangle)
   }
 }

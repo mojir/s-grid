@@ -21,6 +21,7 @@ const tabs = computed(() => {
 })
 
 const sidePanelOpen = ref<boolean>(false)
+const sidePanelActive = ref<boolean>(false)
 const currentTab = ref<TabId>('repl')
 
 let ctrlKeyTime: number | null = null
@@ -32,7 +33,14 @@ function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
     else {
       if (Date.now() - ctrlKeyTime < 500) {
         ctrlKeyTime = null
-        sidePanelOpen.value = !sidePanelOpen.value
+        if (sidePanelOpen.value) {
+          sidePanelOpen.value = false
+          sidePanelActive.value = false
+        }
+        else {
+          sidePanelOpen.value = true
+          sidePanelActive.value = true
+        }
       }
       else {
         ctrlKeyTime = Date.now()
@@ -65,11 +73,22 @@ function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
   return false
 }
 
+watch(sidePanelOpen, (open) => {
+  sidePanelActive.value = open
+})
+
+watch(sidePanelActive, (open) => {
+  if (open && !sidePanelOpen.value) {
+    sidePanelActive.value = false
+  }
+})
+
 export default function () {
   return {
     tabs,
     currentTab,
     sidePanelOpen,
+    sidePanelActive,
     sidePanelHandleKeyDown,
   }
 }

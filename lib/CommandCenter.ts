@@ -13,6 +13,7 @@ const commandNames = [
   'CreateNamedFunction!',
   'DeleteCols!',
   'DeleteRows!',
+  'OpenDiagramEditor!',
   'ExpandSelection!',
   'ExpandSelectionTo!',
   'GetCell',
@@ -76,6 +77,14 @@ export class CommandCenter {
 
   public registerCommands() {
     const repl = this.project.repl
+
+    this.registerCommand({
+      name: 'OpenDiagramEditor!',
+      execute: (diagramName: string) => {
+        this.project.diagrams.openDiagramEditor(diagramName)
+      },
+      description: 'Clear the current cell',
+    })
 
     this.registerCommand({
       name: 'CreateNamedFunction!',

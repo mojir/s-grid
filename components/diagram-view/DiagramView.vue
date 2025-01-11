@@ -1,39 +1,34 @@
 <script setup lang="ts">
 import type { Diagram } from '~/lib/Diagram'
-import { Rectangle } from '~/lib/layout/Rectangle'
+import type { Project } from '~/lib/project/Project'
+import { getDiagramId } from '~/lib/reference/utils'
 
 const props = defineProps<{
+  project: Project
   diagram: Diagram
 }>()
 
-const { diagram } = toRefs(props)
+const { diagram, project } = toRefs(props)
 
-const x = computed(() => {
-  const rectangle = Rectangle.fromReference(diagram.value.anchor)
-  return rectangle.x + diagram.value.offsetX
-})
-
-const y = computed(() => {
-  const rectangle = Rectangle.fromReference(diagram.value.anchor)
-  return rectangle.y + diagram.value.offsetY
-})
+const diagramId = computed(() => getDiagramId(diagram.value))
+const active = computed(() => project.value.diagrams.activeDiagram.value === diagram.value)
+const x = computed(() => diagram.value.rectangle.value.x)
+const y = computed(() => diagram.value.rectangle.value.y)
+const width = computed(() => diagram.value.rectangle.value.width)
+const height = computed(() => diagram.value.rectangle.value.height)
 
 const values = computed(() => {
-  return diagram.value.dataReference.value.getCells().map(cell => cell.output.value)
-})
-
-const width = computed(() => {
-  return diagram.value.width
-})
-
-const height = computed(() => {
-  return diagram.value.height
+  return diagram.value.dataReference.value?.getCells().map(cell => cell.output.value) ?? []
 })
 </script>
 
 <template>
   <div
-    class="overflow-hidden absolute border border-gray-400 dark:border-slate-500 bg-grid text-primary-foreground p-2"
+    :id="`${diagramId}|handle-move`"
+    class="overflow-hidden absolute border-gray-400 dark:border-slate-500 bg-grid text-primary-foreground p-2"
+    :class="{
+      border: !active,
+    }"
     :style="{
       top: `${y}px`,
       left: `${x}px`,
@@ -57,4 +52,9 @@ const height = computed(() => {
       </div>
     </div>
   </div>
+  <DiagramViewFrame
+    v-if="active"
+    v-model:rectangle="diagram.rectangle.value"
+    :diagram-id="diagramId"
+  />
 </template>

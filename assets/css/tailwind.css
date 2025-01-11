@@ -18,7 +18,7 @@
     --cell-border-color: theme('colors.gray.200');
     --current-cell-border-color: theme('colors.gray.400');
     --editing-cell-outline-color: theme('colors.gray.400');
-    --cell-border: theme('colors.blue.500');
+    --cell-border: rgb(59, 129, 246);
 
     --error-color: theme('colors.red.500');
 
@@ -39,6 +39,7 @@
 
     --primary: theme('colors.gray.200');
     --primary-foreground: theme('colors.gray.900');
+    --primary-muted-foreground: theme('colors.gray.500');
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -90,6 +91,7 @@
 
     --primary: theme('colors.slate.900');
     --primary-foreground: theme('colors.slate.300');
+    --primary-muted-foreground: theme('colors.slate.500');
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;

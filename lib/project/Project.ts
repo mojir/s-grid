@@ -39,7 +39,7 @@ export class Project {
       return this.grids.value[this.currentGridIndex.value]!
     })
     this.aliases = new Aliases(this, projectDTO.aliases)
-    this.diagrams = new Diagrams(this, {})
+    this.diagrams = new Diagrams(this, [])
     this.commandCenter.registerCommands()
     nextTick(() => this.history.start())
   }

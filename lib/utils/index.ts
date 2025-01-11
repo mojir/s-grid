@@ -47,3 +47,13 @@ export function getColIndex(colId: string): number {
   }
   return colId.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0) + 26
 }
+
+export function getIdFromTarger(target: EventTarget | null, type: string): string | null {
+  if (target instanceof HTMLElement || target instanceof SVGElement) {
+    if (target.id && target.id.startsWith(`${type}|`)) {
+      return target.id
+    }
+    return getIdFromTarger(target.parentElement, type)
+  }
+  return null
+}

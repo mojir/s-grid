@@ -6,6 +6,7 @@ import { Project } from '~/lib/project/Project'
 import { whs, hs } from '~/lib/utils'
 import { DocumentIdType, type Direction } from '~/lib/reference/utils'
 import { CellReference, isCellReferenceString } from '~/lib/reference/CellReference'
+import type { Diagram } from '~/lib/Diagram'
 
 type RowIdentifier = {
   rowIndex: number
@@ -34,7 +35,7 @@ const project = new Project({
 })
 const grid = project.currentGrid
 const selection = computed(() => grid.value.selection)
-const { sidePanelHandleKeyDown } = useSidePanel()
+const { sidePanelActive, sidePanelHandleKeyDown } = useSidePanel()
 const { isMacOS } = useDevice()
 const hoveredCell = grid.value.hoveredCell
 
@@ -46,6 +47,7 @@ const colHeaderRef = ref()
 onMounted(() => {
   window.addEventListener('contextmenu', onContextMenu, true)
   window.addEventListener('mousedown', onMouseDown)
+  window.addEventListener('mousedown', captureMouseDown, true)
   window.addEventListener('mousemove', onMouseMove)
   window.addEventListener('mouseup', onMouseUp)
   window.addEventListener('mouseenter', onMouseEnter)
@@ -59,6 +61,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('contextmenu', onContextMenu, true)
   window.removeEventListener('mousedown', onMouseDown)
+  window.removeEventListener('mousedown', captureMouseDown, true)
   window.removeEventListener('mousemove', onMouseMove)
   window.removeEventListener('mouseup', onMouseUp)
   window.removeEventListener('mouseenter', onMouseEnter)
@@ -68,6 +71,41 @@ onUnmounted(() => {
   window.removeEventListener('blur', onBlur)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
+
+function captureMouseDown(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (isTargetInSidePanel(target)) {
+    sidePanelActive.value = true
+  }
+  else {
+    sidePanelActive.value = false
+    const diagram = getDiagramFromTarget(target)
+    if (diagram) {
+      project.diagrams.activeDiagram.value = diagram
+    }
+    else {
+      project.diagrams.activeDiagram.value = null
+    }
+  }
+}
+
+function isTargetInSidePanel(target: HTMLElement): boolean {
+  const sidePanel = document.getElementById('side-panel')
+  return !!sidePanel && (sidePanel === target || sidePanel.contains(target))
+}
+
+function getDiagramFromTarget(target: HTMLElement | null): Diagram | null {
+  if (!target) {
+    return null
+  }
+  if (target.id && target.id.startsWith('diagram|')) {
+    const diagramId = target.id.split('|')[1]
+    return typeof diagramId === 'string'
+      ? project.diagrams.getDiagram(diagramId) ?? null
+      : null
+  }
+  return getDiagramFromTarget(target.parentElement)
+}
 
 function resetSelection() {
   const location = RangeReference.fromCellReference(grid.value.position.value)
@@ -123,6 +161,12 @@ function onContextMenu(event: MouseEvent) {
 }
 
 function onMouseDown(event: MouseEvent) {
+  if (sidePanelActive.value) {
+    return
+  }
+
+  project.diagrams.handleMouseDown(event)
+
   const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
 
   if (grid.value.editor.editing.value && isRightClick) {
@@ -140,7 +184,7 @@ function onMouseDown(event: MouseEvent) {
     return
   }
 
-  const [type, , cellReferenceString] = targetId.split(':')
+  const [type, , cellReferenceString] = targetId.split('|')
   if (type === DocumentIdType.Cell) {
     const reference = CellReference.fromString(grid.value, cellReferenceString!)
     if (isRightClick && selection.value.selectedRange.value.containsCell(reference)) {
@@ -242,6 +286,12 @@ function onMouseDown(event: MouseEvent) {
   }
 }
 function onMouseMove(event: MouseEvent) {
+  if (sidePanelActive.value) {
+    return
+  }
+
+  project.diagrams.handleMouseMove(event)
+
   if (rowResizing.value) {
     const { currentRowHeight, startY } = rowResizing.value
     const y = event.clientY
@@ -260,6 +310,12 @@ function onMouseMove(event: MouseEvent) {
   }
 }
 function onMouseUp(event: MouseEvent) {
+  if (sidePanelActive.value) {
+    return
+  }
+
+  project.diagrams.handleMouseUp()
+
   if (event.button !== 0) {
     return
   }
@@ -320,6 +376,10 @@ function onMouseUp(event: MouseEvent) {
 }
 
 function onMouseEnter(event: MouseEvent) {
+  if (sidePanelActive.value) {
+    return
+  }
+
   if (colResizing.value || rowResizing.value) {
     return
   }
@@ -330,7 +390,7 @@ function onMouseEnter(event: MouseEvent) {
     return
   }
 
-  const [type, , cellReferenceString] = targetId.split(':')
+  const [type, , cellReferenceString] = targetId.split('|')
 
   const reference = type === DocumentIdType.Cell ? CellReference.fromString(grid.value, cellReferenceString!) : null
   if (reference) {
@@ -389,6 +449,10 @@ function onKeyDown(e: KeyboardEvent) {
   if (sidePanelHandleKeyDown(e)) {
     return
   }
+  if (sidePanelActive.value) {
+    return
+  }
+
   let saved = false
   if (grid.value.editor.editing.value) {
     if (shouldSave(e)) {
