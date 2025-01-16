@@ -160,30 +160,32 @@ export class ProjectClipboard {
       return
     }
     const fromGrid = targetRange.grid
+
     this.getPastePositions(this.clipboard.value.range, targetRange).forEach((toPosition) => {
       if (!this.clipboard.value) {
         return
       }
       const clipboardCells = this.clipboard.value.cells
-      const range = this.clipboard.value.range
-      const fromPosition = range.start
+      const fromPosition = this.clipboard.value.range.start
 
       matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
         const toRowIndex = toPosition.rowIndex + rowIndex
         const toColIndex = toPosition.colIndex + colIndex
-        const cell = fromGrid.getCell({ rowIndex: toRowIndex, colIndex: toColIndex })
-        if (!cell) {
+        const deltaRow = toPosition.rowIndex - fromPosition.rowIndex
+        const deltaCol = toPosition.colIndex - fromPosition.colIndex
+        const targetCell = fromGrid.getCell({ rowIndex: toRowIndex, colIndex: toColIndex })
+        if (!targetCell) {
           throw new Error(`Cell not found at rowIndex=${toRowIndex}, colIndex=${toColIndex}`)
         }
-        cell.setDTO(cellDTO)
+        targetCell.setDTO(cellDTO)
         transformLitsPrograms({
-          cell,
+          cell: targetCell,
           transformation: {
             type: 'move',
             grid: fromPosition.grid,
             toGrid: toPosition.grid,
-            toRowIndex: toPosition.rowIndex,
-            toColIndex: toPosition.colIndex,
+            deltaRow,
+            deltaCol,
           },
         })
       })

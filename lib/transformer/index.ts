@@ -23,9 +23,9 @@ export type MoveTransformation = {
   type: 'move'
   range?: RangeReference
   toGrid?: Grid
-  toRowIndex?: number
-  toColIndex?: number
 }
+& ({ toRowIndex?: number, deltaRow?: never } | { toRowIndex?: never, deltaRow?: number })
+& ({ toColIndex?: number, deltaCol?: never } | { toColIndex?: never, deltaCol?: number })
 
 export type RowDeleteTransformation = {
   grid: Grid

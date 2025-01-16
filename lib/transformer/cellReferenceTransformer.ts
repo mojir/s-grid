@@ -32,7 +32,7 @@ export function transformCellReference({
   }
 }
 
-export function cellTransformMove(cellReference: CellReference, { grid, toGrid, toColIndex: toCol, toRowIndex: toRow, range }: MoveTransformation): CellReference {
+export function cellTransformMove(cellReference: CellReference, { grid, toGrid, toRowIndex, toColIndex, deltaRow, deltaCol, range }: MoveTransformation): CellReference {
   if (range && !range.containsCell(cellReference)) {
     return cellReference
   }
@@ -42,7 +42,7 @@ export function cellTransformMove(cellReference: CellReference, { grid, toGrid, 
     : cellReference.move(
       {
         toGrid: toGrid ?? grid,
-        deltaRow: (toRow ?? cellReference.rowIndex) - cellReference.rowIndex,
+        deltaRow: deltaRow ?? (toRowIndex ?? cellReference.rowIndex) - cellReference.rowIndex,
       },
     ).rowIndex
 
@@ -51,7 +51,7 @@ export function cellTransformMove(cellReference: CellReference, { grid, toGrid, 
     : cellReference.move(
       {
         toGrid: toGrid ?? grid,
-        deltaCol: (toCol ?? cellReference.colIndex) - cellReference.colIndex,
+        deltaCol: deltaCol ?? (toColIndex ?? cellReference.colIndex) - cellReference.colIndex,
       },
     ).colIndex
 
