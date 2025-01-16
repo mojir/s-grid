@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     '@nuxthub/core',
     '@nuxtjs/device',
   ],
+  ssr: false,
   devtools: { enabled: true },
   app: {
     head: {
