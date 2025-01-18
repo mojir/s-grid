@@ -454,7 +454,12 @@ export class CommandCenter {
         if (!reference) {
           throw new Error(`Invalid reference: ${target}`)
         }
-        grid.value.selection.select(reference.toRangeReference())
+        if (reference instanceof CellReference) {
+          grid.value.selection.updateSelection(reference)
+        }
+        else {
+          grid.value.selection.updateSelection(reference.start, reference.end)
+        }
       },
       description: 'Select a cell or a range',
     })

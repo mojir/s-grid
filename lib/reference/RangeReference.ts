@@ -151,13 +151,15 @@ export class RangeReference {
   static fromCoords(grid: Grid, coords: Coords): RangeReference {
     const { startRowIndex, startColIndex, endRowIndex, endColIndex } = coords
     return new RangeReference(
-      new CellReference({ rowIndex: startRowIndex,
+      new CellReference({
+        rowIndex: startRowIndex,
         colIndex: startColIndex,
         absRow: false,
         absCol: false,
         grid,
       }),
-      new CellReference({ rowIndex: endRowIndex,
+      new CellReference({
+        rowIndex: endRowIndex,
         colIndex: endColIndex,
         absRow: false,
         absCol: false,
@@ -381,5 +383,14 @@ export class RangeReference {
 
   public move(movement: Movement): RangeReference {
     return RangeReference.fromCellReferences(this.start.move(movement), this.end.move(movement))
+  }
+
+  public addRange(range: RangeReference): RangeReference {
+    return RangeReference.fromCoords(this.grid, {
+      startRowIndex: Math.min(this.start.rowIndex, range.start.rowIndex),
+      startColIndex: Math.min(this.start.colIndex, range.start.colIndex),
+      endRowIndex: Math.max(this.end.rowIndex, range.end.rowIndex),
+      endColIndex: Math.max(this.end.colIndex, range.end.colIndex),
+    })
   }
 }

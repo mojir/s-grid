@@ -3,12 +3,14 @@ import { Rectangle } from '~/lib/layout/Rectangle'
 import type { Reference } from '~/lib/reference/utils'
 
 const props = defineProps<{
-  region: Ref<Reference>
+  region: Reference
   active?: boolean
 }>()
 
+const { region, active } = toRefs(props)
+
 const rectangle = computed<Rectangle>(() => {
-  return Rectangle.fromReference(props.region.value)
+  return Rectangle.fromReference(region.value)
 })
 </script>
 
@@ -21,7 +23,7 @@ const rectangle = computed<Rectangle>(() => {
       width: `${rectangle.width + 1}px`,
     }"
     class="absolute overflow-visible"
-    :class="{ 'pointer-events-none': !props.active }"
+    :class="{ 'pointer-events-none': !active }"
   >
     <slot />
   </div>

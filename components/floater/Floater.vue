@@ -2,7 +2,7 @@
 import type { Rectangle } from '~/lib/layout/Rectangle'
 
 defineProps<{
-  diagramId: string
+  id: string
   active: boolean
 }>()
 
@@ -19,7 +19,7 @@ const handleGap = 6
 
 <template>
   <div
-    :id="`${diagramId}|handle-move`"
+    :id="`${id}|handle-move`"
     class="overflow-hidden absolute border-gray-400 dark:border-slate-500 bg-grid text-primary-foreground p-2 border"
     :class="{
       'border-transparent': active,
@@ -37,6 +37,7 @@ const handleGap = 6
   <template v-if="active">
     <!-- top left -->
     <FloaterLine
+      width="thick"
       :x1="x + handleGap"
       :y1="y"
       :x2="x + width / 2 - handleGap"
@@ -44,6 +45,7 @@ const handleGap = 6
     />
     <!-- top right -->
     <FloaterLine
+      width="thick"
       :x1="x + width / 2 + handleGap"
       :y1="y"
       :x2="x + width - handleGap"
@@ -51,6 +53,7 @@ const handleGap = 6
     />
     <!-- bottom left -->
     <FloaterLine
+      width="thick"
       :x1="x + handleGap"
       :y1="y + height"
       :x2="x + width / 2 - handleGap"
@@ -58,6 +61,7 @@ const handleGap = 6
     />
     <!-- bottom right -->
     <FloaterLine
+      width="thick"
       :x1="x + width / 2 + handleGap"
       :y1="y + height"
       :x2="x + width - handleGap"
@@ -65,6 +69,7 @@ const handleGap = 6
     />
     <!-- left top -->
     <FloaterLine
+      width="thick"
       :x1="x"
       :y1="y + handleGap"
       :x2="x"
@@ -72,6 +77,7 @@ const handleGap = 6
     />
     <!-- left bottom -->
     <FloaterLine
+      width="thick"
       :x1="x"
       :y1="y + height / 2 + handleGap"
       :x2="x"
@@ -79,6 +85,7 @@ const handleGap = 6
     />
     <!-- right top -->
     <FloaterLine
+      width="thick"
       :x1="x + width"
       :y1="y + handleGap"
       :x2="x + width"
@@ -86,6 +93,7 @@ const handleGap = 6
     />
     <!-- right bottom -->
     <FloaterLine
+      width="thick"
       :x1="x + width"
       :y1="y + height / 2 + handleGap"
       :x2="x + width"
@@ -93,49 +101,65 @@ const handleGap = 6
     />
 
     <FloaterHandle
-      :id="`${diagramId}|handle-nw`"
+      :id="`${id}|handle-nw`"
+      shape="square"
+      :size="6"
       class="cursor-nw-resize"
       :x="x"
       :y="y"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-n`"
+      :id="`${id}|handle-n`"
+      shape="square"
+      :size="6"
       class="cursor-n-resize"
       :x="x + width / 2"
       :y="y"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-ne`"
+      :id="`${id}|handle-ne`"
+      shape="square"
+      :size="6"
       class="cursor-ne-resize"
       :x="x + width"
       :y="y"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-e`"
+      :id="`${id}|handle-e`"
+      shape="square"
+      :size="6"
       class="cursor-e-resize"
       :x="x + width"
       :y="y + height / 2"
     />
     <FloaterHandle
-      :id="`${diagramId}|bottom-se`"
+      :id="`${id}|handle-se`"
+      shape="square"
+      :size="6"
       class="cursor-se-resize"
       :x="x + width"
       :y="y + height"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-s`"
+      :id="`${id}|handle-s`"
+      shape="square"
+      :size="6"
       class="cursor-s-resize"
       :x="x + width / 2"
       :y="y + height"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-sw`"
+      :id="`${id}|handle-sw`"
+      shape="square"
+      :size="6"
       class="cursor-sw-resize"
       :x="x"
       :y="y + height"
     />
     <FloaterHandle
-      :id="`${diagramId}|handle-w`"
+      :id="`${id}|handle-w`"
+      shape="square"
+      :size="6"
       class="cursor-w-resize"
       :x="x"
       :y="y + height / 2"

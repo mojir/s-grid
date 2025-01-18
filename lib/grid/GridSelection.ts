@@ -7,7 +7,6 @@ import { RangeReference } from '~/lib/reference/RangeReference'
 import type { Col } from '~/lib/Col'
 
 export class GridSelection {
-  public selecting = ref(false)
   private scrollDisabled = false
   private readonly selectionEndpoints: {
     start: Ref<CellReference>
@@ -67,12 +66,13 @@ export class GridSelection {
     this.updateSelection(newStart, newEnd)
   }
 
-  public updateSelection(start: CellReference, end: CellReference) {
+  public updateSelection(start: CellReference, end?: CellReference) {
     if (!start.equals(this.selectionEndpoints.start.value)) {
       this.selectionEndpoints.start.value = start
     }
-    if (!end.equals(this.selectionEndpoints.end.value)) {
-      this.selectionEndpoints.end.value = end
+    const endPoint = end ?? start
+    if (!endPoint.equals(this.selectionEndpoints.end.value)) {
+      this.selectionEndpoints.end.value = endPoint
     }
     this.scrollDisabled = false
   }
@@ -106,10 +106,6 @@ export class GridSelection {
     this.selectionEndpoints.start.value = CellReference.fromCoords(this.grid, { rowIndex: fromRow.index.value, colIndex: 0 })
     this.selectionEndpoints.end.value = CellReference.fromCoords(this.grid, { rowIndex: toRow.index.value, colIndex: this.gridRange.value.end.colIndex })
     this.scrollDisabled = true
-  }
-
-  public select(rangeReference: RangeReference) {
-    this.updateSelection(rangeReference.start, rangeReference.end)
   }
 
   public clampSelection(range: RangeReference) {

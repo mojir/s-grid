@@ -1,4 +1,4 @@
-import { colIdRegExp, maxNumberOfCols, maxNumberOfRows, rowIdRegExp } from '../constants'
+import { colIdRegExp, maxNumberOfCols, maxNumberOfRows, rowIdRegExp, simpleCellReferenceRegExp } from '../constants'
 
 export { cn } from './cn'
 export { hs, whs, ws } from './cssUtils'
@@ -48,12 +48,32 @@ export function getColIndex(colId: string): number {
   return colId.split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 65, 0) + 26
 }
 
-export function getIdFromTarger(target: EventTarget | null, type: string): string | null {
+export function getIdFromTarget(target: EventTarget | null, type: string): string | null {
   if (target instanceof HTMLElement || target instanceof SVGElement) {
     if (target.id && target.id.startsWith(`${type}|`)) {
       return target.id
     }
-    return getIdFromTarger(target.parentElement, type)
+    return getIdFromTarget(target.parentElement, type)
   }
   return null
+}
+
+export function getRowIndexAndColIndexFromSimpleCellReference(simpleCellReference: string): { rowIndex: number, colIndex: number } {
+  const match = simpleCellReferenceRegExp.exec(simpleCellReference)
+  if (!match) {
+    throw new Error(`Invalid simple cell reference: ${simpleCellReference}`)
+  }
+  const [, colId, rowId] = match
+  if (!colId || !rowId) {
+    throw new Error(`Invalid simple cell reference: ${simpleCellReference}`)
+  }
+  return { rowIndex: getRowIndex(rowId), colIndex: getColIndex(colId) }
+}
+
+export type Handle = 'nw' | 'ne' | 'se' | 'sw' | 'n' | 'e' | 's' | 'w' | 'move'
+export function isHandle(value: unknown): value is Handle {
+  if (typeof value !== 'string') {
+    return false
+  }
+  return ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w', 'move'].includes(value)
 }

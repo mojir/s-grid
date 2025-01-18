@@ -1,21 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { mockProject } from '../utils'
 import { Color } from '~/lib/color'
 import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { Project } from '~/lib/project/Project'
 
-const project = new Project({
-  grids: [
-    {
-      cells: {},
-      rows: 99,
-      cols: 26,
-      name: 'Grid1',
-    },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
-})
+const project = mockProject()
 
 describe('paint tool', () => {
   it('copies styles from one cell to another', async () => {

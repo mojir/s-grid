@@ -72,9 +72,9 @@ const chartOptions: ChartOptions<'line'> = {
 
 <template>
   <Floater
+    :id="diagramId"
     v-model:rectangle="diagram.rectangle.value"
     :active="active"
-    :diagram-id="diagramId"
   >
     <Line
       :data="chartData"

@@ -4,7 +4,7 @@ import type { Project } from './project/Project'
 import { isReferenceString } from './reference/utils'
 import type { ReferenceTransformation } from './transformer'
 import { transformReference } from './transformer/referenceTransformer'
-import { getIdFromTarger } from './utils'
+import { getIdFromTarget, isHandle, type Handle } from './utils'
 
 const { sidePanelOpen, currentTab } = useSidePanel()
 
@@ -15,14 +15,6 @@ export function isDiagramName(diagramName: string): boolean {
     return false
   }
   return diagramNameRegexp.test(diagramName)
-}
-
-type Handle = 'nw' | 'ne' | 'se' | 'sw' | 'n' | 'e' | 's' | 'w' | 'move'
-function isHandle(value: unknown): value is Handle {
-  if (typeof value !== 'string') {
-    return false
-  }
-  return ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w', 'move'].includes(value)
 }
 
 type MoveHandle = {
@@ -130,7 +122,7 @@ export class Diagrams {
 
   public handleMouseDown(event: MouseEvent) {
     const now = Date.now()
-    const id = getIdFromTarger(event.target, 'diagram')
+    const id = getIdFromTarget(event.target, 'diagram')
     if (!id) {
       return
     }

@@ -9,6 +9,8 @@ import type { Cell } from '../Cell'
 import type { Transformation } from '../transformer'
 import { Diagrams } from '../Diagrams'
 import { ProjectClipboard } from './ProjectClipboard'
+import { ActiveCell } from './ActiveCell'
+import { SelectionHandler } from './SelectionHandler'
 import { History } from './History'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
@@ -23,6 +25,8 @@ export class Project {
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public readonly history = new History(this)
+  public readonly activeCell = new ActiveCell(this)
+  public readonly selectionHandler = new SelectionHandler(this)
   public grids: Ref<Grid[]>
 
   public constructor(projectDTO: ProjectDTO) {

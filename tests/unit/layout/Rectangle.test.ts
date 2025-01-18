@@ -1,22 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { defaultColWidth, defaultRowHeight } from '~/lib/constants'
 import { Rectangle } from '~/lib/layout/Rectangle'
-import { Project } from '~/lib/project/Project'
 import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
+import { mockProject } from '~/tests/utils'
 
-const project = new Project({
-  grids: [
-    {
-      cells: {},
-      rows: 99,
-      cols: 26,
-      name: 'Grid1',
-    },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
-})
+const project = mockProject()
 
 describe('the Rectangle class', () => {
   it('should be able to be created via a Reference A1', () => {

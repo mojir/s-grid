@@ -34,7 +34,10 @@ const project = new Project({
   aliases: {},
 })
 const grid = project.currentGrid
+const activeCell = project.activeCell
+const selectionHandler = project.selectionHandler
 const selection = computed(() => grid.value.selection)
+
 const { sidePanelActive, sidePanelHandleKeyDown } = useSidePanel()
 const { isMacOS } = useDevice()
 const hoveredCell = grid.value.hoveredCell
@@ -166,6 +169,8 @@ function onMouseDown(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseDown(event)
+  activeCell.handleMouseDown(event)
+  selectionHandler.handleMouseDown(event)
 
   const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
 
@@ -191,10 +196,10 @@ function onMouseDown(event: MouseEvent) {
       return
     }
 
-    selection.value.selecting.value = true
+    grid.value.state.value = 'selecting'
     mouseDownStart.value = reference
     if (grid.value.editor.editingLitsCode.value) {
-      selection.value.select(reference.toRangeReference())
+      selection.value.updateSelection(reference)
     }
     else {
       grid.value.editor.save()
@@ -209,7 +214,7 @@ function onMouseDown(event: MouseEvent) {
   }
 
   if (type === DocumentIdType.Col) {
-    selection.value.selecting.value = true
+    grid.value.state.value = 'selecting'
     const colIndex = Number(cellReferenceString)
     mouseDownStart.value = {
       colIndex,
@@ -249,7 +254,7 @@ function onMouseDown(event: MouseEvent) {
   }
 
   if (type === DocumentIdType.Row) {
-    selection.value.selecting.value = true
+    grid.value.state.value = 'selecting'
     const rowIndex = Number(cellReferenceString)
     mouseDownStart.value = {
       rowIndex,
@@ -291,6 +296,8 @@ function onMouseMove(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseMove(event)
+  activeCell.handleMouseMove(event)
+  selectionHandler.handleMouseMove(event)
 
   if (rowResizing.value) {
     const { currentRowHeight, startY } = rowResizing.value
@@ -315,6 +322,8 @@ function onMouseUp(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseUp()
+  activeCell.handleMouseUp()
+  selectionHandler.handleMouseUp()
 
   if (event.button !== 0) {
     return
@@ -324,10 +333,10 @@ function onMouseUp(event: MouseEvent) {
   const target = event.target as HTMLElement | undefined
   const id = target?.id
 
-  if (selection.value.selecting.value || (id && isCellReferenceString(id))) {
+  if (grid.value.state.value === 'selecting' || (id && isCellReferenceString(id))) {
     project.clipboard.pasteStyleSelection(selection.value.selectedRange.value)
   }
-  selection.value.selecting.value = false
+  grid.value.state.value = 'idle'
 
   if (rowResizeDblClicked?.completed) {
     const { rowIndex } = rowResizeDblClicked
@@ -398,7 +407,7 @@ function onMouseEnter(event: MouseEvent) {
   }
   if (mouseDownStart.value) {
     if (mouseDownStart.value instanceof CellReference && reference) {
-      selection.value.select(RangeReference.fromCellReferences(mouseDownStart.value, reference))
+      selection.value.updateSelection(mouseDownStart.value, reference)
     }
     else if (isColIdentifier(mouseDownStart.value) && type === DocumentIdType.Col) {
       const colIndex = Number(cellReferenceString)
@@ -616,7 +625,7 @@ watch(grid, () => {
     :class="{
       'cursor-row-resize': rowResizing,
       'cursor-col-resize': colResizing,
-      'selecting': selection.selecting,
+      'selecting': grid.state.value === 'selecting',
     }"
   >
     <div

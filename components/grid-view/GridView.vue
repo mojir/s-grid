@@ -92,14 +92,11 @@ watch(grid, (grid) => {
       </div>
     </gridViewMenu>
 
-    <GridRegion
-      :region="grid.position"
-      class="border-2 border-cell-border"
+    <GridViewActiveCellFrame
+      :grid="grid"
     />
-    <GridRegion
-      v-if="grid.selection.selectedRange.value.size() > 1"
-      :region="grid.selection.selectedRange"
-      class="border border-cell-border bg-selected-cell"
+    <GridViewSelectionCellFrame
+      :grid="grid"
     />
     <div
       v-if="grid.editor.editing.value"
@@ -107,14 +104,14 @@ watch(grid, (grid) => {
       <GridRegion
         v-for="region of localReferenceList"
         :key="region.toStringWithoutGrid()"
-        :region="shallowRef(region)"
+        :region="region"
         class="bg-referenced-cell"
       />
     </div>
     <GridRegion
       v-if="grid.editor.editing.value"
       active
-      :region="grid.position"
+      :region="grid.position.value"
     >
       <CellInput :grid="grid" />
     </GridRegion>

@@ -14,9 +14,36 @@ export class ProjectClipboard {
   private readonly clipboard = shallowRef<InternalClipboard<CellDTO> | null>(null)
   private readonly styleClipboard = shallowRef<InternalClipboard<CellDTO> | null>(null)
   private readonly cutCellIds = shallowRef<CellReference[] | null>(null)
+  private storedState: {
+    clipBoard: InternalClipboard<CellDTO> | null
+    styleClipboard: InternalClipboard<CellDTO> | null
+    cutCellIds: CellReference[] | null
+  } | null = null
+
   public hasStyleData = computed(() => !!this.styleClipboard.value)
 
   constructor(private project: Project) {
+  }
+
+  public storeState() {
+    if (this.storedState) {
+      throw new Error('State already stored')
+    }
+    this.storedState = {
+      clipBoard: this.clipboard.value,
+      styleClipboard: this.styleClipboard.value,
+      cutCellIds: this.cutCellIds.value,
+    }
+  }
+
+  public restoreState() {
+    if (!this.storedState) {
+      throw new Error('No state stored')
+    }
+    this.clipboard.value = this.storedState.clipBoard
+    this.styleClipboard.value = this.storedState.styleClipboard
+    this.cutCellIds.value = this.storedState.cutCellIds
+    this.storedState = null
   }
 
   public clearStyleClipboard() {
@@ -108,10 +135,10 @@ export class ProjectClipboard {
       do {
         result.push(CellReference.fromCoords(grid, { rowIndex: rowIndex, colIndex }))
         colIndex += rangeWidth
-      } while (colIndex - startColIndex + rangeWidth <= selectionWidth)
+      } while (colIndex - startColIndex < selectionWidth)
       rowIndex += rangeHeight
       colIndex = startColIndex
-    } while (rowIndex - startRowIndex + rangeHeight <= selectionHeight)
+    } while (rowIndex - startRowIndex < selectionHeight)
 
     return result
   }

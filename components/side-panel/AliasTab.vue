@@ -34,8 +34,9 @@ function removeAlias(alias: string) {
 }
 function focus(reference: Reference) {
   project.value.selectGrid(reference.grid)
-  project.value.currentGrid.value.selection.select(reference.toRangeReference())
-  project.value.currentGrid.value.position.value = reference.toRangeReference().start
+  const rangeReference = reference.toRangeReference()
+  project.value.currentGrid.value.selection.updateSelection(rangeReference.start, rangeReference.end)
+  project.value.currentGrid.value.position.value = rangeReference.start
 }
 
 function getDisplayValue(output: unknown) {

@@ -8,6 +8,7 @@ const gridPart = `(?:(?<grid>${identifierFirstCharacterClass}${identifierCharact
 const rangeStart = `(?<colStart>${colPart})|(?<rowStart>${rowPart})|(?<cellStart>${colPart}${rowPart})`
 const rangeEnd = `(?<colEnd>${colPart})|(?<rowEnd>${rowPart})|(?<cellEnd>${colPart}${rowPart})`
 
+export const simpleCellReferenceRegExp = /^([A-Z]{1,2})([1-9]\d{0,3})$/
 export const defaultNumberOfRows = 99
 export const defaultNumberOfCols = 26
 export const maxNumberOfRows = 9999
@@ -23,6 +24,9 @@ export const pageSize = 40
 
 export const defaultFormatter = '#(format ".4~f" %)'
 export const defaultFontSize: StyleFontSize = 14
+// TODO set defalultLineHeight to 14 * 1.6
+//      move getLineHeight to utils
+//      add test to verify that defalultLineHeight equals getLineHeight(14)
 export const defaultLineHeight = getLineHeight(defaultFontSize)
 export const rowHeaderWidth = 50
 export const colHeaderHeight = 25

@@ -1,31 +1,17 @@
 import { describe, expect, test } from 'vitest'
-import { Project } from '~/lib/project/Project'
+import { mockProject } from '../utils'
 
-const project = new Project({
-  grids: [
-    {
-      cells: {
-        A1: {
-          input: '10',
-        },
-      },
-      rows: 10,
-      cols: 10,
-      name: 'Grid1',
+const project = mockProject({
+  grid1: {
+    cells: {
+      A1: { input: '10' },
     },
-    {
-      cells: {
-        A1: {
-          input: '=Grid1!A1',
-        },
-      },
-      rows: 10,
-      cols: 10,
-      name: 'Grid2',
+  },
+  grid2: {
+    cells: {
+      A1: { input: '=Grid1!A1' },
     },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
+  },
 })
 
 describe('rename grid', () => {

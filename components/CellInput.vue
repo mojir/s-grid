@@ -44,7 +44,7 @@ watch(selectedRange, (selection) => {
   }
 })
 
-const selecting = computed(() => grid.value.selection.selecting.value)
+const selecting = computed(() => grid.value.state.value === 'selecting')
 watch(selecting, (isSelecting) => {
   const inputElement = inputRef.value
   if (!isSelecting && inputElement) {

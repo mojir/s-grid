@@ -4,10 +4,11 @@ const props = defineProps<{
   y1: number
   x2: number
   y2: number
+  width: 'thin' | 'thick'
 }>()
 
-const { x1, y1, x2, y2 } = toRefs(props)
-const gap = 5
+const { x1, y1, x2, y2, width } = toRefs(props)
+const gap = 2
 </script>
 
 <template>
@@ -29,7 +30,7 @@ const gap = 5
         :y1="gap"
         :x2="x2 - x1 + gap"
         :y2="y2 - y1 + gap"
-        :stroke-width="2"
+        :stroke-width="width === 'thin' ? 1 : 2"
         stroke="rgb(59, 129, 246)"
       />
     </svg>

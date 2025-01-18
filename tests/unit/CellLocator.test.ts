@@ -1,25 +1,8 @@
 import { describe, expect, test } from 'vitest'
+import { mockProject } from '../utils'
 import { CellReference } from '~/lib/reference/CellReference'
-import { Project } from '~/lib/project/Project'
 
-const project = new Project({
-  grids: [
-    {
-      cells: {},
-      rows: 99,
-      cols: 26,
-      name: 'Grid1',
-    },
-    {
-      name: 'Grid2',
-      rows: 10,
-      cols: 10,
-      cells: {},
-    },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
-})
+const project = mockProject()
 
 const grid1 = project.currentGrid.value
 

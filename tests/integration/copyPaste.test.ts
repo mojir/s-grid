@@ -1,32 +1,19 @@
 import { describe, expect, it } from 'vitest'
+import { mockProject } from '../utils'
 import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { Project } from '~/lib/project/Project'
 
-const project = new Project({
-  grids: [
-    {
-      cells: {
-        A1: {
-          input: '=C3',
-        },
-        A2: {
-          input: '=C4',
-        },
-        B1: {
-          input: '=D3',
-        },
-        B2: {
-          input: '=D4',
-        },
-      },
-      rows: 99,
-      cols: 26,
-      name: 'Grid1',
+const project = mockProject({
+  grid1: {
+    cells: {
+      A1: { input: '=C3' },
+      A2: { input: '=C4' },
+      B1: { input: '=D3' },
+      B2: { input: '=D4' },
     },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
+  },
+  minRows: 20,
+  minCols: 20,
 })
 
 describe('copy paste', () => {
