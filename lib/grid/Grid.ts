@@ -13,7 +13,7 @@ import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
 import type { StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
-type GridState = 'idle' | 'selecting' | 'cellMoving' | 'cellAutoFilling' | 'rangeAutoFilling'
+type GridState = 'idle' | 'selecting' | 'cellMoving' | 'rangeMoving' | 'cellAutoFilling' | 'rangeAutoFilling'
 export class Grid {
   public project: Project
   public readonly name: Ref<string>
@@ -23,10 +23,9 @@ export class Grid {
   private readonly cells: Cell[][]
   public readonly currentCell: ComputedRef<Cell>
   public readonly position: Ref<CellReference>
-  public readonly secondaryPosition: Ref<CellReference | null> // Used e.g. when dragging from right bottom corner of a cell
   public readonly gridRange: ComputedRef<RangeReference>
   public readonly editor: CellEditor
-  public hoveredCell = ref<CellReference | null>(null)
+  public hoveredCell: Ref<CellReference | null> = shallowRef(null)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
   public state = ref<GridState>('idle')
 
@@ -37,7 +36,6 @@ export class Grid {
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
     this.selection = new GridSelection(this.project, this)
     this.position = shallowRef(CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }))
-    this.secondaryPosition = shallowRef<CellReference | null>(null)
     this.editor = new CellEditor(this)
 
     this.cells = Array.from({ length: this.rows.value.length }, (_, rowIndex) =>

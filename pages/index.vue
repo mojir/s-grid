@@ -34,8 +34,6 @@ const project = new Project({
   aliases: {},
 })
 const grid = project.currentGrid
-const activeCell = project.activeCell
-const selectionHandler = project.selectionHandler
 const selection = computed(() => grid.value.selection)
 
 const { sidePanelActive, sidePanelHandleKeyDown } = useSidePanel()
@@ -169,8 +167,7 @@ function onMouseDown(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseDown(event)
-  activeCell.handleMouseDown(event)
-  selectionHandler.handleMouseDown(event)
+  project.autoFiller.handleMouseDown(event)
 
   const isRightClick = event.button === 2 || (event.button === 0 && event.ctrlKey)
 
@@ -195,13 +192,18 @@ function onMouseDown(event: MouseEvent) {
     if (isRightClick && selection.value.selectedRange.value.containsCell(reference)) {
       return
     }
-
     grid.value.state.value = 'selecting'
-    mouseDownStart.value = reference
+
     if (grid.value.editor.editingLitsCode.value) {
+      mouseDownStart.value = reference
       selection.value.updateSelection(reference)
     }
+    else if (event.shiftKey) {
+      mouseDownStart.value = grid.value.selection.selectedRange.value.start
+      selection.value.expandSelectionTo(reference)
+    }
     else {
+      mouseDownStart.value = reference
       grid.value.editor.save()
       resetSelection()
       grid.value.movePositionTo(reference)
@@ -296,8 +298,7 @@ function onMouseMove(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseMove(event)
-  activeCell.handleMouseMove(event)
-  selectionHandler.handleMouseMove(event)
+  project.autoFiller.handleMouseMove(event)
 
   if (rowResizing.value) {
     const { currentRowHeight, startY } = rowResizing.value
@@ -322,8 +323,7 @@ function onMouseUp(event: MouseEvent) {
   }
 
   project.diagrams.handleMouseUp()
-  activeCell.handleMouseUp()
-  selectionHandler.handleMouseUp()
+  project.autoFiller.handleMouseUp()
 
   if (event.button !== 0) {
     return

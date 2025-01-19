@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Grid } from '~/lib/grid/Grid'
 import { Rectangle } from '~/lib/layout/Rectangle'
+import type { CellReference } from '~/lib/reference/CellReference'
 import type { RangeReference } from '~/lib/reference/RangeReference'
 import { getAutoFillRangeInfo, type Heading } from '~/lib/reference/utils'
 
@@ -17,11 +18,11 @@ const rectangle = computed<Rectangle>(() => {
 const autoFillRangeInfo = computed(() => {
   const state = grid.value.state.value
   const position = grid.value.position.value
-  const secondaryPosition = grid.value.secondaryPosition.value
-  if (state !== 'cellAutoFilling' || !secondaryPosition) {
+  const hoveredCell = grid.value.hoveredCell.value
+  if (state !== 'cellAutoFilling' || !hoveredCell) {
     return null
   }
-  return getAutoFillRangeInfo(position, secondaryPosition)
+  return getAutoFillRangeInfo(position, hoveredCell)
 })
 
 const autoFillRange = computed<RangeReference | null>(() => {
@@ -38,6 +39,15 @@ const autoFillDirection = computed<Heading | null>(() => {
   return autoFillRangeInfo.value.direction
 })
 
+const moveCellReference = computed<CellReference | null>(() => {
+  const state = grid.value.state.value
+  const hoveredCell = grid.value.hoveredCell.value
+  if (state !== 'cellMoving' || !hoveredCell) {
+    return null
+  }
+
+  return hoveredCell
+})
 const active = computed(() => grid.value.selection.selectedRange.value.size() === 1 && grid.value.selection.selectedRange.value.start.equals(grid.value.position.value))
 
 const x = computed(() => rectangle.value.x + 1)
@@ -119,5 +129,11 @@ const handleGap = 7
       'border-t-2 border-r-2 border-b-2 border-l-0': autoFillDirection === 'right',
     }"
     :region="autoFillRange"
+  />
+
+  <GridRegion
+    v-if="moveCellReference"
+    class="border-dotted border-2 border-cell-border pointer-events-none"
+    :region="moveCellReference"
   />
 </template>

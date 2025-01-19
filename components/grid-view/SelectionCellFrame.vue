@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Grid } from '~/lib/grid/Grid'
 import { Rectangle } from '~/lib/layout/Rectangle'
-import type { RangeReference } from '~/lib/reference/RangeReference'
+import { RangeReference } from '~/lib/reference/RangeReference'
 import { getAutoFillRangeInfo, type Heading } from '~/lib/reference/utils'
 
 const props = defineProps<{
@@ -18,11 +18,11 @@ const rectangle = computed<Rectangle>(() => {
 
 const autoFillRangeInfo = computed(() => {
   const state = grid.value.state.value
-  const secondaryPosition = grid.value.secondaryPosition.value
-  if (state !== 'rangeAutoFilling' || !secondaryPosition) {
+  const hoveredCell = grid.value.hoveredCell.value
+  if (state !== 'rangeAutoFilling' || !hoveredCell) {
     return null
   }
-  return getAutoFillRangeInfo(selection.value, secondaryPosition)
+  return getAutoFillRangeInfo(selection.value, hoveredCell)
 })
 
 const autoFillRange = computed<RangeReference | null>(() => {
@@ -34,6 +34,22 @@ const autoFillDirection = computed<Heading | null>(() => {
     return null
   }
   return autoFillRangeInfo.value.direction
+})
+
+const moveRangeReference = computed<RangeReference | null>(() => {
+  const state = grid.value.state.value
+  const selection = grid.value.selection.selectedRange.value
+  const hoveredCell = grid.value.hoveredCell.value
+  if (state !== 'rangeMoving' || !hoveredCell) {
+    return null
+  }
+
+  return RangeReference.fromCoords(hoveredCell.grid, {
+    startRowIndex: hoveredCell.rowIndex,
+    startColIndex: hoveredCell.colIndex,
+    endRowIndex: hoveredCell.rowIndex + selection.rowCount() - 1,
+    endColIndex: hoveredCell.colIndex + selection.colCount() - 1,
+  })
 })
 
 const visible = computed(() => selection.value.size() !== 1 || !selection.value.start.equals(grid.value.position.value))
@@ -119,6 +135,11 @@ const handleGap = 7
         'border-t-2 border-r-2 border-b-2 border-l-0': autoFillDirection === 'right',
       }"
       :region="autoFillRange"
+    />
+    <GridRegion
+      v-if="moveRangeReference"
+      class="border-dotted border-2 border-cell-border pointer-events-none"
+      :region="moveRangeReference"
     />
   </template>
 </template>

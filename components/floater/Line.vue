@@ -18,6 +18,7 @@ const gap = 2
       top: `${y1 - gap}px`,
       left: `${x1 - gap}px`,
     }"
+    @dragstart.prevent
   >
     <svg
       :x="0"

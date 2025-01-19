@@ -19,7 +19,7 @@ export type Direction =
   | 'pageLeft'
 
 export type Movement = {
-  toGrid: Grid
+  toGrid?: Grid
   deltaRow?: number
   deltaCol?: number
 }

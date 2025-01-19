@@ -135,7 +135,7 @@ export class ProjectClipboard {
       do {
         result.push(CellReference.fromCoords(grid, { rowIndex: rowIndex, colIndex }))
         colIndex += rangeWidth
-      } while (colIndex - startColIndex < selectionWidth)
+      } while (colIndex - startColIndex + rangeWidth <= selectionWidth)
       rowIndex += rangeHeight
       colIndex = startColIndex
     } while (rowIndex - startRowIndex < selectionHeight)

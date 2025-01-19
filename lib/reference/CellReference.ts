@@ -188,7 +188,7 @@ export class CellReference {
 
   public move(movement: Movement): CellReference {
     const reference = new CellReference({
-      grid: movement.toGrid,
+      grid: movement.toGrid ?? this.grid,
       absCol: this.absCol,
       colIndex: this.colIndex + (movement.deltaCol ?? 0),
       absRow: this.absRow,
