@@ -5,7 +5,7 @@ import { z } from 'zod'
 import type { Diagram } from '~/lib/Diagram'
 import { isDiagramName } from '~/lib/Diagrams'
 import type { Project } from '~/lib/project/Project'
-import { isRangeReferenceString, RangeReference } from '~/lib/reference/RangeReference'
+import { getReferenceFromString, isReferenceString } from '~/lib/reference/utils'
 
 const props = defineProps<{
   project: Project
@@ -32,7 +32,7 @@ const formSchema = z.object({
     .default(diagramName.value),
   dataReference: z
     .string()
-    .refine(value => !value || isRangeReferenceString(value), {
+    .refine(value => !value || isReferenceString(value), {
       message: 'Not a valid reference.',
     })
     .default(diagram.value?.dataReference.value?.toStringWithGrid() ?? ''),
@@ -45,7 +45,9 @@ const { handleSubmit, values, isFieldDirty } = useForm({
 const dirty = computed(() => Object.keys(values).some(key => isFieldDirty(key as keyof typeof values)))
 
 const submitForm = handleSubmit(({ diagramName: newDiagramName, dataReference: newDataReferenceString }) => {
-  const dataReference = newDataReferenceString ? RangeReference.fromString(project.value.currentGrid.value, newDataReferenceString) : null
+  const dataReference = isReferenceString(newDataReferenceString)
+    ? getReferenceFromString(project.value.currentGrid.value, newDataReferenceString)
+    : null
   if (newDataReferenceString && !dataReference) {
     throw new Error(`Invalid reference: ${dataReference}`)
   }

@@ -1,7 +1,7 @@
 import { CellReference } from '../reference/CellReference'
 import type { Project } from './Project'
 import type { RangeReference } from '~/lib/reference/RangeReference'
-import { matrixForEach, matrixMap } from '~/lib/matrix'
+import { matrix } from '~/lib/matrix'
 import { transformLitsPrograms } from '~/lib/transformer/litsTransformer'
 import type { CellDTO } from '~/dto/CellDTO'
 
@@ -57,14 +57,14 @@ export class ProjectClipboard {
 
     this.clipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), reference => reference.getCell().getDTO()),
+      cells: range.getCellReferenceMatrix().map(reference => reference.getCell().getDTO()).unbox(),
     }
   }
 
   public copyStyleSelection(range: RangeReference) {
     this.styleClipboard.value = {
       range,
-      cells: matrixMap(range.getCellIdMatrix(), (reference) => {
+      cells: range.getCellReferenceMatrix().map((reference) => {
         const cellDTO = reference.getCell().getDTO()
         return {
           fontSize: cellDTO.fontSize,
@@ -77,7 +77,7 @@ export class ProjectClipboard {
           textColor: cellDTO.textColor,
           formatter: cellDTO.formatter,
         }
-      }),
+      }).unbox(),
     }
   }
 
@@ -102,7 +102,7 @@ export class ProjectClipboard {
     }
     this.styleClipboard.value = null
     this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
-      matrixForEach(styleClipboardValue.cells, (cellDTO, [rowIndex, colIndex]) => {
+      matrix(styleClipboardValue.cells).forEach((cellDTO, [rowIndex, colIndex]) => {
         const reference = CellReference.fromCoords(
           toPosition.grid,
           {
@@ -155,7 +155,7 @@ export class ProjectClipboard {
     const toPosition = targetRange.start
 
     const clipboardCells = this.clipboard.value.cells
-    matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
+    matrix(clipboardCells).forEach((cellDTO, [rowIndex, colIndex]) => {
       const reference = CellReference.fromCoords(
         toPosition.grid,
         {
@@ -195,7 +195,7 @@ export class ProjectClipboard {
       const clipboardCells = this.clipboard.value.cells
       const fromPosition = this.clipboard.value.range.start
 
-      matrixForEach(clipboardCells, (cellDTO, [rowIndex, colIndex]) => {
+      matrix(clipboardCells).forEach((cellDTO, [rowIndex, colIndex]) => {
         const toRowIndex = toPosition.rowIndex + rowIndex
         const toColIndex = toPosition.colIndex + colIndex
         const deltaRow = toPosition.rowIndex - fromPosition.rowIndex

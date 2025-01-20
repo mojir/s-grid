@@ -14,7 +14,9 @@ import {
 } from 'chart.js'
 import type { Diagram } from '~/lib/Diagram'
 import type { Project } from '~/lib/project/Project'
-import { getDiagramId } from '~/lib/reference/utils'
+import { getDiagramId, type Reference } from '~/lib/reference/utils'
+import { RangeReference } from '~/lib/reference/RangeReference'
+import { isMatrixShaped, matrix, type Matrix } from '~/lib/matrix'
 
 ChartJS.register(
   Title,
@@ -36,8 +38,21 @@ const diagramId = computed(() => getDiagramId(diagram.value))
 const active = computed(() => project.value.diagrams.activeDiagram.value === diagram.value)
 
 const values = computed<(number | null)[]>(() => {
-  return diagram.value.dataReference.value?.getCells().map(cell => typeof cell.output.value === 'number' ? cell.output.value : null) ?? []
+  const dataReference = diagram.value.dataReference.value
+  const m = dataReference ? getMatrixFromReference(dataReference) : null
+
+  console.log('m', m?.unbox())
+  return m?.filterNumbers().cols()[0] ?? []
 })
+
+function getMatrixFromReference(reference: Reference): Matrix<unknown> | null {
+  if (reference instanceof RangeReference) {
+    return reference.getCellMatrix().map(cell => cell.output.value)
+  }
+
+  const cellOutput = reference.getCell().output.value
+  return isMatrixShaped(cellOutput) ? matrix(cellOutput) : null
+}
 
 const chartData = computed<ChartData<'line'>>(() => {
   return {
