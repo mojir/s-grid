@@ -12,6 +12,15 @@ const project = mockProject({
       B2: { input: '=D4' },
     },
   },
+  grid2: {
+    cells: {
+      A1: { input: '1' },
+      A2: { input: '2' },
+      A3: { input: '3' },
+      A4: { input: '4' },
+      C1: { input: '=A1:A4' },
+    },
+  },
   minRows: 20,
   minCols: 20,
 })
@@ -98,5 +107,17 @@ describe('copy paste', () => {
     expect(n12.getCell().input.value).toBe('=P14')
     expect(n13.getCell().input.value).toBe('=P15')
     expect(n14.getCell().input.value).toBe('=P16')
+  })
+
+  it('should update reference when copying a range of cells', async () => {
+    project.currentGridIndex.value = 1
+    const grid = project.currentGrid.value
+    const clipboard = project.clipboard
+    clipboard.cutSelection(RangeReference.fromString(grid, 'A1:A4'))
+    clipboard.pasteSelection(RangeReference.fromString(grid, 'B1:B4'))
+
+    const c1 = CellReference.fromString(grid, 'C1')
+
+    expect(c1.getCell().input.value).toBe('=B1:B4')
   })
 })

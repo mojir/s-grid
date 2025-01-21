@@ -14,7 +14,17 @@ export function transformRangeReference({
     case 'move':
       return RangeReference.fromCellReferences(
         cellTransformMove(rangeReference.start, transformation),
-        cellTransformMove(rangeReference.end, transformation),
+        typeof transformation.toColIndex === 'number' && typeof transformation.toRowIndex === 'number'
+          ? cellTransformMove(rangeReference.end, {
+              type: 'move',
+              grid: transformation.grid,
+              toGrid: transformation.toGrid,
+              range: transformation.range,
+              toColIndex: transformation.toColIndex + (rangeReference.end.colIndex - rangeReference.start.colIndex),
+              toRowIndex: transformation.toRowIndex + (rangeReference.end.rowIndex - rangeReference.start.rowIndex),
+
+            })
+          : cellTransformMove(rangeReference.end, transformation),
       )
     case 'rowDelete':
       return rangeTransformRowDelete(rangeReference, transformation)
