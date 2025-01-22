@@ -2,7 +2,7 @@ import type { Cell } from '../Cell'
 import type { Col } from '../Col'
 import { rangeRangeRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
-import { matrix, type Matrix } from '../matrix'
+import { Mx } from '../Mx'
 import type { Row } from '../Row'
 import { getColId, getRowId } from '../utils'
 import { CellReference } from './CellReference'
@@ -204,7 +204,7 @@ export class RangeReference {
   }
 
   public getOutput(): unknown[][] {
-    return this.getCellReferenceMatrix().map(reference => reference.getCell().output.value).unbox()
+    return this.getCellReferenceMatrix().map(reference => reference.getCell().output.value).rows()
   }
 
   public getCells(): Cell[] {
@@ -312,13 +312,13 @@ export class RangeReference {
     return this.getAllColIndices().map(colIndex => this.grid.cols.value[colIndex]!)
   }
 
-  public getCellReferenceMatrix(): Matrix<CellReference> {
+  public getCellReferenceMatrix(): Mx<CellReference> {
     const { startRowIndex, startColIndex, endRowIndex, endColIndex } = this.getCoords()
 
-    const m: CellReference[][] = []
+    const matrixArray: CellReference[][] = []
     for (let rowIndex = startRowIndex; rowIndex <= endRowIndex; rowIndex += 1) {
       const rowArray: CellReference[] = []
-      m.push(rowArray)
+      matrixArray.push(rowArray)
       for (let colIndex = startColIndex; colIndex <= endColIndex; colIndex += 1) {
         rowArray.push(new CellReference({
           grid: this.grid,
@@ -329,10 +329,10 @@ export class RangeReference {
         }))
       }
     }
-    return matrix(m)
+    return Mx.from(matrixArray)
   }
 
-  public getCellMatrix(): Matrix<Cell> {
+  public getCellMatrix(): Mx<Cell> {
     return this.getCellReferenceMatrix().map(reference => reference.getCell())
   }
 

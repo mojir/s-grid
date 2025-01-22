@@ -16,7 +16,7 @@ import type { Diagram } from '~/lib/Diagram'
 import type { Project } from '~/lib/project/Project'
 import { getDiagramId, type Reference } from '~/lib/reference/utils'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { isMatrixShaped, matrix, type Matrix } from '~/lib/matrix'
+import { isMxArray, Mx } from '~/lib/Mx'
 
 ChartJS.register(
   Title,
@@ -39,19 +39,18 @@ const active = computed(() => project.value.diagrams.activeDiagram.value === dia
 
 const values = computed<(number | null)[]>(() => {
   const dataReference = diagram.value.dataReference.value
-  const m = dataReference ? getMatrixFromReference(dataReference) : null
+  const matrix = dataReference ? getMatrixFromReference(dataReference) : null
 
-  console.log('m', m?.unbox())
-  return m?.filterNumbers().cols()[0] ?? []
+  return matrix?.keepNumbers().cols()[0] ?? []
 })
 
-function getMatrixFromReference(reference: Reference): Matrix<unknown> | null {
+function getMatrixFromReference(reference: Reference): Mx<unknown> | null {
   if (reference instanceof RangeReference) {
     return reference.getCellMatrix().map(cell => cell.output.value)
   }
 
   const cellOutput = reference.getCell().output.value
-  return isMatrixShaped(cellOutput) ? matrix(cellOutput) : null
+  return isMxArray(cellOutput) ? Mx.from(cellOutput) : null
 }
 
 const chartData = computed<ChartData<'line'>>(() => {

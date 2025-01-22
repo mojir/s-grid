@@ -8,6 +8,7 @@ import { RangeReference } from '../reference/RangeReference'
 import { getDocumentCellId, type Direction, type Movement, type Reference } from '../reference/utils'
 import { Row } from '../Row'
 import { getGridName } from '../utils'
+import { Mx } from '../Mx'
 import { GridSelection } from './GridSelection'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
@@ -20,14 +21,14 @@ export class Grid {
   public readonly selection: GridSelection
   public rows: Ref<Row[]>
   public cols: Ref<Col[]>
-  private readonly cells: Cell[][]
   public readonly currentCell: ComputedRef<Cell>
   public readonly position: Ref<CellReference>
   public readonly gridRange: ComputedRef<RangeReference>
   public readonly editor: CellEditor
   public hoveredCell: Ref<CellReference | null> = shallowRef(null)
-  private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
   public state = ref<GridState>('idle')
+  private readonly cells: Mx<Cell>
+  private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
   constructor(project: Project, name: string, nbrOfRows: number, nbrOfCols: number) {
     this.name = ref(name)
@@ -38,7 +39,7 @@ export class Grid {
     this.position = shallowRef(CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }))
     this.editor = new CellEditor(this)
 
-    this.cells = Array.from({ length: this.rows.value.length }, (_, rowIndex) =>
+    this.cells = Mx.from(Array.from({ length: this.rows.value.length }, (_, rowIndex) =>
       Array.from({ length: this.cols.value.length }, (_, colIndex) =>
         new Cell(CellReference.fromCoords(this, { rowIndex, colIndex }),
           {
@@ -47,7 +48,7 @@ export class Grid {
           },
         ),
       ),
-    )
+    ))
     this.gridRange = computed(() => RangeReference.fromCellReferences(
       CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }),
       CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: this.cols.value.length - 1 }),
@@ -98,7 +99,7 @@ export class Grid {
   }
 
   public getCell({ rowIndex, colIndex }: { rowIndex: number, colIndex: number }): Cell {
-    const cell = this.cells[rowIndex]?.[colIndex]
+    const cell = this.cells.get(rowIndex, colIndex)
 
     if (!cell) {
       throw new Error(`Cell not found: rowIndex=${rowIndex}, colIndex=${colIndex}`)
@@ -446,7 +447,7 @@ export class Grid {
       throw new Error('Cannot delete all rows')
     }
 
-    this.cells.splice(rowIndexToDelete, count)
+    this.cells.removeRows(rowIndexToDelete, count)
 
     this.rows.value = this.rows.value.filter((_, index) => index < rowIndexToDelete || index >= rowIndexToDelete + count)
 
@@ -467,8 +468,26 @@ export class Grid {
       count,
     })
 
-    this.selection.clampSelection(this.gridRange.value)
-    this.position.value = this.selection.selectedRange.value.start
+    if (this.position.value.rowIndex > rowIndexToDelete) {
+      this.position.value = this.position.value.move({ deltaRow: -count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    const newSelectionStart = selectionStart.rowIndex > rowIndexToDelete
+      ? selectionStart.move({ deltaRow: -count })
+      : selectionStart
+
+    const newSelectionEnd = selectionEnd.rowIndex >= rowIndexToDelete
+      ? selectionEnd.move({ deltaRow: -count })
+      : selectionEnd
+
+    if (newSelectionEnd.rowIndex >= newSelectionStart.rowIndex) {
+      this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+    }
+    else {
+      this.selection.updateSelection(this.position.value)
+    }
   }
 
   public deleteCols(colIndexToDelete: number, count: number) {
@@ -476,9 +495,7 @@ export class Grid {
       throw new Error('Cannot delete all columns')
     }
 
-    this.cells.forEach((row) => {
-      row.splice(colIndexToDelete, count)
-    }, [])
+    this.cells.removeCols(colIndexToDelete, count)
 
     this.cols.value = this.cols.value.filter((_, index) => index < colIndexToDelete || index >= colIndexToDelete + count)
 
@@ -499,8 +516,26 @@ export class Grid {
       count,
     })
 
-    this.selection.clampSelection(this.gridRange.value)
-    this.position.value = this.selection.selectedRange.value.start
+    if (this.position.value.rowIndex > colIndexToDelete) {
+      this.position.value = this.position.value.move({ deltaCol: -count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    const newSelectionStart = selectionStart.colIndex > colIndexToDelete
+      ? selectionStart.move({ deltaCol: -count })
+      : selectionStart
+
+    const newSelectionEnd = selectionEnd.colIndex >= colIndexToDelete
+      ? selectionEnd.move({ deltaCol: -count })
+      : selectionEnd
+
+    if (newSelectionEnd.colIndex >= newSelectionStart.colIndex) {
+      this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+    }
+    else {
+      this.selection.updateSelection(this.position.value)
+    }
   }
 
   public insertRowsBefore(rowIndex: number, count: number) {
@@ -538,25 +573,17 @@ export class Grid {
   }
 
   private insertRows(rowInsertIndex: number, count: number) {
-    const createdRows = Array.from({ length: count }, (_, index) => {
-      const rowInstance = new Row(this, rowInsertIndex + index, defaultRowHeight)
-      this.cells.splice(rowInsertIndex + index, 0, Array.from({ length: this.cols.value.length }, (_, colIndex) =>
-        new Cell(
-          CellReference.fromCoords(this, { rowIndex: rowInsertIndex + index, colIndex }),
-          {
-            project: this.project,
-            grid: this,
-          },
-        ),
-      ))
-      return rowInstance
-    })
+    const createdRows = Array.from({ length: count }, (_, index) => new Row(this, rowInsertIndex + index, defaultRowHeight))
 
     this.rows.value = [
       ...this.rows.value.slice(0, rowInsertIndex),
       ...createdRows,
       ...this.rows.value.slice(rowInsertIndex),
     ]
+
+    this.cells.insertRows(rowInsertIndex, count, coords =>
+      new Cell(CellReference.fromCoords(this, coords), { project: this.project, grid: this }),
+    )
 
     const cols = this.cols.value
     const rows = this.rows.value
@@ -574,6 +601,22 @@ export class Grid {
       rowIndex: rowInsertIndex,
       count,
     })
+
+    if (this.position.value.rowIndex >= rowInsertIndex) {
+      this.position.value = this.position.value.move({ deltaCol: count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    const newSelectionStart = selectionStart.rowIndex >= rowInsertIndex
+      ? selectionStart.move({ deltaRow: count })
+      : selectionStart
+
+    const newSelectionEnd = selectionEnd.rowIndex >= rowInsertIndex
+      ? selectionEnd.move({ deltaRow: count })
+      : selectionEnd
+
+    this.selection.updateSelection(newSelectionStart, newSelectionEnd)
   }
 
   public insertColsBefore(colIndex: number, count: number) {
@@ -614,17 +657,8 @@ export class Grid {
       ...this.cols.value.slice(colInsertIndex),
     ]
 
-    this.cells.forEach((cellRow, rowIndex) => {
-      cellRow.splice(colInsertIndex, 0, ...Array.from({ length: count }, (_, index) =>
-        new Cell(
-          CellReference.fromCoords(this, { rowIndex, colIndex: colInsertIndex + index }),
-          {
-            project: this.project,
-            grid: this,
-          },
-        ),
-      ))
-    })
+    this.cells.insertCols(colInsertIndex, count, coords =>
+      new Cell(CellReference.fromCoords(this, coords), { project: this.project, grid: this }))
 
     const cols = this.cols.value
     const rows = this.rows.value
@@ -645,5 +679,21 @@ export class Grid {
       colIndex: colInsertIndex,
       count,
     })
+
+    if (this.position.value.colIndex >= colInsertIndex) {
+      this.position.value = this.position.value.move({ deltaCol: count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    const newSelectionStart = selectionStart.colIndex >= colInsertIndex
+      ? selectionStart.move({ deltaCol: count })
+      : selectionStart
+
+    const newSelectionEnd = selectionEnd.colIndex >= colInsertIndex
+      ? selectionEnd.move({ deltaCol: count })
+      : selectionEnd
+
+    this.selection.updateSelection(newSelectionStart, newSelectionEnd)
   }
 }
