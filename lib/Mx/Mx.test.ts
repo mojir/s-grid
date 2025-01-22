@@ -248,7 +248,7 @@ describe('Mx', () => {
     })
 
     it('should flatten a matrix with different types', () => {
-      const matrix = Mx.from([
+      const matrix = Mx.from<unknown>([
         [1, 'a'],
         [true, null],
       ])
