@@ -18,12 +18,14 @@ export class Col {
     this.label = computed(() => getColId(this._index.value))
 
     watch(this._width, (newValue, oldValue) => {
-      this.grid.project.history.registerChange({
+      this.grid.pubSub.publish({
         type: 'colChange',
         gridName: this.grid.name.value,
-        colIndex: this._index.value,
-        oldValue,
-        newValue,
+        data: {
+          colIndex: this._index.value,
+          oldValue,
+          newValue,
+        },
       })
     })
   }

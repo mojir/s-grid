@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
+import { colHeaderHeight, defaultNumberOfCols, defaultNumberOfRows, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Project } from '~/lib/project/Project'
 import { whs, hs } from '~/lib/utils'
 import { DocumentIdType, type Direction } from '~/lib/reference/utils'
@@ -25,8 +25,8 @@ const project = new Project({
   grids: [
     {
       cells: {},
-      rows: 99,
-      cols: 26,
+      rows: defaultNumberOfRows,
+      cols: defaultNumberOfCols,
       name: 'Grid1',
     },
   ],
@@ -251,7 +251,7 @@ function onMouseDown(event: MouseEvent) {
       colResizeDblClicked.completed = true
     }
     else {
-      colResizeDblClicked = { colIndex: colIndex, time: Date.now(), completed: false }
+      colResizeDblClicked = { colIndex, time: Date.now(), completed: false }
     }
   }
 
@@ -288,7 +288,7 @@ function onMouseDown(event: MouseEvent) {
       rowResizeDblClicked.completed = true
     }
     else {
-      rowResizeDblClicked = { rowIndex: rowIndex, time: Date.now(), completed: false }
+      rowResizeDblClicked = { rowIndex, time: Date.now(), completed: false }
     }
   }
 }

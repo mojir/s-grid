@@ -6,7 +6,7 @@ watch(darkModeOn, (value) => {
   colorMode.preference = value ? 'dark' : 'light'
 })
 
-const { debugMode } = useDebug()
+const { debugEnabled } = useDebug()
 </script>
 
 <template>
@@ -26,7 +26,7 @@ const { debugMode } = useDebug()
     <label class="flex items-center cursor-pointer justify-between">
       <span>Debug mode</span>
       <input
-        v-model="debugMode"
+        v-model="debugEnabled"
         type="checkbox"
         class="sr-only peer"
         checked

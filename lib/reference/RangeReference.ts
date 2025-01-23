@@ -173,7 +173,7 @@ export class RangeReference {
       new CellReference({
         grid,
         absCol: false,
-        colIndex: colIndex,
+        colIndex,
         absRow: false,
         rowIndex: 0,
       }),

@@ -1,40 +1,5 @@
+import type { SGridEvent } from '../PubSub/pubSubEvents'
 import type { Project } from './Project'
-import type { CellDTO } from '~/dto/CellDTO'
-
-export type CellChangeItem = {
-  type: 'cellChange'
-  gridName: string
-  rowIndex: number
-  colIndex: number
-  attribute: keyof CellDTO
-  oldValue: unknown
-  newValue: unknown
-}
-
-type RowChangeItem = {
-  type: 'rowChange'
-  gridName: string
-  rowIndex: number
-  oldValue: number
-  newValue: number
-}
-
-type ColChangeItem = {
-  type: 'colChange'
-  gridName: string
-  colIndex: number
-  oldValue: number
-  newValue: number
-}
-
-type GridChangeItem = {
-  type: 'gridChange'
-  attribute: 'name'
-  oldValue: unknown
-  newValue: unknown
-}
-
-type ChangeEntry = CellChangeItem | RowChangeItem | ColChangeItem | GridChangeItem
 
 function assertString(value: unknown): asserts value is string {
   if (typeof value !== 'string') {
@@ -43,21 +8,24 @@ function assertString(value: unknown): asserts value is string {
 }
 
 export class History {
-  public constructor(private project: Project) {}
-  private currentChanges: ChangeEntry[] = []
+  public constructor(private project: Project) {
+    this.project.pubSub.subscribe(this.onPubSubEvent.bind(this))
+  }
+
+  private currentChanges: SGridEvent[] = []
   private timer: null | ReturnType<typeof setTimeout> = null
-  private readonly undoStack = shallowRef<ChangeEntry[][]>([])
-  private readonly redoStack = shallowRef<ChangeEntry[][]>([])
+  private readonly undoStack = shallowRef<SGridEvent[][]>([])
+  private readonly redoStack = shallowRef<SGridEvent[][]>([])
   private paused = true
 
   public canUndo = computed(() => this.undoStack.value.length > 0)
   public canRedo = computed(() => this.redoStack.value.length > 0)
 
-  public registerChange(change: ChangeEntry): void {
+  private onPubSubEvent(event: SGridEvent) {
     if (this.paused) {
       return
     }
-    this.currentChanges.push(change)
+    this.currentChanges.push(event)
     if (this.timer) {
       clearTimeout(this.timer)
     }
@@ -119,24 +87,27 @@ export class History {
     this.redoStack.value = []
   }
 
-  private applyChange(change: ChangeEntry, method: 'undo' | 'redo'): void {
-    if (change.type === 'cellChange') {
-      const grid = this.project.getGridByName(change.gridName)
-      const cell = grid.getCell(change)
-      cell.setDTO({ [change.attribute]: method === 'undo' ? change.oldValue : change.newValue })
+  private applyChange(event: SGridEvent, method: 'undo' | 'redo'): void {
+    if (event.type === 'cellChange') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      const cell = grid.getCell(data)
+      cell.setDTO({ [data.attribute]: method === 'undo' ? data.oldValue : data.newValue })
     }
-    else if (change.type === 'rowChange') {
-      const grid = this.project.getGridByName(change.gridName)
-      const row = grid.getRow(change.rowIndex)
-      row.setHeight(method === 'undo' ? change.oldValue : change.newValue)
+    else if (event.type === 'rowChange') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      const row = grid.getRow(data.rowIndex)
+      row.setHeight(method === 'undo' ? data.oldValue : data.newValue)
     }
-    else if (change.type === 'colChange') {
-      const grid = this.project.getGridByName(change.gridName)
-      const col = grid.getCol(change.colIndex)
-      col.setWidth(method === 'undo' ? change.oldValue : change.newValue)
+    else if (event.type === 'colChange') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      const col = grid.getCol(data.colIndex)
+      col.setWidth(method === 'undo' ? data.oldValue : data.newValue)
     }
-    else if (change.type === 'gridChange') {
-      const { attribute, newValue, oldValue } = change
+    else if (event.type === 'gridChange') {
+      const { data: { attribute, newValue, oldValue } } = event
       switch (attribute) {
         case 'name':
           assertString(newValue)
@@ -150,6 +121,50 @@ export class History {
           }
           break
       }
+    }
+    else if (event.type === 'rowsRemoved') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      if (method === 'undo') {
+        grid.insertRowsBefore(data.rowIndex, data.count, data.deletedRows)
+      }
+      else {
+        grid.deleteRows(data.rowIndex, data.count)
+      }
+    }
+    else if (event.type === 'colsRemoved') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      if (method === 'undo') {
+        grid.insertColsBefore(data.colIndex, data.count, data.deletedCols)
+      }
+      else {
+        grid.deleteCols(data.colIndex, data.count)
+      }
+    }
+    else if (event.type === 'rowsInserted') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      if (method === 'undo') {
+        grid.deleteRows(data.rowIndex, data.count)
+      }
+      else {
+        grid.insertRowsBefore(data.rowIndex, data.count)
+      }
+    }
+    else if (event.type === 'colsInserted') {
+      const { data, gridName } = event
+      const grid = this.project.getGridByName(gridName)
+      if (method === 'undo') {
+        grid.deleteCols(data.colIndex, data.count)
+      }
+      else {
+        grid.insertColsBefore(data.colIndex, data.count)
+      }
+    }
+    else {
+      const exhaustiveCheck: never = event
+      throw new Error(`Unhandled event type: ${exhaustiveCheck}`)
     }
   }
 }

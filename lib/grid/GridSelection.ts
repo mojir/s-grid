@@ -7,6 +7,7 @@ import { RangeReference } from '~/lib/reference/RangeReference'
 import type { Col } from '~/lib/Col'
 
 export class GridSelection {
+  private logInfo = useDebug().createInfoLogger('Selection', 400)
   private scrollDisabled = false
   private readonly selectionEndpoints: {
     start: Ref<CellReference>
@@ -18,6 +19,9 @@ export class GridSelection {
       start: shallowRef(CellReference.fromCoords(this.grid, { rowIndex: 0, colIndex: 0 })),
       end: shallowRef(CellReference.fromCoords(this.grid, { rowIndex: 0, colIndex: 0 })),
     }
+    watch(this.selectedRange, (range) => {
+      this.logInfo(range.getCellMatrix().map(cell => cell.getDTO().input).stringify('Selected range'))
+    })
   }
 
   public isScollDisabled() {
@@ -32,6 +36,7 @@ export class GridSelection {
   })
 
   public readonly selectedRange = computed(() => RangeReference.fromCellReferences(this.selectionEndpoints.start.value, this.selectionEndpoints.end.value))
+
   public selectedRows = computed<RangeReference | null>(() => {
     if (this.selectedRange.value.start.colIndex === 0 && this.selectedRange.value.end.colIndex === this.grid.cols.value.length - 1) {
       return this.selectedRange.value

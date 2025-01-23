@@ -8,6 +8,7 @@ import { getGridName } from '../utils'
 import type { Cell } from '../Cell'
 import type { Transformation } from '../transformer'
 import { Diagrams } from '../Diagrams'
+import { PubSub } from '../PubSub'
 import { ProjectClipboard } from './ProjectClipboard'
 import { AutoFiller } from './AutoFiller'
 import { History } from './History'
@@ -16,16 +17,17 @@ import type { GridDTO } from '~/dto/GridDTO'
 import type { ProjectDTO } from '~/dto/ProjectDTO'
 
 export class Project {
+  public readonly pubSub = new PubSub()
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
-  public readonly aliases: Aliases
-  public readonly diagrams: Diagrams
   public readonly clipboard = new ProjectClipboard(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
   public readonly history = new History(this)
   public readonly autoFiller = new AutoFiller(this)
-  public grids: Ref<Grid[]>
+  public readonly diagrams = new Diagrams(this, [])
+  public readonly aliases: Aliases
+  public readonly grids: Ref<Grid[]>
 
   public constructor(projectDTO: ProjectDTO) {
     if (projectDTO.grids.length === 0) {
@@ -41,7 +43,6 @@ export class Project {
       return this.grids.value[this.currentGridIndex.value]!
     })
     this.aliases = new Aliases(this, projectDTO.aliases)
-    this.diagrams = new Diagrams(this, [])
     this.commandCenter.registerCommands()
     nextTick(() => this.history.start())
   }
@@ -96,11 +97,13 @@ export class Project {
       newName: newGridName,
     })
     grid.name.value = newGridName
-    this.history.registerChange({
+    this.pubSub.publish({
       type: 'gridChange',
-      attribute: 'name',
-      oldValue: oldGridName,
-      newValue: newGridName,
+      data: {
+        attribute: 'name',
+        oldValue: oldGridName,
+        newValue: newGridName,
+      },
     })
   }
 

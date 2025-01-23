@@ -5,7 +5,7 @@ import type { Grid } from './grid/Grid'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import type { Project } from './project/Project'
 import { defaultFontSize, defaultFormatter } from './constants'
-import type { CellChangeItem } from './project/History'
+import type { CellChangeEvent } from './PubSub/pubSubEvents'
 import type { LitsComposable } from '~/composables/use-lits'
 import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
@@ -45,34 +45,34 @@ export class Cell {
     })
 
     watch(this.input, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('input', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('input', oldValue, newValue))
     })
     watch(this.fontSize, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('fontSize', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('fontSize', oldValue, newValue))
     })
     watch(this.bold, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('bold', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('bold', oldValue, newValue))
     })
     watch(this.italic, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('italic', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('italic', oldValue, newValue))
     })
     watch(this.textDecoration, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('textDecoration', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('textDecoration', oldValue, newValue))
     })
     watch(this.justify, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('justify', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('justify', oldValue, newValue))
     })
     watch(this.align, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('align', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('align', oldValue, newValue))
     })
     watch(this.backgroundColor, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('backgroundColor', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('backgroundColor', oldValue, newValue))
     })
     watch(this.textColor, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('textColor', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('textColor', oldValue, newValue))
     })
     watch(this.formatter, (newValue, oldValue) => {
-      this.project.history.registerChange(this.createCellChange('formatter', oldValue, newValue))
+      this.grid.pubSub.publish(this.createCellChange('formatter', oldValue, newValue))
     })
   }
 
@@ -297,15 +297,17 @@ export class Cell {
     }
   }
 
-  private createCellChange(attribute: CellChangeItem['attribute'], oldValue: unknown, newValue: unknown): CellChangeItem {
+  private createCellChange(attribute: CellChangeEvent['data']['attribute'], oldValue: unknown, newValue: unknown): CellChangeEvent {
     return {
       type: 'cellChange',
       gridName: this.grid.name.value,
-      rowIndex: this.cellReference.rowIndex,
-      colIndex: this.cellReference.colIndex,
-      attribute,
-      oldValue,
-      newValue,
+      data: {
+        rowIndex: this.cellReference.rowIndex,
+        colIndex: this.cellReference.colIndex,
+        attribute,
+        oldValue,
+        newValue,
+      },
     }
   }
 }

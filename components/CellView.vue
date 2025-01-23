@@ -23,7 +23,7 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const { currentTab, sidePanelOpen } = useSidePanel()
 const repl = project.value.repl
-const { debugMode } = useDebug()
+const { debugEnabled } = useDebug()
 const colorMode = useColorMode()
 
 const reference = computed(() => CellReference.fromCoords(grid.value, { rowIndex: row.value.index.value, colIndex: col.value.index.value }))
@@ -134,7 +134,7 @@ const cellStyle = computed(() => {
 })
 
 function inspectCell(e: MouseEvent) {
-  if (!debugMode.value) {
+  if (!debugEnabled.value) {
     return
   }
 

@@ -14,34 +14,34 @@ const jsFunctions: Record<string, JsFunction> = {
 }
 
 export default function useLits() {
-  const { debugMode } = useDebug()
+  const { debugEnabled } = useDebug()
 
   function run(program: string, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {
-    return debugMode.value
+    return debugEnabled.value
       ? litsDebug.run(program, { jsFunctions, contexts: [builtingContextDebug], values, globalContext })
       : lits.run(program, { jsFunctions, contexts: [builtingContext], values, globalContext })
   }
 
   function tokenize(program: string) {
-    return debugMode.value
+    return debugEnabled.value
       ? litsDebug.tokenize(program)
       : lits.tokenize(program)
   }
 
   function transform(tokenStream: TokenStream, transformer: (identifier: string) => string) {
-    return debugMode.value
+    return debugEnabled.value
       ? litsDebug.transform(tokenStream, transformer)
       : lits.transform(tokenStream, transformer)
   }
 
   function untokenize(tokenStream: TokenStream) {
-    return debugMode.value
+    return debugEnabled.value
       ? litsDebug.untokenize(tokenStream)
       : lits.untokenize(tokenStream)
   }
 
   function apply(fn: LitsFunction, fnParams: unknown[], values: Record<string, unknown> = {}) {
-    return debugMode.value
+    return debugEnabled.value
       ? litsDebug.apply(fn, fnParams, { jsFunctions, contexts: [builtingContextDebug], values })
       : lits.apply(fn, fnParams, { jsFunctions, contexts: [builtingContext], values })
   }
@@ -51,7 +51,7 @@ export default function useLits() {
   }
 
   function getUnresolvedIdentifers(program: string): Set<string> {
-    const analyzeResult = debugMode.value
+    const analyzeResult = debugEnabled.value
       ? litsDebug.analyze(program, { jsFunctions, contexts: [builtingContextDebug] }).unresolvedIdentifiers
       : lits.analyze(program, { jsFunctions, contexts: [builtingContext] }).unresolvedIdentifiers
 

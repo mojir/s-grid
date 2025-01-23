@@ -133,7 +133,7 @@ export class ProjectClipboard {
     // Populate result array with the positions (CellReference) to paste the clipboard
     do {
       do {
-        result.push(CellReference.fromCoords(grid, { rowIndex: rowIndex, colIndex }))
+        result.push(CellReference.fromCoords(grid, { rowIndex, colIndex }))
         colIndex += rangeWidth
       } while (colIndex - startColIndex + rangeWidth <= selectionWidth)
       rowIndex += rangeHeight

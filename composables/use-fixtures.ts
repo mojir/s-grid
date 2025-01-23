@@ -39,7 +39,7 @@ async function createTestFixtures() {
     resolveLoadTextFixturesPromise()
   }
   catch (error) {
-    console.error('Failed to load test fixtures:', error)
+    useDebug().logError('Fixtures', 'Failed to load test fixtures:', error)
     rejectLoadTextFixturesPromise()
     return
   }

@@ -5,14 +5,16 @@ import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
 import type { Project } from '../project/Project'
 import { CellReference } from '../reference/CellReference'
 import { RangeReference } from '../reference/RangeReference'
-import { getDocumentCellId, type Direction, type Movement, type Reference } from '../reference/utils'
+import { getDocumentCellId, type Direction, type Reference } from '../reference/utils'
 import { Row } from '../Row'
 import { getGridName } from '../utils'
 import { Mx } from '../Mx'
+import { PubSub } from '../PubSub'
+import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
 import { GridSelection } from './GridSelection'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
-import type { StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
+import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 type GridState = 'idle' | 'selecting' | 'cellMoving' | 'rangeMoving' | 'cellAutoFilling' | 'rangeAutoFilling'
 export class Grid {
@@ -27,6 +29,7 @@ export class Grid {
   public readonly editor: CellEditor
   public hoveredCell: Ref<CellReference | null> = shallowRef(null)
   public state = ref<GridState>('idle')
+  public readonly pubSub: PubSub
   private readonly cells: Mx<Cell>
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
@@ -35,6 +38,7 @@ export class Grid {
     this.project = project
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
+    this.pubSub = new PubSub(project.pubSub)
     this.selection = new GridSelection(this.project, this)
     this.position = shallowRef(CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }))
     this.editor = new CellEditor(this)
@@ -447,6 +451,43 @@ export class Grid {
       throw new Error('Cannot delete all rows')
     }
 
+    const rowsRemovedEvent: RowsRemovedEvent = {
+      type: 'rowsRemoved',
+      gridName: this.name.value,
+      data: {
+        rowIndex: rowIndexToDelete,
+        count,
+        deletedRows: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
+          .map(cell => cell.getDTO()),
+      },
+    }
+
+    if (this.position.value.rowIndex > rowIndexToDelete || this.position.value.rowIndex === this.rows.value.length - 1) {
+      this.position.value = this.position.value.move({ deltaRow: -count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    if (selectionStart.rowIndex > rowIndexToDelete && selectionEnd.rowIndex < rowIndexToDelete + count) {
+      this.selection.updateSelection(this.position.value)
+    }
+    else {
+      const newSelectionStart = selectionStart.rowIndex > rowIndexToDelete
+        ? selectionStart.move({ deltaRow: -count })
+        : selectionStart
+
+      const newSelectionEnd = selectionEnd.rowIndex >= rowIndexToDelete
+        ? selectionEnd.move({ deltaRow: -count })
+        : selectionEnd
+
+      if (newSelectionEnd.rowIndex >= newSelectionStart.rowIndex) {
+        this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+      }
+      else {
+        this.selection.updateSelection(this.position.value)
+      }
+    }
+
     this.cells.removeRows(rowIndexToDelete, count)
 
     this.rows.value = this.rows.value.filter((_, index) => index < rowIndexToDelete || index >= rowIndexToDelete + count)
@@ -468,31 +509,50 @@ export class Grid {
       count,
     })
 
-    if (this.position.value.rowIndex > rowIndexToDelete) {
-      this.position.value = this.position.value.move({ deltaRow: -count })
-    }
-    const selectionStart = this.selection.selectedRange.value.start
-    const selectionEnd = this.selection.selectedRange.value.end
-
-    const newSelectionStart = selectionStart.rowIndex > rowIndexToDelete
-      ? selectionStart.move({ deltaRow: -count })
-      : selectionStart
-
-    const newSelectionEnd = selectionEnd.rowIndex >= rowIndexToDelete
-      ? selectionEnd.move({ deltaRow: -count })
-      : selectionEnd
-
-    if (newSelectionEnd.rowIndex >= newSelectionStart.rowIndex) {
-      this.selection.updateSelection(newSelectionStart, newSelectionEnd)
-    }
-    else {
-      this.selection.updateSelection(this.position.value)
-    }
+    this.pubSub.publish(rowsRemovedEvent)
   }
 
   public deleteCols(colIndexToDelete: number, count: number) {
     if (colIndexToDelete === 0 && count >= this.cols.value.length) {
       throw new Error('Cannot delete all columns')
+    }
+
+    const colsRemovedEvent: ColsRemovedEvent = {
+      type: 'colsRemoved',
+      gridName: this.name.value,
+      data: {
+        colIndex: colIndexToDelete,
+        count,
+        deletedCols: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
+          .toTransposed()
+          .map(cell => cell.getDTO()),
+      },
+    }
+
+    if (this.position.value.colIndex > colIndexToDelete || this.position.value.colIndex === this.cols.value.length - 1) {
+      this.position.value = this.position.value.move({ deltaCol: -count })
+    }
+    const selectionStart = this.selection.selectedRange.value.start
+    const selectionEnd = this.selection.selectedRange.value.end
+
+    if (selectionStart.colIndex >= colIndexToDelete && selectionEnd.colIndex < colIndexToDelete + count) {
+      this.selection.updateSelection(this.position.value)
+    }
+    else {
+      const newSelectionStart = selectionStart.colIndex > colIndexToDelete
+        ? selectionStart.move({ deltaCol: -count })
+        : selectionStart
+
+      const newSelectionEnd = selectionEnd.colIndex >= colIndexToDelete
+        ? selectionEnd.move({ deltaCol: -count })
+        : selectionEnd
+
+      if (newSelectionEnd.colIndex >= newSelectionStart.colIndex) {
+        this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+      }
+      else {
+        this.selection.updateSelection(this.position.value)
+      }
     }
 
     this.cells.removeCols(colIndexToDelete, count)
@@ -516,54 +576,50 @@ export class Grid {
       count,
     })
 
-    if (this.position.value.rowIndex > colIndexToDelete) {
-      this.position.value = this.position.value.move({ deltaCol: -count })
-    }
-    const selectionStart = this.selection.selectedRange.value.start
-    const selectionEnd = this.selection.selectedRange.value.end
+    this.pubSub.publish(colsRemovedEvent)
+  }
 
-    const newSelectionStart = selectionStart.colIndex > colIndexToDelete
-      ? selectionStart.move({ deltaCol: -count })
-      : selectionStart
+  public insertRowsBefore(rowIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (!data) {
+      const range = RangeReference.fromCellReferences(
+        CellReference.fromCoords(this, { rowIndex, colIndex: 0 }),
+        CellReference.fromCoords(this, { rowIndex: rowIndex + count - 1, colIndex: this.cols.value.length - 1 }),
+      )
 
-    const newSelectionEnd = selectionEnd.colIndex >= colIndexToDelete
-      ? selectionEnd.move({ deltaCol: -count })
-      : selectionEnd
+      this.project.clipboard.storeState()
+      this.project.clipboard.copyStyleSelection(range)
 
-    if (newSelectionEnd.colIndex >= newSelectionStart.colIndex) {
-      this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+      this.insertRows(rowIndex, count, data)
+
+      this.project.clipboard.pasteStyleSelection(range)
+      this.project.clipboard.restoreState()
     }
     else {
-      this.selection.updateSelection(this.position.value)
+      this.insertRows(rowIndex, count, data)
     }
   }
 
-  public insertRowsBefore(rowIndex: number, count: number) {
-    const range = RangeReference.fromCellReferences(
-      CellReference.fromCoords(this, { rowIndex: rowIndex, colIndex: 0 }),
-      CellReference.fromCoords(this, { rowIndex: rowIndex + count - 1, colIndex: this.cols.value.length - 1 }),
-    )
-    this.project.clipboard.copyStyleSelection(range)
-    this.insertRows(rowIndex, count)
-    this.project.clipboard.pasteStyleSelection(range)
-  }
+  public insertRowsAfter(rowIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (!data) {
+      const range = RangeReference.fromCellReferences(
+        CellReference.fromCoords(this, { rowIndex, colIndex: 0 }),
+        CellReference.fromCoords(this, { rowIndex: rowIndex + count - 1, colIndex: this.cols.value.length - 1 }),
+      )
+      this.project.clipboard.storeState()
+      this.project.clipboard.copyStyleSelection(range)
 
-  public insertRowsAfter(rowIndex: number, count: number) {
-    const range = RangeReference.fromCellReferences(
-      CellReference.fromCoords(this, { rowIndex: rowIndex, colIndex: 0 }),
-      CellReference.fromCoords(this, { rowIndex: rowIndex + count - 1, colIndex: this.cols.value.length - 1 }),
-    )
-    this.project.clipboard.copyStyleSelection(range)
+      this.insertRows(rowIndex + count, count, data)
 
-    this.insertRows(rowIndex + count, count)
-    const movement: Movement = {
-      toGrid: this,
-      deltaRow: count,
-      deltaCol: 0,
+      this.position.value = this.selection.selectedRange.value.start
+
+      if (!data) {
+        this.project.clipboard.pasteStyleSelection(range.move({ deltaRow: count }))
+        this.project.clipboard.restoreState()
+      }
     }
-    this.selection.moveSelection(movement)
-    this.position.value = this.selection.selectedRange.value.start
-    this.project.clipboard.pasteStyleSelection(range.move(movement))
+    else {
+      this.insertRows(rowIndex + count, count, data)
+    }
   }
 
   private getCellIdsFromColIndex(colIndex: number): CellReference[] {
@@ -572,7 +628,7 @@ export class Grid {
     return RangeReference.fromCellReferences(startCellId, endCellId).getAllCellReferences()
   }
 
-  private insertRows(rowInsertIndex: number, count: number) {
+  private insertRows(rowInsertIndex: number, count: number, data?: Mx<CellDTO>) {
     const createdRows = Array.from({ length: count }, (_, index) => new Row(this, rowInsertIndex + index, defaultRowHeight))
 
     this.rows.value = [
@@ -582,8 +638,7 @@ export class Grid {
     ]
 
     this.cells.insertRows(rowInsertIndex, count, coords =>
-      new Cell(CellReference.fromCoords(this, coords), { project: this.project, grid: this }),
-    )
+      new Cell(CellReference.fromCoords(this, coords), { project: this.project, grid: this }))
 
     const cols = this.cols.value
     const rows = this.rows.value
@@ -602,8 +657,22 @@ export class Grid {
       count,
     })
 
+    if (data) {
+      RangeReference.fromCoords(
+        this,
+        {
+          startRowIndex: rowInsertIndex,
+          startColIndex: 0,
+          endRowIndex: rowInsertIndex + count - 1,
+          endColIndex: this.cols.value.length - 1,
+        },
+      ).getCellMatrix().forEach((cell, [rowIndex, colIndex]) => {
+        cell.setDTO(data.get(rowIndex, colIndex))
+      })
+    }
+
     if (this.position.value.rowIndex >= rowInsertIndex) {
-      this.position.value = this.position.value.move({ deltaCol: count })
+      this.position.value = this.position.value.move({ deltaRow: count })
     }
     const selectionStart = this.selection.selectedRange.value.start
     const selectionEnd = this.selection.selectedRange.value.end
@@ -617,36 +686,58 @@ export class Grid {
       : selectionEnd
 
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+
+    this.pubSub.publish({
+      type: 'rowsInserted',
+      gridName: this.name.value,
+      data: {
+        rowIndex: rowInsertIndex,
+        count,
+      },
+    })
   }
 
-  public insertColsBefore(colIndex: number, count: number) {
-    const range = RangeReference.fromCellReferences(
-      CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
-      CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: colIndex + count - 1 }),
-    )
+  public insertColsBefore(colIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (!data) {
+      const range = RangeReference.fromCellReferences(
+        CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
+        CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: colIndex + count - 1 }),
+      )
 
-    this.project.clipboard.copyStyleSelection(range)
-    this.insertCols(colIndex, count)
-    this.project.clipboard.pasteStyleSelection(range)
-  }
+      this.project.clipboard.storeState()
+      this.project.clipboard.copyStyleSelection(range)
 
-  public insertColsAfter(colIndex: number, count: number) {
-    const range = RangeReference.fromCellReferences(
-      CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
-      CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: colIndex + count - 1 }),
-    )
-    this.insertCols(colIndex + count, count)
-    const movement: Movement = {
-      toGrid: this,
-      deltaRow: 0,
-      deltaCol: count,
+      this.insertCols(colIndex, count, data)
+
+      this.project.clipboard.pasteStyleSelection(range)
+      this.project.clipboard.restoreState()
     }
-    this.selection.moveSelection(movement)
-    this.position.value = this.selection.selectedRange.value.start
-    this.project.clipboard.pasteStyleSelection(range.move(movement))
+    else {
+      this.insertCols(colIndex, count, data)
+    }
   }
 
-  private insertCols(colInsertIndex: number, count: number) {
+  public insertColsAfter(colIndex: number, count: number, data?: Mx<CellDTO>) {
+    const range = RangeReference.fromCellReferences(
+      CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
+      CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: colIndex + count - 1 }),
+    )
+
+    if (!data) {
+      this.project.clipboard.storeState()
+      this.project.clipboard.copyStyleSelection(range)
+
+      this.insertCols(colIndex + count, count, data)
+
+      this.project.clipboard.pasteStyleSelection(range.move({ deltaCol: count }))
+      this.project.clipboard.restoreState()
+    }
+    else {
+      this.insertCols(colIndex + count, count, data)
+    }
+  }
+
+  private insertCols(colInsertIndex: number, count: number, data?: Mx<CellDTO>) {
     const createdCols = Array.from({ length: count }, (_, index) => {
       return new Col(this, colInsertIndex + index, defaultColWidth)
     })
@@ -668,7 +759,7 @@ export class Grid {
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
         this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(
           this,
-          { rowIndex: rowIndex, colIndex },
+          { rowIndex, colIndex },
         )
       }
     }
@@ -679,6 +770,20 @@ export class Grid {
       colIndex: colInsertIndex,
       count,
     })
+
+    if (data) {
+      RangeReference.fromCoords(
+        this,
+        {
+          startRowIndex: 0,
+          startColIndex: colInsertIndex,
+          endRowIndex: this.rows.value.length - 1,
+          endColIndex: colInsertIndex + count - 1,
+        },
+      ).getCellMatrix().forEach((cell, [rowIndex, colIndex]) => {
+        cell.setDTO(data.get(rowIndex, colIndex))
+      })
+    }
 
     if (this.position.value.colIndex >= colInsertIndex) {
       this.position.value = this.position.value.move({ deltaCol: count })
@@ -695,5 +800,14 @@ export class Grid {
       : selectionEnd
 
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
+
+    this.pubSub.publish({
+      type: 'colsInserted',
+      gridName: this.name.value,
+      data: {
+        colIndex: colInsertIndex,
+        count,
+      },
+    })
   }
 }

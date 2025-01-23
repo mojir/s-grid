@@ -1,4 +1,4 @@
-const { debugMode } = useDebug()
+const { debugEnabled } = useDebug()
 
 type TabId = 'repl' | 'settings' | 'debug' | 'alias' | 'diagrams'
 type Tab = {
@@ -14,7 +14,7 @@ const allTabs = readonly(ref<Tab[]>([
 ]))
 
 const tabs = computed(() => {
-  if (debugMode.value) {
+  if (debugEnabled.value) {
     return allTabs.value
   }
   return allTabs.value.filter(tab => tab.id !== 'debug')

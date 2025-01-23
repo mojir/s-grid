@@ -17,12 +17,14 @@ export class Row {
     this.label = computed(() => getRowId(this._index.value))
 
     watch(this._height, (newValue, oldValue) => {
-      this.grid.project.history.registerChange({
+      this.grid.pubSub.publish({
         type: 'rowChange',
         gridName: this.grid.name.value,
-        rowIndex: this._index.value,
-        oldValue,
-        newValue,
+        data: {
+          rowIndex: this._index.value,
+          oldValue,
+          newValue,
+        },
       })
     })
   }

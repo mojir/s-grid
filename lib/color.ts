@@ -19,7 +19,7 @@ export class Color {
 
   public static fromHex(hex: string): Color {
     if (!hexRegExp.test(hex)) {
-      console.error('Invalid hex color', hex)
+      useDebug().logError('Color', 'Invalid hex color', hex)
       return new Color(0, 0, 0, 0)
     }
     const a = (hex.length === 7) ? 1 : parseInt(hex.slice(7, 9), 16) / 255
@@ -29,7 +29,7 @@ export class Color {
   public static fromHsl(h: number, s: number, l: number, a?: number): Color {
     a ??= 1
     if (h < 0 || h > 360 || s < 0 || s > 100 || l < 0 || l > 100 || a < 0 || a > 1) {
-      console.error('Invalid HSL color', h, s, l, a)
+      useDebug().logError('Color', 'Invalid HSL color', h, s, l, a)
       return new Color(0, 0, 0, 0)
     }
     return new Color(h, s, l, a)
@@ -38,7 +38,7 @@ export class Color {
   public static fromRgb(r: number, g: number, b: number, a?: number): Color {
     a ??= 1
     if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 1) {
-      console.error('Invalid RGB color', r, g, b, a)
+      useDebug().logError('Color', 'Invalid RGB color', r, g, b, a)
       return new Color(0, 0, 0, 0)
     }
     return new Color(...rgbToHsl(r, g, b), a)
