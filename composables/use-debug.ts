@@ -17,11 +17,11 @@ type LogEntry = {
 const logLog = shallowRef<LogEntry[]>([])
 
 const activeInfoLoggers = ref<Record<DebugComponent, boolean>>({
-  Color: true,
-  CommandCenter: true,
-  Fixtures: true,
-  Selection: true,
-  Transformer: true,
+  Color: false,
+  CommandCenter: false,
+  Fixtures: false,
+  Selection: false,
+  Transformer: false,
 })
 
 const debugEnabled = ref<boolean>(true)

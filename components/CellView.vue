@@ -21,9 +21,6 @@ const emit = defineEmits<{
 const { project, row, col } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const { currentTab, sidePanelOpen } = useSidePanel()
-const repl = project.value.repl
-const { debugEnabled } = useDebug()
 const colorMode = useColorMode()
 
 const reference = computed(() => CellReference.fromCoords(grid.value, { rowIndex: row.value.index.value, colIndex: col.value.index.value }))
@@ -132,19 +129,6 @@ const cellStyle = computed(() => {
 
   return style
 })
-
-function inspectCell(e: MouseEvent) {
-  if (!debugEnabled.value) {
-    return
-  }
-
-  if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    e.preventDefault()
-    sidePanelOpen.value = true
-    currentTab.value = 'repl'
-    repl.run(`(GetCell "${reference.value.toStringWithGrid()}") ;; Inspecting Cell`)
-  }
-}
 </script>
 
 <template>
@@ -154,7 +138,6 @@ function inspectCell(e: MouseEvent) {
       :style="cellStyle"
       class="px-1 h-full relative flex box-border text-sm whitespace-pre"
       @dblclick="emit('cell-dblclick', reference)"
-      @click="inspectCell"
     >
       {{ cellContent }}
     </div>
