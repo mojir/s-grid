@@ -6,6 +6,7 @@ export const sGridComponents = [
   'Fixtures',
   'Grid',
   'History',
+  'Lits',
   'Project',
   'PubSub',
   'Row',

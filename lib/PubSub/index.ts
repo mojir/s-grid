@@ -59,12 +59,12 @@ export class PubSub {
     return numberOfReceivers
   }
 
-  private isSubscriberForEvent({ filter }: Subscriber, { eventName, source: debugComponent }: SGridEvent): boolean {
+  private isSubscriberForEvent({ filter }: Subscriber, { eventName, source }: SGridEvent): boolean {
     if (!filter) {
       return true
     }
     else {
-      const filterEvents = filter[debugComponent]
+      const filterEvents = filter[source]
       return !!filterEvents && (filterEvents === true || filterEvents.includes(eventName))
     }
   }

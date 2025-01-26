@@ -111,6 +111,10 @@ export const colorPalette = [
   ['#4a4a4a', '#6b6b47', '#4a754a', '#4a757c', '#4a4a75', '#754a75', '#754a4a', '#617c7c', '#7c617c', '#7c7c61'].map(color => Color.fromHex(color)),
 ]
 
+export const infoColor = colorPalette[0]![0]!
+export const warnColor = colorPalette[2]![5]!
+export const errorColor = colorPalette[1]![5]!
+
 function hexToRgb(hex: string): Tripple {
   const bigint = parseInt(hex.slice(1), 16)
   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255]

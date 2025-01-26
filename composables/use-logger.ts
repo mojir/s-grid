@@ -14,6 +14,7 @@ const activeInfoLoggers = ref<Record<SGridComponent, boolean>>({
   Fixtures: false,
   Grid: false,
   History: false,
+  Lits: false,
   Project: false,
   PubSub: false,
   Row: false,
@@ -22,18 +23,20 @@ const activeInfoLoggers = ref<Record<SGridComponent, boolean>>({
   UI: false,
 })
 
-function createLogger(component: SGridComponent, infoThrottle = 500) {
+function createLogger(component: SGridComponent, tag: string | null = null) {
   return {
+    withTag: (newTag: string) => createLogger(component, newTag),
     info: (message: unknown, ...args: unknown[]) => {
       if (debugEnabled.value && activeInfoLoggers.value[component]) {
         log.addEntry({
-          debugComponent: component,
+          component: component,
+          tag,
           logLevel: 'info',
           timestamp: Date.now(),
           messages: [message, ...args],
         })
 
-        console.log(...toLogArgs(component, message, ...args))
+        console.log(...toLogArgs(component, tag, message, ...args))
       }
     },
 
@@ -53,53 +56,57 @@ function createLogger(component: SGridComponent, infoThrottle = 500) {
         timeout = setTimeout(() => {
           if (debugEnabled.value && activeInfoLoggers.value[component]) {
             log.addEntry({
-              debugComponent: component,
+              component: component,
+              tag,
               logLevel: 'info',
               timestamp: Date.now(),
               messages: [message, ...args],
             })
 
-            console.log(...toLogArgs(component, message, ...args))
+            console.log(...toLogArgs(component, tag, message, ...args))
           }
 
           timeout = null
-        }, infoThrottle)
+        }, 500)
       }
     })(),
 
     warn: (message: unknown, ...args: unknown[]) => {
       log.addEntry({
-        debugComponent: component,
+        component: component,
+        tag,
         logLevel: 'warn',
         timestamp: Date.now(),
         messages: [message, ...args],
       })
 
       if (debugEnabled.value) {
-        console.warn(...toLogArgs(component, message, ...args))
+        console.warn(...toLogArgs(component, tag, message, ...args))
       }
     },
 
     error: (message: unknown, ...args: unknown[]) => {
       log.addEntry({
-        debugComponent: component,
+        component: component,
+        tag,
         logLevel: 'error',
         timestamp: Date.now(),
         messages: [message, ...args],
       })
 
-      console.error(...toLogArgs(component, message, ...args))
+      console.error(...toLogArgs(component, tag, message, ...args))
     },
   }
 }
-function toLogArgs(debugComponent: SGridComponent, message: unknown, ...args: unknown[]): unknown[] {
+function toLogArgs(component: SGridComponent, tag: string | null, message: unknown, ...args: unknown[]): unknown[] {
+  const prefix = tag ? `${component}:${tag}` : component
   return (typeof message === 'string' && message.includes('\n'))
     ? [
-        `[${debugComponent}]\n${message}`,
+        `[${prefix}]\n${message}`,
         ...args,
       ]
     : [
-        `[${debugComponent}]`,
+        `[${prefix}]`,
         message,
         ...args,
       ]
@@ -110,7 +117,7 @@ export default function () {
     createLogger,
     getLogGridDTO: () => log.toGridDTO(),
     activeInfoLoggers,
-    debugComponents: readonly(sGridComponents),
+    sGridComponents: readonly(sGridComponents),
     log: readonly(log),
   }
 }

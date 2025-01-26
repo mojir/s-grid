@@ -12,38 +12,69 @@ const builtingContextDebug = litsDebug.context(builtinLitsScript)
 const jsFunctions: Record<string, JsFunction> = {
   format,
 }
+const { debugEnabled } = useDebug()
+const { createLogger } = useLogger()
 
+const logger = createLogger('Lits')
 export default function useLits() {
-  const { debugEnabled } = useDebug()
-
   function run(program: string, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {
-    return debugEnabled.value
-      ? litsDebug.run(program, { jsFunctions, contexts: [builtingContextDebug], values, globalContext })
-      : lits.run(program, { jsFunctions, contexts: [builtingContext], values, globalContext })
+    try {
+      return debugEnabled.value
+        ? litsDebug.run(program, { jsFunctions, contexts: [builtingContextDebug], values, globalContext })
+        : lits.run(program, { jsFunctions, contexts: [builtingContext], values, globalContext })
+    }
+    catch (error) {
+      logger.warn('Lits operation "run" failed:', error)
+      throw error
+    }
   }
 
   function tokenize(program: string) {
-    return debugEnabled.value
-      ? litsDebug.tokenize(program)
-      : lits.tokenize(program)
+    try {
+      return debugEnabled.value
+        ? litsDebug.tokenize(program)
+        : lits.tokenize(program)
+    }
+    catch (error) {
+      logger.warn('Lits operation "tokenize" failed:', error)
+      throw error
+    }
   }
 
   function transform(tokenStream: TokenStream, transformer: (identifier: string) => string) {
-    return debugEnabled.value
-      ? litsDebug.transform(tokenStream, transformer)
-      : lits.transform(tokenStream, transformer)
+    try {
+      return debugEnabled.value
+        ? litsDebug.transform(tokenStream, transformer)
+        : lits.transform(tokenStream, transformer)
+    }
+    catch (error) {
+      logger.warn('Lits operation "transform" failed:', error)
+      throw error
+    }
   }
 
   function untokenize(tokenStream: TokenStream) {
-    return debugEnabled.value
-      ? litsDebug.untokenize(tokenStream)
-      : lits.untokenize(tokenStream)
+    try {
+      return debugEnabled.value
+        ? litsDebug.untokenize(tokenStream)
+        : lits.untokenize(tokenStream)
+    }
+    catch (error) {
+      logger.warn('Lits operation "untokenize" failed:', error)
+      throw error
+    }
   }
 
   function apply(fn: LitsFunction, fnParams: unknown[], values: Record<string, unknown> = {}) {
-    return debugEnabled.value
-      ? litsDebug.apply(fn, fnParams, { jsFunctions, contexts: [builtingContextDebug], values })
-      : lits.apply(fn, fnParams, { jsFunctions, contexts: [builtingContext], values })
+    try {
+      return debugEnabled.value
+        ? litsDebug.apply(fn, fnParams, { jsFunctions, contexts: [builtingContextDebug], values })
+        : lits.apply(fn, fnParams, { jsFunctions, contexts: [builtingContext], values })
+    }
+    catch (error) {
+      logger.warn('Lits operation "apply" failed:', error)
+      throw error
+    }
   }
 
   function registerJsFunction(name: string, fn: JsFunction) {

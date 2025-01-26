@@ -13,7 +13,7 @@ const { project } = toRefs(props)
 const { testFixtures } = useFixtures()
 const { activeInfoLoggers, getLogGridDTO, createLogger, log } = useLogger()
 
-const logger = createLogger('UI')
+const logger = createLogger('UI').withTag('DebugTab')
 const counter = ref(0)
 
 function addGridDto(dto: GridDTO) {
