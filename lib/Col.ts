@@ -19,9 +19,10 @@ export class Col {
 
     watch(this._width, (newValue, oldValue) => {
       this.grid.pubSub.publish({
-        type: 'colChange',
-        gridName: this.grid.name.value,
+        source: 'Col',
+        eventName: 'colChange',
         data: {
+          gridName: this.grid.name.value,
           colIndex: this._index.value,
           oldValue,
           newValue,

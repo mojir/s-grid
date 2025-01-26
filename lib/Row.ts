@@ -18,9 +18,10 @@ export class Row {
 
     watch(this._height, (newValue, oldValue) => {
       this.grid.pubSub.publish({
-        type: 'rowChange',
-        gridName: this.grid.name.value,
+        source: 'Row',
+        eventName: 'rowChange',
         data: {
+          gridName: this.grid.name.value,
           rowIndex: this._index.value,
           oldValue,
           newValue,

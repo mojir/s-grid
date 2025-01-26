@@ -77,3 +77,42 @@ export function isHandle(value: unknown): value is Handle {
   }
   return ['nw', 'ne', 'se', 'sw', 'n', 'e', 's', 'w', 'move'].includes(value)
 }
+
+export function jsToLits(js: unknown): string {
+  if (js === null || js === undefined) {
+    return 'nil'
+  }
+  if (typeof js === 'string') {
+    return `"${js}"`
+  }
+  if (typeof js === 'number') {
+    return `${js}`
+  }
+  if (typeof js === 'boolean') {
+    return js ? 'true' : 'false'
+  }
+  if (Array.isArray(js)) {
+    return `[${js.map(jsToLits).join(' ')}]`
+  }
+  if (typeof js === 'object') {
+    if (js instanceof Date) {
+      return `"${js.toISOString()}"`
+    }
+    if (js instanceof Error) {
+      return `"Error: ${js.message}"`
+    }
+    if (isPlainObject(js)) {
+      return `{${Object.entries(js).map(([key, value]) => `"${key}" ${jsToLits(value)}`).join(' ')}}`
+    }
+    return `"${js.toString()}"` // Fallback
+  }
+  throw new Error(`Unsupported ${js}`)
+}
+
+export function isPrimitive(val: unknown): val is null | undefined | string | number | boolean {
+  return val === null || (typeof val !== 'object' && typeof val !== 'function' && typeof val !== 'symbol')
+}
+
+function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+  return obj?.constructor === Object && Object.getPrototypeOf(obj) === Object.prototype
+}

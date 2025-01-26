@@ -58,7 +58,7 @@ type Command<T extends string> = {
 export class CommandCenter {
   public commands = new Map<string, Command<string>>()
   private lits = useLits()
-  private logError = useDebug().logError
+  private logger = useLogger().createLogger('CommandCenter')
 
   public constructor(private project: Project) {}
 
@@ -70,7 +70,7 @@ export class CommandCenter {
   public exec(name: BuiltinCommandName, ...args: unknown[]) {
     const command = this.commands.get(name)
     if (!command) {
-      this.logError('CommandCenter', `Command ${name} not found`)
+      this.logger.error(`Command ${name} not found`)
       return
     }
     return command.execute(...args)

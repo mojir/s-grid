@@ -1,5 +1,6 @@
 import { createGridDtoFromCsv, type GridDTO } from '~/dto/GridDTO'
 
+const logger = useLogger().createLogger('Fixtures')
 type FixtureName = 'persons' | 'usStates' | 'employees' | 'inventory' | 'sales'
 
 const testFixtures = ref<Record<FixtureName, GridDTO> | null>(null)
@@ -39,7 +40,7 @@ async function createTestFixtures() {
     resolveLoadTextFixturesPromise()
   }
   catch (error) {
-    useDebug().logError('Fixtures', 'Failed to load test fixtures:', error)
+    logger.error('Failed to load test fixtures:', error)
     rejectLoadTextFixturesPromise()
     return
   }

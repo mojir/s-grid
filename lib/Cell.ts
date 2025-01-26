@@ -299,9 +299,10 @@ export class Cell {
 
   private createCellChange(attribute: CellChangeEvent['data']['attribute'], oldValue: unknown, newValue: unknown): CellChangeEvent {
     return {
-      type: 'cellChange',
-      gridName: this.grid.name.value,
+      source: 'Cell',
+      eventName: 'cellChange',
       data: {
+        gridName: this.grid.name.value,
         rowIndex: this.cellReference.rowIndex,
         colIndex: this.cellReference.colIndex,
         attribute,

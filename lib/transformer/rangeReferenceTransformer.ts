@@ -44,11 +44,11 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { rowIndex, cou
   const { start, end } = rangeReference
   const startIsInDeletedRange
     = start.rowIndex >= rowIndex
-    && start.rowIndex < rowIndex + count
+      && start.rowIndex < rowIndex + count
 
   const endIsInDeletedRange
     = end.rowIndex >= rowIndex
-    && end.rowIndex < rowIndex + count
+      && end.rowIndex < rowIndex + count
 
   // range reference is enclosed in deleted row range
   if (startIsInDeletedRange && endIsInDeletedRange) {
@@ -125,11 +125,11 @@ function rangeTransformColDelete(rangeReference: RangeReference, { colIndex, cou
 
   const startIsInDeletedRange
     = start.colIndex >= colIndex
-    && start.colIndex < colIndex + count
+      && start.colIndex < colIndex + count
 
   const endIsInDeletedRange
     = end.colIndex >= colIndex
-    && end.colIndex < colIndex + count
+      && end.colIndex < colIndex + count
 
   // range reference is enclosed in deleted col range
   if (startIsInDeletedRange && endIsInDeletedRange) {

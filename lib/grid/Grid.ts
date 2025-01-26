@@ -38,7 +38,7 @@ export class Grid {
     this.project = project
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
-    this.pubSub = new PubSub(project.pubSub)
+    this.pubSub = new PubSub('Grid', project.pubSub)
     this.selection = new GridSelection(this.project, this)
     this.position = shallowRef(CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }))
     this.editor = new CellEditor(this)
@@ -452,9 +452,10 @@ export class Grid {
     }
 
     const rowsRemovedEvent: RowsRemovedEvent = {
-      type: 'rowsRemoved',
-      gridName: this.name.value,
+      source: 'Grid',
+      eventName: 'rowsRemoved',
       data: {
+        gridName: this.name.value,
         rowIndex: rowIndexToDelete,
         count,
         deletedRows: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
@@ -518,9 +519,10 @@ export class Grid {
     }
 
     const colsRemovedEvent: ColsRemovedEvent = {
-      type: 'colsRemoved',
-      gridName: this.name.value,
+      source: 'Grid',
+      eventName: 'colsRemoved',
       data: {
+        gridName: this.name.value,
         colIndex: colIndexToDelete,
         count,
         deletedCols: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
@@ -688,9 +690,10 @@ export class Grid {
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
 
     this.pubSub.publish({
-      type: 'rowsInserted',
-      gridName: this.name.value,
+      source: 'Grid',
+      eventName: 'rowsInserted',
       data: {
+        gridName: this.name.value,
         rowIndex: rowInsertIndex,
         count,
       },
@@ -802,12 +805,14 @@ export class Grid {
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
 
     this.pubSub.publish({
-      type: 'colsInserted',
-      gridName: this.name.value,
+      source: 'Grid',
+      eventName: 'colsInserted',
       data: {
         colIndex: colInsertIndex,
         count,
+        gridName: this.name.value,
       },
+
     })
   }
 }

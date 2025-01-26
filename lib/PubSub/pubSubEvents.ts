@@ -1,14 +1,26 @@
 import type { Mx } from '../Mx'
+import type { SGridComponent } from '../SGridComponent'
 import type { CellDTO } from '~/dto/CellDTO'
 
-type BaseEvent<T extends string, C extends 'Grid' | 'Global', D> = {
-  type: T
-  data: D
-} & (C extends 'Grid' ? { gridName: string } : { gridName?: never })
+export const componentEvents = {
+  Grid: ['rowsInserted', 'colsInserted', 'rowsRemoved', 'colsRemoved', 'cellChange', 'rowChange', 'colChange'],
+  Cell: ['cellChange'],
+  Row: ['rowChange'],
+  Col: ['colChange'],
+  Project: ['gridChange'],
+} as const satisfies Partial<Record<SGridComponent, readonly string[]>>
+
+export type ComponentEvents = typeof componentEvents
+
+type BaseEvent<Component extends keyof ComponentEvents, EventName extends ComponentEvents[Component][number], Data> = {
+  source: Component
+  eventName: EventName
+  data: Data & (Component extends 'Grid' | 'Row' | 'Col' | 'Cell' ? { gridName: string } : { gridName?: never })
+}
 
 export type RowsInsertedEvent = BaseEvent<
-  'rowsInserted',
   'Grid',
+  'rowsInserted',
   {
     rowIndex: number
     count: number
@@ -16,8 +28,8 @@ export type RowsInsertedEvent = BaseEvent<
 >
 
 export type ColsInsertedEvent = BaseEvent<
-  'colsInserted',
   'Grid',
+  'colsInserted',
   {
     colIndex: number
     count: number
@@ -25,8 +37,8 @@ export type ColsInsertedEvent = BaseEvent<
 >
 
 export type RowsRemovedEvent = BaseEvent<
-  'rowsRemoved',
   'Grid',
+  'rowsRemoved',
   {
     rowIndex: number
     count: number
@@ -35,8 +47,8 @@ export type RowsRemovedEvent = BaseEvent<
 >
 
 export type ColsRemovedEvent = BaseEvent<
-  'colsRemoved',
   'Grid',
+  'colsRemoved',
   {
     colIndex: number
     count: number
@@ -45,8 +57,8 @@ export type ColsRemovedEvent = BaseEvent<
 >
 
 export type CellChangeEvent = BaseEvent<
+  'Cell',
   'cellChange',
-  'Grid',
   {
     rowIndex: number
     colIndex: number
@@ -57,8 +69,8 @@ export type CellChangeEvent = BaseEvent<
 >
 
 export type RowChangeEvent = BaseEvent<
+  'Row',
   'rowChange',
-  'Grid',
   {
     rowIndex: number
     oldValue: number
@@ -67,8 +79,8 @@ export type RowChangeEvent = BaseEvent<
 >
 
 export type ColChangeEvent = BaseEvent<
+  'Col',
   'colChange',
-  'Grid',
   {
     colIndex: number
     oldValue: number
@@ -77,8 +89,8 @@ export type ColChangeEvent = BaseEvent<
 >
 
 export type GridChangeEvent = BaseEvent<
+  'Project',
   'gridChange',
-  'Global',
   {
     attribute: 'name'
     oldValue: unknown

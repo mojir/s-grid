@@ -7,7 +7,7 @@ import { RangeReference } from '~/lib/reference/RangeReference'
 import type { Col } from '~/lib/Col'
 
 export class GridSelection {
-  private logInfo = useDebug().createInfoLogger('Selection', 400)
+  private logger = useLogger().createLogger('Selection')
   private scrollDisabled = false
   private readonly selectionEndpoints: {
     start: Ref<CellReference>
@@ -20,7 +20,7 @@ export class GridSelection {
       end: shallowRef(CellReference.fromCoords(this.grid, { rowIndex: 0, colIndex: 0 })),
     }
     watch(this.selectedRange, (range) => {
-      this.logInfo(range.getCellMatrix().map(cell => cell.getDTO().input).stringify('Selected range'))
+      this.logger.throttleInfo(range.getCellMatrix().map(cell => cell.getDTO().input).stringify('Selected range'))
     })
   }
 
