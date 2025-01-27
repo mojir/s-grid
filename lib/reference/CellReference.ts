@@ -1,5 +1,4 @@
 import { cellReferenceRegExp, maxNumberOfCols, maxNumberOfRows, pageSize } from '../constants'
-import { getColId, getColIndex, getRowId, getRowIndex } from '../utils'
 import type { Grid } from '../grid/Grid'
 import type { Cell } from '../Cell'
 import { RangeReference } from './RangeReference'

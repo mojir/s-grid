@@ -1,7 +1,6 @@
 import type { Grid } from './grid/Grid'
 import { CellReference } from './reference/CellReference'
 import { RangeReference } from './reference/RangeReference'
-import { getRowId } from './utils'
 
 export class Row {
   private readonly _index: Ref<number>

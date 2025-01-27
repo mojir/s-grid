@@ -3,7 +3,6 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { RangeReference } from '~/lib/reference/RangeReference'
 import { colHeaderHeight, defaultNumberOfCols, defaultNumberOfRows, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Project } from '~/lib/project/Project'
-import { whs, hs } from '~/lib/utils'
 import { DocumentIdType, type Direction } from '~/lib/reference/utils'
 import { CellReference, isCellReferenceString } from '~/lib/reference/CellReference'
 import type { Diagram } from '~/lib/Diagram'
@@ -334,7 +333,7 @@ function onMouseUp(event: MouseEvent) {
   const id = target?.id
 
   if (grid.value.state.value === 'selecting' || (id && isCellReferenceString(id))) {
-    project.clipboard.pasteStyleSelection(selection.value.selectedRange.value)
+    project.clipboard.pasteStyles(selection.value.selectedRange.value)
   }
   grid.value.state.value = 'idle'
 
@@ -600,13 +599,13 @@ function onKeyDown(e: KeyboardEvent) {
     }
   }
   else if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
-    project.clipboard.copyRange(selection.value.selectedRange.value)
+    project.clipboard.copy(selection.value.selectedRange.value)
   }
   else if (e.key === 'x' && (e.ctrlKey || e.metaKey)) {
-    project.clipboard.cutSelection(selection.value.selectedRange.value)
+    project.clipboard.cut(selection.value.selectedRange.value)
   }
   else if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-    project.clipboard.pasteSelection(selection.value.selectedRange.value)
+    project.clipboard.paste(selection.value.selectedRange.value)
   }
 }
 

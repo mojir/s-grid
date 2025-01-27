@@ -35,8 +35,8 @@ describe('copy paste', () => {
     const fromRange = RangeReference.fromCellReference(fromCell)
     const toRange = RangeReference.fromCellReference(toCell)
 
-    clipboard.copyRange(fromRange)
-    clipboard.pasteSelection(toRange)
+    clipboard.copy(fromRange)
+    clipboard.paste(toRange)
 
     expect(toCell.getCell().input.value).toBe('=N14')
   })
@@ -54,8 +54,8 @@ describe('copy paste', () => {
     const fromRange = RangeReference.fromCellReferences(fromStartCell, fromEndCell)
     const toRange = RangeReference.fromCellReferences(k11, l12)
 
-    clipboard.copyRange(fromRange)
-    clipboard.pasteSelection(toRange)
+    clipboard.copy(fromRange)
+    clipboard.paste(toRange)
 
     expect(k11.getCell().input.value).toBe('=M13')
     expect(k12.getCell().input.value).toBe('=M14')
@@ -88,8 +88,8 @@ describe('copy paste', () => {
     const fromRange = RangeReference.fromCellReferences(fromStartCell, fromEndCell)
     const toRange = RangeReference.fromCellReferences(k11, n14)
 
-    clipboard.copyRange(fromRange)
-    clipboard.pasteSelection(toRange)
+    clipboard.copy(fromRange)
+    clipboard.paste(toRange)
 
     expect(k11.getCell().input.value).toBe('=M13')
     expect(k12.getCell().input.value).toBe('=M14')
@@ -113,8 +113,8 @@ describe('copy paste', () => {
     project.currentGridIndex.value = 1
     const grid = project.currentGrid.value
     const clipboard = project.clipboard
-    clipboard.cutSelection(RangeReference.fromString(grid, 'A1:A4'))
-    clipboard.pasteSelection(RangeReference.fromString(grid, 'B1:B4'))
+    clipboard.cut(RangeReference.fromString(grid, 'A1:A4'))
+    clipboard.paste(RangeReference.fromString(grid, 'B1:B4'))
 
     const c1 = CellReference.fromString(grid, 'C1')
 

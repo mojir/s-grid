@@ -7,7 +7,6 @@ import { CellReference } from '../reference/CellReference'
 import { RangeReference } from '../reference/RangeReference'
 import { getDocumentCellId, type Direction, type Reference } from '../reference/utils'
 import { Row } from '../Row'
-import { getGridName } from '../utils'
 import { Mx } from '../Mx'
 import { PubSub } from '../PubSub'
 import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
@@ -589,11 +588,11 @@ export class Grid {
       )
 
       this.project.clipboard.storeState()
-      this.project.clipboard.copyStyleSelection(range)
+      this.project.clipboard.copyStyles(range)
 
       this.insertRows(rowIndex, count, data)
 
-      this.project.clipboard.pasteStyleSelection(range)
+      this.project.clipboard.pasteStyles(range)
       this.project.clipboard.restoreState()
     }
     else {
@@ -608,14 +607,14 @@ export class Grid {
         CellReference.fromCoords(this, { rowIndex: rowIndex + count - 1, colIndex: this.cols.value.length - 1 }),
       )
       this.project.clipboard.storeState()
-      this.project.clipboard.copyStyleSelection(range)
+      this.project.clipboard.copyStyles(range)
 
       this.insertRows(rowIndex + count, count, data)
 
       this.position.value = this.selection.selectedRange.value.start
 
       if (!data) {
-        this.project.clipboard.pasteStyleSelection(range.move({ deltaRow: count }))
+        this.project.clipboard.pasteStyles(range.move({ deltaRow: count }))
         this.project.clipboard.restoreState()
       }
     }
@@ -708,11 +707,11 @@ export class Grid {
       )
 
       this.project.clipboard.storeState()
-      this.project.clipboard.copyStyleSelection(range)
+      this.project.clipboard.copyStyles(range)
 
       this.insertCols(colIndex, count, data)
 
-      this.project.clipboard.pasteStyleSelection(range)
+      this.project.clipboard.pasteStyles(range)
       this.project.clipboard.restoreState()
     }
     else {
@@ -728,11 +727,11 @@ export class Grid {
 
     if (!data) {
       this.project.clipboard.storeState()
-      this.project.clipboard.copyStyleSelection(range)
+      this.project.clipboard.copyStyles(range)
 
       this.insertCols(colIndex + count, count, data)
 
-      this.project.clipboard.pasteStyleSelection(range.move({ deltaCol: count }))
+      this.project.clipboard.pasteStyles(range.move({ deltaCol: count }))
       this.project.clipboard.restoreState()
     }
     else {

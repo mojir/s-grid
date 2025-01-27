@@ -4,7 +4,6 @@ import type { Project } from './project/Project'
 import { isReferenceString } from './reference/utils'
 import type { ReferenceTransformation } from './transformer'
 import { transformReference } from './transformer/referenceTransformer'
-import { getIdFromTarget, isHandle, type Handle } from './utils'
 
 const { sidePanelOpen, currentTab } = useSidePanel()
 

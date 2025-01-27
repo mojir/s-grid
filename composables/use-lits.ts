@@ -1,6 +1,6 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
-import { builtinLitsScript } from '../lib/lits'
+import { builtinLitsScript } from '~/lib/lits'
 import { format } from '~/lib/litsInterop/format'
 
 const lits = new Lits()

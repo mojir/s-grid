@@ -1,7 +1,6 @@
 import type { CellDTO } from './CellDTO'
 import { defaultNumberOfCols, defaultNumberOfRows } from '~/lib/constants'
-import { parseCsv } from '~/lib/csvParser'
-import { getColId, getRowId } from '~/lib/utils'
+import { parseCsv } from '~/lib/parseCsv'
 
 export async function createGridDtoFromCsv(name: string, csv: string): Promise<GridDTO> {
   const data = parseCsv(csv)

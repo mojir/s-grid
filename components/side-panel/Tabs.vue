@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { hs } from '~/lib/utils'
-
 const { tabs, currentTab } = useSidePanel()
 
 const tabContentRef = ref<HTMLDivElement>()

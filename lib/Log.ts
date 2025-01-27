@@ -1,7 +1,7 @@
 import type { SGridComponent } from './SGridComponent'
 import { errorColor, infoColor, warnColor } from './color'
 import { maxNumberOfCols, maxNumberOfRows } from './constants'
-import { getColId, getRowId, isPrimitive, jsToLits } from './utils'
+// import { getColId, getRowId, isPrimitive, jsToLits } from './utils'
 import type { GridDTO } from '~/dto/GridDTO'
 
 type LogLevel = 'info' | 'warn' | 'error'

@@ -2,7 +2,6 @@
 import type { GridDTO } from '~/dto/GridDTO'
 import type { Project } from '~/lib/project/Project'
 import type { SGridComponent } from '~/lib/SGridComponent'
-import { getGridDisplayName, getGridName } from '~/lib/utils'
 
 const props = defineProps<{
   project: Project

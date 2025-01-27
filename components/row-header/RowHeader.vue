@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { rowHeaderWidth } from '~/lib/constants'
-import { ws } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{

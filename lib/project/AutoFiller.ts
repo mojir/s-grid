@@ -2,7 +2,6 @@ import type { Project } from '~/lib/project/Project'
 import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
 import { getAutoFillRangeInfo, type Reference } from '~/lib/reference/utils'
-import { getIdFromTarget, type Handle } from '~/lib/utils'
 
 type AutoFillType = 'activeCell' | 'selection'
 type AutoFillHandle = Extract<Handle, 'se' | 'move'>
@@ -84,8 +83,8 @@ export class AutoFiller {
       const range = state === 'cellMoving' ? RangeReference.fromCellReference(grid.position.value) : grid.selection.selectedRange.value
 
       if (state === 'cellMoving' || state === 'rangeMoving') {
-        clipBoard.cutSelection(range)
-        clipBoard.pasteSelection(RangeReference.fromCellReference(hoveredCell))
+        clipBoard.cut(range)
+        clipBoard.paste(RangeReference.fromCellReference(hoveredCell))
         grid.selection.updateSelection(hoveredCell, CellReference.fromCoords(grid, {
           rowIndex: hoveredCell.rowIndex + range.rowCount() - 1,
           colIndex: hoveredCell.colIndex + range.colCount() - 1,
@@ -95,8 +94,8 @@ export class AutoFiller {
       else {
         const autoFillRange = getAutoFillRangeInfo(range, hoveredCell)?.autoFillRange
         if (autoFillRange) {
-          clipBoard.copyRange(range)
-          clipBoard.pasteSelection(autoFillRange)
+          clipBoard.copy(range)
+          clipBoard.paste(autoFillRange)
 
           let startRowIndex: number
           let endRowIndex: number

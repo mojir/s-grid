@@ -2,7 +2,6 @@
 import type { CSSProperties } from 'vue'
 import { rowHeaderWidth } from '~/lib/constants'
 import type { Row } from '~/lib/Row'
-import { getRowId, whs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
 import { getDocumentResizeRowId, getDocumentRowId } from '~/lib/reference/utils'
 import { RangeReference } from '~/lib/reference/RangeReference'

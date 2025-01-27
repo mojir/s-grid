@@ -1,7 +1,6 @@
 import type { GridDTO } from '~/dto/GridDTO'
 import type { ProjectDTO } from '~/dto/ProjectDTO'
 import { Project } from '~/lib/project/Project'
-import { getRowIndexAndColIndexFromSimpleCellReference } from '~/lib/utils'
 
 type MockProjectOptions = {
   grid1?: Partial<GridDTO>

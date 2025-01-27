@@ -25,8 +25,8 @@ describe('paint tool', () => {
     grid.setTextColor(color, a1)
 
     grid.position.value = a1
-    project.clipboard.copyStyleSelection(RangeReference.fromCellReference(a1))
-    project.clipboard.pasteStyleSelection(RangeReference.fromCellReference(a2))
+    project.clipboard.copyStyles(RangeReference.fromCellReference(a1))
+    project.clipboard.pasteStyles(RangeReference.fromCellReference(a2))
 
     expect(grid.getAlign(a2)).toBe('middle')
     expect(grid.getJustify(a2)).toBe('center')

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Project } from '~/lib/project/Project'
-import { hs } from '~/lib/utils'
 
 const props = defineProps<{
   project: Project

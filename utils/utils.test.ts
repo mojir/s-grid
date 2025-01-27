@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
+import { getColId, getColIndex, getRowId, getRowIndex } from '.'
 import { maxNumberOfCols, maxNumberOfRows } from '~/lib/constants'
-import { getColId, getColIndex, getRowId, getRowIndex } from '~/lib/utils'
 
 describe('utils', () => {
   test('getRowIndex', () => {

@@ -1,6 +1,5 @@
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import { getReferenceFromString, type Direction } from './reference/utils'
-import { getColIndex, getRowIndex } from './utils'
 import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import { Color } from '~/lib/color'
 import type { Project } from '~/lib/project/Project'

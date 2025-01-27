@@ -46,11 +46,7 @@ export class ProjectClipboard {
     this.storedState = null
   }
 
-  public clearStyleClipboard() {
-    this.styleClipboard.value = null
-  }
-
-  public copyRange(range: RangeReference) {
+  public copy(range: RangeReference) {
     if (this.cutCellIds.value !== null) {
       this.cutCellIds.value = null
     }
@@ -61,7 +57,21 @@ export class ProjectClipboard {
     }
   }
 
-  public copyStyleSelection(range: RangeReference) {
+  public cut(range: RangeReference) {
+    this.copy(range)
+    this.cutCellIds.value = range.getAllCellReferences()
+  }
+
+  public paste(targetRange: RangeReference) {
+    if (this.cutCellIds.value) {
+      this.moveClipboard(targetRange)
+    }
+    else {
+      this.pasteClipboard(targetRange)
+    }
+  }
+
+  public copyStyles(range: RangeReference) {
     this.styleClipboard.value = {
       range,
       cells: range.getCellReferenceMatrix().map((reference) => {
@@ -81,28 +91,14 @@ export class ProjectClipboard {
     }
   }
 
-  public cutSelection(range: RangeReference) {
-    this.copyRange(range)
-    this.cutCellIds.value = range.getAllCellReferences()
-  }
-
-  public pasteSelection(targetRange: RangeReference) {
-    if (this.cutCellIds.value) {
-      this.cutPasteSelection(targetRange)
-    }
-    else {
-      this.copyPasteSelection(targetRange)
-    }
-  }
-
-  public pasteStyleSelection(targetRange: RangeReference) {
-    const styleClipboardValue = this.styleClipboard.value
-    if (!styleClipboardValue) {
+  public pasteStyles(targetRange: RangeReference) {
+    const styleClipboard = this.styleClipboard.value
+    if (!styleClipboard) {
       return
     }
     this.styleClipboard.value = null
-    this.getPastePositions(styleClipboardValue.range, targetRange).forEach((toPosition) => {
-      styleClipboardValue.cells.forEach((cellDTO, [rowIndex, colIndex]) => {
+    this.getPastePositions(styleClipboard.range, targetRange).forEach((toPosition) => {
+      styleClipboard.cells.forEach((cellDTO, [rowIndex, colIndex]) => {
         const reference = CellReference.fromCoords(
           toPosition.grid,
           {
@@ -114,6 +110,10 @@ export class ProjectClipboard {
         cell.setDTO(cellDTO)
       })
     })
+  }
+
+  public clearStyleClipboard() {
+    this.styleClipboard.value = null
   }
 
   private getPastePositions(sourceRange: RangeReference, targetRange: RangeReference): CellReference[] {
@@ -143,7 +143,7 @@ export class ProjectClipboard {
     return result
   }
 
-  private cutPasteSelection(targetRange: RangeReference) {
+  private moveClipboard(targetRange: RangeReference) {
     if (!this.cutCellIds.value || !this.clipboard.value) {
       return
     }
@@ -182,7 +182,7 @@ export class ProjectClipboard {
     this.cutCellIds.value = null
   }
 
-  private copyPasteSelection(targetRange: RangeReference) {
+  private pasteClipboard(targetRange: RangeReference) {
     if (!this.clipboard.value) {
       return
     }

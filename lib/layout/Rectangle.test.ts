@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { Rectangle } from './Rectangle'
 import { defaultColWidth, defaultRowHeight } from '~/lib/constants'
-import { Rectangle } from '~/lib/layout/Rectangle'
 import { CellReference } from '~/lib/reference/CellReference'
 import { RangeReference } from '~/lib/reference/RangeReference'
 import { mockProject } from '~/tests/utils'

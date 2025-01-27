@@ -3,7 +3,6 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { z } from 'zod'
 import type { Grid } from '~/lib/grid/Grid'
-import { getGridName } from '~/lib/utils'
 
 const props = defineProps<{
   grid: Grid

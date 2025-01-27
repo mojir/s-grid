@@ -18,7 +18,7 @@ const selection = grid.value.selection.selectedRange
     <ContextMenuContent>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="project.clipboard.cutSelection(selection)"
+        @click="project.clipboard.cut(selection)"
       >
         <Icon
           name="mdi-content-cut"
@@ -34,7 +34,7 @@ const selection = grid.value.selection.selectedRange
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="project.clipboard.copyRange(selection)"
+        @click="project.clipboard.copy(selection)"
       >
         <Icon
           name="mdi-content-copy"
@@ -50,7 +50,7 @@ const selection = grid.value.selection.selectedRange
       </ContextMenuItem>
       <ContextMenuItem
         class="flex gap-2 cursor-pointer"
-        @click="project.clipboard.pasteSelection(selection)"
+        @click="project.clipboard.paste(selection)"
       >
         <Icon
           name="mdi-content-paste"

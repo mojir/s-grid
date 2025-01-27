@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parseCsv } from '~/lib/csvParser'
+import { parseCsv } from '.'
 
-describe('csvParser', () => {
+describe('parseCsv', () => {
   it('parses csv commas', async () => {
     const csv = '",",,\''
     const result = parseCsv(csv)

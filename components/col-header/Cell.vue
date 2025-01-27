@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { CSSProperties } from 'vue'
-import { getColId, whs } from '~/lib/utils'
 import type { Col } from '~/lib/Col'
 import { colHeaderHeight } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'

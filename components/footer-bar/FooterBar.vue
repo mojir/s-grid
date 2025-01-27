@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Project } from '~/lib/project/Project'
-import { getGridDisplayName } from '~/lib/utils'
 
 defineProps<{
   project: Project

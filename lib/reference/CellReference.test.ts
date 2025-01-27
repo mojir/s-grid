@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { mockProject } from '../utils'
+import { mockProject } from '../../tests/utils'
 import { CellReference } from '~/lib/reference/CellReference'
 
 const project = mockProject()

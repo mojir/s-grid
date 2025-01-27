@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { watch, type WatchHandle } from 'vue'
-import { hs } from '~/lib/utils'
 import type { Project } from '~/lib/project/Project'
 import type { CellReference } from '~/lib/reference/CellReference'
 import { getDocumentCellId, getDocumentColId, getDocumentRowId } from '~/lib/reference/utils'

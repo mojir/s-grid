@@ -16,7 +16,7 @@ watch(project.value.clipboard.hasStyleData, (hasData) => {
 
 function onUpdatePressed(value: boolean) {
   if (value) {
-    project.value.clipboard.copyStyleSelection(selection.value)
+    project.value.clipboard.copyStyles(selection.value)
   }
   else {
     project.value.clipboard.clearStyleClipboard()

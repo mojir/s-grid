@@ -4,7 +4,6 @@ import { rangeRangeRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'
 import { Mx } from '../Mx'
 import type { Row } from '../Row'
-import { getColId, getRowId } from '../utils'
 import { CellReference } from './CellReference'
 import type { Reference, Movement } from './utils'
 
