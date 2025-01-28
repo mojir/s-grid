@@ -1,4 +1,5 @@
 import type { SGridEvent } from '../PubSub/pubSubEvents'
+import { pauseLitsTransformer, resumeLitsTransformer } from '../transformer/litsTransformer'
 import type { Project } from './Project'
 
 function assertString(value: unknown): asserts value is string {
@@ -14,6 +15,9 @@ export class History {
       callback: this.onPubSubEvent.bind(this),
     })
   }
+
+  private changePromise: null | Promise<void> = null
+  private resolveChangePromise: (() => void) | null = null
 
   private currentChanges: SGridEvent[] = []
   private timer: null | ReturnType<typeof setTimeout> = null
@@ -32,7 +36,15 @@ export class History {
     if (this.timer) {
       clearTimeout(this.timer)
     }
+    else {
+      this.changePromise = new Promise((resolve) => {
+        this.resolveChangePromise = resolve
+      })
+    }
     this.timer = setTimeout(() => {
+      this.resolveChangePromise!()
+      this.resolveChangePromise = null
+      this.changePromise = null
       this.timer = null
       this.commitChanges()
     })
@@ -42,43 +54,47 @@ export class History {
     this.paused = false
   }
 
-  public undo(): void {
+  public async undo(): Promise<void> {
+    await this.changePromise
     const changes = this.undoStack.value.pop()
     if (!changes) {
       return
     }
 
+    pauseLitsTransformer()
     this.paused = true
 
     this.undoStack.value = [...this.undoStack.value]
-    for (const change of changes!) {
+    for (const change of changes.reverse()) {
       this.applyChange(change, 'undo')
     }
     this.redoStack.value = [...this.redoStack.value, changes!]
 
-    nextTick(() => {
-      this.paused = false
-    })
+    await nextTick()
+    this.paused = false
+    resumeLitsTransformer()
   }
 
-  public redo(): void {
+  public async redo(): Promise<void> {
+    await this.changePromise
     const changes = this.redoStack.value.pop()
 
     if (!changes) {
       return
     }
 
+    pauseLitsTransformer()
     this.paused = true
 
     this.redoStack.value = [...this.redoStack.value]
-    for (const change of changes) {
+    for (const change of changes.reverse()) {
       this.applyChange(change, 'redo')
     }
     this.undoStack.value = [...this.undoStack.value, changes]
 
-    nextTick(() => {
-      this.paused = false
-    })
+    await nextTick()
+    this.paused = false
+    resumeLitsTransformer()
   }
 
   private commitChanges(): void {

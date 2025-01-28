@@ -1,4 +1,3 @@
-import type { CellReference } from '../reference/CellReference'
 import { RangeReference } from '../reference/RangeReference'
 import { cellTransformColInsertBefore, cellTransformMove, cellTransformRowInsertBefore } from './cellReferenceTransformer'
 import type { ColDeleteTransformation, ColInsertBeforeTransformation, ReferenceTransformation, RowDeleteTransformation, RowInsertBeforeTransformation } from '.'
@@ -42,77 +41,48 @@ export function transformRangeReference({
 
 function rangeTransformRowDelete(rangeReference: RangeReference, { rowIndex, count, grid }: RowDeleteTransformation): RangeReference {
   const { start, end } = rangeReference
-  const startIsInDeletedRange
-    = start.rowIndex >= rowIndex
-      && start.rowIndex < rowIndex + count
 
-  const endIsInDeletedRange
-    = end.rowIndex >= rowIndex
-      && end.rowIndex < rowIndex + count
+  const endRowIndex = rowIndex + count - 1
+  const startIsInDeletedRange = start.rowIndex >= rowIndex && start.rowIndex <= endRowIndex
+  const endIsInDeletedRange = end.rowIndex >= rowIndex && end.rowIndex <= endRowIndex
+  const startIsAfterDeletedRange = start.rowIndex > endRowIndex
+  const endIsAfterDeletedRange = end.rowIndex > endRowIndex
 
   // range reference is enclosed in deleted row range
   if (startIsInDeletedRange && endIsInDeletedRange) {
     throw new Error(`Range ${rangeReference.toStringWithGrid()} was deleted`)
   }
 
-  // range reference is below and intersecting deleted row range
-  if (startIsInDeletedRange) {
-    const newStart = cellTransformMove(
-      start,
-      {
-        type: 'move',
-        grid,
-        toRowIndex: rowIndex,
-      })
-    const newEnd = cellTransformMove(
-      end,
-      {
-        type: 'move',
-        grid,
-        toRowIndex: end.rowIndex - count,
-      },
-    )
+  const startDeltaRow = startIsAfterDeletedRange
+    ? -count
+    : startIsInDeletedRange
+      ? rowIndex - start.rowIndex
+      : 0
 
-    return RangeReference.fromCellReferences(newStart, newEnd)
-  }
+  const endDeltaRow = endIsAfterDeletedRange
+    ? -count
+    : endIsInDeletedRange
+      ? rowIndex - end.rowIndex - 1
+      : 0
 
-  // range is above and intersecting deleted row range
-  if (endIsInDeletedRange) {
-    const newEnd = cellTransformMove(
-      end,
-      {
-        type: 'move',
-        grid,
-        toRowIndex: rowIndex - 1,
-      },
-    )
-
-    return RangeReference.fromCellReferences(start, newEnd)
-  }
-
-  // no range reference endpoints (start-end) are inside deleted row range
-
-  const startIsBelowDeletedRange = start.rowIndex >= rowIndex + count
-  const endIsBelowDeletedRange = end.rowIndex >= rowIndex + count
-
-  const newStart: CellReference = startIsBelowDeletedRange
+  const newStart = startDeltaRow
     ? cellTransformMove(
         start,
         {
           type: 'move',
           grid,
-          toRowIndex: start.rowIndex - count,
+          deltaRow: startDeltaRow,
         },
       )
     : start
 
-  const newEnd: CellReference = endIsBelowDeletedRange
+  const newEnd = endDeltaRow
     ? cellTransformMove(
         end,
         {
           type: 'move',
           grid,
-          toRowIndex: end.rowIndex - count,
+          deltaRow: endDeltaRow,
         },
       )
     : end
@@ -123,77 +93,47 @@ function rangeTransformRowDelete(rangeReference: RangeReference, { rowIndex, cou
 function rangeTransformColDelete(rangeReference: RangeReference, { colIndex, count, grid }: ColDeleteTransformation): RangeReference {
   const { start, end } = rangeReference
 
-  const startIsInDeletedRange
-    = start.colIndex >= colIndex
-      && start.colIndex < colIndex + count
-
-  const endIsInDeletedRange
-    = end.colIndex >= colIndex
-      && end.colIndex < colIndex + count
+  const endColIndex = colIndex + count - 1
+  const startIsInDeletedRange = start.colIndex >= colIndex && start.colIndex <= endColIndex
+  const endIsInDeletedRange = end.colIndex >= colIndex && end.colIndex <= endColIndex
+  const startIsAfterDeletedRange = start.colIndex > endColIndex
+  const endIsAfterDeletedRange = end.colIndex > endColIndex
 
   // range reference is enclosed in deleted col range
   if (startIsInDeletedRange && endIsInDeletedRange) {
     throw new Error(`Range ${rangeReference.toStringWithGrid()} was deleted`)
   }
 
-  // range reference is to the right and intersecting deleted col range
-  if (startIsInDeletedRange) {
-    const newStart = cellTransformMove(
-      start,
-      {
-        type: 'move',
-        grid,
-        toColIndex: colIndex,
-      },
-    )
-    const newEnd = cellTransformMove(
-      end,
-      {
-        type: 'move',
-        grid,
-        toColIndex: end.colIndex - count,
-      },
-    )
+  const startDeltaCol = startIsAfterDeletedRange
+    ? -count
+    : startIsInDeletedRange
+      ? colIndex - start.colIndex
+      : 0
 
-    return RangeReference.fromCellReferences(newStart, newEnd)
-  }
+  const endDeltaCol = endIsAfterDeletedRange
+    ? -count
+    : endIsInDeletedRange
+      ? colIndex - end.colIndex - 1
+      : 0
 
-  // range is to the right and intersecting deleted col range
-  if (endIsInDeletedRange) {
-    const newEnd = cellTransformMove(
-      end,
-      {
-        type: 'move',
-        grid,
-        toColIndex: colIndex - 1,
-      },
-    )
-
-    return RangeReference.fromCellReferences(start, newEnd)
-  }
-
-  // no range reference endpoints (start-end) are inside deleted col range
-
-  const startIsRightOfDeletedRange = start.colIndex >= colIndex + count
-  const endIsRightOfDeletedRange = end.colIndex >= colIndex + count
-
-  const newStart: CellReference = startIsRightOfDeletedRange
+  const newStart = startDeltaCol
     ? cellTransformMove(
         start,
         {
           type: 'move',
           grid,
-          toColIndex: start.colIndex - count,
+          deltaCol: startDeltaCol,
         },
       )
     : start
-  const newEnd: CellReference = endIsRightOfDeletedRange
+
+  const newEnd = endDeltaCol
     ? cellTransformMove(
         end,
         {
           type: 'move',
           grid,
-          toColIndex: end.colIndex - count,
+          deltaCol: endDeltaCol,
         },
       )
     : end

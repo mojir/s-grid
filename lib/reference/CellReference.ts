@@ -186,17 +186,17 @@ export class CellReference {
   }
 
   public move(movement: Movement): CellReference {
+    const rowIndex = clamp(this.rowIndex + (movement.deltaRow ?? 0), 0, maxNumberOfRows)
+    const colIndex = clamp(this.colIndex + (movement.deltaCol ?? 0), 0, maxNumberOfCols)
+
     const reference = new CellReference({
       grid: movement.toGrid ?? this.grid,
-      absCol: this.absCol,
-      colIndex: this.colIndex + (movement.deltaCol ?? 0),
       absRow: this.absRow,
-      rowIndex: this.rowIndex + (movement.deltaRow ?? 0),
+      rowIndex,
+      absCol: this.absCol,
+      colIndex,
     })
-    if (reference.equals(reference.clamp(this.grid.gridRange.value))) {
-      return reference
-    }
-    throw new Error(`Cell ${this.toStringWithGrid()} cannot be moved to ${reference.toStringWithGrid()}`)
+    return reference
   }
 
   public moveInDirection(dir: Direction, boundingRange: RangeReference, wrap: boolean): CellReference {

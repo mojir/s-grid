@@ -7,6 +7,16 @@ import type { Grid } from '../grid/Grid'
 import { transformReference } from './referenceTransformer'
 import type { Transformation } from '.'
 
+let paused = false
+
+export function pauseLitsTransformer() {
+  paused = true
+}
+
+export function resumeLitsTransformer() {
+  paused = false
+}
+
 export function transformLitsPrograms({
   cell,
   transformation,
@@ -14,6 +24,9 @@ export function transformLitsPrograms({
   cell: Cell
   transformation: Transformation
 }): void {
+  if (paused) {
+    return
+  }
   const formula = cell.formula.value
   if (!formula) {
     return

@@ -110,6 +110,10 @@ export function isPrimitive(val: unknown): val is null | undefined | string | nu
   return val === null || (typeof val !== 'object' && typeof val !== 'function' && typeof val !== 'symbol')
 }
 
-function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
   return obj?.constructor === Object && Object.getPrototypeOf(obj) === Object.prototype
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
 }
