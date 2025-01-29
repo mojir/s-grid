@@ -41,12 +41,20 @@ describe('remove rows and cols', () => {
 
     it('should remove second row', async () => {
       const grid = project.currentGrid.value
+      const grid2 = project.getGridByName('Grid2')
 
       expect(grid.getCell({ rowIndex: 2, colIndex: 1 }).output.value).toBe(12 + 13)
       grid.deleteRows(1, 1)
       expect(grid.getCell({ rowIndex: 0, colIndex: 0 }).output.value).toBe('Kalle')
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).output.value).toBe(12)
       expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).output.value).toBe(12)
+
+      // Grid2 should not be affected
+      expect(grid2.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Kalle')
+      expect(grid2.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('Lisa')
+      expect(grid2.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('12')
+      expect(grid2.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
+      expect(grid2.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=(SUM A2:B2)')
     })
 
     it('should remove first row, then undo', async () => {

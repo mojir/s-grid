@@ -93,7 +93,7 @@ function transformIdentifier({
     return `${transformation.newName}!${rest}`
   }
 
-  const reference = getReferenceFromString(transformation.grid, identifier)
+  const reference = getReferenceFromString(cellGrid, identifier)
   if (!reference) {
     return identifier
   }
