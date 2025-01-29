@@ -1,14 +1,14 @@
 import type { CellDTO } from './CellDTO'
-import { defaultNumberOfCols, defaultNumberOfRows } from '~/lib/constants'
+import { defaultNbrOfCols, defaultNbrOfRows } from '~/lib/constants'
 import { parseCsv } from '~/lib/parseCsv'
 
 export async function createGridDtoFromCsv(name: string, csv: string): Promise<GridDTO> {
   const data = parseCsv(csv)
   const cells: Record<string, CellDTO> = {}
-  let cols = defaultNumberOfCols
-  const rows = Math.max(data.length, defaultNumberOfRows)
+  const nbrOfRows = Math.max(data.length, defaultNbrOfRows)
+  let nbrOfCols = defaultNbrOfCols
   data.forEach((values, row) => {
-    cols = Math.max(cols, values.length)
+    nbrOfCols = Math.max(nbrOfCols, values.length)
     values.forEach((value, col) => {
       const key = `${getColId(col)}${getRowId(row)}`
       cells[key] = { input: value }
@@ -17,15 +17,15 @@ export async function createGridDtoFromCsv(name: string, csv: string): Promise<G
 
   return {
     name,
-    rows: Number(rows),
-    cols: Number(cols),
+    nbrOfRows,
+    nbrOfCols,
     cells,
   }
 }
 
 export type GridDTO = {
   name: string
-  rows: number
-  cols: number
+  nbrOfRows: number
+  nbrOfCols: number
   cells: Record<string, CellDTO>
 }

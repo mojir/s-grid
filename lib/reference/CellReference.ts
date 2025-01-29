@@ -1,4 +1,4 @@
-import { cellReferenceRegExp, maxNumberOfCols, maxNumberOfRows, pageSize } from '../constants'
+import { cellReferenceRegExp, maxNbrOfCols, maxNbrOfRows, pageSize } from '../constants'
 import type { Grid } from '../grid/Grid'
 import type { Cell } from '../Cell'
 import { RangeReference } from './RangeReference'
@@ -30,17 +30,11 @@ export class CellReference {
       rowIndex: number
     },
   ) {
-    if (colIndex < 0) {
-      throw new Error(`Col ${colIndex} is out of range`)
-    }
-    if (rowIndex < 0) {
+    if (rowIndex < 0 || rowIndex >= maxNbrOfRows) {
       throw new Error(`Row ${rowIndex} is out of range`)
     }
-    if (colIndex > maxNumberOfCols) {
+    if (colIndex < 0 || colIndex >= maxNbrOfCols) {
       throw new Error(`Col ${colIndex} is out of range`)
-    }
-    if (rowIndex > maxNumberOfRows) {
-      throw new Error(`Row ${rowIndex} is out of range`)
     }
 
     this.grid = grid
@@ -186,8 +180,8 @@ export class CellReference {
   }
 
   public move(movement: Movement): CellReference {
-    const rowIndex = clamp(this.rowIndex + (movement.deltaRow ?? 0), 0, maxNumberOfRows)
-    const colIndex = clamp(this.colIndex + (movement.deltaCol ?? 0), 0, maxNumberOfCols)
+    const rowIndex = clamp(this.rowIndex + (movement.deltaRow ?? 0), 0, this.grid.rows.value.length - 1)
+    const colIndex = clamp(this.colIndex + (movement.deltaCol ?? 0), 0, this.grid.cols.value.length - 1)
 
     const reference = new CellReference({
       grid: movement.toGrid ?? this.grid,

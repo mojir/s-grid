@@ -15,36 +15,36 @@ type MockProjectOptions = {
 export function mockProject(options: MockProjectOptions = {}): Project {
   const minRows = options.minRows ?? 4
   const minCols = options.minCols ?? 4
-  const { rows, cols } = [
+  const { nbrOfRows, nbrOfCols } = [
     ...Object.keys(options.grid1?.cells ?? {}),
     ...Object.keys(options.grid2?.cells ?? {}),
     ...Object.keys(options.grid3?.cells ?? {})]
     .reduce((acc, key) => {
       const { rowIndex, colIndex } = getRowIndexAndColIndexFromSimpleCellReference(key)
       return {
-        rows: Math.max(acc.rows, rowIndex + 1),
-        cols: Math.max(acc.cols, colIndex + 1),
+        nbrOfRows: Math.max(acc.nbrOfRows, rowIndex + 1),
+        nbrOfCols: Math.max(acc.nbrOfCols, colIndex + 1),
       }
-    }, { rows: minRows, cols: minCols })
+    }, { nbrOfRows: minRows, nbrOfCols: minCols })
 
-  const grid1 = {
+  const grid1: GridDTO = {
     cells: {},
-    rows,
-    cols,
+    nbrOfRows,
+    nbrOfCols,
     name: 'Grid1',
     ...options.grid1,
   }
-  const grid2 = {
+  const grid2: GridDTO = {
     cells: {},
-    rows,
-    cols,
+    nbrOfRows,
+    nbrOfCols,
     name: 'Grid2',
     ...options.grid2,
   }
-  const grid3 = {
+  const grid3: GridDTO = {
     cells: {},
-    rows,
-    cols,
+    nbrOfRows,
+    nbrOfCols,
     name: 'Grid3',
     ...options.grid3,
   }

@@ -1,5 +1,5 @@
 import { Aliases } from '../Aliases'
-import { defaultNumberOfCols, defaultNumberOfRows } from '../constants'
+import { defaultNbrOfCols, defaultNbrOfRows } from '../constants'
 import { Grid } from '../grid/Grid'
 import { getReferenceFromString } from '../reference/utils'
 import { REPL } from '../REPL'
@@ -116,7 +116,7 @@ export class Project {
     }
 
     this.grids.value = [
-      ...this.grids.value, new Grid(this, gridName, defaultNumberOfRows, defaultNumberOfCols)]
+      ...this.grids.value, new Grid(this, gridName, defaultNbrOfRows, defaultNbrOfCols)]
   }
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {

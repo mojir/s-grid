@@ -9,10 +9,10 @@ const rangeStart = `(?<colStart>${colPart})|(?<rowStart>${rowPart})|(?<cellStart
 const rangeEnd = `(?<colEnd>${colPart})|(?<rowEnd>${rowPart})|(?<cellEnd>${colPart}${rowPart})`
 
 export const simpleCellReferenceRegExp = /^([A-Z]{1,2})([1-9]\d{0,3})$/
-export const defaultNumberOfRows = 99
-export const defaultNumberOfCols = 26
-export const maxNumberOfRows = 9999
-export const maxNumberOfCols = 26 * 27 // ZZ
+export const defaultNbrOfRows = 99
+export const defaultNbrOfCols = 26
+export const maxNbrOfRows = 9999
+export const maxNbrOfCols = 26 * 27 // ZZ
 
 export const colIdRegExp = /^[A-Z]{1,2}$/
 export const rowIdRegExp = /^[1-9]\d{0,3}$/

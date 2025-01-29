@@ -61,7 +61,7 @@ export class Grid {
 
   static fromDTO(project: Project, grid: GridDTO): Grid {
     const gridName = getGridName(grid.name)
-    const newGrid = new Grid(project, gridName, grid.rows, grid.cols)
+    const newGrid = new Grid(project, gridName, grid.nbrOfRows, grid.nbrOfCols)
 
     Object.entries(grid.cells).forEach(([key, cellDTO]) => {
       // TODO use new regexp, to avoid the need of Reference

@@ -1,4 +1,4 @@
-import { colIdRegExp, maxNumberOfCols, maxNumberOfRows, rowIdRegExp, simpleCellReferenceRegExp } from '../lib/constants'
+import { colIdRegExp, maxNbrOfCols, maxNbrOfRows, rowIdRegExp, simpleCellReferenceRegExp } from '../lib/constants'
 
 export function getGridName(displayName: string): string {
   return displayName.trim().replace(/\s+/g, '_')
@@ -9,7 +9,7 @@ export function getGridDisplayName(gridName: string): string {
 }
 
 export function getRowId(rowIndex: number): string {
-  if (rowIndex < 0 || rowIndex >= maxNumberOfRows) {
+  if (rowIndex < 0 || rowIndex >= maxNbrOfRows) {
     throw new Error(`Row index ${rowIndex} is out of range`)
   }
   return `${rowIndex + 1}` as string
@@ -23,7 +23,7 @@ export function getRowIndex(rowId: string): number {
 }
 
 export function getColId(colIndex: number): string {
-  if (colIndex < 0 || colIndex >= maxNumberOfCols) {
+  if (colIndex < 0 || colIndex >= maxNbrOfCols) {
     throw new Error(`Col ${colIndex} is out of range`)
   }
   let result = ''

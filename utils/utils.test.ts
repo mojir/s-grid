@@ -1,24 +1,24 @@
 import { describe, expect, test } from 'vitest'
 import { getColId, getColIndex, getRowId, getRowIndex } from '.'
-import { maxNumberOfCols, maxNumberOfRows } from '~/lib/constants'
+import { maxNbrOfCols, maxNbrOfRows } from '~/lib/constants'
 
 describe('utils', () => {
   test('getRowIndex', () => {
     expect(getRowIndex('1')).toBe(0)
-    expect(getRowIndex(`${maxNumberOfRows}`)).toBe(maxNumberOfRows - 1)
+    expect(getRowIndex(`${maxNbrOfRows}`)).toBe(maxNbrOfRows - 1)
     expect(() => getRowIndex('0')).toThrow()
-    expect(() => getRowIndex(`${maxNumberOfRows + 1}`)).toThrow()
+    expect(() => getRowIndex(`${maxNbrOfRows + 1}`)).toThrow()
   })
 
   test('getRowId', () => {
     expect(getRowId(0)).toBe('1')
-    expect(getRowId(maxNumberOfRows - 1)).toBe(`${maxNumberOfRows}`)
+    expect(getRowId(maxNbrOfRows - 1)).toBe(`${maxNbrOfRows}`)
     expect(() => getRowId(-1)).toThrow()
-    expect(() => getRowId(maxNumberOfRows)).toThrow()
+    expect(() => getRowId(maxNbrOfRows)).toThrow()
   })
 
   test('all row variants', () => {
-    for (let i = 0; i < maxNumberOfRows; i += 1) {
+    for (let i = 0; i < maxNbrOfRows; i += 1) {
       expect(getRowIndex(getRowId(i))).toBe(i)
     }
   })
@@ -36,13 +36,13 @@ describe('utils', () => {
     expect(getColId(26)).toBe('AA')
     expect(getColId(2 * 26)).toBe('BA')
     expect(getColId(25 * 26)).toBe('YA')
-    expect(getColId(maxNumberOfCols - 1)).toBe('ZZ')
+    expect(getColId(maxNbrOfCols - 1)).toBe('ZZ')
     expect(() => getColId(-1)).toThrow()
-    expect(() => getColId(maxNumberOfCols)).toThrow()
+    expect(() => getColId(maxNbrOfCols)).toThrow()
   })
 
   test('all col variants', () => {
-    for (let i = 0; i < maxNumberOfCols; i += 1) {
+    for (let i = 0; i < maxNbrOfCols; i += 1) {
       expect(getColIndex(getColId(i))).toBe(i)
     }
   })

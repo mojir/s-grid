@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { colHeaderHeight, defaultNumberOfCols, defaultNumberOfRows, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
+import { colHeaderHeight, defaultNbrOfCols, defaultNbrOfRows, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Project } from '~/lib/project/Project'
 import { DocumentIdType, type Direction } from '~/lib/reference/utils'
 import { CellReference, isCellReferenceString } from '~/lib/reference/CellReference'
@@ -24,8 +24,8 @@ const project = new Project({
   grids: [
     {
       cells: {},
-      rows: defaultNumberOfRows,
-      cols: defaultNumberOfCols,
+      nbrOfRows: defaultNbrOfRows,
+      nbrOfCols: defaultNbrOfCols,
       name: 'Grid1',
     },
   ],

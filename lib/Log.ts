@@ -1,6 +1,6 @@
 import type { SGridComponent } from './SGridComponent'
 import { errorColor, infoColor, warnColor } from './color'
-import { maxNumberOfCols, maxNumberOfRows } from './constants'
+import { maxNbrOfCols, maxNbrOfRows } from './constants'
 // import { getColId, getRowId, isPrimitive, jsToLits } from './utils'
 import type { GridDTO } from '~/dto/GridDTO'
 
@@ -17,8 +17,8 @@ export type LogEntry = {
 
 export class Log {
   private entries: LogEntry[] = []
-  private maxEntries = maxNumberOfRows - 1
-  private maxMessages = maxNumberOfCols - 4
+  private maxEntries = maxNbrOfRows - 1
+  private maxMessages = maxNbrOfCols - 4
 
   addEntry(entry: LogEntry) {
     this.entries.push(entry)
@@ -30,13 +30,13 @@ export class Log {
   toGridDTO(): GridDTO {
     const nbrOfCols = Math.min(
       this.entries.reduce((columns, entry) => entry.messages.length > columns ? entry.messages.length : columns, 1) + 4,
-      maxNumberOfCols,
+      maxNbrOfCols,
     )
 
     const gridDTO: GridDTO = {
       name: 'Log',
-      rows: this.entries.length + 1,
-      cols: nbrOfCols,
+      nbrOfRows: this.entries.length + 1,
+      nbrOfCols,
       cells: {},
     }
 
