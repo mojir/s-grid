@@ -15,15 +15,15 @@ export class Row {
     this._height = ref(height)
     this.label = computed(() => getRowId(this._index.value))
 
-    watch(this._height, (newValue, oldValue) => {
+    watch(this._height, (newHeight, oldHeight) => {
       this.grid.pubSub.publish({
         source: 'Row',
         eventName: 'rowChange',
         data: {
           gridName: this.grid.name.value,
           rowIndex: this._index.value,
-          oldValue,
-          newValue,
+          newHeight,
+          oldHeight,
         },
       })
     })

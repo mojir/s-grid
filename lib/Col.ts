@@ -16,15 +16,15 @@ export class Col {
     this._width = ref(width)
     this.label = computed(() => getColId(this._index.value))
 
-    watch(this._width, (newValue, oldValue) => {
+    watch(this._width, (newWidth, oldWidth) => {
       this.grid.pubSub.publish({
         source: 'Col',
         eventName: 'colChange',
         data: {
           gridName: this.grid.name.value,
           colIndex: this._index.value,
-          oldValue,
-          newValue,
+          newWidth,
+          oldWidth,
         },
       })
     })

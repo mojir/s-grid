@@ -28,24 +28,30 @@ export function mockProject(options: MockProjectOptions = {}): Project {
     }, { nbrOfRows: minRows, nbrOfCols: minCols })
 
   const grid1: GridDTO = {
-    cells: {},
+    name: 'Grid1',
     nbrOfRows,
     nbrOfCols,
-    name: 'Grid1',
+    cells: {},
+    rowHeights: {},
+    colWidths: {},
     ...options.grid1,
   }
   const grid2: GridDTO = {
-    cells: {},
+    name: 'Grid2',
     nbrOfRows,
     nbrOfCols,
-    name: 'Grid2',
+    cells: {},
+    rowHeights: {},
+    colWidths: {},
     ...options.grid2,
   }
   const grid3: GridDTO = {
-    cells: {},
+    name: 'Grid3',
     nbrOfRows,
     nbrOfCols,
-    name: 'Grid3',
+    cells: {},
+    rowHeights: {},
+    colWidths: {},
     ...options.grid3,
   }
 

@@ -38,6 +38,8 @@ export class Log {
       nbrOfRows: this.entries.length + 1,
       nbrOfCols,
       cells: {},
+      rowHeights: {},
+      colWidths: {},
     }
 
     gridDTO.cells.A1 = { input: 'Timestamp', bold: true }

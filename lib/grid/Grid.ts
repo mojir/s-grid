@@ -32,7 +32,17 @@ export class Grid {
   private readonly cells: Mx<Cell>
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
-  constructor(project: Project, name: string, nbrOfRows: number, nbrOfCols: number) {
+  constructor({
+    project,
+    name,
+    nbrOfRows,
+    nbrOfCols,
+  }: {
+    project: Project
+    name: string
+    nbrOfRows: number
+    nbrOfCols: number
+  }) {
     this.name = ref(name)
     this.project = project
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
@@ -59,11 +69,30 @@ export class Grid {
     this.currentCell = computed(() => this.position.value.getCell())
   }
 
-  static fromDTO(project: Project, grid: GridDTO): Grid {
-    const gridName = getGridName(grid.name)
-    const newGrid = new Grid(project, gridName, grid.nbrOfRows, grid.nbrOfCols)
+  static fromDTO(project: Project, gridDTO: GridDTO): Grid {
+    const gridName = getGridName(gridDTO.name)
+    const newGrid = new Grid({
+      project,
+      name: gridName,
+      nbrOfRows: gridDTO.nbrOfRows,
+      nbrOfCols: gridDTO.nbrOfCols,
+    })
 
-    Object.entries(grid.cells).forEach(([key, cellDTO]) => {
+    Object.entries(gridDTO.rowHeights)
+      .map<[number, number]>(([rowId, height]) => [getRowIndex(rowId), height])
+      .filter(([rowIndex]) => rowIndex > 0 && rowIndex < newGrid.rows.value.length)
+      .forEach(([rowIndex, height]) => {
+        newGrid.getRow(rowIndex).setHeight(height)
+      })
+
+    Object.entries(gridDTO.colWidths)
+      .map<[number, number]>(([colId, width]) => [getColIndex(colId), width])
+      .filter(([colIndex]) => colIndex > 0 && colIndex < newGrid.cols.value.length)
+      .forEach(([colIndex, width]) => {
+        newGrid.getCol(colIndex).setWidth(width)
+      })
+
+    Object.entries(gridDTO.cells).forEach(([key, cellDTO]) => {
       // TODO use new regexp, to avoid the need of Reference
       const cell = CellReference.fromString(newGrid, key).getCell()
 
@@ -459,6 +488,7 @@ export class Grid {
         count,
         cells: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
           .map(cell => cell.getDTO()),
+        heights: this.rows.value.slice(rowIndexToDelete, rowIndexToDelete + count).map(row => row.height.value),
       },
     }
 
@@ -527,6 +557,7 @@ export class Grid {
         cells: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
           .toTransposed()
           .map(cell => cell.getDTO()),
+        widths: this.cols.value.slice(colIndexToDelete, colIndexToDelete + count).map(col => col.width.value),
       },
     }
 

@@ -20,6 +20,8 @@ export async function createGridDtoFromCsv(name: string, csv: string): Promise<G
     nbrOfRows,
     nbrOfCols,
     cells,
+    rowHeights: {},
+    colWidths: {},
   }
 }
 
@@ -28,4 +30,8 @@ export type GridDTO = {
   nbrOfRows: number
   nbrOfCols: number
   cells: Record<string, CellDTO>
+  // rowId -> height
+  rowHeights: Record<string, number>
+  // colId -> width
+  colWidths: Record<string, number>
 }

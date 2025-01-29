@@ -29,7 +29,7 @@ function createLogger(component: SGridComponent, tag: string | null = null) {
     info: (message: unknown, ...args: unknown[]) => {
       if (debugEnabled.value && activeInfoLoggers.value[component]) {
         log.addEntry({
-          component: component,
+          component,
           tag,
           logLevel: 'info',
           timestamp: Date.now(),
@@ -56,7 +56,7 @@ function createLogger(component: SGridComponent, tag: string | null = null) {
         timeout = setTimeout(() => {
           if (debugEnabled.value && activeInfoLoggers.value[component]) {
             log.addEntry({
-              component: component,
+              component,
               tag,
               logLevel: 'info',
               timestamp: Date.now(),
@@ -73,7 +73,7 @@ function createLogger(component: SGridComponent, tag: string | null = null) {
 
     warn: (message: unknown, ...args: unknown[]) => {
       log.addEntry({
-        component: component,
+        component,
         tag,
         logLevel: 'warn',
         timestamp: Date.now(),
@@ -87,7 +87,7 @@ function createLogger(component: SGridComponent, tag: string | null = null) {
 
     error: (message: unknown, ...args: unknown[]) => {
       log.addEntry({
-        component: component,
+        component,
         tag,
         logLevel: 'error',
         timestamp: Date.now(),

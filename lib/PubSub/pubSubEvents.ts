@@ -43,6 +43,7 @@ export type RowsRemovedEvent = BaseEvent<
     rowIndex: number
     count: number
     cells: Mx<CellDTO>
+    heights: number[]
   }
 >
 
@@ -53,6 +54,7 @@ export type ColsRemovedEvent = BaseEvent<
     colIndex: number
     count: number
     cells: Mx<CellDTO>
+    widths: number[]
   }
 >
 
@@ -63,8 +65,8 @@ export type CellChangeEvent = BaseEvent<
     rowIndex: number
     colIndex: number
     attribute: keyof CellDTO
-    oldValue: unknown
     newValue: unknown
+    oldValue: unknown
   }
 >
 
@@ -73,8 +75,8 @@ export type RowChangeEvent = BaseEvent<
   'rowChange',
   {
     rowIndex: number
-    oldValue: number
-    newValue: number
+    newHeight: number
+    oldHeight: number
   }
 >
 
@@ -83,8 +85,8 @@ export type ColChangeEvent = BaseEvent<
   'colChange',
   {
     colIndex: number
-    oldValue: number
-    newValue: number
+    newWidth: number
+    oldWidth: number
   }
 >
 
@@ -93,8 +95,8 @@ export type GridChangeEvent = BaseEvent<
   'gridChange',
   {
     attribute: 'name'
-    oldValue: unknown
     newValue: unknown
+    oldValue: unknown
   }
 >
 

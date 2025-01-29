@@ -116,7 +116,13 @@ export class Project {
     }
 
     this.grids.value = [
-      ...this.grids.value, new Grid(this, gridName, defaultNbrOfRows, defaultNbrOfCols)]
+      ...this.grids.value, new Grid({
+        project: this,
+        name: gridName,
+        nbrOfRows: defaultNbrOfRows,
+        nbrOfCols: defaultNbrOfCols,
+      }),
+    ]
   }
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {

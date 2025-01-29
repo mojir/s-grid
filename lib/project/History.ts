@@ -32,7 +32,7 @@ export class History {
     if (this.paused) {
       return
     }
-    this.currentChanges.push(event)
+    this.currentChanges.unshift(event)
     if (this.timer) {
       clearTimeout(this.timer)
     }
@@ -65,7 +65,7 @@ export class History {
     this.paused = true
 
     this.undoStack.value = [...this.undoStack.value]
-    for (const change of changes.reverse()) {
+    for (const change of changes) {
       this.applyChange(change, 'undo')
     }
     this.redoStack.value = [...this.redoStack.value, changes!]
@@ -87,7 +87,7 @@ export class History {
     this.paused = true
 
     this.redoStack.value = [...this.redoStack.value]
-    for (const change of changes.reverse()) {
+    for (const change of changes) {
       this.applyChange(change, 'redo')
     }
     this.undoStack.value = [...this.undoStack.value, changes]
@@ -117,13 +117,13 @@ export class History {
       const { data } = event
       const grid = this.project.getGridByName(data.gridName)
       const row = grid.getRow(data.rowIndex)
-      row.setHeight(method === 'undo' ? data.oldValue : data.newValue)
+      row.setHeight(method === 'undo' ? data.oldHeight : data.newHeight)
     }
     else if (event.eventName === 'colChange') {
       const { data } = event
       const grid = this.project.getGridByName(data.gridName)
       const col = grid.getCol(data.colIndex)
-      col.setWidth(method === 'undo' ? data.oldValue : data.newValue)
+      col.setWidth(method === 'undo' ? data.oldWidth : data.newWidth)
     }
     else if (event.eventName === 'gridChange') {
       const { data: { attribute, newValue, oldValue } } = event
@@ -146,6 +146,7 @@ export class History {
       const grid = this.project.getGridByName(data.gridName)
       if (method === 'undo') {
         grid.insertRowsBefore(data.rowIndex, data.count, data.cells)
+        data.heights.forEach((height, index) => grid.getRow(data.rowIndex + index).setHeight(height))
       }
       else {
         grid.deleteRows(data.rowIndex, data.count)
@@ -156,6 +157,7 @@ export class History {
       const grid = this.project.getGridByName(data.gridName)
       if (method === 'undo') {
         grid.insertColsBefore(data.colIndex, data.count, data.cells)
+        data.widths.forEach((width, index) => grid.getCol(data.colIndex + index).setWidth(width))
       }
       else {
         grid.deleteCols(data.colIndex, data.count)

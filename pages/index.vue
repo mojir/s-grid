@@ -23,10 +23,12 @@ function isColIdentifier(value: unknown): value is ColIdentifier {
 const project = new Project({
   grids: [
     {
-      cells: {},
+      name: 'Grid1',
       nbrOfRows: defaultNbrOfRows,
       nbrOfCols: defaultNbrOfCols,
-      name: 'Grid1',
+      cells: {},
+      rowHeights: {},
+      colWidths: {},
     },
   ],
   currentGridIndex: 0,
