@@ -1,5 +1,7 @@
 # Row Height and Column Width
 These should never be "auto-set" when they have been explicitly set.
 
-# Move utility functions into Row and Col
-E.g. getRowCells
+# Delete rows, should store row height
+same goes for cols
+# GridDTO should keep track of row heights
+same goes for cols
