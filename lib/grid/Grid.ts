@@ -457,7 +457,7 @@ export class Grid {
         gridName: this.name.value,
         rowIndex: rowIndexToDelete,
         count,
-        deletedRows: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
+        cells: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
           .map(cell => cell.getDTO()),
       },
     }
@@ -524,7 +524,7 @@ export class Grid {
         gridName: this.name.value,
         colIndex: colIndexToDelete,
         count,
-        deletedCols: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
+        cells: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
           .toTransposed()
           .map(cell => cell.getDTO()),
       },

@@ -145,7 +145,7 @@ export class History {
       const { data } = event
       const grid = this.project.getGridByName(data.gridName)
       if (method === 'undo') {
-        grid.insertRowsBefore(data.rowIndex, data.count, data.deletedRows)
+        grid.insertRowsBefore(data.rowIndex, data.count, data.cells)
       }
       else {
         grid.deleteRows(data.rowIndex, data.count)
@@ -155,7 +155,7 @@ export class History {
       const { data } = event
       const grid = this.project.getGridByName(data.gridName)
       if (method === 'undo') {
-        grid.insertColsBefore(data.colIndex, data.count, data.deletedCols)
+        grid.insertColsBefore(data.colIndex, data.count, data.cells)
       }
       else {
         grid.deleteCols(data.colIndex, data.count)

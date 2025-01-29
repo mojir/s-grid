@@ -42,7 +42,7 @@ export type RowsRemovedEvent = BaseEvent<
   {
     rowIndex: number
     count: number
-    deletedRows: Mx<CellDTO>
+    cells: Mx<CellDTO>
   }
 >
 
@@ -52,7 +52,7 @@ export type ColsRemovedEvent = BaseEvent<
   {
     colIndex: number
     count: number
-    deletedCols: Mx<CellDTO>
+    cells: Mx<CellDTO>
   }
 >
 
