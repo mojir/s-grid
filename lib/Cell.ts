@@ -87,6 +87,9 @@ export class Cell {
     if (cellDTO.formatter !== undefined && cellDTO.formatter !== this.formatter.value) {
       this.formatter.value = cellDTO.formatter
     }
+    if (cellDTO.fontFamily !== undefined && cellDTO.fontFamily !== this.fontFamily.value) {
+      this.fontFamily.value = cellDTO.fontFamily
+    }
     if (cellDTO.fontSize !== undefined && cellDTO.fontSize !== this.fontSize.value) {
       this.fontSize.value = cellDTO.fontSize
     }
@@ -264,7 +267,6 @@ export class Cell {
     try {
       const values = this.project.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
       const fn = this.lits.run(formatter, { values })
-      // const fn = lits.evaluate(lits.parse(lits.tokenize(formatter)), { values, jsFunctions: this.commandCenter.jsFunctions })
 
       if (!isLitsFunction(fn)) {
         return this.output.value

@@ -28,11 +28,10 @@ const { sidePanelOpen } = useSidePanel()
         :project="project"
         class="mr-2"
       />
-      <ToolbarFontSizeSelector
-        :project="project"
-        class="mr-2"
-      />
       <ToolbarFontFamilySelector
+        :project="project"
+      />
+      <ToolbarFontSizeSelector
         :project="project"
         class="mr-2"
       />
