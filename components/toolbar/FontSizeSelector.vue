@@ -35,6 +35,9 @@ function onUpdateFontSize(value: string) {
   grid.value.setFontSize(numberValue as StyleFontSize, null)
   grid.value.autoSetRowHeight({ selection: true })
 }
+function onOpen(open: boolean) {
+  setTimeout(() => project.value.keyboardClaimed.value = open)
+}
 </script>
 
 <template>
@@ -44,6 +47,7 @@ function onUpdateFontSize(value: string) {
     <Select
       :model-value="fontSize"
       @update:model-value="onUpdateFontSize"
+      @update:open="onOpen"
     >
       <SelectTrigger class="w-20">
         <SelectValue />

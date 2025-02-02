@@ -34,6 +34,7 @@ function onUpdateTextColor(value: Color | null) {
 <template>
   <div>
     <ColorPicker
+      :project="project"
       :model-value="textColor"
       :color-palette="colorPalette"
       icon="mdi-format-color-text"

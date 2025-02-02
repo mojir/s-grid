@@ -4,10 +4,10 @@ import { isRangeReferenceString, RangeReference } from './reference/RangeReferen
 import type { Grid } from './grid/Grid'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import type { Project } from './project/Project'
-import { defaultFontSize, defaultFormatter } from './constants'
+import { defaultFontFamily, defaultFontSize, defaultFormatter } from './constants'
 import type { CellChangeEvent } from './PubSub/pubSubEvents'
 import type { LitsComposable } from '~/composables/use-lits'
-import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
+import type { CellDTO, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 export class Cell {
   private readonly project: Project
@@ -17,6 +17,7 @@ export class Cell {
   public readonly input = ref('')
   public readonly formatter = ref<string>(defaultFormatter)
   public readonly fontSize = ref<StyleFontSize>(defaultFontSize)
+  public readonly fontFamily = ref<StyleFontFamily>(defaultFontFamily)
   public readonly bold = ref<boolean>(false)
   public readonly italic = ref<boolean>(false)
   public readonly textDecoration = ref<StyleTextDecoration>('none')
@@ -49,6 +50,9 @@ export class Cell {
     })
     watch(this.fontSize, (newValue, oldValue) => {
       this.grid.pubSub.publish(this.createCellChange('fontSize', oldValue, newValue))
+    })
+    watch(this.fontFamily, (newValue, oldValue) => {
+      this.grid.pubSub.publish(this.createCellChange('fontFamily', oldValue, newValue))
     })
     watch(this.bold, (newValue, oldValue) => {
       this.grid.pubSub.publish(this.createCellChange('bold', oldValue, newValue))

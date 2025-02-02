@@ -12,6 +12,14 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const open = ref(false)
 
+const currentFormatter = computed(() => grid.value.getFormatter(grid.value.selection.selectedRange.value) ?? defaultFormatter)
+watch(open, (isOpen) => {
+  if (isOpen) {
+    format.value = currentFormatter.value
+  }
+  setTimeout(() => project.value.keyboardClaimed.value = isOpen)
+})
+
 const format = ref<string>(defaultFormatter)
 const floatFormatter = '#(format ".4~f" %)'
 const fixed2Formatter = '#(format ".2f" %)'
@@ -71,7 +79,6 @@ function setUsd() {
 
 function save() {
   grid.value.setFormatter(format.value ?? defaultFormatter, null)
-  open.value = false
 }
 </script>
 
@@ -96,11 +103,14 @@ function save() {
         </Button>
         <slot />
       </DropdownMenuTrigger>
-      <DropdownMenuContent class="w-[350px]">
+      <DropdownMenuContent
+        class="w-[350px]"
+      >
         <DropdownMenuCheckboxItem
           :checked="float"
           class="text-sm"
           @update:checked="setFloat"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>Float</div>
@@ -112,6 +122,7 @@ function save() {
         <DropdownMenuCheckboxItem
           :checked="fixed2"
           @update:checked="setFixed2"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>Fixed</div>
@@ -123,6 +134,7 @@ function save() {
         <DropdownMenuCheckboxItem
           :checked="integer"
           @update:checked="setInteger"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>Integer</div>
@@ -134,6 +146,7 @@ function save() {
         <DropdownMenuCheckboxItem
           :checked="percent"
           @update:checked="setPercent"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>Percent</div>
@@ -145,6 +158,7 @@ function save() {
         <DropdownMenuCheckboxItem
           :checked="usd"
           @update:checked="setUsd"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>USD</div>
@@ -156,6 +170,7 @@ function save() {
         <DropdownMenuCheckboxItem
           :checked="sek"
           @update:checked="setSek"
+          @select.prevent
         >
           <div class="flex justify-between gap-8 w-full">
             <div>SEK</div>
@@ -167,8 +182,13 @@ function save() {
         <DropdownMenuSeparator />
         <div class="flex flex-col px-1 pb-2 gap-1">
           <div>
-            <div class="text-xs p-1 mt-2">
-              Custom Format
+            <div class="flex justify-between text-xs p-1 mt-2">
+              <span>Custom Format</span>
+              <NuxtLink
+                to="https://d3js.org/d3-format"
+                class="text-xs text-blue-500 underline"
+                target="_blank"
+              >Documentation</NuxtLink>
             </div>
             <textarea
               v-model="format"
@@ -177,7 +197,7 @@ function save() {
               @keydown.stop
             />
           </div>
-          <div class="flex justify-end gap-4">
+          <div class="flex justify-between">
             <Button
               variant="secondary"
               size="sm"
@@ -186,7 +206,7 @@ function save() {
               Close
             </Button>
             <Button
-              variant="outline"
+              :disabled="format === currentFormatter"
               size="sm"
               @click="save"
             >

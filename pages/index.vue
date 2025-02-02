@@ -455,6 +455,9 @@ function shouldCancel(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  if (project.keyboardClaimed.value) {
+    return
+  }
   const isMeta = isMacOS ? e.metaKey : e.ctrlKey
   if (sidePanelHandleKeyDown(e)) {
     return

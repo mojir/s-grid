@@ -27,6 +27,7 @@ export class Project {
   public readonly diagrams = new Diagrams(this, [])
   public readonly aliases: Aliases
   public readonly grids: Ref<Grid[]>
+  public readonly keyboardClaimed = ref(false)
 
   public constructor(projectDTO: ProjectDTO) {
     if (projectDTO.grids.length === 0) {

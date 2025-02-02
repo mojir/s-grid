@@ -2,17 +2,19 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Color } from '~/lib/color'
+import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
+  project: Project
   modelValue: Color | null
   colorPalette: Color[][]
   icon: string
 }>()
 
+const { project } = toRefs(props)
 const { modelValue } = toRefs(props)
 
 const emit = defineEmits<{
@@ -21,9 +23,12 @@ const emit = defineEmits<{
 
 const open = ref(false)
 
+watch(open, (isOpen) => {
+  setTimeout(() => project.value.keyboardClaimed.value = isOpen)
+})
+
 function updateColor(color: Color | null) {
   emit('update:modelValue', color)
-  open.value = false
 }
 </script>
 
@@ -52,14 +57,12 @@ function updateColor(color: Color | null) {
       <slot />
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-      <Button
-        class="w-full"
-        variant="secondary"
-        size="sm"
+      <DropdownMenuItem
+        class="flex justify-center"
         @click="updateColor(null)"
       >
         Remove Color
-      </Button>
+      </DropdownMenuItem>
       <div class="flex flex-col gap-[4px] p-2">
         <div
           v-for="(colorRow, i) of colorPalette"
@@ -74,7 +77,12 @@ function updateColor(color: Color | null) {
             @color="updateColor"
           />
         </div>
-        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          class="flex justify-center"
+          @click="open = false"
+        >
+          Close
+        </DropdownMenuItem>
       </div>
     </DropdownMenuContent>
   </DropdownMenu>

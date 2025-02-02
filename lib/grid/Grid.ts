@@ -13,7 +13,7 @@ import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
 import { GridSelection } from './GridSelection'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
-import type { CellDTO, StyleAlign, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
+import type { CellDTO, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 type GridState = 'idle' | 'selecting' | 'cellMoving' | 'rangeMoving' | 'cellAutoFilling' | 'rangeAutoFilling'
 export class Grid {
@@ -275,6 +275,22 @@ export class Grid {
     }
 
     return cells.slice(1).every(cell => cell.fontSize.value === fontSize) ? fontSize : null
+  }
+
+  public setFontFamily(fontFamily: StyleFontFamily, reference: Reference | null): void {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
+      cell.fontFamily.value = fontFamily
+    })
+  }
+
+  public getFontFamily(reference: Reference | null): StyleFontFamily | null {
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
+    const fontFamily = cells[0]?.fontFamily.value
+    if (fontFamily === undefined) {
+      return null
+    }
+
+    return cells.slice(1).every(cell => cell.fontFamily.value === fontFamily) ? fontFamily : null
   }
 
   public setBold(bold: boolean, reference: Reference | null): void {

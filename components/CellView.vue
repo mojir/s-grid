@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, type CSSProperties } from 'vue'
+import { toFontFamilyCss } from '~/dto/CellDTO'
 import type { Col } from '~/lib/Col'
 import type { Row } from '~/lib/Row'
 import type { Color } from '~/lib/color'
@@ -67,6 +68,7 @@ const cellStyle = computed(() => {
   }
 
   style.fontSize = `${cell.value.fontSize.value}px`
+  style.fontFamily = toFontFamilyCss(cell.value.fontFamily.value)
   style.lineHeight = `${getLineHeight(cell.value.fontSize.value) - 1}px`
   if (cell.value.bold.value) {
     style.fontWeight = 'bold'

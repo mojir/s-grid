@@ -32,6 +32,10 @@ const { sidePanelOpen } = useSidePanel()
         :project="project"
         class="mr-2"
       />
+      <ToolbarFontFamilySelector
+        :project="project"
+        class="mr-2"
+      />
       <ToolbarBoldButton :project="project" />
       <ToolbarItalicButton :project="project" />
       <ToolbarTextDecorationSwitch

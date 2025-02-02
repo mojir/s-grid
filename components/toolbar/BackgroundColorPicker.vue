@@ -34,6 +34,7 @@ function onUpdateBackgroundColor(value: Color | null) {
 <template>
   <div>
     <ColorPicker
+      :project="project"
       :model-value="bgColor"
       :color-palette="colorPalette"
       icon="mdi-format-color-fill"

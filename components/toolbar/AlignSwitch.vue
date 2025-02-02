@@ -44,11 +44,11 @@ function onUpdateBottom(value: boolean) {
   <div class="flex gap-1">
     <Toggle
       variant="outline"
-      :pressed="align === 'top'"
-      @update:pressed="onUpdateTop"
+      :pressed="align === 'bottom'"
+      @update:pressed="onUpdateBottom"
     >
       <Icon
-        name="mdi:format-vertical-align-top"
+        name="mdi:format-vertical-align-bottom"
         class="w-5 h-5"
       />
     </Toggle>
@@ -64,11 +64,11 @@ function onUpdateBottom(value: boolean) {
     </Toggle>
     <Toggle
       variant="outline"
-      :pressed="align === 'bottom'"
-      @update:pressed="onUpdateBottom"
+      :pressed="align === 'top'"
+      @update:pressed="onUpdateTop"
     >
       <Icon
-        name="mdi:format-vertical-align-bottom"
+        name="mdi:format-vertical-align-top"
         class="w-5 h-5"
       />
     </Toggle>

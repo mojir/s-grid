@@ -1,5 +1,5 @@
 import { identifierCharacterClass, identifierFirstCharacterClass } from '@mojir/lits'
-import type { StyleFontSize } from '~/dto/CellDTO'
+import type { StyleFontFamily, StyleFontSize } from '~/dto/CellDTO'
 
 const colPart = '(\\$?)([A-Z]{1,2})' // Two groups
 const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups
@@ -24,6 +24,7 @@ export const pageSize = 40
 
 export const defaultFormatter = '#(format ".4~f" %)'
 export const defaultFontSize: StyleFontSize = 14
+export const defaultFontFamily: StyleFontFamily = 'sans-serif:Arial'
 // TODO set defalultLineHeight to 14 * 1.6
 //      move getLineHeight to utils
 //      add test to verify that defalultLineHeight equals getLineHeight(14)
@@ -39,14 +40,5 @@ export function getLineHeight(fontSize?: StyleFontSize): number {
   if (fontSize === undefined) {
     return defaultLineHeight
   }
-  if (fontSize <= 10) {
-    return fontSize * 1.2
-  }
-  if (fontSize <= 12) {
-    return fontSize * 1.4
-  }
-  if (fontSize <= 18) {
-    return fontSize * 1.6
-  }
-  return fontSize * 1.8
+  return fontSize * 1.4
 }
