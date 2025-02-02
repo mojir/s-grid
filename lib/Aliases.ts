@@ -79,12 +79,6 @@ export class Aliases {
           acc[a] = reference
           return acc
         }, {})
-
-      const dependants = this.project.getAllCells().filter(cell => cell.localReferences.value.includes(alias))
-
-      dependants.forEach((dependantCell) => {
-        dependantCell.input.value = `=(throw "Alias removed: ${alias}")`
-      })
     }
   }
 
