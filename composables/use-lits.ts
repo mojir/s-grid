@@ -1,7 +1,7 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
 import { builtinLitsScript } from '~/lib/lits'
-import { format } from '~/lib/litsInterop/format'
+import { format, smartTimeParse, timeFormat, timeParse } from '~/lib/lits/interop'
 
 const lits = new Lits()
 const litsDebug = new Lits({ debug: true })
@@ -11,6 +11,9 @@ const builtingContextDebug = litsDebug.context(builtinLitsScript)
 
 const jsFunctions: Record<string, JsFunction> = {
   format,
+  'time-format': timeFormat,
+  'time-parse': timeParse,
+  'smart-time-parse': smartTimeParse,
 }
 const { debugEnabled } = useDebug()
 const { createLogger } = useLogger()
