@@ -9,43 +9,40 @@ const epochDate = new Date('2025-01-31T00:00:00.000').valueOf()
 const epochMonth = new Date('2025-01-01T00:00:00.000').valueOf()
 
 describe('lits-interop', () => {
-  describe('format', () => {
-    it('should format numbers', () => {
-      expect(run('(format "0.2f" 123.456)')).toBe('123.46')
+  describe('d3', () => {
+    describe('format', () => {
+      it('should format numbers', () => {
+        expect(run('(d3:format "0.2f" 123.456)')).toBe('123.46')
+      })
     })
   })
 
-  describe('timeFormat', () => {
-    it('should format dates', () => {
-      expect(run(`(time-format "%Y-%m-%d" ${epochMillis})`)).toBe('2025-01-31')
-      expect(run(`(time-format "%b %Y" ${epochMillis})`)).toBe('Jan 2025')
+  describe('date-fns', () => {
+    describe('date-fns:parse', () => {
+      it('should parse dates', () => {
+        expect(run('(date-fns:parse "yyyy-MM-dd" "2025-01-31")')).toBe(epochDate)
+        expect(run('(date-fns:parse "yyyy-MM-dd HH:mm" "2025-01-31 12:34")')).toBe(epochMin)
+      })
     })
-  })
+    // Intl.DateTimeFormat().resolvedOptions().timeZone
+    describe('date-fns:smart-parse', () => {
+      it('should smart parse dates', () => {
+        expect(run('(date-fns:smart-parse "2025-01-31 12:34:56.789")')).toBe(epochMillis)
+        expect(run('(date-fns:smart-parse "2025-01-31 12:34:56")')).toBe(epochSec)
+        expect(run('(date-fns:smart-parse "2025-01-31 12:34")')).toBe(epochMin)
+        expect(run('(date-fns:smart-parse "2025-01-31")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "01/31/2025")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "20250131")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "2025-01")')).toBe(epochMonth)
 
-  describe('timeParse', () => {
-    it('should parse dates', () => {
-      expect(run('(time-parse "%Y-%m-%d" "2025-01-31")')).toBe(epochDate)
-      expect(run('(time-parse "%Y-%m-%d" "2025-01-31")')).toBe(epochDate)
-    })
-  })
-
-  describe('smartTimeParse', () => {
-    it('should parse dates', () => {
-      expect(run('(smart-time-parse "2025-01-31 12:34:56.789")')).toBe(epochMillis)
-      expect(run('(smart-time-parse "2025-01-31 12:34:56")')).toBe(epochSec)
-      expect(run('(smart-time-parse "2025-01-31 12:34")')).toBe(epochMin)
-      expect(run('(smart-time-parse "2025-01-31")')).toBe(epochDate)
-      expect(run('(smart-time-parse "01/31/2025")')).toBe(epochDate)
-      expect(run('(smart-time-parse "20250131")')).toBe(epochDate)
-      expect(run('(smart-time-parse "2025-01")')).toBe(epochMonth)
-
-      expect(run('(smart-time-parse "January 31, 2025")')).toBe(epochDate)
-      expect(run('(smart-time-parse "January 01, 2025")')).toBe(run('(smart-time-parse "January 1, 2025")'))
-      expect(run('(smart-time-parse "Jan 31, 2025")')).toBe(epochDate)
-      expect(run('(smart-time-parse "31 January 2025")')).toBe(epochDate)
-      expect(run('(smart-time-parse "31 Jan 2025")')).toBe(epochDate)
-      expect(run('(smart-time-parse "January 2025")')).toBe(epochMonth)
-      expect(run('(smart-time-parse "Jan 2025")')).toBe(epochMonth)
+        expect(run('(date-fns:smart-parse "January 31, 2025")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "January 01, 2025")')).toBe(run('(date-fns:smart-parse "January 1, 2025")'))
+        expect(run('(date-fns:smart-parse "Jan 31, 2025")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "31 January 2025")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "31 Jan 2025")')).toBe(epochDate)
+        expect(run('(date-fns:smart-parse "January 2025")')).toBe(epochMonth)
+        expect(run('(date-fns:smart-parse "Jan 2025")')).toBe(epochMonth)
+      })
     })
   })
 })

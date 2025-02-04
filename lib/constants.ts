@@ -22,7 +22,7 @@ export const rangeRangeRegExp = new RegExp(`^${gridPart}(?:${rangeStart}):(?:${r
 
 export const pageSize = 40
 
-export const defaultFormatter = '#(format ".4~f" %)'
+export const defaultFormatter = '#(d3:format ".4~f" %)'
 export const defaultFontSize: StyleFontSize = 14
 export const defaultFontFamily: StyleFontFamily = 'sans-serif:Arial'
 // TODO set defalultLineHeight to 14 * 1.6

@@ -21,12 +21,12 @@ watch(open, (isOpen) => {
 })
 
 const format = ref<string>(defaultFormatter)
-const floatFormatter = '#(format ".4~f" %)'
-const fixed2Formatter = '#(format ".2f" %)'
-const integerFormatter = '#(format "d" %)'
-const percentFormatter = '#(str (format ".2f" (* % 100)) "%")'
-const sekFormatter = '#(str (format ".2f" %) " kr")'
-const usdFormatter = '#(str "$" (format ".2f" %))'
+const floatFormatter = '#(d3:format ".4~f" %)'
+const fixed2Formatter = '#(d3:format ".2f" %)'
+const integerFormatter = '#(d3:format "d" %)'
+const percentFormatter = '#(str (d3:format ".2f" (* % 100)) "%")'
+const sekFormatter = '#(str (d3:format ".2f" %) " kr")'
+const usdFormatter = '#(str "$" (d3:format ".2f" %))'
 
 const float = computed(() => format.value === floatFormatter)
 const fixed2 = computed(() => format.value === fixed2Formatter)

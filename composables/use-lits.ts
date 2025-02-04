@@ -1,7 +1,8 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
 import { builtinLitsScript } from '~/lib/lits'
-import { format, smartTimeParse, timeFormat, timeParse } from '~/lib/lits/interop'
+import { d3Format } from '~/lib/lits/interop/d3-lits'
+import { getDateFnsFormat, getDateFnsParse, getDateFnsSmartParse } from '~/lib/lits/interop/date-fns-lits'
 
 const lits = new Lits()
 const litsDebug = new Lits({ debug: true })
@@ -9,11 +10,13 @@ const litsDebug = new Lits({ debug: true })
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
 
+const { timeZone } = useTimeZone()
+
 const jsFunctions: Record<string, JsFunction> = {
-  format,
-  'time-format': timeFormat,
-  'time-parse': timeParse,
-  'smart-time-parse': smartTimeParse,
+  'd3:format': d3Format,
+  'date-fns:parse': getDateFnsParse(timeZone),
+  'date-fns:smart-parse': getDateFnsSmartParse(timeZone),
+  'date-fns:format': getDateFnsFormat(timeZone),
 }
 const { debugEnabled } = useDebug()
 const { createLogger } = useLogger()
