@@ -1,4 +1,4 @@
-const { debugEnabled } = useDebug()
+const { debugEnabled } = useSettings()
 
 type TabId = 'repl' | 'settings' | 'debug' | 'alias' | 'diagrams'
 type Tab = {

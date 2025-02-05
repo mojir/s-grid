@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { d3Format } from './d3-lits'
-import { getDateFnsParse, getDateFnsSmartParse } from './date-fns-lits'
+import { getDateFnsFormat, getDateFnsParse, getDateFnsSmartParse } from './date-fns-lits'
 
 const epochMillis = new Date('2025-01-31T12:34:56.789Z').valueOf()
 const epochSec = new Date('2025-01-31T12:34:56.000Z').valueOf()
@@ -17,7 +17,7 @@ describe('lits-interop', () => {
     })
   })
   describe('date-fns', () => {
-    describe('date-fns:parse', () => {
+    describe('parse', () => {
       it('should parse dates', () => {
         expect(getDateFnsParse(ref('UTC')).fn('yyyy-MM-dd', '2025-01-31')).toBe(epochDate)
         expect(getDateFnsParse(ref('UTC')).fn('yyyy-MM-dd HH:mm', '2025-01-31 12:34')).toBe(epochMin)
@@ -27,8 +27,20 @@ describe('lits-interop', () => {
         expect(result).toBe(epochDate - 3600000)
       })
     })
+
+    describe('format', () => {
+      it('should format dates', () => {
+        expect(getDateFnsFormat(ref('UTC')).fn('yyyy-MM-dd', epochMillis)).toBe('2025-01-31')
+        expect(getDateFnsFormat(ref('UTC')).fn('yyyy-MM-dd HH:mm', epochMillis)).toBe('2025-01-31 12:34')
+      })
+      it('should return different for CET', () => {
+        const cetResult = getDateFnsFormat(ref('CET')).fn('yyyy-MM-dd HH:mm', epochMillis)
+        expect(cetResult).toBe('2025-01-31 13:34')
+      })
+    })
+
     // Intl.DateTimeFormat().resolvedOptions().timeZone
-    describe('date-fns:smart-parse', () => {
+    describe('smart-parse', () => {
       it('should smart parse dates', () => {
         expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31 12:34:56.789')).toBe(epochMillis)
         expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31 12:34:56')).toBe(epochSec)

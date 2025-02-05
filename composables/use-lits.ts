@@ -10,7 +10,7 @@ const litsDebug = new Lits({ debug: true })
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
 
-const { timeZone } = useTimeZone()
+const { timeZone } = useSettings()
 
 const jsFunctions: Record<string, JsFunction> = {
   'd3:format': d3Format,
@@ -18,7 +18,7 @@ const jsFunctions: Record<string, JsFunction> = {
   'date-fns:smart-parse': getDateFnsSmartParse(timeZone),
   'date-fns:format': getDateFnsFormat(timeZone),
 }
-const { debugEnabled } = useDebug()
+const { debugEnabled } = useSettings()
 const { createLogger } = useLogger()
 
 const logger = createLogger('Lits')

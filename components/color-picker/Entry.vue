@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Color } from '~/lib/color'
 
-const colorMode = useColorMode()
+const { darkMode } = useSettings()
 
 const props = defineProps<{
   color: Color
@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const { color } = toRefs(props)
 
-const displayColor = computed(() => colorMode.value !== 'dark'
+const displayColor = computed(() => darkMode.value
   ? color.value
   : color.value.toggleLightness(),
 )

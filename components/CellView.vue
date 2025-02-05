@@ -22,8 +22,7 @@ const emit = defineEmits<{
 const { project, row, col } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
-const colorMode = useColorMode()
-
+const { darkMode } = useSettings()
 const reference = computed(() => CellReference.fromCoords(grid.value, { rowIndex: row.value.index.value, colIndex: col.value.index.value }))
 const cell = computed(() => reference.value.getCell())
 const cellContent = computed(() => reference.value.getCell().display)
@@ -36,7 +35,7 @@ const cellBackgroundColor = computed<Color | null>(() => {
     return null
   }
 
-  if (colorMode.value === 'dark') {
+  if (darkMode.value) {
     return bg.toggleLightness()
   }
   return bg
@@ -48,7 +47,7 @@ const cellTextColor = computed<Color | null>(() => {
     return null
   }
 
-  if (colorMode.value === 'dark') {
+  if (darkMode.value) {
     return c.toggleLightness()
   }
   return c

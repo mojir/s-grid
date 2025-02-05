@@ -2,7 +2,7 @@ import { Log } from '~/lib/Log'
 import type { SGridComponent } from '~/lib/SGridComponent'
 import { sGridComponents } from '~/lib/SGridComponent'
 
-const { debugEnabled } = useDebug()
+const { debugEnabled } = useSettings()
 
 const log = new Log()
 
