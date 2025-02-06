@@ -21,6 +21,8 @@ export const styleFontSizes = [
 
 export type StyleFontSize = typeof styleFontSizes[number]
 
+export type Format = 'auto' | 'number' | 'date' | 'string'
+
 export type GenericFont = 'sans-serif' | 'serif' | 'monospace' | 'cursive'
 
 export const fontFamilies: `${GenericFont}:${string}`[] = [
@@ -48,6 +50,10 @@ export const fontFamilies: `${GenericFont}:${string}`[] = [
   'cursive:Chalkduster',
   'cursive:Copperplate',
 ] as const
+
+export function isFormat(value: unknown): value is Format {
+  return typeof value === 'string' && ['auto', 'number', 'date', 'string'].includes(value)
+}
 
 async function isSupported(fontName: string) {
   try {
@@ -92,6 +98,7 @@ export function isStyleTextDecoration(value: string): value is StyleTextDecorati
 
 export type CellDTO = {
   input?: string
+  format?: Format
   numberFormatter?: string
   fontSize?: StyleFontSize
   fontFamily?: StyleFontFamily

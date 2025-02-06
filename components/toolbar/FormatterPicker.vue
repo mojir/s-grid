@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { WatchHandle } from 'vue'
-import { defaultFormatter } from '~/lib/constants'
+import { defaultNumberFormatter } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -12,15 +12,15 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const open = ref(false)
 
-const currentFormatter = computed(() => grid.value.getFormatter(grid.value.selection.selectedRange.value) ?? defaultFormatter)
+const currentFormatter = computed(() => grid.value.getFormatter(grid.value.selection.selectedRange.value) ?? defaultNumberFormatter)
 watch(open, (isOpen) => {
   if (isOpen) {
-    format.value = currentFormatter.value
+    numberFormatter.value = currentFormatter.value
   }
   setTimeout(() => project.value.keyboardClaimed.value = isOpen)
 })
 
-const format = ref<string>(defaultFormatter)
+const numberFormatter = ref<string>(defaultNumberFormatter)
 const floatFormatter = '#(d3:format ".4~f" %)'
 const fixed2Formatter = '#(d3:format ".2f" %)'
 const integerFormatter = '#(d3:format "d" %)'
@@ -28,57 +28,57 @@ const percentFormatter = '#(str (d3:format ".2f" (* % 100)) "%")'
 const sekFormatter = '#(str (d3:format ".2f" %) " kr")'
 const usdFormatter = '#(str "$" (d3:format ".2f" %))'
 
-const float = computed(() => format.value === floatFormatter)
-const fixed2 = computed(() => format.value === fixed2Formatter)
-const integer = computed(() => format.value === integerFormatter)
-const percent = computed(() => format.value === percentFormatter)
-const sek = computed(() => format.value === sekFormatter)
-const usd = computed(() => format.value === usdFormatter)
+const float = computed(() => numberFormatter.value === floatFormatter)
+const fixed2 = computed(() => numberFormatter.value === fixed2Formatter)
+const integer = computed(() => numberFormatter.value === integerFormatter)
+const percent = computed(() => numberFormatter.value === percentFormatter)
+const sek = computed(() => numberFormatter.value === sekFormatter)
+const usd = computed(() => numberFormatter.value === usdFormatter)
 
 let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  format.value = grid.value.getFormatter(newSelection) ?? ''
+  numberFormatter.value = grid.value.getFormatter(newSelection) ?? ''
 
   const formatterRefs = newSelection.getCells().map(cell => cell.numberFormatter)
 
   watchHandle?.stop()
   watchHandle = watch(formatterRefs, () => {
-    format.value = grid.value.getFormatter(newSelection) || ''
+    numberFormatter.value = grid.value.getFormatter(newSelection) || ''
   })
 }, { immediate: true })
 
 function setFloat() {
-  format.value = floatFormatter
+  numberFormatter.value = floatFormatter
   grid.value.setNumberFormatter(floatFormatter, null)
 }
 
 function setFixed2() {
-  format.value = fixed2Formatter
+  numberFormatter.value = fixed2Formatter
   grid.value.setNumberFormatter(fixed2Formatter, null)
 }
 
 function setInteger() {
-  format.value = integerFormatter
+  numberFormatter.value = integerFormatter
   grid.value.setNumberFormatter(integerFormatter, null)
 }
 
 function setPercent() {
-  format.value = percentFormatter
+  numberFormatter.value = percentFormatter
   grid.value.setNumberFormatter(percentFormatter, null)
 }
 
 function setSek() {
-  format.value = sekFormatter
+  numberFormatter.value = sekFormatter
   grid.value.setNumberFormatter(sekFormatter, null)
 }
 
 function setUsd() {
-  format.value = usdFormatter
+  numberFormatter.value = usdFormatter
   grid.value.setNumberFormatter(usdFormatter, null)
 }
 
 function save() {
-  grid.value.setNumberFormatter(format.value ?? defaultFormatter, null)
+  grid.value.setNumberFormatter(numberFormatter.value ?? defaultNumberFormatter, null)
 }
 </script>
 
@@ -191,7 +191,7 @@ function save() {
               >Documentation</NuxtLink>
             </div>
             <textarea
-              v-model="format"
+              v-model="numberFormatter"
               class="w-full p-2 text-sm dark:bg-slate-900 bg-white dark:text-gray-300 text-slate-600 font-mono resize-none border dark:border-gray-700 border-gray-300 outline-none rounded-sm"
               rows="4"
               @keydown.stop
@@ -206,7 +206,7 @@ function save() {
               Close
             </Button>
             <Button
-              :disabled="format === currentFormatter"
+              :disabled="numberFormatter === currentFormatter"
               size="sm"
               @click="save"
             >

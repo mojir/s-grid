@@ -4,10 +4,10 @@ import { isRangeReferenceString, RangeReference } from './reference/RangeReferen
 import type { Grid } from './grid/Grid'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import type { Project } from './project/Project'
-import { defaultFontFamily, defaultFontSize, defaultFormatter } from './constants'
+import { defaultFontFamily, defaultFontSize, defaultFormat, defaultNumberFormatter } from './constants'
 import type { CellChangeEvent } from './PubSub/pubSubEvents'
 import type { LitsComposable } from '~/composables/use-lits'
-import type { CellDTO, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
+import type { CellDTO, Format, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 export class Cell {
   private readonly project: Project
@@ -15,7 +15,8 @@ export class Cell {
 
   public readonly grid: Grid
   public readonly input = ref('')
-  public readonly numberFormatter = ref<string>(defaultFormatter)
+  public readonly format = ref<Format>(defaultFormat)
+  public readonly numberFormatter = ref<string>(defaultNumberFormatter)
   public readonly fontSize = ref<StyleFontSize>(defaultFontSize)
   public readonly fontFamily = ref<StyleFontFamily>(defaultFontFamily)
   public readonly bold = ref<boolean>(false)
@@ -78,6 +79,9 @@ export class Cell {
     watch(this.numberFormatter, (newValue, oldValue) => {
       this.grid.pubSub.publish(this.createCellChange('numberFormatter', oldValue, newValue))
     })
+    watch(this.format, (newValue, oldValue) => {
+      this.grid.pubSub.publish(this.createCellChange('format', oldValue, newValue))
+    })
   }
 
   public setDTO(cellDTO: Partial<CellDTO>) {
@@ -86,6 +90,9 @@ export class Cell {
     }
     if (cellDTO.numberFormatter !== undefined && cellDTO.numberFormatter !== this.numberFormatter.value) {
       this.numberFormatter.value = cellDTO.numberFormatter
+    }
+    if (cellDTO.format !== undefined && cellDTO.format !== this.format.value) {
+      this.format.value = cellDTO.format
     }
     if (cellDTO.fontFamily !== undefined && cellDTO.fontFamily !== this.fontFamily.value) {
       this.fontFamily.value = cellDTO.fontFamily
@@ -119,6 +126,7 @@ export class Cell {
   public getDTO(): CellDTO {
     return {
       input: this.input.value,
+      format: this.format.value ?? undefined,
       numberFormatter: this.numberFormatter.value ?? undefined,
       fontSize: this.fontSize.value ?? undefined,
       bold: this.bold.value ?? undefined,
@@ -133,7 +141,8 @@ export class Cell {
 
   public clear() {
     this.input.value = ''
-    this.numberFormatter.value = defaultFormatter
+    this.format.value = defaultFormat
+    this.numberFormatter.value = defaultNumberFormatter
     this.fontSize.value = defaultFontSize
     this.bold.value = false
     this.italic.value = false

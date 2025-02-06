@@ -5,11 +5,11 @@ const formatCache = new Map<string, ReturnType<typeof format>>()
 
 export const d3Format: JsFunction = {
   fn: (formatString: string, value: number) => {
-    let numberFormatter = formatCache.get(formatString)
-    if (!numberFormatter) {
-      numberFormatter = format(formatString)
-      formatCache.set(formatString, numberFormatter)
+    let formatter = formatCache.get(formatString)
+    if (!formatter) {
+      formatter = format(formatString)
+      formatCache.set(formatString, formatter)
     }
-    return numberFormatter(value)
+    return formatter(value)
   },
 }

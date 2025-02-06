@@ -3,7 +3,7 @@ import { getReferenceFromString, type Direction } from './reference/utils'
 import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
 import { Color } from '~/lib/color'
 import type { Project } from '~/lib/project/Project'
-import { isFontSize, isStyleAlign, isStyleJustify, isStyleTextDecoration } from '~/dto/CellDTO'
+import { isFontSize, isFormat, isStyleAlign, isStyleJustify, isStyleTextDecoration } from '~/dto/CellDTO'
 
 const commandNames = [
   'Clear!',
@@ -36,6 +36,7 @@ const commandNames = [
   'SetInput!',
   'SetRowHeight!',
   'SetFontSize!',
+  'SetFormat!',
   'SetBold!',
   'SetItalic!',
   'SetTextDecoration!',
@@ -393,6 +394,27 @@ export class CommandCenter {
         grid.value.setTextColor(color, reference)
       },
       description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
+    })
+
+    this.registerCommand({
+      name: 'SetFormat!',
+      execute: (format: string, referenceString?: string) => {
+        if (!isFormat(format)) {
+          throw new Error(`Invalid format: ${format}`)
+        }
+        const grid = this.project.currentGrid
+        if (!referenceString) {
+          grid.value.setFormat(format, null)
+          return
+        }
+
+        const reference = getReferenceFromString(grid.value, referenceString)
+        if (!reference) {
+          throw new Error(`Invalid reference: ${referenceString}`)
+        }
+        grid.value.setFormat(format, reference)
+      },
+      description: 'Set the format of a cell or a range of cells. If no target is specified, set the formatt of all cells in the current selection.',
     })
 
     this.registerCommand({

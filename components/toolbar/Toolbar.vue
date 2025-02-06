@@ -54,7 +54,7 @@ const { sidePanelOpen } = useSidePanel()
         :project="project"
         class="mr-3"
       />
-      <ToolbarNumberFormatterPicker
+      <ToolbarFormatterPicker
         :project="project"
         class="mr-1"
       />
