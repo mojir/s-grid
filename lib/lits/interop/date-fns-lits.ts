@@ -22,14 +22,14 @@ const smartTimeParsers: Array<FPFn1<Date, string>> = [
 
 const parseWithReferenceDate = parse(referenceDate)
 
-export function getDateFnsParse(timeZone: Ref<string>): JsFunction {
+export function getDateFnsParse(timeZone: Ref<TimeZone>): JsFunction {
   return {
     fn: (formatString: string, value: string) => {
       const parsedDate = parseWithReferenceDate(formatString, value)
       if (!isValid(parsedDate)) {
         return null
       }
-      const result = fromZonedTime(parsedDate, timeZone.value).getTime()
+      const result = fromZonedTime(parsedDate, timeZone.value.id).getTime()
       if (isNaN(result)) {
         return null
       }
@@ -38,7 +38,7 @@ export function getDateFnsParse(timeZone: Ref<string>): JsFunction {
   }
 }
 
-export function getDateFnsSmartParse(timeZone: Ref<string>): JsFunction {
+export function getDateFnsSmartParse(timeZone: Ref<TimeZone>): JsFunction {
   return {
     fn: (value: string) => {
       for (const parser of smartTimeParsers) {
@@ -46,7 +46,7 @@ export function getDateFnsSmartParse(timeZone: Ref<string>): JsFunction {
         if (!isValid(parsedDate)) {
           continue
         }
-        const result = fromZonedTime(parsedDate, timeZone.value).getTime()
+        const result = fromZonedTime(parsedDate, timeZone.value.id).getTime()
         if (isNaN(result)) {
           continue
         }
@@ -57,11 +57,11 @@ export function getDateFnsSmartParse(timeZone: Ref<string>): JsFunction {
   }
 }
 
-export function getDateFnsFormat(timeZone: Ref<string>): JsFunction {
+export function getDateFnsFormat(timeZone: Ref<TimeZone>): JsFunction {
   return {
     fn: (formatString: string, value: number) => {
       const date = new Date(value)
-      return formatInTimeZone(date, timeZone.value, formatString)
+      return formatInTimeZone(date, timeZone.value.id, formatString)
     },
   }
 }

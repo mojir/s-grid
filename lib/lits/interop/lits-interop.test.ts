@@ -8,6 +8,8 @@ const epochMin = new Date('2025-01-31T12:34:00.000Z').valueOf()
 const epochDate = new Date('2025-01-31T00:00:00.000Z').valueOf()
 const epochMonth = new Date('2025-01-01T00:00:00.000Z').valueOf()
 
+const utcTimeZoneRef = ref(timeZoneRecord['Europe/London'])
+const cetTimeZoneRef = ref(timeZoneRecord['Europe/Paris'])
 describe('lits-interop', () => {
   describe('d3', () => {
     describe('format', () => {
@@ -19,22 +21,22 @@ describe('lits-interop', () => {
   describe('date-fns', () => {
     describe('parse', () => {
       it('should parse dates', () => {
-        expect(getDateFnsParse(ref('UTC')).fn('yyyy-MM-dd', '2025-01-31')).toBe(epochDate)
-        expect(getDateFnsParse(ref('UTC')).fn('yyyy-MM-dd HH:mm', '2025-01-31 12:34')).toBe(epochMin)
+        expect(getDateFnsParse(utcTimeZoneRef).fn('yyyy-MM-dd', '2025-01-31')).toBe(epochDate)
+        expect(getDateFnsParse(utcTimeZoneRef).fn('yyyy-MM-dd HH:mm', '2025-01-31 12:34')).toBe(epochMin)
       })
       it('should return different for CET', () => {
-        const result = getDateFnsParse(ref('CET')).fn('yyyy-MM-dd', '2025-01-31')
+        const result = getDateFnsParse(cetTimeZoneRef).fn('yyyy-MM-dd', '2025-01-31')
         expect(result).toBe(epochDate - 3600000)
       })
     })
 
     describe('format', () => {
       it('should format dates', () => {
-        expect(getDateFnsFormat(ref('UTC')).fn('yyyy-MM-dd', epochMillis)).toBe('2025-01-31')
-        expect(getDateFnsFormat(ref('UTC')).fn('yyyy-MM-dd HH:mm', epochMillis)).toBe('2025-01-31 12:34')
+        expect(getDateFnsFormat(utcTimeZoneRef).fn('yyyy-MM-dd', epochMillis)).toBe('2025-01-31')
+        expect(getDateFnsFormat(utcTimeZoneRef).fn('yyyy-MM-dd HH:mm', epochMillis)).toBe('2025-01-31 12:34')
       })
       it('should return different for CET', () => {
-        const cetResult = getDateFnsFormat(ref('CET')).fn('yyyy-MM-dd HH:mm', epochMillis)
+        const cetResult = getDateFnsFormat(cetTimeZoneRef).fn('yyyy-MM-dd HH:mm', epochMillis)
         expect(cetResult).toBe('2025-01-31 13:34')
       })
     })
@@ -42,21 +44,21 @@ describe('lits-interop', () => {
     // Intl.DateTimeFormat().resolvedOptions().timeZone
     describe('smart-parse', () => {
       it('should smart parse dates', () => {
-        expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31 12:34:56.789')).toBe(epochMillis)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31 12:34:56')).toBe(epochSec)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31 12:34')).toBe(epochMin)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01-31')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('01/31/2025')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('20250131')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('2025-01')).toBe(epochMonth)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('2025-01-31 12:34:56.789')).toBe(epochMillis)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('2025-01-31 12:34:56')).toBe(epochSec)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('2025-01-31 12:34')).toBe(epochMin)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('2025-01-31')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('01/31/2025')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('20250131')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('2025-01')).toBe(epochMonth)
 
-        expect(getDateFnsSmartParse(ref('UTC')).fn('January 31, 2025')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('January 01, 2025')).toBe(getDateFnsSmartParse(ref('UTC')).fn('January 1, 2025'))
-        expect(getDateFnsSmartParse(ref('UTC')).fn('Jan 31, 2025')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('31 January 2025')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('31 Jan 2025')).toBe(epochDate)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('January 2025')).toBe(epochMonth)
-        expect(getDateFnsSmartParse(ref('UTC')).fn('Jan 2025')).toBe(epochMonth)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('January 31, 2025')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('January 01, 2025')).toBe(getDateFnsSmartParse(utcTimeZoneRef).fn('January 1, 2025'))
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('Jan 31, 2025')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('31 January 2025')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('31 Jan 2025')).toBe(epochDate)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('January 2025')).toBe(epochMonth)
+        expect(getDateFnsSmartParse(utcTimeZoneRef).fn('Jan 2025')).toBe(epochMonth)
       })
     })
   })

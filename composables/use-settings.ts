@@ -39,13 +39,13 @@ export default createSharedComposable(() => {
 
   const timeZone = computed<TimeZone>(() => {
     if (settings.value.timeZone) {
-      return allTimeZones.find(tz => tz.value === settings.value.timeZone) ?? getCurrentTimeZone()
+      return allTimeZones.find(tz => tz.id === settings.value.timeZone) ?? getLocalTimeZone()
     }
-    return getCurrentTimeZone()
+    return getLocalTimeZone()
   })
 
   const localTimeZone = computed<TimeZone>(() => {
-    return getCurrentTimeZone()
+    return getLocalTimeZone()
   })
 
   return {
@@ -75,7 +75,7 @@ function loadSettings(): Settings {
   if (typeof storedSettings.darkMode === 'boolean') {
     settings.darkMode = storedSettings.darkMode
   }
-  if (typeof storedSettings.timeZone === 'string' && allTimeZones.find(tz => tz.value === storedSettings.timeZone)) {
+  if (typeof storedSettings.timeZone === 'string' && allTimeZones.find(tz => tz.id === storedSettings.timeZone)) {
     settings.timeZone = storedSettings.timeZone
   }
   return settings

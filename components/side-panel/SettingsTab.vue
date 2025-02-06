@@ -4,7 +4,7 @@ const { debugEnabled, darkMode, settings, localTimeZone } = useSettings()
 const localTimeZoneLabel = computed(() => `Local time zone - ${localTimeZone.value.label}`)
 const timeZoneLabel = computed<string>(() =>
   settings.value.timeZone
-    ? allTimeZones.find(tz => tz.value === settings.value.timeZone)?.label ?? localTimeZoneLabel.value
+    ? allTimeZones.find(tz => tz.id === settings.value.timeZone)?.label ?? localTimeZoneLabel.value
     : localTimeZoneLabel.value,
 )
 </script>
@@ -52,8 +52,8 @@ const timeZoneLabel = computed<string>(() =>
           <SelectItem
 
             v-for="zone in allTimeZones"
-            :key="zone.value"
-            :value="zone.value"
+            :key="zone.id"
+            :value="zone.id"
           >
             {{ zone.label }}
           </SelectItem>

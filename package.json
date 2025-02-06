@@ -19,7 +19,7 @@
     "lint:no-fix": "eslint .",
     "typecheck": "nuxt typecheck",
     "clean": "nuxt cleanup",
-    "check": "npm run lint && npm run typecheck && npm run test"
+    "check": "npm run lint:no-fix && npm run typecheck && npm run test"
   },
   "dependencies": {
     "@mojir/lits": "1.2.2-alpha.7",

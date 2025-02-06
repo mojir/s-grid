@@ -10,7 +10,7 @@ const litsDebug = new Lits({ debug: true })
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
 
-let timeZone: Ref<string> = ref('UTC')
+let timeZone = ref<TimeZone>(getLocalTimeZone())
 let debugEnabled: Ref<boolean> = ref(false)
 
 const jsFunctions: Record<string, JsFunction> = {
@@ -29,7 +29,7 @@ export default function useLits() {
     timeZoneRef,
     debugEnabledRef,
   }: {
-    timeZoneRef: Ref<string>
+    timeZoneRef: Ref<TimeZone>
     debugEnabledRef: Ref<boolean>
   }) {
     timeZone = timeZoneRef
