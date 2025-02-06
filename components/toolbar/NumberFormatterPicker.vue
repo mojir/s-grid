@@ -39,7 +39,7 @@ let watchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
   format.value = grid.value.getFormatter(newSelection) ?? ''
 
-  const formatterRefs = newSelection.getCells().map(cell => cell.formatter)
+  const formatterRefs = newSelection.getCells().map(cell => cell.numberFormatter)
 
   watchHandle?.stop()
   watchHandle = watch(formatterRefs, () => {
@@ -49,36 +49,36 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
 
 function setFloat() {
   format.value = floatFormatter
-  grid.value.setFormatter(floatFormatter, null)
+  grid.value.setNumberFormatter(floatFormatter, null)
 }
 
 function setFixed2() {
   format.value = fixed2Formatter
-  grid.value.setFormatter(fixed2Formatter, null)
+  grid.value.setNumberFormatter(fixed2Formatter, null)
 }
 
 function setInteger() {
   format.value = integerFormatter
-  grid.value.setFormatter(integerFormatter, null)
+  grid.value.setNumberFormatter(integerFormatter, null)
 }
 
 function setPercent() {
   format.value = percentFormatter
-  grid.value.setFormatter(percentFormatter, null)
+  grid.value.setNumberFormatter(percentFormatter, null)
 }
 
 function setSek() {
   format.value = sekFormatter
-  grid.value.setFormatter(sekFormatter, null)
+  grid.value.setNumberFormatter(sekFormatter, null)
 }
 
 function setUsd() {
   format.value = usdFormatter
-  grid.value.setFormatter(usdFormatter, null)
+  grid.value.setNumberFormatter(usdFormatter, null)
 }
 
 function save() {
-  grid.value.setFormatter(format.value ?? defaultFormatter, null)
+  grid.value.setNumberFormatter(format.value ?? defaultFormatter, null)
 }
 </script>
 

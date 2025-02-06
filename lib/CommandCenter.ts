@@ -32,7 +32,7 @@ const commandNames = [
   'AddAlias!',
   'SetBackgroundColor!',
   'SetColWidth!',
-  'SetFormatter!',
+  'SetNumberFormatter!',
   'SetInput!',
   'SetRowHeight!',
   'SetFontSize!',
@@ -396,11 +396,11 @@ export class CommandCenter {
     })
 
     this.registerCommand({
-      name: 'SetFormatter!',
-      execute: (formatter: string, referenceString?: string) => {
+      name: 'SetNumberFormatter!',
+      execute: (numberFormatter: string, referenceString?: string) => {
         const grid = this.project.currentGrid
         if (!referenceString) {
-          grid.value.setFormatter(formatter, null)
+          grid.value.setNumberFormatter(numberFormatter, null)
           return
         }
 
@@ -408,9 +408,9 @@ export class CommandCenter {
         if (!reference) {
           throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setFormatter(formatter, reference)
+        grid.value.setNumberFormatter(numberFormatter, reference)
       },
-      description: 'Set the formatter program of a cell or a range of cells. If no target is specified, set the formatter program of all cells in the current selection.',
+      description: 'Set the number formatter program of a cell or a range of cells. If no target is specified, set the number formatter program of all cells in the current selection.',
     })
 
     this.registerCommand({

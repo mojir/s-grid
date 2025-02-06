@@ -15,7 +15,7 @@ export class Cell {
 
   public readonly grid: Grid
   public readonly input = ref('')
-  public readonly formatter = ref<string>(defaultFormatter)
+  public readonly numberFormatter = ref<string>(defaultFormatter)
   public readonly fontSize = ref<StyleFontSize>(defaultFontSize)
   public readonly fontFamily = ref<StyleFontFamily>(defaultFontFamily)
   public readonly bold = ref<boolean>(false)
@@ -75,8 +75,8 @@ export class Cell {
     watch(this.textColor, (newValue, oldValue) => {
       this.grid.pubSub.publish(this.createCellChange('textColor', oldValue, newValue))
     })
-    watch(this.formatter, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('formatter', oldValue, newValue))
+    watch(this.numberFormatter, (newValue, oldValue) => {
+      this.grid.pubSub.publish(this.createCellChange('numberFormatter', oldValue, newValue))
     })
   }
 
@@ -84,8 +84,8 @@ export class Cell {
     if (cellDTO.input !== undefined && cellDTO.input !== this.input.value) {
       this.input.value = cellDTO.input
     }
-    if (cellDTO.formatter !== undefined && cellDTO.formatter !== this.formatter.value) {
-      this.formatter.value = cellDTO.formatter
+    if (cellDTO.numberFormatter !== undefined && cellDTO.numberFormatter !== this.numberFormatter.value) {
+      this.numberFormatter.value = cellDTO.numberFormatter
     }
     if (cellDTO.fontFamily !== undefined && cellDTO.fontFamily !== this.fontFamily.value) {
       this.fontFamily.value = cellDTO.fontFamily
@@ -119,7 +119,7 @@ export class Cell {
   public getDTO(): CellDTO {
     return {
       input: this.input.value,
-      formatter: this.formatter.value ?? undefined,
+      numberFormatter: this.numberFormatter.value ?? undefined,
       fontSize: this.fontSize.value ?? undefined,
       bold: this.bold.value ?? undefined,
       italic: this.italic.value ?? undefined,
@@ -133,7 +133,7 @@ export class Cell {
 
   public clear() {
     this.input.value = ''
-    this.formatter.value = defaultFormatter
+    this.numberFormatter.value = defaultFormatter
     this.fontSize.value = defaultFontSize
     this.bold.value = false
     this.italic.value = false
@@ -251,12 +251,12 @@ export class Cell {
     if (typeof this.output.value !== 'number') {
       return this.output.value
     }
-    const formatter = this.formatter.value
-    if (formatter === null) {
+    const numberFormatter = this.numberFormatter.value
+    if (numberFormatter === null) {
       return this.output.value
     }
 
-    const identifiers = Array.from(this.lits.getUnresolvedIdentifers(formatter))
+    const identifiers = Array.from(this.lits.getUnresolvedIdentifers(numberFormatter))
 
     identifiers.push(...this.getReferencesFromUnresolvedIdentifiers(identifiers)
       .flatMap(reference => reference.getCells())
@@ -266,7 +266,7 @@ export class Cell {
 
     try {
       const values = this.project.getValuesFromUndefinedIdentifiers(uniqueIdentifiers, this.grid)
-      const fn = this.lits.run(formatter, { values })
+      const fn = this.lits.run(numberFormatter, { values })
 
       if (!isLitsFunction(fn)) {
         return this.output.value

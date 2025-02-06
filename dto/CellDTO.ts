@@ -92,7 +92,7 @@ export function isStyleTextDecoration(value: string): value is StyleTextDecorati
 
 export type CellDTO = {
   input?: string
-  formatter?: string
+  numberFormatter?: string
   fontSize?: StyleFontSize
   fontFamily?: StyleFontFamily
   bold?: boolean

@@ -99,8 +99,8 @@ export class Grid {
       if (cellDTO.input !== undefined) {
         cell.input.value = cellDTO.input
       }
-      if (cellDTO.formatter !== undefined) {
-        cell.formatter.value = cellDTO.formatter
+      if (cellDTO.numberFormatter !== undefined) {
+        cell.numberFormatter.value = cellDTO.numberFormatter
       }
       if (cellDTO.fontSize !== undefined) {
         cell.fontSize.value = cellDTO.fontSize
@@ -377,17 +377,17 @@ export class Grid {
     return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
   }
 
-  public setFormatter(formatter: string, reference: Reference | null): void {
+  public setNumberFormatter(numberFormatter: string, reference: Reference | null): void {
     (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
-      cell.formatter.value = formatter
+      cell.numberFormatter.value = numberFormatter
     })
   }
 
   public getFormatter(reference: Reference | null): string | null {
     const cells = (reference ?? this.selection.selectedRange.value).getCells()
-    const formatter = cells[0]?.formatter.value ?? null
+    const numberFormatter = cells[0]?.numberFormatter.value ?? null
 
-    return cells.slice(1).every(cell => cell.formatter.value === formatter) ? formatter : null
+    return cells.slice(1).every(cell => cell.numberFormatter.value === numberFormatter) ? numberFormatter : null
   }
 
   public setRowHeight(height: number, rowIndex: RangeReference | null): void {
