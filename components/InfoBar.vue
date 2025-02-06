@@ -11,19 +11,19 @@ const { project } = toRefs(props)
 const grid = project.value.currentGrid
 
 const errorMessage = computed(() => {
-  const output = grid.value.currentCell.value.output.value
-  if (output instanceof Error) {
-    if (isLitsError(output)) {
-      return output.message
+  const error = grid.value.currentCell.value.error.value
+  if (error) {
+    if (isLitsError(error)) {
+      return error.message
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const message = (output as any)?.message
+    const message = (error as any)?.message
 
     if (typeof message === 'string') {
       return message || 'Unknown error'
     }
 
-    return `${output}`
+    return `${error}`
   }
   return null
 })

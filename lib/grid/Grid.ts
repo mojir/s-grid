@@ -386,7 +386,7 @@ export class Grid {
     })
   }
 
-  public getFormat(reference: Reference | null): string | null {
+  public getFormat(reference: Reference | null): Format | null {
     const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const format = cells[0]?.format.value ?? null
 
@@ -399,7 +399,7 @@ export class Grid {
     })
   }
 
-  public getFormatter(reference: Reference | null): string | null {
+  public getNumberFormatter(reference: Reference | null): string | null {
     const cells = (reference ?? this.selection.selectedRange.value).getCells()
     const numberFormatter = cells[0]?.numberFormatter.value ?? null
 

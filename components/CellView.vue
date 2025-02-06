@@ -99,7 +99,7 @@ const cellStyle = computed(() => {
   else {
     style.justifyContent = cell.value.isNumber.value
       ? 'right'
-      : cell.value.hasError.value
+      : cell.value.error.value
         ? 'center'
         : 'left'
   }
@@ -123,7 +123,7 @@ const cellStyle = computed(() => {
   if (cellTextColor.value) {
     style.color = cellTextColor.value.getStyleString()
   }
-  else if (cell.value.hasError.value) {
+  else if (cell.value.error.value) {
     style.color = 'var(--error-color)'
   }
   // }

@@ -201,6 +201,11 @@ export class Cell {
   public output = computed(() => {
     const input = this.input.value
 
+    // TODO: This is poc
+    if (input === 'Today') {
+      return new Date().getTime()
+    }
+
     if (input === '') {
       return null
     }
@@ -231,9 +236,10 @@ export class Cell {
       return ''
     }
 
-    if (this.output.value instanceof Error) {
+    if (this.error.value) {
       return '#ERR'
     }
+
     if (isLitsFunction(this.output.value)) {
       // TODO, this is a temporary solution
       // We can have many aliases for a cell, we should handle this
@@ -257,7 +263,14 @@ export class Cell {
   })
 
   private formatOutput() {
-    if (typeof this.output.value !== 'number') {
+    if (this.format.value === 'string') {
+      return `${this.output.value}`
+    }
+    if (this.isDate.value) {
+      // TODO: This is poc
+      return `Epoch ${this.output.value}`
+    }
+    if (typeof this.output.value !== 'number' && this.format.value === 'auto') {
       return this.output.value
     }
     const numberFormatter = this.numberFormatter.value
@@ -289,12 +302,35 @@ export class Cell {
     }
   }
 
-  public isNumber = computed(() => {
-    return typeof this.output.value === 'number'
+  public isDate = computed(() => {
+    // TODO: This is poc
+    return this.format.value === 'date'
+      || (this.format.value === 'auto' && this.input.value === 'Today')
   })
 
-  public hasError = computed(() => {
-    return this.output.value instanceof Error
+  public isNumber = computed(() => {
+    return !this.isDate.value
+      && typeof this.output.value === 'number'
+      && (this.format.value === 'number' || this.format.value === 'auto')
+  })
+
+  public error = computed(() => {
+    if (this.output.value === null) {
+      return null
+    }
+    if (this.output.value instanceof Error) {
+      return this.output.value
+    }
+    if (this.format.value === 'number' && typeof this.output.value !== 'number') {
+      return new Error('Invalid number')
+    }
+    if (this.format.value === 'date' && typeof this.output.value !== 'number') {
+      return new Error('Invalid date')
+    }
+    if (this.format.value === 'string' && typeof this.output.value !== 'string' && typeof this.output.value !== 'number') {
+      return new Error('Invalid string')
+    }
+    return null
   })
 
   public getDebugInfo() {
@@ -308,7 +344,7 @@ export class Cell {
       colIndex: this.cellReference.colIndex,
       localReferences: [...this.localReferences.value],
       references: [...this.references.value],
-      hasError: this.hasError.value,
+      hasError: this.error.value,
     }
   }
 
