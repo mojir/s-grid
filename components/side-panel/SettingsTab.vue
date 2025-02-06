@@ -1,21 +1,34 @@
 <script setup lang="ts">
-const { debugEnabled, darkMode, settings, timeZone } = useSettings()
+const { debugEnabled, darkMode, settings, localTimeZone } = useSettings()
+
+const localTimeZoneLabel = computed(() => `Local time zone - ${localTimeZone.value.label}`)
+const timeZoneLabel = computed<string>(() =>
+  settings.value.timeZone
+    ? allTimeZones.find(tz => tz.value === settings.value.timeZone)?.label ?? localTimeZoneLabel.value
+    : localTimeZoneLabel.value,
+)
 </script>
 
 <template>
   <div
     class="flex flex-col w-full text-sm dark:text-slate-400 text-gray-600 gap-2 pb-1"
   >
-    <div class="flex items-center justify-between">
-      <Label for="dark-mode-switch">Dark mode</Label>
+    <div class="flex items-center">
+      <Label
+        class="flex-1 cursor-pointer hover:underline"
+        for="dark-mode-switch"
+      >Dark mode</Label>
       <Switch
         id="dark-mode-switch"
         :checked="darkMode"
         @update:checked="settings.darkMode = $event"
       />
     </div>
-    <div class="flex items-center justify-between">
-      <Label for="debug-mode-switch">Debug mode</Label>
+    <div class="flex items-center">
+      <Label
+        class="flex-1 cursor-pointer hover:underline"
+        for="debug-mode-switch"
+      >Debug mode</Label>
       <Switch
         id="debug-mode-switch"
         :checked="debugEnabled"
@@ -24,16 +37,16 @@ const { debugEnabled, darkMode, settings, timeZone } = useSettings()
     </div>
     <Label>Timezone</Label>
     <Select
-      :model-value="timeZone"
+      :model-value="settings.timeZone ?? 'default'"
       @update:model-value="settings.timeZone = $event === 'default' ? null : $event"
     >
       <SelectTrigger class="w-full">
-        <SelectValue />
+        {{ timeZoneLabel }}
       </SelectTrigger>
       <SelectContent class="z-[1100]">
         <SelectGroup>
           <SelectItem :value="'default'">
-            Auto detect time zone
+            {{ localTimeZoneLabel }}
           </SelectItem>
           <SelectSeparator />
           <SelectItem

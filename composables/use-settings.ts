@@ -15,7 +15,7 @@ type Defaults = {
 const defaults: Defaults = {
   debugEnabled: () => false,
   darkMode: () => false,
-  timeZone: () => getCurrentTimeZone(),
+  timeZone: () => '', // not used,
 }
 
 const localStorageKeys = 'sgrid-settings'
@@ -37,13 +37,23 @@ export default createSharedComposable(() => {
     }, 0)
   }, { immediate: true })
 
-  const timeZone = computed(() => settings.value.timeZone ?? defaults.timeZone())
+  const timeZone = computed<TimeZone>(() => {
+    if (settings.value.timeZone) {
+      return allTimeZones.find(tz => tz.value === settings.value.timeZone) ?? getCurrentTimeZone()
+    }
+    return getCurrentTimeZone()
+  })
+
+  const localTimeZone = computed<TimeZone>(() => {
+    return getCurrentTimeZone()
+  })
 
   return {
     settings,
     debugEnabled,
     darkMode,
     timeZone,
+    localTimeZone,
   }
 })
 

@@ -1,4 +1,9 @@
-export const allTimeZones = [
+export type TimeZone = {
+  value: string
+  label: string
+  timeOffset: number
+}
+export const allTimeZones: TimeZone[] = [
   { value: 'Pacific/Niue', label: 'Pacific/Niue [-11h]', timeOffset: -11 * 60 },
   { value: 'Pacific/Honolulu', label: 'Honolulu (HST) [-10h]', timeOffset: -10 * 60 },
   { value: 'Pacific/Marquesas', label: 'Marquesas [-9:30h]', timeOffset: -9.5 * 60 },
@@ -44,7 +49,12 @@ export const allTimeZones = [
   { value: 'Pacific/Kiritimati', label: 'Kiritimati [+14h]', timeOffset: 14 * 60 },
 ] as const
 
-export function getCurrentTimeZone(): string {
+export function getCurrentTimeZone(): TimeZone {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const timeOffset = (new Date().getTimezoneOffset()) * -1
-  return allTimeZones.find(tz => tz.timeOffset === timeOffset)?.value ?? 'Europe/London'
+  return {
+    value: timeZone,
+    label: `${timeZone} [${timeOffset >= 0 ? '+' : ''}${Math.round(100 * timeOffset / 60) / 100}h]`,
+    timeOffset,
+  }
 }
