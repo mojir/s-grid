@@ -3,7 +3,6 @@ import { isValid, parse, type FPFn1 } from 'date-fns/fp'
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz'
 
 const referenceDate = new Date(0)
-// const referenceDate = new Date(Date.UTC(1970))
 
 const smartTimeParsers: Array<FPFn1<Date, string>> = [
   'yyyy-MM-dd HH:mm:ss.SSS', // 2024-01-31 23:59:59.999
