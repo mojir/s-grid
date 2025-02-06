@@ -1,4 +1,4 @@
-const { debugEnabled } = useSettings()
+let debugEnabled = ref<boolean>(false)
 
 type TabId = 'repl' | 'settings' | 'debug' | 'alias' | 'diagrams'
 type Tab = {
@@ -25,6 +25,11 @@ const sidePanelActive = ref<boolean>(false)
 const currentTab = ref<TabId>('repl')
 
 let ctrlKeyTime: number | null = null
+
+function setupRefs({ debugEnabledRef }: { debugEnabledRef: Ref<boolean> }) {
+  debugEnabled = debugEnabledRef
+}
+
 function sidePanelHandleKeyDown(event: KeyboardEvent): boolean {
   if (event.key === 'Control') {
     if (ctrlKeyTime === null) {
@@ -89,6 +94,7 @@ export default function () {
     currentTab,
     sidePanelOpen,
     sidePanelActive,
+    setupRefs,
     sidePanelHandleKeyDown,
   }
 }

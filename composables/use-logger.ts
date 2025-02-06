@@ -2,8 +2,7 @@ import { Log } from '~/lib/Log'
 import type { SGridComponent } from '~/lib/SGridComponent'
 import { sGridComponents } from '~/lib/SGridComponent'
 
-const { debugEnabled } = useSettings()
-
+let debugEnabled = ref(false)
 const log = new Log()
 
 const activeInfoLoggers = ref<Record<SGridComponent, boolean>>({
@@ -22,6 +21,10 @@ const activeInfoLoggers = ref<Record<SGridComponent, boolean>>({
   Transformer: false,
   UI: false,
 })
+
+function setupRefs({ debugEnabledRef }: { debugEnabledRef: Ref<boolean> }) {
+  debugEnabled = debugEnabledRef
+}
 
 function createLogger(component: SGridComponent, tag: string | null = null) {
   return {
@@ -114,6 +117,7 @@ function toLogArgs(component: SGridComponent, tag: string | null, message: unkno
 
 export default function () {
   return {
+    setupRefs,
     createLogger,
     getLogGridDTO: () => log.toGridDTO(),
     activeInfoLoggers,
