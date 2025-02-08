@@ -204,12 +204,12 @@ export class Cell {
     ? this.computedInput.value.slice(1)
     : undefined)
 
+  public directLitsDeps = computed<string[]>(() => this.formula.value ? Array.from(this.lits.getUnresolvedIdentifers(this.formula.value)) : [])
+
   public references = computed<Reference[]>(() => calculateReferences({
     grid: this.grid,
     directLitsDeps: this.directLitsDeps,
   }))
-
-  public directLitsDeps = computed<string[]>(() => this.formula.value ? Array.from(this.lits.getUnresolvedIdentifers(this.formula.value)) : [])
 
   public allLitsDeps = computed<string[]>(() => calculateAllLitsDeps({
     references: this.references,
@@ -219,16 +219,28 @@ export class Cell {
   private numberInput = computed(() => calculateNumberInput(this.computedInput))
 
   private formulaResult = computed<Result>(() => calculateFormulaResult({
-    run: this.lits.run,
-    grid: this.grid,
     formula: this.formula,
     allLitsDeps: this.allLitsDeps,
+    run: this.lits.run,
+    grid: this.grid,
   }))
 
   public output = computed(() => calculateOutput({
     input: this.computedInput,
     numberInput: this.numberInput,
     formulaResult: this.formulaResult,
+  }))
+
+  public isoDate = computed<Date | undefined>(() => this.isoDateInput.value
+    ? new Date(this.isoDateInput.value)
+    : this.dateUtils.parseIsoDate(this.output.value),
+  )
+
+  public derivedType = computed<DerivedType>(() => calculateDerivedType({
+    cellType: this.cellType,
+    numberInput: this.numberInput,
+    isoDate: this.isoDate,
+    output: this.output,
   }))
 
   private formattedNumber = computed<Result<string>>(() => calculateFormattedNumber({
@@ -252,18 +264,6 @@ export class Cell {
     error: this.error,
     formattedNumber: this.formattedNumber,
     formattedDate: this.formattedDate,
-  }))
-
-  public isoDate = computed<Date | undefined>(() => this.isoDateInput.value
-    ? new Date(this.isoDateInput.value)
-    : this.dateUtils.parseIsoDate(this.output.value),
-  )
-
-  public derivedType = computed<DerivedType>(() => calculateDerivedType({
-    cellType: this.cellType,
-    numberInput: this.numberInput,
-    isoDate: this.isoDate,
-    output: this.output,
   }))
 
   public error = computed<Error | undefined>(() => calculateError({
