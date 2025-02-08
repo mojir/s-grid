@@ -1,6 +1,6 @@
 import { cellReferenceRegExp, maxNbrOfCols, maxNbrOfRows, pageSize } from '../constants'
 import type { Grid } from '../grid/Grid'
-import type { Cell } from '../Cell'
+import type { Cell } from '../cell/Cell'
 import { RangeReference } from './RangeReference'
 import type { Direction, Reference, Movement } from './utils'
 

@@ -98,6 +98,7 @@ export function isStyleTextDecoration(value: string): value is StyleTextDecorati
 
 export type CellDTO = {
   input?: string
+  isoDateInput?: string
   cellType?: CellType
   numberFormatter?: string
   fontSize?: StyleFontSize

@@ -1,8 +1,8 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
 import { builtinLitsScript } from '~/lib/lits'
-import { d3Format } from '~/lib/lits/interop/d3-lits'
-import { getDateFnsFormat, getDateFnsParse, getDateFnsSmartParse } from '~/lib/lits/interop/date-fns-lits'
+import { numberFormat } from '~/lib/lits/interop/d3-lits'
+import { dateToIsoDate, getDateFormat, getDateParse } from '~/lib/lits/interop/date-fns-lits'
 
 const lits = new Lits()
 const litsDebug = new Lits({ debug: true })
@@ -17,16 +17,18 @@ let jsFunctions: Record<string, JsFunction> = getJsFunctions()
 
 function getJsFunctions(): Record<string, JsFunction> {
   return {
-    'd3:format': d3Format,
-    'date-fns:parse': getDateFnsParse(timeZone),
-    'date-fns:smart-parse': getDateFnsSmartParse(timeZone),
-    'date-fns:format': getDateFnsFormat(timeZone),
+    'number:format': numberFormat,
+    'date:parse': getDateParse(timeZone),
+    'date:format': getDateFormat(timeZone),
+    'date:to-iso-date': dateToIsoDate,
   }
 }
 
 const { createLogger } = useLogger()
 
 const logger = createLogger('Lits')
+export type RunLits = ReturnType<typeof useLits>['run']
+export type ApplyLits = ReturnType<typeof useLits>['apply']
 
 export default function useLits() {
   function setupRefs({

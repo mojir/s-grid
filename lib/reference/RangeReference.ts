@@ -1,4 +1,4 @@
-import type { Cell } from '../Cell'
+import type { Cell } from '../cell/Cell'
 import type { Col } from '../Col'
 import { rangeRangeRegExp } from '../constants'
 import type { Grid } from '../grid/Grid'

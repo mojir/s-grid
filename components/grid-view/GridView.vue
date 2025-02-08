@@ -16,7 +16,7 @@ const { project } = toRefs(props)
 const grid = computed(() => project.value.currentGrid.value)
 
 const localReferenceList = computed(() => {
-  return grid.value.currentCell.value.referenceList.value.filter((reference) => {
+  return grid.value.currentCell.value.references.value.filter((reference) => {
     return reference.grid === grid.value
   })
 })

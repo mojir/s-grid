@@ -99,7 +99,7 @@ const cellStyle = computed(() => {
   else {
     style.justifyContent = cell.value.error.value
       ? 'center'
-      : cell.value.derivedType.value === 'number'
+      : cell.value.derivedType.value === 'number' || cell.value.derivedType.value === 'date'
         ? 'right'
         : 'left'
   }

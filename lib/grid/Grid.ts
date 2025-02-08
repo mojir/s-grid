@@ -1,4 +1,4 @@
-import { Cell } from '../Cell'
+import { Cell } from '../cell/Cell'
 import { Col } from '../Col'
 import { Color } from '../color'
 import { defaultColWidth, defaultRowHeight, getLineHeight } from '../constants'
@@ -404,6 +404,19 @@ export class Grid {
     const numberFormatter = cells[0]?.numberFormatter.value ?? null
 
     return cells.slice(1).every(cell => cell.numberFormatter.value === numberFormatter) ? numberFormatter : null
+  }
+
+  public setDateFormatter(dateFormatter: string, reference: Reference | null): void {
+    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
+      cell.dateFormatter.value = dateFormatter
+    })
+  }
+
+  public getDateFormatter(reference: Reference | null): string | null {
+    const cells = (reference ?? this.selection.selectedRange.value).getCells()
+    const dateFormatter = cells[0]?.dateFormatter.value ?? null
+
+    return cells.slice(1).every(cell => cell.numberFormatter.value === dateFormatter) ? dateFormatter : null
   }
 
   public setRowHeight(height: number, rowIndex: RangeReference | null): void {
