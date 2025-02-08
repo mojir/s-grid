@@ -13,7 +13,7 @@ import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
 import { GridSelection } from './GridSelection'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
-import type { CellDTO, Format, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
+import type { CellDTO, CellType, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 type GridState = 'idle' | 'selecting' | 'cellMoving' | 'rangeMoving' | 'cellAutoFilling' | 'rangeAutoFilling'
 export class Grid {
@@ -99,8 +99,8 @@ export class Grid {
       if (cellDTO.input !== undefined) {
         cell.input.value = cellDTO.input
       }
-      if (cellDTO.format !== undefined) {
-        cell.format.value = cellDTO.format
+      if (cellDTO.cellType !== undefined) {
+        cell.cellType.value = cellDTO.cellType
       }
       if (cellDTO.numberFormatter !== undefined) {
         cell.numberFormatter.value = cellDTO.numberFormatter
@@ -380,17 +380,17 @@ export class Grid {
     return cells.slice(1).every(cell => cell.justify.value === justify) ? justify : null
   }
 
-  public setFormat(format: Format, reference: Reference | null): void {
+  public setCellType(cellType: CellType, reference: Reference | null): void {
     (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
-      cell.format.value = format
+      cell.cellType.value = cellType
     })
   }
 
-  public getFormat(reference: Reference | null): Format | null {
+  public getCellType(reference: Reference | null): CellType | null {
     const cells = (reference ?? this.selection.selectedRange.value).getCells()
-    const format = cells[0]?.format.value ?? null
+    const cellType = cells[0]?.cellType.value ?? null
 
-    return cells.slice(1).every(cell => cell.format.value === format) ? format : null
+    return cells.slice(1).every(cell => cell.cellType.value === cellType) ? cellType : null
   }
 
   public setNumberFormatter(numberFormatter: string, reference: Reference | null): void {

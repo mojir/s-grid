@@ -1,5 +1,5 @@
 import { identifierCharacterClass, identifierFirstCharacterClass } from '@mojir/lits'
-import type { Format, StyleFontFamily, StyleFontSize } from '~/dto/CellDTO'
+import type { CellType, StyleFontFamily, StyleFontSize } from '~/dto/CellDTO'
 
 const colPart = '(\\$?)([A-Z]{1,2})' // Two groups
 const rowPart = '(\\$?)([1-9]\\d{0,3})' // Two groups
@@ -22,8 +22,9 @@ export const rangeRangeRegExp = new RegExp(`^${gridPart}(?:${rangeStart}):(?:${r
 
 export const pageSize = 40
 
-export const defaultFormat: Format = 'auto'
+export const defaultCellType: CellType = 'auto'
 export const defaultNumberFormatter = '#(d3:format ".4~f" %)'
+export const defaultDateFormatter = '#(date-fns:format "MMM HH:mm" %)'
 export const defaultFontSize: StyleFontSize = 14
 export const defaultFontFamily: StyleFontFamily = 'sans-serif:Arial'
 // TODO set defalultLineHeight to 14 * 1.6

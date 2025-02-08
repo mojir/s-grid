@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { WatchHandle } from 'vue'
-import type { Format } from '~/dto/CellDTO'
-import { defaultFormat, defaultNumberFormatter } from '~/lib/constants'
+import type { CellType } from '~/dto/CellDTO'
+import { defaultCellType, defaultNumberFormatter } from '~/lib/constants'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -13,11 +13,11 @@ const grid = computed(() => project.value.currentGrid.value)
 
 const open = ref(false)
 
-const currentFormat = computed<Format>(() => grid.value.getFormat(grid.value.selection.selectedRange.value) ?? defaultFormat)
+const currentCellType = computed<CellType>(() => grid.value.getCellType(grid.value.selection.selectedRange.value) ?? defaultCellType)
 const currentNumberFormatter = computed(() => grid.value.getNumberFormatter(grid.value.selection.selectedRange.value) ?? defaultNumberFormatter)
 watch(open, (isOpen) => {
   if (isOpen) {
-    format.value = currentFormat.value
+    cellType.value = currentCellType.value
     numberFormatter.value = currentNumberFormatter.value
   }
   setTimeout(() => project.value.keyboardClaimed.value = isOpen)
@@ -25,11 +25,11 @@ watch(open, (isOpen) => {
 
 const tab = ref<'number' | 'date'>('number')
 
-const format = ref<Format | ''>(defaultFormat)
-const formatAuto = computed(() => format.value === 'auto')
-const formatNumber = computed(() => format.value === 'number')
-const formatDate = computed(() => format.value === 'date')
-const formatString = computed(() => format.value === 'string')
+const cellType = ref<CellType | ''>(defaultCellType)
+const cellTypeAuto = computed(() => cellType.value === 'auto')
+const cellTypeNumber = computed(() => cellType.value === 'number')
+const cellTypeDate = computed(() => cellType.value === 'date')
+const cellTypeString = computed(() => cellType.value === 'string')
 
 const numberFormatter = ref<string>(defaultNumberFormatter)
 const floatFormatter = '#(d3:format ".4~f" %)'
@@ -49,13 +49,13 @@ const usd = computed(() => numberFormatter.value === usdFormatter)
 let formatWatchHandle: WatchHandle | null = null
 let numberFormatterWatchHandle: WatchHandle | null = null
 watch(grid.value.selection.selectedRange, (newSelection) => {
-  format.value = grid.value.getFormat(newSelection) ?? ''
+  cellType.value = grid.value.getCellType(newSelection) ?? ''
   numberFormatter.value = grid.value.getNumberFormatter(newSelection) ?? ''
 
-  const formatRefs = newSelection.getCells().map(cell => cell.format)
+  const formatRefs = newSelection.getCells().map(cell => cell.cellType)
   formatWatchHandle?.stop()
   formatWatchHandle = watch(formatRefs, () => {
-    format.value = grid.value.getFormat(newSelection) || ''
+    cellType.value = grid.value.getCellType(newSelection) || ''
   })
 
   const formatterRefs = newSelection.getCells().map(cell => cell.numberFormatter)
@@ -66,24 +66,24 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
   })
 }, { immediate: true })
 
-function setFormatAuto() {
-  format.value = 'auto'
-  grid.value.setFormat('auto', null)
+function setCellTypeAuto() {
+  cellType.value = 'auto'
+  grid.value.setCellType('auto', null)
 }
 
-function setFormatNumber() {
-  format.value = 'number'
-  grid.value.setFormat('number', null)
+function setCellTypeNumber() {
+  cellType.value = 'number'
+  grid.value.setCellType('number', null)
 }
 
-function setFormatDate() {
-  format.value = 'date'
-  grid.value.setFormat('date', null)
+function setCellTypeDate() {
+  cellType.value = 'date'
+  grid.value.setCellType('date', null)
 }
 
-function setFormatString() {
-  format.value = 'string'
-  grid.value.setFormat('string', null)
+function setCellTypeString() {
+  cellType.value = 'string'
+  grid.value.setCellType('string', null)
 }
 
 function setFloat() {
@@ -146,33 +146,33 @@ function save() {
         class="w-[350px]"
       >
         <DropdownMenuCheckboxItem
-          :checked="formatAuto"
+          :checked="cellTypeAuto"
           class="text-sm"
-          @update:checked="setFormatAuto"
+          @update:checked="setCellTypeAuto"
           @select.prevent
         >
           Auto
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          :checked="formatString"
+          :checked="cellTypeString"
           class="text-sm"
-          @update:checked="setFormatString"
+          @update:checked="setCellTypeString"
           @select.prevent
         >
           String
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          :checked="formatNumber"
+          :checked="cellTypeNumber"
           class="text-sm"
-          @update:checked="setFormatNumber"
+          @update:checked="setCellTypeNumber"
           @select.prevent
         >
           Number
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          :checked="formatDate"
+          :checked="cellTypeDate"
           class="text-sm"
-          @update:checked="setFormatDate"
+          @update:checked="setCellTypeDate"
           @select.prevent
         >
           Date
@@ -278,7 +278,7 @@ function save() {
           <div class="flex flex-col px-1 pb-2 gap-1">
             <div>
               <div class="flex justify-between text-xs p-1 mt-2">
-                <span>Custom Format</span>
+                <span>Custom CellType</span>
                 <NuxtLink
                   to="https://d3js.org/d3-format"
                   class="text-xs text-blue-500 underline"

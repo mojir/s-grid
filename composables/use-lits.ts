@@ -13,11 +13,15 @@ const builtingContextDebug = litsDebug.context(builtinLitsScript)
 let timeZone = ref<TimeZone>(getLocalTimeZone())
 let debugEnabled: Ref<boolean> = ref(false)
 
-const jsFunctions: Record<string, JsFunction> = {
-  'd3:format': d3Format,
-  'date-fns:parse': getDateFnsParse(timeZone),
-  'date-fns:smart-parse': getDateFnsSmartParse(timeZone),
-  'date-fns:format': getDateFnsFormat(timeZone),
+let jsFunctions: Record<string, JsFunction> = getJsFunctions()
+
+function getJsFunctions(): Record<string, JsFunction> {
+  return {
+    'd3:format': d3Format,
+    'date-fns:parse': getDateFnsParse(timeZone),
+    'date-fns:smart-parse': getDateFnsSmartParse(timeZone),
+    'date-fns:format': getDateFnsFormat(timeZone),
+  }
 }
 
 const { createLogger } = useLogger()
@@ -34,6 +38,7 @@ export default function useLits() {
   }) {
     timeZone = timeZoneRef
     debugEnabled = debugEnabledRef
+    jsFunctions = getJsFunctions()
   }
 
   function run(program: string, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {

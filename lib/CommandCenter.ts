@@ -36,7 +36,7 @@ const commandNames = [
   'SetInput!',
   'SetRowHeight!',
   'SetFontSize!',
-  'SetFormat!',
+  'SetCellType!',
   'SetBold!',
   'SetItalic!',
   'SetTextDecoration!',
@@ -397,14 +397,14 @@ export class CommandCenter {
     })
 
     this.registerCommand({
-      name: 'SetFormat!',
-      execute: (format: string, referenceString?: string) => {
-        if (!isFormat(format)) {
-          throw new Error(`Invalid format: ${format}`)
+      name: 'SetCellType!',
+      execute: (cellType: string, referenceString?: string) => {
+        if (!isFormat(cellType)) {
+          throw new Error(`Invalid cellType: ${cellType}`)
         }
         const grid = this.project.currentGrid
         if (!referenceString) {
-          grid.value.setFormat(format, null)
+          grid.value.setCellType(cellType, null)
           return
         }
 
@@ -412,9 +412,9 @@ export class CommandCenter {
         if (!reference) {
           throw new Error(`Invalid reference: ${referenceString}`)
         }
-        grid.value.setFormat(format, reference)
+        grid.value.setCellType(cellType, reference)
       },
-      description: 'Set the format of a cell or a range of cells. If no target is specified, set the formatt of all cells in the current selection.',
+      description: 'Set the cell type of a cell or a range of cells. If no target is specified, set the cell type of all cells in the current selection.',
     })
 
     this.registerCommand({

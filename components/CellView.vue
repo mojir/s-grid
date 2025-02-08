@@ -97,10 +97,10 @@ const cellStyle = computed(() => {
     style.justifyContent = 'flex-end'
   }
   else {
-    style.justifyContent = cell.value.isNumber.value
-      ? 'right'
-      : cell.value.error.value
-        ? 'center'
+    style.justifyContent = cell.value.error.value
+      ? 'center'
+      : cell.value.derivedType.value === 'number'
+        ? 'right'
         : 'left'
   }
 

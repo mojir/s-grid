@@ -85,7 +85,7 @@ export class ProjectClipboard {
           align: cellDTO.align,
           backgroundColor: cellDTO.backgroundColor,
           textColor: cellDTO.textColor,
-          format: cellDTO.format,
+          format: cellDTO.cellType,
           numberFormatter: cellDTO.numberFormatter,
         }
       }),
