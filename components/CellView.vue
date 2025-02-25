@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isLitsFunction } from '@mojir/lits'
 import { computed, toRefs, type CSSProperties } from 'vue'
 import { toFontFamilyCss } from '~/dto/CellDTO'
 import type { Col } from '~/lib/Col'
@@ -99,7 +100,7 @@ const cellStyle = computed(() => {
   else {
     style.justifyContent = cell.value.error.value
       ? 'center'
-      : cell.value.derivedType.value === 'number' || cell.value.derivedType.value === 'date'
+      : cell.value.derivedType.value === 'number' || cell.value.derivedType.value === 'date' || isLitsFunction(cell.value.output.value)
         ? 'right'
         : 'left'
   }
