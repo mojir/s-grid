@@ -9,6 +9,7 @@ import {
   isFunctionReference,
 } from '@mojir/lits'
 import type { Project } from './project/Project'
+import { interopFunctionNames } from './lits/interop'
 
 type HistoryEntry = {
   program: string
@@ -17,7 +18,7 @@ type HistoryEntry = {
 
 export class REPL {
   private lits = useLits()
-  private litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys].sort())
+  private litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys, ...interopFunctionNames].sort())
   private historyIndex = -1
   private globalContext: Context = {}
   public history = ref<HistoryEntry[]>([])
@@ -30,6 +31,7 @@ export class REPL {
       this.history.value = []
       this.resetHistoryIndex()
       this.clearSuggestions()
+      this.globalContext = {}
     })
   }
 
@@ -133,7 +135,7 @@ ${command.description}`
     if (suggestion === undefined) {
       return enteredText
     }
-    return `(${suggestion ?? ''})`
+    return suggestion.includes('-') ? `'${suggestion}'` : suggestion
   }
 
   public clearSuggestions() {

@@ -1,8 +1,7 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
 import { builtinLitsScript } from '~/lib/lits'
-import { numberFormat } from '~/lib/lits/interop/d3-lits'
-import { dateToIsoDate, getDateFormat, getDateParse } from '~/lib/lits/interop/date-fns-lits'
+import { getInteropFunctions } from '~/lib/lits/interop'
 
 const lits = new Lits({ algebraic: true })
 const litsDebug = new Lits({ debug: true, algebraic: true })
@@ -10,19 +9,9 @@ const litsDebug = new Lits({ debug: true, algebraic: true })
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
 
-let timeZone = ref<TimeZone>(getLocalTimeZone())
 let debugEnabled: Ref<boolean> = ref(false)
 
-let jsFunctions: Record<string, JsFunction> = getJsFunctions()
-
-function getJsFunctions(): Record<string, JsFunction> {
-  return {
-    'number:format': numberFormat,
-    'date:parse': getDateParse(timeZone),
-    'date:format': getDateFormat(timeZone),
-    'date:to-iso-date': dateToIsoDate,
-  }
-}
+let interopFunctions: Record<string, JsFunction> = getInteropFunctions(ref(getLocalTimeZone()))
 
 const { createLogger } = useLogger()
 
@@ -39,16 +28,15 @@ export default function useLits() {
     timeZoneRef: Ref<TimeZone>
     debugEnabledRef: Ref<boolean>
   }) {
-    timeZone = timeZoneRef
     debugEnabled = debugEnabledRef
-    jsFunctions = getJsFunctions()
+    interopFunctions = getInteropFunctions(timeZoneRef)
   }
 
   function run(program: string, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {
     try {
       return debugEnabled.value
-        ? litsDebug.run(program, { jsFunctions, contexts: [builtingContextDebug], values, globalContext })
-        : lits.run(program, { jsFunctions, contexts: [builtingContext], values, globalContext })
+        ? litsDebug.run(program, { jsFunctions: interopFunctions, contexts: [builtingContextDebug], values, globalContext })
+        : lits.run(program, { jsFunctions: interopFunctions, contexts: [builtingContext], values, globalContext })
     }
     catch (error) {
       logger.warn('Lits operation "run" failed:', error)
@@ -95,8 +83,8 @@ export default function useLits() {
   function apply(fn: LitsFunction, fnParams: unknown[], values: Record<string, unknown> = {}) {
     try {
       return debugEnabled.value
-        ? litsDebug.apply(fn, fnParams, { jsFunctions, contexts: [builtingContextDebug], values })
-        : lits.apply(fn, fnParams, { jsFunctions, contexts: [builtingContext], values })
+        ? litsDebug.apply(fn, fnParams, { jsFunctions: interopFunctions, contexts: [builtingContextDebug], values })
+        : lits.apply(fn, fnParams, { jsFunctions: interopFunctions, contexts: [builtingContext], values })
     }
     catch (error) {
       logger.warn('Lits operation "apply" failed:', error)
@@ -105,13 +93,13 @@ export default function useLits() {
   }
 
   function registerJsFunction(name: string, fn: JsFunction) {
-    jsFunctions[name] = fn
+    interopFunctions[name] = fn
   }
 
   function getUnresolvedIdentifers(program: string): Set<string> {
     const analyzeResult = debugEnabled.value
-      ? litsDebug.analyze(program, { jsFunctions, contexts: [builtingContextDebug] }).unresolvedIdentifiers
-      : lits.analyze(program, { jsFunctions, contexts: [builtingContext] }).unresolvedIdentifiers
+      ? litsDebug.analyze(program, { jsFunctions: interopFunctions, contexts: [builtingContextDebug] }).unresolvedIdentifiers
+      : lits.analyze(program, { jsFunctions: interopFunctions, contexts: [builtingContext] }).unresolvedIdentifiers
 
     return new Set(Array.from(analyzeResult).map(identifier => identifier.symbol))
   }
