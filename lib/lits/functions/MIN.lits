@@ -1,5 +1,7 @@
+$`
 (defn MIN [input]
   (let [numbers (TOARRAY input)]
     (if (empty? numbers)
       0
       (reduce min numbers))))
+`

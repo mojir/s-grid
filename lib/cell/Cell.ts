@@ -10,7 +10,7 @@ import { calculateAllLitsDeps } from './calculateAllLitsDeps'
 import { calculateReferences } from './calculateReferences'
 import { calculateNumberInput } from './calculateNumberInput'
 import type { DerivedType, Result } from './cellTypes'
-import { calculateFormulaResult } from './calculateFormulaResult'
+import { calculateLitsResult } from './calculateLitsResult'
 import { calculateOutput } from './calculateOutput'
 import { calculateFormattedNumber } from './calculateFormattedNumber'
 import { calculateFormattedDate } from './calculateFormattedDate'
@@ -111,7 +111,7 @@ export class Cell {
     })
     watch(this.isoDateInput, (value) => {
       if (value) {
-        this.dateFormatter.value = `#(date:format "${this.dateUtils.getPatternFromDateString(this.input.value.trim())}" %)`
+        this.dateFormatter.value = `(val) => date:format("${this.dateUtils.getPatternFromDateString(this.input.value.trim())}", val)`
       }
     })
   }
@@ -218,7 +218,7 @@ export class Cell {
 
   private numberInput = computed(() => calculateNumberInput(this.computedInput))
 
-  private formulaResult = computed<Result>(() => calculateFormulaResult({
+  private litsResult = computed<Result>(() => calculateLitsResult({
     formula: this.formula,
     allLitsDeps: this.allLitsDeps,
     run: this.lits.run,
@@ -228,7 +228,7 @@ export class Cell {
   public output = computed(() => calculateOutput({
     input: this.computedInput,
     numberInput: this.numberInput,
-    formulaResult: this.formulaResult,
+    formulaResult: this.litsResult,
   }))
 
   public isoDate = computed<Date | undefined>(() => this.isoDateInput.value
@@ -268,7 +268,7 @@ export class Cell {
 
   public error = computed<Error | undefined>(() => calculateError({
     output: this.output,
-    formulaResult: this.formulaResult,
+    formulaResult: this.litsResult,
     formattedNumber: this.formattedNumber,
     formattedDate: this.formattedDate,
     cellType: this.cellType,

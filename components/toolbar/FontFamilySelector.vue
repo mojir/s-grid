@@ -27,17 +27,14 @@ watch(grid.value.selection.selectedRange, (newSelection) => {
   watchHandle?.stop()
   watchHandle = watch(fontFamilyRefs, () => {
     const selectedFontFamily = grid.value.getFontFamily(newSelection)
-    console.log('selectedFontFamily', selectedFontFamily)
     fontFamily.value = selectedFontFamily ?? undefined
   })
 }, { immediate: true })
 
 function onUpdateFontFamily(value: string) {
-  console.log('onUpdateFontFamily', value)
   if (!value || !isFontFamily(value)) {
     return
   }
-  console.log('onUpdateFontFamily 2', value)
   fontFamily.value = value
   // TODO should we be more explicit and always pass in reference?
   grid.value.setFontFamily(value, null)

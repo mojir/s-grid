@@ -23,9 +23,9 @@ export const rangeRangeRegExp = new RegExp(`^${gridPart}(?:${rangeStart}):(?:${r
 export const pageSize = 40
 
 export const defaultCellType: CellType = 'auto'
-export const defaultNumberFormatter = '#(number:format ".4~f" %)'
+export const defaultNumberFormatter = '(val) => number:format(".4~f", val)'
 export const defaultDatePattern = 'yyyy-MM-dd'
-export const defaultDateFormatter = `#(date:format "${defaultDatePattern}" %)`
+export const defaultDateFormatter = `(val) => date:format("${defaultDatePattern}", val)`
 export const defaultFontSize: StyleFontSize = 14
 export const defaultFontFamily: StyleFontFamily = 'sans-serif:Arial'
 // TODO set defalultLineHeight to 14 * 1.6

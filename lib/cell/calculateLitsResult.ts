@@ -1,7 +1,7 @@
 import type { Grid } from '../grid/Grid'
 import type { Result } from './cellTypes'
 
-export function calculateFormulaResult({
+export function calculateLitsResult({
   run,
   grid,
   formula,

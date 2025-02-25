@@ -1,3 +1,4 @@
+$`
 (defn MEDIAN [input]
   (let [sorted (sort (TOARRAY input))
         cnt (count sorted)
@@ -15,3 +16,4 @@
             bottom-val (nth sorted bottom)
             top-val (nth sorted halfway)]
         (/ (+ bottom-val top-val) 2)))))
+`

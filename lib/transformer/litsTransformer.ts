@@ -1,9 +1,9 @@
 import { isLitsError } from '@mojir/lits'
-import { isRangeReferenceString } from '../reference/RangeReference'
-import { getReferenceFromString } from '../reference/utils'
-import { isCellReferenceString } from '../reference/CellReference'
 import type { Cell } from '../cell/Cell'
 import type { Grid } from '../grid/Grid'
+import { isCellReferenceString } from '../reference/CellReference'
+import { isRangeReferenceString } from '../reference/RangeReference'
+import { getReferenceFromString } from '../reference/utils'
 import { transformReference } from './referenceTransformer'
 import type { Transformation } from '.'
 
@@ -27,14 +27,15 @@ export function transformLitsPrograms({
   if (paused) {
     return
   }
-  const formula = cell.formula.value
-  if (!formula) {
+  const litsProgram = cell.formula.value
+  if (!litsProgram) {
     return
   }
   const lits = useLits()
-  const unresolvedIdentifiers = lits.getUnresolvedIdentifers(formula)
 
-  const tokenStream = lits.tokenize(formula)
+  const unresolvedIdentifiers = lits.getUnresolvedIdentifers(litsProgram)
+
+  const tokenStream = lits.tokenize(litsProgram)
   const transformedTokenStream = lits.transform(
     tokenStream,
     (identifier) => {

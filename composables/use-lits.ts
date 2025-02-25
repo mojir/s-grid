@@ -4,8 +4,8 @@ import { builtinLitsScript } from '~/lib/lits'
 import { numberFormat } from '~/lib/lits/interop/d3-lits'
 import { dateToIsoDate, getDateFormat, getDateParse } from '~/lib/lits/interop/date-fns-lits'
 
-const lits = new Lits()
-const litsDebug = new Lits({ debug: true })
+const lits = new Lits({ algebraic: true })
+const litsDebug = new Lits({ debug: true, algebraic: true })
 
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
@@ -27,8 +27,9 @@ function getJsFunctions(): Record<string, JsFunction> {
 const { createLogger } = useLogger()
 
 const logger = createLogger('Lits')
-export type RunLits = ReturnType<typeof useLits>['run']
-export type ApplyLits = ReturnType<typeof useLits>['apply']
+export type LitsComposable = ReturnType<typeof useLits>
+export type RunLits = LitsComposable['run']
+export type ApplyLits = LitsComposable['apply']
 
 export default function useLits() {
   function setupRefs({
@@ -126,5 +127,3 @@ export default function useLits() {
     getUnresolvedIdentifers,
   }
 }
-
-export type LitsComposable = ReturnType<typeof useLits>
