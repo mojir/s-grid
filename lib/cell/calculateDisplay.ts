@@ -2,17 +2,22 @@ import { isLitsFunction } from '@mojir/lits'
 import type { Result } from './cellTypes'
 
 export function calculateDisplay({
+  input,
   output,
   error,
   formattedNumber,
   formattedDate,
 }:
 {
+  input: Ref<string>
   output: Ref<unknown>
   error: Ref<Error | undefined>
   formattedNumber: Ref<Result<string>>
   formattedDate: Ref<Result<string>>
 }): string {
+  if (input.value === '') {
+    return ''
+  }
   const errorDisplay = '#ERR'
   if (error.value) {
     return errorDisplay
@@ -31,7 +36,7 @@ export function calculateDisplay({
     return 'λ'
   }
 
-  if (formattedNumber.value.result) {
+  if (typeof formattedNumber.value.result === 'string') {
     return formattedNumber.value.result
   }
 

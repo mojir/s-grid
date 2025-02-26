@@ -10,7 +10,7 @@ export function calculateOutput({
   formulaResult: Ref<Result>
 }): unknown {
   if (input.value === '') {
-    return null
+    return 0
   }
 
   if (input.value.startsWith('\'')) {

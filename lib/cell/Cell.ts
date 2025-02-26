@@ -245,6 +245,7 @@ export class Cell {
 
   private formattedNumber = computed<Result<string>>(() => calculateFormattedNumber({
     derivedType: this.derivedType,
+    input: this.input,
     output: this.output,
     numberFormatter: this.numberFormatter,
     run: this.lits.run,
@@ -260,6 +261,7 @@ export class Cell {
   }))
 
   public display = computed<string>(() => calculateDisplay({
+    input: this.input,
     output: this.output,
     error: this.error,
     formattedNumber: this.formattedNumber,
