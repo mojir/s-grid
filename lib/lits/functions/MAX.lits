@@ -3,5 +3,5 @@ $`
   (let [numbers (TOARRAY input)]
     (if (empty? numbers)
       0
-      (reduce max numbers))))
+      (reduce numbers max))))
 `

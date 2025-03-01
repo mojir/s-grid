@@ -1,4 +1,4 @@
 $`
 (defn SUM [input]
-  (reduce + 0 (TOARRAY input)))
+  (reduce (TOARRAY input) + 0))
 `
