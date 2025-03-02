@@ -1,4 +1,3 @@
-$`
-(defn SUM [input]
-  (reduce (TOARRAY input) + 0))
-`
+defn SUM(input) {
+  TOARRAY(input) reduce '+'
+}

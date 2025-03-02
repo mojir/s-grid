@@ -1,6 +1,3 @@
-$`
-(defn AVERAGE [input]
-  (/
-    (SUM input)
-    (COUNT input)))
-`
+defn AVERAGE(input) {
+  SUM(input) / COUNT(input)
+}

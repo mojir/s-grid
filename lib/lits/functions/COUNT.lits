@@ -1,4 +1,3 @@
-$`
-(defn COUNT [input]
-  (count (TOARRAY input)))
-`
+defn COUNT(input) {
+  count(TOARRAY(input))
+}

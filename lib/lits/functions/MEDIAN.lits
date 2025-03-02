@@ -1,19 +1,25 @@
-$`
-(defn MEDIAN [input]
-  (let [sorted (sort (TOARRAY input))
-        cnt (count sorted)
-        halfway (quot cnt 2)]
-    (cond
-      ; empty range, default to 0
-      (zero? cnt)
-      0
+defn MEDIAN(input) {
+  let(
+    { sorted = sort(TOARRAY(input)),
+      cnt = count(sorted),
+      halfway = cnt quot 2
+    },
+    cond(
+      // empty range, default to 0
+      zero?(cnt),
+      0,
 
-      (odd? cnt)
-      (nth sorted halfway)
+      odd?(cnt),
+      sorted nth halfway,
 
-      :else
-      (let [bottom (dec halfway)
-            bottom-val (nth sorted bottom)
-            top-val (nth sorted halfway)]
-        (/ (+ bottom-val top-val) 2)))))
-`
+      "else",
+      let(
+        { bottom = dec(halfway),
+          bottom_val = sorted nth bottom,
+          top_val = sorted nth halfway
+        },
+        (bottom_val + top_val) / 2
+      ),
+    ),
+  )
+}

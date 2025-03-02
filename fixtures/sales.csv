@@ -1,12 +1,12 @@
 Date,Product,Region,Quantity,Price,Total
-2024-01-15,Laptop,London,3,1299,=D2 E* 2
-2024-01-16,Mobile Phone,Manchester,2,799,=D3 E* 3
-2024-01-17,Tablet,Birmingham,1,599,=D4 E* 4
-2024-01-18,Headphones,Liverpool,4,129,=D5 E* 5
-2024-01-19,Keyboard,Bristol,2,89,=D6 E* 6
-2024-01-20,Mouse,Edinburgh,5,49,=D7 E* 7
-2024-01-21,Laptop,Glasgow,1,1399,=D8 E* 8
-2024-01-22,Mobile Phone,Leeds,3,849,=D9 E* 9
+2024-01-15,Laptop,London,3,1299,=D2 * E2
+2024-01-16,Mobile Phone,Manchester,2,799,=D3 * E3
+2024-01-17,Tablet,Birmingham,1,599,=D4 * E4
+2024-01-18,Headphones,Liverpool,4,129,=D5 * E5
+2024-01-19,Keyboard,Bristol,2,89,=D6 * E6
+2024-01-20,Mouse,Edinburgh,5,49,=D7 * E7
+2024-01-21,Laptop,Glasgow,1,1399,=D8 * E8
+2024-01-22,Mobile Phone,Leeds,3,849,=D9 * E9
 2024-01-23,Tablet,London,2,649,=D10 * E10
 2024-01-24,Headphones,Manchester,6,149,=D11 * E11
 2024-01-25,Keyboard,Birmingham,3,99,=D12 * E12

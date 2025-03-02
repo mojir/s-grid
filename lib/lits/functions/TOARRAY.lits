@@ -1,8 +1,3 @@
-$`
-(defn TOARRAY [input] 
-  (filter
-    (if (array? input)
-      (flatten input)
-      [input])
-    number?))
-`
+defn TOARRAY(input) {
+  if(array?(input), flatten(input), [input]) filter number?
+}
