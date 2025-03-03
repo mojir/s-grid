@@ -1,6 +1,7 @@
-defn MAX(input) {
-  let(
-    { numbers = TOARRAY(input) },
-    if(empty?(numbers), 0, numbers reduce max)
-  )
-}
+defn MAX(input)
+  let numbers = TOARRAY(input);
+  if empty?(numbers)
+    then 0
+    else numbers reduce max
+  end
+end

@@ -1,6 +1,4 @@
-defn MIN(input) {
-  let(
-    { numbers = TOARRAY(input) },
-    if(empty?(numbers), 0, numbers reduce min)
-  )
-}
+defn MIN(input)
+  let numbers = TOARRAY(input);
+  if empty?(numbers) then 0 else numbers reduce min end
+end
