@@ -1,3 +1,7 @@
 defn TOARRAY(input)
-  (if array?(input) then flatten(input) else [input] end) filter number?
+  if array?(input) then 
+    flatten(input) 
+  else 
+    [input] 
+  end filter number?
 end

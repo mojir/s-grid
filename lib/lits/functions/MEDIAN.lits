@@ -2,7 +2,6 @@ defn MEDIAN(input)
   let sorted = sort(TOARRAY(input));
   let cnt = count(sorted);
   let halfway = cnt quot 2;
-
   cond
     // empty range, default to 0
     case zero?(cnt) then 0
@@ -11,7 +10,6 @@ defn MEDIAN(input)
       let bottom = dec(halfway);
       let bottom_val = sorted nth bottom;
       let top_val = sorted nth halfway;
-
       (bottom_val + top_val) / 2
   end
 end
