@@ -22,6 +22,9 @@
     "check": "npm run lint && npm run typecheck && npm run test",
     "check:no-fix": "npm run lint:no-fix && npm run typecheck && npm run test"
   },
+  "engines": {
+    "node": ">=21.0.0"
+  },
   "dependencies": {
     "@mojir/lits": "2.0.19",
     "@nuxt/icon": "^1.6.1",
