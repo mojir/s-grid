@@ -1,8 +1,8 @@
-export function MAX(input)
+(input) => do
   let numbers = TOARRAY(input);
   if empty?(numbers) then
     0
   else 
     numbers reduce max
   end
-end
+end;

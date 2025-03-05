@@ -1,3 +1,1 @@
-export function SUM(input)
-  TOARRAY(input) reduce '+'
-end
+(input) => TOARRAY(input) reduce '+'

@@ -6,6 +6,8 @@ import { getInteropFunctions } from '~/lib/lits/interop'
 const lits = new Lits({ algebraic: true })
 const litsDebug = new Lits({ debug: true, algebraic: true })
 
+console.log('***', builtinLitsScript)
+
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
 

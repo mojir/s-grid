@@ -1,8 +1,8 @@
-export function MIN(input)
+(input) => do
   let numbers = TOARRAY(input);
   if empty?(numbers) then 
     0 
   else 
     numbers reduce min
   end
-end
+end;

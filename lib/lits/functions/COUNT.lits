@@ -1,3 +1,1 @@
-export function COUNT(input)
-  count(TOARRAY(input))
-end
+(input) => count(TOARRAY(input))

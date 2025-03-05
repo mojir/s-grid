@@ -1,3 +1,1 @@
-export function AVERAGE(input)
-  SUM(input) / COUNT(input)
-end
+(input) => SUM(input) / COUNT(input)

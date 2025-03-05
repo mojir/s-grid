@@ -1,4 +1,4 @@
-export function MEDIAN(input)
+(input) => do
   let sorted = sort(TOARRAY(input));
   let cnt = count(sorted);
   let halfway = cnt quot 2;
@@ -12,4 +12,4 @@ export function MEDIAN(input)
       let top_val = sorted nth halfway;
       (bottom_val + top_val) / 2
   end
-end
+end;
