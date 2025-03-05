@@ -55,21 +55,21 @@ export function isFormat(value: unknown): value is CellType {
   return typeof value === 'string' && ['auto', 'number', 'date', 'string'].includes(value)
 }
 
-async function isSupported(fontName: string) {
-  try {
-    const font = new FontFace(fontName, `local(${fontName})`)
-    await font.load()
-    return true
-  }
-  catch {
-    return false
-  }
-}
-for (const fontFamily of fontFamilies) {
-  if (!await isSupported(fontFamily.split(':')[1]!)) {
-    console.warn(fontFamily.split(':')[1], 'is not supported')
-  }
-}
+// async function isSupported(fontName: string) {
+//   try {
+//     const font = new FontFace(fontName, `local(${fontName})`)
+//     await font.load()
+//     return true
+//   }
+//   catch {
+//     return false
+//   }
+// }
+// for (const fontFamily of fontFamilies) {
+//   if (!await isSupported(fontFamily.split(':')[1]!)) {
+//     console.warn(fontFamily.split(':')[1], 'is not supported')
+//   }
+// }
 export type StyleFontFamily = typeof fontFamilies[number]
 
 export function isFontFamily(value: string): value is StyleFontFamily {
