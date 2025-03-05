@@ -1,4 +1,4 @@
-defn MEDIAN(input)
+export function MEDIAN(input)
   let sorted = sort(TOARRAY(input));
   let cnt = count(sorted);
   let halfway = cnt quot 2;

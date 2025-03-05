@@ -1,4 +1,4 @@
-defn MAX(input)
+export function MAX(input)
   let numbers = TOARRAY(input);
   if empty?(numbers) then
     0

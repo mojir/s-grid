@@ -1,4 +1,4 @@
-defn MIN(input)
+export function MIN(input)
   let numbers = TOARRAY(input);
   if empty?(numbers) then 
     0 
