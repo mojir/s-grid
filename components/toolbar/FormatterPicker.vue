@@ -37,12 +37,12 @@ const cellTypeDate = computed(() => cellType.value === 'date')
 const cellTypeString = computed(() => cellType.value === 'string')
 
 const numberFormatter = ref<string>(defaultNumberFormatter)
-const floatFormatter = '=> number:format(".4~f", $)'
-const fixed2Formatter = '=> number:format(".2f", $)'
-const integerFormatter = '=> number:format("d", $)'
-const percentFormatter = '=> str(number:format(".2f", 100 * $), "%")'
-const sekFormatter = '=> str(number:format(".2f", $), " kr")'
-const usdFormatter = '=> str("$", number:format(".2f", $))'
+const floatFormatter = '=> $ number:format ".4~f"'
+const fixed2Formatter = '=> $ number:format ".2f"'
+const integerFormatter = '=> $ number:format "d"'
+const percentFormatter = '=> (100 * $ number:format ".2f") ++ "%"'
+const sekFormatter = '=> ($ number:format ".2f") ++ " kr"'
+const usdFormatter = '=> "$" ++ ($ number:format ".2f")'
 
 const float = computed(() => numberFormatter.value === floatFormatter)
 const fixed2 = computed(() => numberFormatter.value === fixed2Formatter)
@@ -136,7 +136,7 @@ function isDateFormatChecked(pattern: string) {
 }
 
 function getFormatterFromPattern(pattern: string) {
-  return `=> date:format("${pattern}", $)`
+  return `=> $ date:format "${pattern}"`
 }
 
 function setDateFormat(pattern: string) {

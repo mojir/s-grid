@@ -4,7 +4,7 @@ import { format } from 'd3-format'
 const formatCache = new Map<string, ReturnType<typeof format>>()
 
 export const numberFormat: JsFunction = {
-  fn: (formatString: string, value: number) => {
+  fn: (value: number, formatString: string) => {
     let formatter = formatCache.get(formatString)
     if (!formatter) {
       formatter = format(formatString)

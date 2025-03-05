@@ -12,29 +12,29 @@ describe('lits-interop', () => {
   describe('d3', () => {
     describe('format', () => {
       it('should format numbers', () => {
-        expect(numberFormat.fn('0.2f', 123.456)).toBe('123.46')
+        expect(numberFormat.fn(123.456, '0.2f')).toBe('123.46')
       })
     })
   })
   describe('date-fns', () => {
     describe('parse', () => {
       it('should parse dates', () => {
-        expect(getDateParse(utcTimeZoneRef).fn('yyyy-MM-dd', '2025-01-31')).toBe(epochDate)
-        expect(getDateParse(utcTimeZoneRef).fn('yyyy-MM-dd HH:mm', '2025-01-31 12:34')).toBe(epochMin)
+        expect(getDateParse(utcTimeZoneRef).fn('2025-01-31', 'yyyy-MM-dd')).toBe(epochDate)
+        expect(getDateParse(utcTimeZoneRef).fn('2025-01-31 12:34', 'yyyy-MM-dd HH:mm')).toBe(epochMin)
       })
       it('should return different for CET', () => {
-        const result = getDateParse(cetTimeZoneRef).fn('yyyy-MM-dd', '2025-01-31')
+        const result = getDateParse(cetTimeZoneRef).fn('2025-01-31', 'yyyy-MM-dd')
         expect(result).toBe(epochDate - 3600000)
       })
     })
 
     describe('format', () => {
       it('should format dates', () => {
-        expect(getDateFormat(utcTimeZoneRef).fn('yyyy-MM-dd', epochMillis)).toBe('2025-01-31')
-        expect(getDateFormat(utcTimeZoneRef).fn('yyyy-MM-dd HH:mm', epochMillis)).toBe('2025-01-31 12:34')
+        expect(getDateFormat(utcTimeZoneRef).fn(epochMillis, 'yyyy-MM-dd')).toBe('2025-01-31')
+        expect(getDateFormat(utcTimeZoneRef).fn(epochMillis, 'yyyy-MM-dd HH:mm')).toBe('2025-01-31 12:34')
       })
       it('should return different for CET', () => {
-        const cetResult = getDateFormat(cetTimeZoneRef).fn('yyyy-MM-dd HH:mm', epochMillis)
+        const cetResult = getDateFormat(cetTimeZoneRef).fn(epochMillis, 'yyyy-MM-dd HH:mm')
         expect(cetResult).toBe('2025-01-31 13:34')
       })
     })

@@ -6,7 +6,7 @@ const parseWithReferenceDate = parse(new Date())
 
 export function getDateParse(timeZone: Ref<TimeZone>): JsFunction {
   return {
-    fn: (formatString: string, value: string) => {
+    fn: (value: string, formatString: string) => {
       const parsedDate = parseWithReferenceDate(formatString, value)
       if (!isValid(parsedDate)) {
         return null
@@ -22,7 +22,7 @@ export function getDateParse(timeZone: Ref<TimeZone>): JsFunction {
 
 export function getDateFormat(timeZone: Ref<TimeZone>): JsFunction {
   return {
-    fn: (formatString: string, value: number) => {
+    fn: (value: number, formatString: string) => {
       const date = new Date(value)
       return formatInTimeZone(date, timeZone.value.id, formatString)
     },
