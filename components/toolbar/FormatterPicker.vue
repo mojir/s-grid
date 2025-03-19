@@ -136,7 +136,7 @@ function isDateFormatChecked(pattern: string) {
 }
 
 function getFormatterFromPattern(pattern: string) {
-  return `=> $ date:format "${pattern}"`
+  return `-> $ date:format "${pattern}"`
 }
 
 function setDateFormat(pattern: string) {

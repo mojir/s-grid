@@ -1,6 +1,6 @@
 import { Lits } from '@mojir/lits'
 
-const lits = new Lits({ algebraic: true, debug: true })
+const lits = new Lits({ debug: true })
 
 // Define types for the modules
 type FunctionInfo = {
@@ -33,22 +33,22 @@ const scripts: { code: string, filePath: string }[] = functions
     }
 
     // Add semicolon if missing
-    const lastNonWhitespaceToken = tokenStream.tokens.findLast(token => token[0] !== 'A_Whitespace')
+    const lastNonWhitespaceToken = tokenStream.tokens.findLast(token => token[0] !== 'Whitespace')
     if (!lastNonWhitespaceToken) {
       console.warn(`${script.filePath} Empty program, skipping`)
       return []
     }
 
-    if (lastNonWhitespaceToken[0] !== 'A_Operator' || lastNonWhitespaceToken[1] !== ';') {
-      tokenStream.tokens.push(['A_Operator', ';'])
+    if (lastNonWhitespaceToken[0] !== 'Operator' || lastNonWhitespaceToken[1] !== ';') {
+      tokenStream.tokens.push(['Operator', ';'])
     }
 
     const ast = lits.parse(tokenStream)
-    if (ast.b.length !== 1) {
-      throw new Error(`${script.filePath} Expected 1 expression, got ${ast.b.length}`)
+    if (ast.body.length !== 1) {
+      throw new Error(`${script.filePath} Expected 1 expression, got ${ast.body.length}`)
     }
 
-    lits.evaluate(ast, { filePath: script.filePath })
+    lits.evaluate(ast, {})
 
     return {
       ...script,
@@ -59,11 +59,13 @@ const scripts: { code: string, filePath: string }[] = functions
     return {
       filePath: func.filePath,
       code: `// ${func.name}\n
-export let ${func.name} = ${func.content.trim()}`,
+export let ${func.name} := ${func.content.trim()}`,
     }
   })
 
 export const functionsScript = scripts.map(script => script.code).join('\n')
+
+// console.log(functionsScript)
 // // Export the list of function info objects for use elsewhere
 // export const functionInfos: FunctionInfo[] = functions
 

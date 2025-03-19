@@ -1,4 +1,4 @@
-(input) => do
+input -> do
   if array?(input) then
     flatten(input)
   else

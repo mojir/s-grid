@@ -1,12 +1,13 @@
 import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
-import type { TokenStream } from '@mojir/lits/dist/src/tokenizer/interface'
 import { builtinLitsScript } from '~/lib/lits'
 import { getInteropFunctions } from '~/lib/lits/interop'
 
-const lits = new Lits({ algebraic: true })
-const litsDebug = new Lits({ debug: true, algebraic: true })
+type TokenStream = ReturnType<Lits['tokenize']>
 
-console.log('***', builtinLitsScript)
+const lits = new Lits()
+const litsDebug = new Lits({ debug: true })
+
+// console.log('***', builtinLitsScript)
 
 const builtingContext = lits.context(builtinLitsScript)
 const builtingContextDebug = litsDebug.context(builtinLitsScript)
@@ -61,8 +62,8 @@ export default function useLits() {
   function transform(tokenStream: TokenStream, transformer: (identifier: string) => string) {
     try {
       return debugEnabled.value
-        ? litsDebug.transform(tokenStream, transformer)
-        : lits.transform(tokenStream, transformer)
+        ? litsDebug.transformSymbols(tokenStream, transformer)
+        : lits.transformSymbols(tokenStream, transformer)
     }
     catch (error) {
       logger.warn('Lits operation "transform" failed:', error)
@@ -99,11 +100,9 @@ export default function useLits() {
   }
 
   function getUnresolvedIdentifers(program: string): Set<string> {
-    const analyzeResult = debugEnabled.value
-      ? litsDebug.analyze(program, { jsFunctions: interopFunctions, contexts: [builtingContextDebug] }).unresolvedIdentifiers
-      : lits.analyze(program, { jsFunctions: interopFunctions, contexts: [builtingContext] }).unresolvedIdentifiers
-
-    return new Set(Array.from(analyzeResult).map(identifier => identifier.symbol))
+    return debugEnabled.value
+      ? litsDebug.getUndefinedSymbols(program, { jsFunctions: interopFunctions, contexts: [builtingContextDebug] })
+      : lits.getUndefinedSymbols(program, { jsFunctions: interopFunctions, contexts: [builtingContext] })
   }
 
   return {

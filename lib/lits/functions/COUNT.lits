@@ -1,1 +1,1 @@
-(input) => count(TOARRAY(input))
+input -> count(TOARRAY(input))

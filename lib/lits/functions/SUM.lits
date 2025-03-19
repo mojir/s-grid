@@ -1,1 +1,1 @@
-(input) => TOARRAY(input) reduce '+'
+input -> TOARRAY(input) reduce '+'

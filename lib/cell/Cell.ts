@@ -111,7 +111,7 @@ export class Cell {
     })
     watch(this.isoDateInput, (value) => {
       if (value) {
-        this.dateFormatter.value = `=> $ date:format "${this.dateUtils.getPatternFromDateString(this.input.value.trim())}"`
+        this.dateFormatter.value = `-> $ date:format "${this.dateUtils.getPatternFromDateString(this.input.value.trim())}"`
       }
     })
   }
