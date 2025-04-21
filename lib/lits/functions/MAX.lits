@@ -3,6 +3,6 @@ input -> do
   if empty?(numbers) then
     0
   else 
-    numbers reduce max
+    max(...numbers)
   end
 end;

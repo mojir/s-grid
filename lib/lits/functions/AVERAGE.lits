@@ -1,1 +1,1 @@
-input -> SUM(input) / COUNT(input)
+input -> SUM(input) / COUNT(input);
