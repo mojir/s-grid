@@ -12,7 +12,7 @@ beforeEach(() => {
         A2: { input: 'Lisa' },
         B1: { input: '12' },
         B2: { input: '13' },
-        B3: { input: '=SUM(B1:B2)' },
+        B3: { input: '=vec:sum(B1:B2)' },
       },
     },
     grid2: {
@@ -21,7 +21,7 @@ beforeEach(() => {
         B1: { input: 'Lisa' },
         A2: { input: '12' },
         B2: { input: '13' },
-        C2: { input: '=SUM(A2:B2)' },
+        C2: { input: '=vec:sum(A2:B2)' },
       },
     },
   })
@@ -54,7 +54,7 @@ describe('remove rows and cols', () => {
       expect(grid2.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('Lisa')
       expect(grid2.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('12')
       expect(grid2.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
-      expect(grid2.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=SUM(A2:B2)')
+      expect(grid2.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=vec:sum(A2:B2)')
     })
 
     it('should remove first row, then undo', async () => {
@@ -64,17 +64,17 @@ describe('remove rows and cols', () => {
       expect(grid.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Lisa')
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('12')
       expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
-      expect(grid.getCell({ rowIndex: 2, colIndex: 1 }).input.value).toBe('=SUM(B1:B2)')
+      expect(grid.getCell({ rowIndex: 2, colIndex: 1 }).input.value).toBe('=vec:sum(B1:B2)')
       grid.deleteRows(0, 1)
       expect(grid.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Lisa')
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('13')
-      expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('=SUM(B1:B1)')
+      expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('=vec:sum(B1:B1)')
       await project.history.undo()
       expect(grid.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Kalle')
       expect(grid.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Lisa')
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('12')
       expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
-      expect(grid.getCell({ rowIndex: 2, colIndex: 1 }).input.value).toBe('=SUM(B1:B2)')
+      expect(grid.getCell({ rowIndex: 2, colIndex: 1 }).input.value).toBe('=vec:sum(B1:B2)')
     })
   })
 
@@ -109,17 +109,17 @@ describe('remove rows and cols', () => {
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('Lisa')
       expect(grid.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('12')
       expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
-      expect(grid.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=SUM(A2:B2)')
+      expect(grid.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=vec:sum(A2:B2)')
       grid.deleteCols(1, 1)
       expect(grid.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Kalle')
       expect(grid.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('12')
-      expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('=SUM(A2:A2)')
+      expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('=vec:sum(A2:A2)')
       await project.history.undo()
       expect(grid.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Kalle')
       expect(grid.getCell({ rowIndex: 0, colIndex: 1 }).input.value).toBe('Lisa')
       expect(grid.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('12')
       expect(grid.getCell({ rowIndex: 1, colIndex: 1 }).input.value).toBe('13')
-      expect(grid.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=SUM(A2:B2)')
+      expect(grid.getCell({ rowIndex: 1, colIndex: 2 }).input.value).toBe('=vec:sum(A2:B2)')
     })
   })
 })

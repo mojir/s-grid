@@ -202,8 +202,12 @@ export class RangeReference {
     )
   }
 
-  public getOutput(): unknown[][] {
-    return this.getCellReferenceMatrix().map(reference => reference.getCell().output.value).rows()
+  public getOutput(): unknown[] | unknown[][] {
+    const raw = this.getCellReferenceMatrix().map(reference => reference.getCell().output.value).rows()
+    if (this.rowCount() === 1 || this.colCount() === 1) {
+      return raw.flat()
+    }
+    return raw
   }
 
   public getCells(): Cell[] {
