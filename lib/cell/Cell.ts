@@ -1,4 +1,4 @@
-import { isLitsFunction } from '@mojir/lits'
+import { isGrid, isLitsFunction } from '@mojir/lits'
 import { Color } from '../color'
 import { defaultCellType, defaultDateFormatter, defaultFontFamily, defaultFontSize, defaultNumberFormatter } from '../constants'
 import type { Grid } from '../grid/Grid'
@@ -6,6 +6,8 @@ import type { Project } from '../project/Project'
 import type { CellChangeEvent } from '../PubSub/pubSubEvents'
 import type { CellReference } from '../reference/CellReference'
 import type { Reference } from '../reference/utils'
+import { Mx } from '../Mx'
+import type { SpillValue } from '../grid/SpillHandler'
 import { calculateAllLitsDeps } from './calculateAllLitsDeps'
 import { calculateReferences } from './calculateReferences'
 import { calculateNumberInput } from './calculateNumberInput'
@@ -17,6 +19,7 @@ import { calculateFormattedDate } from './calculateFormattedDate'
 import { calculateDisplay } from './calculateDisplay'
 import { calculateDerivedType } from './calculateDerivedType'
 import { calculateError } from './calculateError'
+import { calculateInternalOutput } from './calculateInternalOutput'
 import type { CellDTO, CellType, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
 
 export class Cell {
@@ -25,7 +28,8 @@ export class Cell {
   private readonly dateUtils = useDateUtils()
 
   public readonly grid: Grid
-  public readonly input = ref('')
+  private readonly inputState = ref('')
+  public readonly spillValue = shallowRef<SpillValue | null>(null)
   public readonly watchInput = ref(true)
   public readonly isoDateInput = ref<string>()
   public readonly cellType = ref<CellType>(defaultCellType)
@@ -114,6 +118,20 @@ export class Cell {
         this.dateFormatter.value = `-> $ date:format "${this.dateUtils.getPatternFromDateString(this.input.value.trim())}"`
       }
     })
+    watch(this.internalOutput, (value, oldValue) => {
+      const matrix = isGrid(value)
+        ? Mx.from(value)
+        : Array.isArray(value)
+          ? Mx.fromCol(value)
+          : null
+
+      if (this.spillFormula.value && matrix) {
+        this.grid.handleSpill(this, matrix)
+      }
+      else if (Array.isArray(oldValue)) {
+        this.grid.handleSpill(this, null)
+      }
+    })
   }
 
   public setDTO(cellDTO: Partial<CellDTO>) {
@@ -180,6 +198,7 @@ export class Cell {
   }
 
   public clear() {
+    // TODO, what if is readonly?
     this.watchInput.value = false
     this.input.value = ''
     this.isoDateInput.value = undefined
@@ -198,11 +217,43 @@ export class Cell {
     })
   }
 
+  public input = computed<string>({
+    get: () => this.inputState.value,
+    set: (value) => {
+      if (!this.readonly.value) {
+        this.inputState.value = value
+      }
+      else {
+        throw new Error('Cell is readonly')
+      }
+    },
+  })
+
+  public isEmpty = computed(() => {
+    if (this.input.value) {
+      return false
+    }
+    if (this.spillValue.value) {
+      return false
+    }
+    return true
+  })
+
   public computedInput = computed<string>(() => this.isoDateInput.value ?? this.input.value)
 
-  public formula = computed<string | undefined>(() => this.computedInput.value.startsWith('=') && this.computedInput.value.length > 1
-    ? this.computedInput.value.slice(1)
-    : undefined)
+  public formula = computed<string | undefined>(() => {
+    if (this.computedInput.value.startsWith('=') && this.computedInput.value.length > 1) {
+      return this.computedInput.value.slice(1)
+    }
+    if (this.computedInput.value.startsWith(':=') && this.computedInput.value.length > 2) {
+      return this.computedInput.value.slice(2)
+    }
+    return undefined
+  })
+
+  public spillFormula = computed<boolean>(() => !!this.formula.value && this.input.value.startsWith('='))
+
+  public readonly = computed(() => !!this.spillValue.value && this.spillValue.value.source !== this)
 
   public directLitsDeps = computed<string[]>(() => this.formula.value ? Array.from(this.lits.getUnresolvedIdentifers(this.formula.value)) : [])
 
@@ -225,10 +276,15 @@ export class Cell {
     grid: this.grid,
   }))
 
-  public output = computed(() => calculateOutput({
+  public internalOutput = computed(() => calculateInternalOutput({
     input: this.computedInput,
     numberInput: this.numberInput,
     formulaResult: this.litsResult,
+  }))
+
+  public output = computed(() => calculateOutput({
+    internalOutput: this.internalOutput,
+    spillValue: this.spillValue,
   }))
 
   public isoDate = computed<Date | undefined>(() => this.isoDateInput.value
@@ -245,7 +301,7 @@ export class Cell {
 
   private formattedNumber = computed<Result<string>>(() => calculateFormattedNumber({
     derivedType: this.derivedType,
-    input: this.input,
+    isEmpty: this.isEmpty,
     output: this.output,
     numberFormatter: this.numberFormatter,
     run: this.lits.run,
@@ -261,7 +317,7 @@ export class Cell {
   }))
 
   public display = computed<string>(() => calculateDisplay({
-    input: this.input,
+    isEmpty: this.isEmpty,
     output: this.output,
     error: this.error,
     formattedNumber: this.formattedNumber,

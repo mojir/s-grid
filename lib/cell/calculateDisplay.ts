@@ -2,20 +2,20 @@ import { isLitsFunction } from '@mojir/lits'
 import type { Result } from './cellTypes'
 
 export function calculateDisplay({
-  input,
+  isEmpty,
   output,
   error,
   formattedNumber,
   formattedDate,
 }:
 {
-  input: Ref<string>
+  isEmpty: Ref<boolean>
   output: Ref<unknown>
   error: Ref<Error | undefined>
   formattedNumber: Ref<Result<string>>
   formattedDate: Ref<Result<string>>
 }): string {
-  if (input.value === '') {
+  if (isEmpty.value) {
     return ''
   }
   const errorDisplay = '#ERR'

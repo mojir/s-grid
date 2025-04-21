@@ -349,6 +349,16 @@ export class RangeReference {
       && cellReference.colIndex <= this.end.colIndex
   }
 
+  public intersects(rangeReference: RangeReference): boolean {
+    if (this.grid !== rangeReference.grid) {
+      return false
+    }
+    return this.start.rowIndex <= rangeReference.end.rowIndex
+      && this.end.rowIndex >= rangeReference.start.rowIndex
+      && this.start.colIndex <= rangeReference.end.colIndex
+      && this.end.colIndex >= rangeReference.start.colIndex
+  }
+
   public containsRowIndex(rowIndex: number): boolean {
     return rowIndex >= this.start.rowIndex && rowIndex <= this.end.rowIndex
   }

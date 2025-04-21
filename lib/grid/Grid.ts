@@ -11,6 +11,7 @@ import { Mx } from '../Mx'
 import { PubSub } from '../PubSub'
 import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
 import { GridSelection } from './GridSelection'
+import { SpillHandler } from './SpillHandler'
 import { CellEditor } from '~/lib/grid/CellEditor'
 import type { GridDTO } from '~/dto/GridDTO'
 import type { CellDTO, CellType, StyleAlign, StyleFontFamily, StyleFontSize, StyleJustify, StyleTextDecoration } from '~/dto/CellDTO'
@@ -30,6 +31,7 @@ export class Grid {
   public state = ref<GridState>('idle')
   public readonly pubSub: PubSub
   private readonly cells: Mx<Cell>
+  private readonly spillHandler = new SpillHandler(this)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
   constructor({
@@ -889,5 +891,14 @@ export class Grid {
       },
 
     })
+  }
+
+  public handleSpill(cell: Cell, spillValue: Mx<unknown> | null) {
+    if (spillValue) {
+      this.spillHandler.addSpill(cell, spillValue)
+    }
+    else {
+      this.spillHandler.removeSpill(cell)
+    }
   }
 }

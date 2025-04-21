@@ -25,6 +25,9 @@ export class CellEditor {
   }
 
   public edit(value: KeyboardEvent | null, keyboardOn = true) {
+    if (this.grid.currentCell.value.readonly.value) {
+      return
+    }
     if (!this.editing.value) {
       this.initialText.value = this.grid.currentCell.value.input.value
       this.editorText.value = this.getStringFromEvent(value)

@@ -327,7 +327,7 @@ export class CellReference {
       let current = above
       do {
         current = current.cellUp(range, false)
-      } while (current.rowIndex !== stopRow && current.getCell().input.value === '')
+      } while (current.rowIndex !== stopRow && current.getCell().isEmpty.value)
       return current
     }
     else if (hasInput && aboveHasInput) {
@@ -336,7 +336,7 @@ export class CellReference {
       do {
         previous = current
         current = current.cellUp(range, false)
-        if (current.getCell().input.value === '') {
+        if (current.getCell().isEmpty.value) {
           return previous
         }
       } while (current.rowIndex !== stopRow)
@@ -344,7 +344,7 @@ export class CellReference {
     }
     else {
       let current = above
-      while (current.rowIndex !== stopRow && current.getCell().input.value === '') {
+      while (current.rowIndex !== stopRow && current.getCell().isEmpty.value) {
         current = current.cellUp(range, false)
       }
       return current
@@ -371,7 +371,7 @@ export class CellReference {
       let current = below
       do {
         current = current.cellDown(range, false)
-      } while (current.rowIndex !== stopRow && current.getCell().input.value === '')
+      } while (current.rowIndex !== stopRow && current.getCell().isEmpty.value)
       return current
     }
     else if (hasInput && belowHasInput) {
@@ -380,7 +380,7 @@ export class CellReference {
       do {
         previous = current
         current = current.cellDown(range, false)
-        if (current.getCell().input.value === '') {
+        if (current.getCell().isEmpty.value) {
           return previous
         }
       } while (current.rowIndex !== stopRow)
@@ -388,7 +388,7 @@ export class CellReference {
     }
     else {
       let current = below
-      while (current.rowIndex !== stopRow && current.getCell().input.value === '') {
+      while (current.rowIndex !== stopRow && current.getCell().isEmpty.value) {
         current = current.cellDown(range, false)
       }
       return current
@@ -415,7 +415,7 @@ export class CellReference {
       let current = leftOf
       do {
         current = current.cellLeft(range, false)
-      } while (current.colIndex !== stopCol && current.getCell().input.value === '')
+      } while (current.colIndex !== stopCol && current.getCell().isEmpty.value)
       return current
     }
     else if (hasInput && leftOfHasInput) {
@@ -424,7 +424,7 @@ export class CellReference {
       do {
         previous = current
         current = current.cellLeft(range, false)
-        if (current.getCell().input.value === '') {
+        if (current.getCell().isEmpty.value) {
           return previous
         }
       } while (current.colIndex !== stopCol)
@@ -432,7 +432,7 @@ export class CellReference {
     }
     else {
       let current = leftOf
-      while (current.colIndex !== stopCol && current.getCell().input.value === '') {
+      while (current.colIndex !== stopCol && current.getCell().isEmpty.value) {
         current = current.cellLeft(range, false)
       }
       return current
@@ -459,7 +459,7 @@ export class CellReference {
       let current = rightOf
       do {
         current = current.cellRight(range, false)
-      } while (current.colIndex !== stopCol && current.getCell().input.value === '')
+      } while (current.colIndex !== stopCol && current.getCell().isEmpty.value)
       return current
     }
     else if (hasInput && rightOfHasInput) {
@@ -468,7 +468,7 @@ export class CellReference {
       do {
         previous = current
         current = current.cellRight(range, false)
-        if (current.getCell().input.value === '') {
+        if (current.getCell().isEmpty.value) {
           return previous
         }
       } while (current.colIndex !== stopCol)
@@ -476,7 +476,7 @@ export class CellReference {
     }
     else {
       let current = rightOf
-      while (current.colIndex !== stopCol && current.getCell().input.value === '') {
+      while (current.colIndex !== stopCol && current.getCell().isEmpty.value) {
         current = current.cellRight(range, false)
       }
       return current

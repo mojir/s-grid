@@ -12,6 +12,14 @@ export class Mx<T> {
     return new Mx(matrix)
   }
 
+  public static fromRow<T>(row: T[]): Mx<T> {
+    return new Mx([row])
+  }
+
+  public static fromCol<T>(col: T[]): Mx<T> {
+    return new Mx(col.map(el => [el]))
+  }
+
   public get(row: number, col: number): T {
     if (row < 0 || row >= this.matrix.length || col < 0 || col >= this.matrix[0]!.length) {
       throw new Error('Index out of bounds')

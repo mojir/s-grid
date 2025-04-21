@@ -3,7 +3,7 @@ import type { DerivedType, Result } from './cellTypes'
 
 export function calculateFormattedNumber({
   derivedType,
-  input,
+  isEmpty,
   output,
   numberFormatter,
   run,
@@ -11,13 +11,13 @@ export function calculateFormattedNumber({
 }:
 {
   derivedType: Ref<DerivedType>
-  input: Ref<string>
+  isEmpty: Ref<boolean>
   output: Ref<unknown>
   numberFormatter: Ref<string>
   run: RunLits
   apply: ApplyLits
 }): Result<string> {
-  if (input.value === '') {
+  if (isEmpty.value) {
     return {}
   }
   if (derivedType.value === 'number') {
