@@ -1,8 +1,0 @@
-input -> do
-  let numbers := TOARRAY(input);
-  if empty?(numbers) then 
-    0 
-  else 
-    min(...numbers)
-  end
-end;

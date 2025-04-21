@@ -1,7 +1,0 @@
-input -> do
-  if array?(input) then
-    flatten(input)
-  else
-    [input]
-  end filter number?
-end
