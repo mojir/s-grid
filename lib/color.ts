@@ -70,6 +70,11 @@ export class Color {
     return new Color(this.hue, this.saturation, newL, this.alpha)
   }
 
+  darken(amount: number): Color {
+    const newL = Math.max(0, this.lightness - amount)
+    return new Color(this.hue, this.saturation, newL, this.alpha)
+  }
+
   isDark(): boolean {
     return this.lightness < 50
   }
