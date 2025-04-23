@@ -73,7 +73,6 @@ function setEventFlags(e: KeyboardEvent) {
       && e.key !== 'Escape'
       && e.key !== 'ArrowUp'
       && e.key !== 'ArrowDown'
-      && e.key !== 'ArrowLeft'
       && e.key !== 'ArrowRight'
       && e.key !== 'PageUp'
       && e.key !== 'PageDown'
@@ -81,6 +80,9 @@ function setEventFlags(e: KeyboardEvent) {
       && e.key !== 'End'
     ) {
       e.stopPropagation()
+    }
+    if (e.key === 'ArrowLeft') {
+      grid.value.editor.keyboardEnabled.value = true
     }
   }
 }

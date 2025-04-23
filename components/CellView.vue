@@ -139,13 +139,17 @@ const cellStyle = computed(() => {
       :id="cellId"
       :style="cellStyle"
       class="px-1 h-full relative flex box-border text-sm whitespace-pre"
+      :class="{
+        'cursor-pointer': !cell.readonly.value,
+        'cursor-default': cell.readonly.value,
+      }"
       @dblclick="emit('cell-dblclick', reference)"
     >
       {{ cellContent }}
     </div>
-    <!-- <div
-      v-if="hoverSelectingCell"
-      class="z-[100] pointer-events-none block absolute top-[1px] right-[1px] bottom-0 left-0 bg-red outline-dotted dark:outline-slate-600 outline-gray-400"
-    /> -->
+    <div
+      v-if="cell.readonly.value"
+      class="z-[100] pointer-events-none block absolute top-[1px] right-[1px] bottom-0 left-0 bg-white/30 dark:bg-black/30"
+    />
   </div>
 </template>
