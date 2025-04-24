@@ -224,7 +224,7 @@ export class Cell {
         this.inputState.value = value
       }
       else {
-        throw new Error('Cell is readonly')
+        console.error('Cell is readonly')
       }
     },
   })
