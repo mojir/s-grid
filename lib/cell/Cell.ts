@@ -68,41 +68,41 @@ export class Cell {
         if (this.cellType.value === 'auto' || this.cellType.value === 'date') {
           this.isoDateInput.value = this.dateUtils.normalizeToIsoDate(newValue)
         }
-        this.grid.pubSub.publish(this.createCellChange('input', oldValue, newValue))
+        this.project.pubSub.publish(this.createCellChange('input', oldValue, newValue))
       }
     })
     watch(this.isoDateInput, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('isoDateInput', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('isoDateInput', oldValue, newValue))
     })
     watch(this.fontSize, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('fontSize', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('fontSize', oldValue, newValue))
     })
     watch(this.fontFamily, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('fontFamily', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('fontFamily', oldValue, newValue))
     })
     watch(this.bold, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('bold', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('bold', oldValue, newValue))
     })
     watch(this.italic, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('italic', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('italic', oldValue, newValue))
     })
     watch(this.textDecoration, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('textDecoration', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('textDecoration', oldValue, newValue))
     })
     watch(this.justify, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('justify', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('justify', oldValue, newValue))
     })
     watch(this.align, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('align', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('align', oldValue, newValue))
     })
     watch(this.backgroundColor, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('backgroundColor', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('backgroundColor', oldValue, newValue))
     })
     watch(this.textColor, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('textColor', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('textColor', oldValue, newValue))
     })
     watch(this.numberFormatter, (newValue, oldValue) => {
-      this.grid.pubSub.publish(this.createCellChange('numberFormatter', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('numberFormatter', oldValue, newValue))
     })
     watch(this.cellType, (newValue, oldValue) => {
       if (newValue === 'auto' || newValue === 'date') {
@@ -111,27 +111,33 @@ export class Cell {
       else {
         this.isoDateInput.value = undefined
       }
-      this.grid.pubSub.publish(this.createCellChange('cellType', oldValue, newValue))
+      this.project.pubSub.publish(this.createCellChange('cellType', oldValue, newValue))
     })
     watch(this.isoDateInput, (value) => {
       if (value) {
         this.dateFormatter.value = `-> $ date:format "${this.dateUtils.getPatternFromDateString(this.input.value.trim())}"`
       }
     })
-    watch(this.internalOutput, (value, oldValue) => {
-      const matrix = isGrid(value)
-        ? Mx.from(value)
-        : Array.isArray(value)
-          ? Mx.fromCol(value)
-          : null
-
-      if (this.spillFormula.value && matrix) {
-        this.grid.handleSpill(this, matrix)
-      }
-      else if (Array.isArray(oldValue)) {
-        this.grid.handleSpill(this, null)
-      }
+    watch([this.internalOutput, this.spillFormula], () => {
+      this.handleSpill()
     })
+  }
+
+  private handleSpill() {
+    const value = this.internalOutput.value
+
+    const matrix = isGrid(value)
+      ? Mx.from(value)
+      : Array.isArray(value)
+        ? Mx.fromCol(value)
+        : null
+
+    if (this.spillFormula.value && matrix) {
+      this.grid.handleSpill(this, matrix)
+    }
+    else {
+      this.grid.handleSpill(this, null)
+    }
   }
 
   public setDTO(cellDTO: Partial<CellDTO>) {
@@ -354,7 +360,7 @@ export class Cell {
 
   private createCellChange(attribute: CellChangeEvent['data']['attribute'], oldValue: unknown, newValue: unknown): CellChangeEvent {
     return {
-      source: 'Cell',
+      type: 'Change',
       eventName: 'cellChange',
       data: {
         gridName: this.grid.name.value,

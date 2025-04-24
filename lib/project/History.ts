@@ -1,4 +1,4 @@
-import type { SGridEvent } from '../PubSub/pubSubEvents'
+import type { ChangeEvent, SGridEvent } from '../PubSub/pubSubEvents'
 import { pauseLitsTransformer, resumeLitsTransformer } from '../transformer/litsTransformer'
 import type { Project } from './Project'
 
@@ -12,6 +12,7 @@ export class History {
   public constructor(private project: Project) {
     this.project.pubSub.subscribe({
       listener: 'History',
+      filter: { Change: true },
       callback: this.onPubSubEvent.bind(this),
     })
   }
@@ -19,20 +20,21 @@ export class History {
   private changePromise: null | Promise<void> = null
   private resolveChangePromise: (() => void) | null = null
 
-  private currentChanges: SGridEvent[] = []
+  private currentChanges: ChangeEvent[] = []
   private timer: null | ReturnType<typeof setTimeout> = null
-  private readonly undoStack = shallowRef<SGridEvent[][]>([])
-  private readonly redoStack = shallowRef<SGridEvent[][]>([])
+  private readonly undoStack = shallowRef<ChangeEvent[][]>([])
+  private readonly redoStack = shallowRef<ChangeEvent[][]>([])
   private paused = true
 
   public canUndo = computed(() => this.undoStack.value.length > 0)
   public canRedo = computed(() => this.redoStack.value.length > 0)
 
   private onPubSubEvent(event: SGridEvent) {
+    const changeEvent = event as ChangeEvent
     if (this.paused) {
       return
     }
-    this.currentChanges.unshift(event)
+    this.currentChanges.unshift(changeEvent)
     if (this.timer) {
       clearTimeout(this.timer)
     }
@@ -106,86 +108,95 @@ export class History {
     this.redoStack.value = []
   }
 
-  private applyChange(event: SGridEvent, method: 'undo' | 'redo'): void {
-    if (event.eventName === 'cellChange') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      const cell = grid.getCell(data)
-      cell.setDTO({ [data.attribute]: method === 'undo' ? data.oldValue : data.newValue })
-    }
-    else if (event.eventName === 'rowChange') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      const row = grid.getRow(data.rowIndex)
-      row.setHeight(method === 'undo' ? data.oldHeight : data.newHeight)
-    }
-    else if (event.eventName === 'colChange') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      const col = grid.getCol(data.colIndex)
-      col.setWidth(method === 'undo' ? data.oldWidth : data.newWidth)
-    }
-    else if (event.eventName === 'gridChange') {
-      const { data: { attribute, newValue, oldValue } } = event
-      switch (attribute) {
-        case 'name':
-          assertString(newValue)
-          assertString(oldValue)
+  private applyChange(event: ChangeEvent, method: 'undo' | 'redo'): void {
+    switch (event.eventName) {
+      case 'cellChange': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        const cell = grid.getCell(data)
+        cell.setDTO({ [data.attribute]: method === 'undo' ? data.oldValue : data.newValue })
+        break
+      }
+      case 'rowChange': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        const row = grid.getRow(data.rowIndex)
+        row.setHeight(method === 'undo' ? data.oldHeight : data.newHeight)
+        break
+      }
+      case 'colChange': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        const col = grid.getCol(data.colIndex)
+        col.setWidth(method === 'undo' ? data.oldWidth : data.newWidth)
+        break
+      }
+      case 'gridChange': {
+        const { data: { attribute, newValue, oldValue } } = event
+        switch (attribute) {
+          case 'name':
+            assertString(newValue)
+            assertString(oldValue)
 
-          if (method === 'undo') {
-            this.project.renameGrid(this.project.getGridByName(newValue), oldValue)
-          }
-          else {
-            this.project.renameGrid(this.project.getGridByName(oldValue), newValue)
-          }
-          break
+            if (method === 'undo') {
+              this.project.renameGrid(this.project.getGridByName(newValue), oldValue)
+            }
+            else {
+              this.project.renameGrid(this.project.getGridByName(oldValue), newValue)
+            }
+            break
+        }
+        break
       }
-    }
-    else if (event.eventName === 'rowsRemoved') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      if (method === 'undo') {
-        grid.insertRowsBefore(data.rowIndex, data.count, data.cells)
-        data.heights.forEach((height, index) => grid.getRow(data.rowIndex + index).setHeight(height))
+      case 'rowsRemoved': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        if (method === 'undo') {
+          grid.insertRowsBefore(data.rowIndex, data.count, data.cells)
+          data.heights.forEach((height, index) => grid.getRow(data.rowIndex + index).setHeight(height))
+        }
+        else {
+          grid.deleteRows(data.rowIndex, data.count)
+        }
+        break
       }
-      else {
-        grid.deleteRows(data.rowIndex, data.count)
+      case 'colsRemoved': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        if (method === 'undo') {
+          grid.insertColsBefore(data.colIndex, data.count, data.cells)
+          data.widths.forEach((width, index) => grid.getCol(data.colIndex + index).setWidth(width))
+        }
+        else {
+          grid.deleteCols(data.colIndex, data.count)
+        }
+        break
       }
-    }
-    else if (event.eventName === 'colsRemoved') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      if (method === 'undo') {
-        grid.insertColsBefore(data.colIndex, data.count, data.cells)
-        data.widths.forEach((width, index) => grid.getCol(data.colIndex + index).setWidth(width))
+      case 'rowsInserted': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        if (method === 'undo') {
+          grid.deleteRows(data.rowIndex, data.count)
+        }
+        else {
+          grid.insertRowsBefore(data.rowIndex, data.count)
+        }
+        break
       }
-      else {
-        grid.deleteCols(data.colIndex, data.count)
+      case 'colsInserted': {
+        const { data } = event
+        const grid = this.project.getGridByName(data.gridName)
+        if (method === 'undo') {
+          grid.deleteCols(data.colIndex, data.count)
+        }
+        else {
+          grid.insertColsBefore(data.colIndex, data.count)
+        }
+        break
       }
-    }
-    else if (event.eventName === 'rowsInserted') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      if (method === 'undo') {
-        grid.deleteRows(data.rowIndex, data.count)
+      default: {
+        throw new Error(`Unhandled event type: ${event satisfies never}`)
       }
-      else {
-        grid.insertRowsBefore(data.rowIndex, data.count)
-      }
-    }
-    else if (event.eventName === 'colsInserted') {
-      const { data } = event
-      const grid = this.project.getGridByName(data.gridName)
-      if (method === 'undo') {
-        grid.deleteCols(data.colIndex, data.count)
-      }
-      else {
-        grid.insertColsBefore(data.colIndex, data.count)
-      }
-    }
-    else {
-      const exhaustiveCheck: never = event
-      throw new Error(`Unhandled event type: ${exhaustiveCheck}`)
     }
   }
 }

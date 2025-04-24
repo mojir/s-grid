@@ -16,8 +16,8 @@ export class Row {
     this.label = computed(() => getRowId(this._index.value))
 
     watch(this._height, (newHeight, oldHeight) => {
-      this.grid.pubSub.publish({
-        source: 'Row',
+      this.grid.project.pubSub.publish({
+        type: 'Change',
         eventName: 'rowChange',
         data: {
           gridName: this.grid.name.value,

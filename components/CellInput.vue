@@ -104,6 +104,7 @@ function onKeyDown(e: KeyboardEvent) {
 }
 
 watch(grid.value.editor.editorText, () => {
+  console.log('inputRef.value!.style.width', inputRef.value!.style.width)
   updateDimensions()
 })
 
@@ -116,11 +117,12 @@ const updateDimensions = () => {
   const computedStyle = window.getComputedStyle(inputRef.value)
   context.font = `${computedStyle.fontWeight} ${computedStyle.fontStyle} ${computedStyle.fontSize} ${computedStyle.fontFamily}`
   const widths = grid.value.editor.editorText.value.split('\n').map(line => context.measureText(line).width)
-  const width = Math.max(...widths)
-  inputRef.value!.style.width = `${width + 15}px` // Adding some padding
+  const width = Math.max(...widths) + 30 // Adding some padding
+
+  inputRef.value!.style.width = `${width}px`
   const lineHeight = parseInt(computedStyle.lineHeight)
   const lines = grid.value.editor.editorText.value.split('\n').length
-  inputRef.value!.style.height = `${lineHeight * lines + 5}px` // Adding some padding
+  inputRef.value!.style.height = `${lineHeight * lines + 5}px` // Adding some padding=
 }
 </script>
 

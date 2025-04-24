@@ -1,45 +1,55 @@
 import type { Mx } from '../Mx'
-import type { SGridComponent } from '../SGridComponent'
+import type { EventType } from '.'
 import type { CellDTO } from '~/dto/CellDTO'
 
-export const componentEvents = {
-  Grid: ['rowsInserted', 'colsInserted', 'rowsRemoved', 'colsRemoved', 'cellChange', 'rowChange', 'colChange'],
-  Cell: ['cellChange'],
-  Row: ['rowChange'],
-  Col: ['colChange'],
-  Project: ['gridChange'],
-} as const satisfies Partial<Record<SGridComponent, readonly string[]>>
+export const pubSubEvents = {
+  Change: ['rowsInserted', 'colsInserted', 'rowsRemoved', 'colsRemoved', 'cellChange', 'rowChange', 'colChange', 'cellChange', 'rowChange', 'colChange', 'gridChange'],
+  Alert: ['success', 'error', 'warning'],
+} as const satisfies Partial<Record<EventType, readonly string[]>>
 
-export type ComponentEvents = typeof componentEvents
+export type PubSubEvents = typeof pubSubEvents
 
-type BaseEvent<Component extends keyof ComponentEvents, EventName extends ComponentEvents[Component][number], Data> = {
-  source: Component
+type BaseEvent<EventType extends keyof PubSubEvents, EventName extends PubSubEvents[EventType][number], Data> = {
+  type: EventType
   eventName: EventName
-  data: Data & (Component extends 'Grid' | 'Row' | 'Col' | 'Cell' ? { gridName: string } : { gridName?: never })
+  data: Data
 }
 
+export type AlertEvent<T extends 'success' | 'error' | 'warning'> = BaseEvent<
+  'Alert',
+  T,
+  {
+    gridName: string
+    rowIndex: number
+    count: number
+  }
+>
+
 export type RowsInsertedEvent = BaseEvent<
-  'Grid',
+  'Change',
   'rowsInserted',
   {
+    gridName: string
     rowIndex: number
     count: number
   }
 >
 
 export type ColsInsertedEvent = BaseEvent<
-  'Grid',
+  'Change',
   'colsInserted',
   {
+    gridName: string
     colIndex: number
     count: number
   }
 >
 
 export type RowsRemovedEvent = BaseEvent<
-  'Grid',
+  'Change',
   'rowsRemoved',
   {
+    gridName: string
     rowIndex: number
     count: number
     cells: Mx<CellDTO>
@@ -48,9 +58,10 @@ export type RowsRemovedEvent = BaseEvent<
 >
 
 export type ColsRemovedEvent = BaseEvent<
-  'Grid',
+  'Change',
   'colsRemoved',
   {
+    gridName: string
     colIndex: number
     count: number
     cells: Mx<CellDTO>
@@ -59,9 +70,10 @@ export type ColsRemovedEvent = BaseEvent<
 >
 
 export type CellChangeEvent = BaseEvent<
-  'Cell',
+  'Change',
   'cellChange',
   {
+    gridName: string
     rowIndex: number
     colIndex: number
     attribute: keyof CellDTO
@@ -71,9 +83,10 @@ export type CellChangeEvent = BaseEvent<
 >
 
 export type RowChangeEvent = BaseEvent<
-  'Row',
+  'Change',
   'rowChange',
   {
+    gridName: string
     rowIndex: number
     newHeight: number
     oldHeight: number
@@ -81,9 +94,10 @@ export type RowChangeEvent = BaseEvent<
 >
 
 export type ColChangeEvent = BaseEvent<
-  'Col',
+  'Change',
   'colChange',
   {
+    gridName: string
     colIndex: number
     newWidth: number
     oldWidth: number
@@ -91,7 +105,7 @@ export type ColChangeEvent = BaseEvent<
 >
 
 export type GridChangeEvent = BaseEvent<
-  'Project',
+  'Change',
   'gridChange',
   {
     attribute: 'name'
@@ -100,7 +114,7 @@ export type GridChangeEvent = BaseEvent<
   }
 >
 
-export type SGridEvent =
+export type ChangeEvent =
   | RowsInsertedEvent
   | ColsInsertedEvent
   | RowsRemovedEvent
@@ -109,3 +123,9 @@ export type SGridEvent =
   | RowChangeEvent
   | ColChangeEvent
   | GridChangeEvent
+
+export type SGridEvent =
+  | ChangeEvent
+  | AlertEvent<'success'>
+  | AlertEvent<'error'>
+  | AlertEvent<'warning'>

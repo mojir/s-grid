@@ -8,7 +8,6 @@ import { RangeReference } from '../reference/RangeReference'
 import { getDocumentCellId, type Direction, type Reference } from '../reference/utils'
 import { Row } from '../Row'
 import { Mx } from '../Mx'
-import { PubSub } from '../PubSub'
 import type { ColsRemovedEvent, RowsRemovedEvent } from '../PubSub/pubSubEvents'
 import { GridSelection } from './GridSelection'
 import { SpillHandler } from './SpillHandler'
@@ -29,7 +28,6 @@ export class Grid {
   public readonly editor: CellEditor
   public hoveredCell: Ref<CellReference | null> = shallowRef(null)
   public state = ref<GridState>('idle')
-  public readonly pubSub: PubSub
   private readonly cells: Mx<Cell>
   private readonly spillHandler = new SpillHandler(this)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
@@ -49,7 +47,6 @@ export class Grid {
     this.project = project
     this.rows = shallowRef(Array.from({ length: nbrOfRows }, (_, row) => new Row(this, row, defaultRowHeight)))
     this.cols = shallowRef(Array.from({ length: nbrOfCols }, (_, col) => new Col(this, col, defaultColWidth)))
-    this.pubSub = new PubSub('Grid', project.pubSub)
     this.selection = new GridSelection(this.project, this)
     this.position = shallowRef(CellReference.fromCoords(this, { rowIndex: 0, colIndex: 0 }))
     this.editor = new CellEditor(this)
@@ -527,7 +524,7 @@ export class Grid {
     }
 
     const rowsRemovedEvent: RowsRemovedEvent = {
-      source: 'Grid',
+      type: 'Change',
       eventName: 'rowsRemoved',
       data: {
         gridName: this.name.value,
@@ -586,7 +583,7 @@ export class Grid {
       count,
     })
 
-    this.pubSub.publish(rowsRemovedEvent)
+    this.project.pubSub.publish(rowsRemovedEvent)
   }
 
   public deleteCols(colIndexToDelete: number, count: number) {
@@ -595,7 +592,7 @@ export class Grid {
     }
 
     const colsRemovedEvent: ColsRemovedEvent = {
-      source: 'Grid',
+      type: 'Change',
       eventName: 'colsRemoved',
       data: {
         gridName: this.name.value,
@@ -655,7 +652,7 @@ export class Grid {
       count,
     })
 
-    this.pubSub.publish(colsRemovedEvent)
+    this.project.pubSub.publish(colsRemovedEvent)
   }
 
   public insertRowsBefore(rowIndex: number, count: number, data?: Mx<CellDTO>) {
@@ -766,8 +763,8 @@ export class Grid {
 
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
 
-    this.pubSub.publish({
-      source: 'Grid',
+    this.project.pubSub.publish({
+      type: 'Change',
       eventName: 'rowsInserted',
       data: {
         gridName: this.name.value,
@@ -881,8 +878,8 @@ export class Grid {
 
     this.selection.updateSelection(newSelectionStart, newSelectionEnd)
 
-    this.pubSub.publish({
-      source: 'Grid',
+    this.project.pubSub.publish({
+      type: 'Change',
       eventName: 'colsInserted',
       data: {
         colIndex: colInsertIndex,

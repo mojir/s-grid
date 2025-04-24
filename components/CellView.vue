@@ -139,10 +139,6 @@ const cellStyle = computed(() => {
       :id="cellId"
       :style="cellStyle"
       class="px-1 h-full relative flex box-border text-sm whitespace-pre"
-      :class="{
-        'cursor-pointer': !cell.readonly.value,
-        'cursor-default': cell.readonly.value,
-      }"
       @dblclick="emit('cell-dblclick', reference)"
     >
       {{ cellContent }}

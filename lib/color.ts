@@ -114,7 +114,7 @@ export const colorPalette = [
 
   // Row 10: Muted colors
   ['#4a4a4a', '#6b6b47', '#4a754a', '#4a757c', '#4a4a75', '#754a75', '#754a4a', '#617c7c', '#7c617c', '#7c7c61'].map(color => Color.fromHex(color)),
-] as const
+]
 
 export const infoColor = colorPalette[0]![0]!
 export const warnColor = colorPalette[2]![5]!

@@ -1,8 +1,9 @@
 import type { SGridComponent } from '../SGridComponent'
-import type { ComponentEvents, SGridEvent } from './pubSubEvents'
+import type { PubSubEvents, SGridEvent } from './pubSubEvents'
 
-type Filter<Component extends keyof ComponentEvents = keyof ComponentEvents> =
-  Partial<Record<Component, ComponentEvents[Component][number][] | true>>
+export type EventType = 'Change' | 'Alert'
+type Filter<Component extends keyof PubSubEvents = keyof PubSubEvents> =
+  Partial<Record<Component, PubSubEvents[Component][number][] | true>>
 
 type Subscriber = {
   listener: SGridComponent
@@ -10,13 +11,9 @@ type Subscriber = {
   filter?: Filter
 }
 
-type Chain = SGridComponent[]
-
 export class PubSub {
   private readonly subscribers = new Set<Subscriber>()
   private logger = useLogger().createLogger('PubSub')
-
-  constructor(private pubSubOwner: SGridComponent, private readonly parent?: PubSub) {}
 
   subscribe(subscriber: Subscriber) {
     this.subscribers.add(subscriber)
@@ -26,45 +23,30 @@ export class PubSub {
   }
 
   publish(event: SGridEvent) {
-    const chain: Chain = [event.source, this.pubSubOwner]
-    let numberOfReceivers = this.broadcast(event, chain)
-
-    if (this.parent) {
-      numberOfReceivers += this.parent.delegate(event, chain)
-    }
+    const numberOfReceivers = this.broadcast(event)
 
     if (numberOfReceivers === 0) {
-      this.logger.warn(`No listeners on event ${event.source}:${event.eventName} from PubSub:${this.pubSubOwner}`, event.data)
+      this.logger.warn(`No listeners on event ${event.type}:${event.eventName}`, event.data)
     }
   }
 
-  private delegate(event: SGridEvent, chain: Chain): number {
-    const newChain = [...chain, this.pubSubOwner]
-    let numberOfReceivers = this.broadcast(event, newChain)
-    if (this.parent) {
-      numberOfReceivers += this.parent.delegate(event, newChain)
-    }
-    return numberOfReceivers
-  }
-
-  private broadcast(event: SGridEvent, chain: Chain): number {
+  private broadcast(event: SGridEvent): number {
     let numberOfReceivers = 0
     this.subscribers.forEach((subscriber) => {
       if (this.isSubscriberForEvent(subscriber, event)) {
         numberOfReceivers += 1
-        this.logger.info(`${event.eventName}: ${chain.join(' -> ')} -> ${subscriber.listener}`, event.data)
         subscriber.callback(event)
       }
     })
     return numberOfReceivers
   }
 
-  private isSubscriberForEvent({ filter }: Subscriber, { eventName, source }: SGridEvent): boolean {
+  private isSubscriberForEvent({ filter }: Subscriber, { eventName, type }: SGridEvent): boolean {
     if (!filter) {
       return true
     }
     else {
-      const filterEvents = filter[source]
+      const filterEvents = filter[type]
       return !!filterEvents && (filterEvents === true || filterEvents.includes(eventName))
     }
   }

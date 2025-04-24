@@ -16,7 +16,7 @@ import type { GridDTO } from '~/dto/GridDTO'
 import type { ProjectDTO } from '~/dto/ProjectDTO'
 
 export class Project {
-  public readonly pubSub = new PubSub('Project')
+  public readonly pubSub = new PubSub()
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
   public readonly clipboard = new ProjectClipboard(this)
@@ -98,7 +98,7 @@ export class Project {
     })
     grid.name.value = newGridName
     this.pubSub.publish({
-      source: 'Project',
+      type: 'Change',
       eventName: 'gridChange',
       data: {
         attribute: 'name',

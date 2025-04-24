@@ -17,8 +17,8 @@ export class Col {
     this.label = computed(() => getColId(this._index.value))
 
     watch(this._width, (newWidth, oldWidth) => {
-      this.grid.pubSub.publish({
-        source: 'Col',
+      this.grid.project.pubSub.publish({
+        type: 'Change',
         eventName: 'colChange',
         data: {
           gridName: this.grid.name.value,

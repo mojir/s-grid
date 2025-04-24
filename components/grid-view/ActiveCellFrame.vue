@@ -48,7 +48,12 @@ const moveCellReference = computed<CellReference | null>(() => {
 
   return hoveredCell
 })
-const active = computed(() => !grid.value.position.value.getCell().readonly.value && grid.value.selection.selectedRange.value.size() === 1 && grid.value.selection.selectedRange.value.start.equals(grid.value.position.value))
+const active = computed(() =>
+  !grid.value.editor.editing.value
+  && !grid.value.position.value.getCell().readonly.value
+  && grid.value.selection.selectedRange.value.size() === 1
+  && grid.value.selection.selectedRange.value.start.equals(grid.value.position.value),
+)
 
 const x = computed(() => rectangle.value.x + 1)
 const y = computed(() => rectangle.value.y + 1)
