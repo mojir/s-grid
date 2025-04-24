@@ -34,6 +34,16 @@ const project = new Project({
   currentGridIndex: 0,
   aliases: {},
 })
+project.pubSub.subscribe({
+  listener: 'UI',
+  filter: { Alert: true },
+  callback: (event) => {
+    if (event.type === 'Alert') {
+      alert(event.data.title)
+    }
+  },
+})
+
 const grid = project.currentGrid
 const selection = computed(() => grid.value.selection)
 
@@ -382,6 +392,9 @@ function onMouseUp(event: MouseEvent) {
         grid.value.getCol(col).setWidth(width)
       })
     colResizing.value = null
+  }
+  if (grid.value.editor.editing.value) {
+    resetSelection()
   }
 }
 

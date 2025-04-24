@@ -26,6 +26,13 @@ export class CellEditor {
 
   public edit(value: KeyboardEvent | null, keyboardOn = true) {
     if (this.grid.currentCell.value.readonly.value) {
+      this.grid.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Cell is readonly',
+        },
+      })
       return
     }
     if (!this.editing.value) {

@@ -1,4 +1,4 @@
-import { Lits, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
+import { Lits, normalExpressionKeys, specialExpressionKeys, type Context, type JsFunction, type LitsFunction } from '@mojir/lits'
 import { builtinLitsScript } from '~/lib/lits'
 import { getInteropFunctions } from '~/lib/lits/interop'
 
@@ -105,6 +105,10 @@ export default function useLits() {
       : lits.getUndefinedSymbols(program, { jsFunctions: interopFunctions, contexts: [builtingContext] })
   }
 
+  function getAutoCompleter(program: string, extraSymbols: string[]): AutoCompleter {
+    return new AutoCompleter(lits, extraSymbols, program)
+  }
+
   return {
     setupRefs,
     run,
@@ -114,5 +118,99 @@ export default function useLits() {
     transform,
     registerJsFunction,
     getUnresolvedIdentifers,
+    getAutoCompleter,
+  }
+}
+
+const autoCompleteTokenTypes = [
+  'Operator',
+  'ReservedSymbol',
+  'Symbol',
+]
+const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys, ...Object.keys(interopFunctions)].sort())
+export type Suggestion = {
+  suggestion: string
+  searchPattern: string
+}
+export class AutoCompleter {
+  private searchPattern: string = ''
+  private suggestions: string[] = []
+  private suggestionIndex: null | number = null
+  constructor(private lits: Lits, private extraSymbols: string[], program: string) {
+    try {
+      console.log('***', program)
+      const tokenStream = this.lits.tokenize(program)
+      const lastToken = tokenStream.tokens.at(-1)
+      if (lastToken === undefined) {
+        return
+      }
+      if (autoCompleteTokenTypes.includes(lastToken[0])) {
+        this.searchPattern = lastToken[1].toLowerCase()
+        this.suggestions = this.getAllSuggestions()
+      }
+    }
+    catch {
+      // Ignore errors
+    }
+  }
+
+  public getNextSuggestion(): Suggestion | null {
+    if (this.suggestions.length === 0) {
+      return null
+    }
+    if (this.suggestionIndex === null) {
+      this.suggestionIndex = 0
+    }
+    else {
+      this.suggestionIndex += 1
+      if (this.suggestionIndex >= this.suggestions.length) {
+        this.suggestionIndex = 0
+      }
+    }
+    return {
+      suggestion: this.suggestions[this.suggestionIndex]!,
+      searchPattern: this.searchPattern,
+    }
+  }
+
+  public getPreviousSuggestion(): Suggestion | null {
+    if (this.suggestions.length === 0) {
+      return null
+    }
+    if (this.suggestionIndex === null) {
+      this.suggestionIndex = this.suggestions.length - 1
+    }
+    else {
+      this.suggestionIndex -= 1
+      if (this.suggestionIndex < 0) {
+        this.suggestionIndex = this.suggestions.length - 1
+      }
+    }
+    return {
+      suggestion: this.suggestions[this.suggestionIndex]!,
+      searchPattern: this.searchPattern,
+    }
+  }
+
+  private getAllSuggestions(): string[] {
+    const suggestions = new Set<string>()
+
+    this.extraSymbols
+      .filter(name => name.toLowerCase().startsWith(this.searchPattern))
+      .forEach(name => suggestions.add(name))
+
+    litsCommands.values()
+      .filter(name => name.toLowerCase().startsWith(this.searchPattern))
+      .forEach(name => suggestions.add(name))
+
+    this.extraSymbols
+      .filter(name => name.toLowerCase().includes(this.searchPattern))
+      .forEach(name => suggestions.add(name))
+
+    litsCommands.values()
+      .filter(name => name.toLowerCase().includes(this.searchPattern))
+      .forEach(name => suggestions.add(name))
+
+    return [...suggestions]
   }
 }

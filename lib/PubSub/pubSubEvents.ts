@@ -19,9 +19,8 @@ export type AlertEvent<T extends 'success' | 'error' | 'warning'> = BaseEvent<
   'Alert',
   T,
   {
-    gridName: string
-    rowIndex: number
-    count: number
+    title: string
+    body?: number
   }
 >
 

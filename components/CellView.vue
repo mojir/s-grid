@@ -127,7 +127,6 @@ const cellStyle = computed(() => {
   else if (cell.value.error.value) {
     style.color = 'var(--error-color)'
   }
-  // }
 
   return style
 })
@@ -143,9 +142,5 @@ const cellStyle = computed(() => {
     >
       {{ cellContent }}
     </div>
-    <div
-      v-if="cell.readonly.value"
-      class="z-[100] pointer-events-none block absolute top-[1px] right-[1px] bottom-0 left-0 bg-white/30 dark:bg-black/30"
-    />
   </div>
 </template>

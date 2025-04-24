@@ -37,12 +37,13 @@ const cellTypeDate = computed(() => cellType.value === 'date')
 const cellTypeString = computed(() => cellType.value === 'string')
 
 const numberFormatter = ref<string>(defaultNumberFormatter)
-const floatFormatter = '=> $ number:format ".4~f"'
-const fixed2Formatter = '=> $ number:format ".2f"'
-const integerFormatter = '=> $ number:format "d"'
-const percentFormatter = '=> (100 * $ number:format ".2f") ++ "%"'
-const sekFormatter = '=> ($ number:format ".2f") ++ " kr"'
-const usdFormatter = '=> "$" ++ ($ number:format ".2f")'
+const floatFormatter = '-> $ number:format ".4~f"'
+const fixed2Formatter = '-> $ number:format ".2f"'
+const integerFormatter = '-> $ number:format "d"'
+const percentFormatter = '-> (100 * $ number:format ".2f") ++ "%"'
+const sekFormatter = '-> ($ number:format ".2f") ++ " kr"'
+const usdFormatter = '-> "$" ++ ($ number:format ".2f")'
+const symbolicFormatter = '-> number:symbolic($)'
 
 const float = computed(() => numberFormatter.value === floatFormatter)
 const fixed2 = computed(() => numberFormatter.value === fixed2Formatter)
@@ -50,6 +51,7 @@ const integer = computed(() => numberFormatter.value === integerFormatter)
 const percent = computed(() => numberFormatter.value === percentFormatter)
 const sek = computed(() => numberFormatter.value === sekFormatter)
 const usd = computed(() => numberFormatter.value === usdFormatter)
+const symbolic = computed(() => numberFormatter.value === symbolicFormatter)
 
 const dateFormatter = ref<string>(defaultDateFormatter)
 
@@ -121,6 +123,11 @@ function setSek() {
 function setUsd() {
   numberFormatter.value = usdFormatter
   grid.value.setNumberFormatter(usdFormatter, null)
+}
+
+function setSymbolic() {
+  numberFormatter.value = symbolicFormatter
+  grid.value.setNumberFormatter(symbolicFormatter, null)
 }
 
 function saveNumberFormatter() {
@@ -295,6 +302,18 @@ function setDateFormat(pattern: string) {
               <div>SEK</div>
               <div class="text-gray-500">
                 4.10 kr
+              </div>
+            </div>
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuCheckboxItem
+            :checked="symbolic"
+            @update:checked="setSymbolic"
+            @select.prevent
+          >
+            <div class="flex justify-between gap-8 w-full">
+              <div>Symbolic</div>
+              <div class="text-gray-500">
+                π/2
               </div>
             </div>
           </DropdownMenuCheckboxItem>

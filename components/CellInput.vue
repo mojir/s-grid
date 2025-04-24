@@ -10,6 +10,12 @@ const { grid } = toRefs(props)
 
 const initialValue = ref('')
 const inputRef = ref<HTMLTextAreaElement>()
+let autoCompleting: {
+  originalText: string
+  cursorPosition: number
+  autoCompleter: AutoCompleter
+  prefix: '=' | ':='
+} | null = null
 
 onMounted(() => {
   initialValue.value = grid.value.editor.editorText.value
@@ -26,11 +32,14 @@ watch(isEditingLitsCode, (editing) => {
 
 const selectedRange = computed(() => grid.value.selection.selectedRange.value)
 watch(selectedRange, (selection) => {
+  if (selection.size() === 1 && selection.start.equals(grid.value.position.value)) {
+    return
+  }
   const inputElement = inputRef.value
   if (grid.value.editor.editingLitsCode.value && inputElement && grid.value.editor.editing.value) {
-    const selectionValue = `${selection.size() === 1
+    const selectionValue = selection.size() === 1
       ? selection.start.toStringWithoutGrid()
-      : selection.toStringWithoutGrid()} `
+      : selection.toStringWithoutGrid()
 
     const start = inputElement.selectionStart ?? 0
     const end = inputElement.selectionEnd ?? 0
@@ -40,7 +49,9 @@ watch(selectedRange, (selection) => {
     const position = start + selectionValue.length
     inputElement.setSelectionRange(start, position)
     grid.value.editor.editorText.value = inputElement.value
-    inputElement.focus()
+    setTimeout(() => {
+      inputElement.focus()
+    })
   }
 })
 
@@ -56,7 +67,12 @@ watch(selecting, (isSelecting) => {
 function setEventFlags(e: KeyboardEvent) {
   const enableKeyboard = grid.value.editor.keyboardEnabled.value
 
-  if (e.key === 'Enter' && e.ctrlKey) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.shiftKey)) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
+
+  if (e.key === 'Tab' && isEditingLitsCode.value) {
     e.stopPropagation()
     e.preventDefault()
   }
@@ -74,6 +90,7 @@ function setEventFlags(e: KeyboardEvent) {
       && e.key !== 'ArrowUp'
       && e.key !== 'ArrowDown'
       && e.key !== 'ArrowRight'
+      && e.key !== 'ArrowLeft'
       && e.key !== 'PageUp'
       && e.key !== 'PageDown'
       && e.key !== 'Home'
@@ -81,15 +98,18 @@ function setEventFlags(e: KeyboardEvent) {
     ) {
       e.stopPropagation()
     }
-    if (e.key === 'ArrowLeft') {
-      grid.value.editor.keyboardEnabled.value = true
-    }
+  }
+  if (isEditingLitsCode.value && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.stopPropagation()
   }
 }
 
 function onKeyDown(e: KeyboardEvent) {
   setEventFlags(e)
-  if (e.key === 'Enter' && e.ctrlKey) {
+  if (isEditingLitsCode.value) {
+    grid.value.editor.keyboardEnabled.value = true
+  }
+  if (e.key === 'Enter' && (e.ctrlKey || e.shiftKey)) {
     const inputElement = inputRef.value
     if (inputElement) {
       const start = inputElement.selectionStart ?? 0
@@ -101,10 +121,55 @@ function onKeyDown(e: KeyboardEvent) {
       grid.value.editor.editorText.value = inputElement.value
     }
   }
+  if (e.key === 'Tab' && isEditingLitsCode.value) {
+    const inputElement = inputRef.value
+    if (inputElement) {
+      if (!autoCompleting) {
+        const originalText = grid.value.editor.editorText.value
+        const cursorPosition = inputRef.value?.selectionStart ?? 0
+        const prefix = originalText.startsWith('=') ? '=' : ':='
+        const autoCompleteProgram = originalText.slice(prefix.length, cursorPosition)
+        autoCompleting = {
+          autoCompleter: useLits().getAutoCompleter(autoCompleteProgram, Object.keys(grid.value.project.commandCenter.commands)),
+          originalText,
+          cursorPosition,
+          prefix,
+        }
+      }
+      const suggestion = e.shiftKey
+        ? autoCompleting.autoCompleter.getPreviousSuggestion()
+        : autoCompleting.autoCompleter.getNextSuggestion()
+
+      if (!suggestion) {
+        return
+      }
+
+      inputElement.value = autoCompleting.originalText.slice(0, autoCompleting.cursorPosition - suggestion.searchPattern.length) + suggestion.suggestion + autoCompleting.originalText.slice(autoCompleting.cursorPosition)
+      grid.value.editor.editorText.value = inputElement.value
+      const position = autoCompleting.cursorPosition - suggestion.searchPattern.length + suggestion.suggestion.length
+      inputElement.setSelectionRange(position, position)
+    }
+  }
+  else if (e.key === 'Escape') {
+    if (autoCompleting) {
+      const inputElement = inputRef.value
+      if (inputElement) {
+        inputElement.value = autoCompleting.originalText
+        grid.value.editor.editorText.value = autoCompleting.originalText
+        const position = autoCompleting.cursorPosition
+        inputElement.setSelectionRange(position, position)
+      }
+      autoCompleting = null
+      e.stopPropagation()
+      e.preventDefault()
+    }
+  }
+  else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Meta' && e.key !== 'Alt') {
+    autoCompleting = null
+  }
 }
 
 watch(grid.value.editor.editorText, () => {
-  console.log('inputRef.value!.style.width', inputRef.value!.style.width)
   updateDimensions()
 })
 

@@ -97,16 +97,12 @@ watch(grid, (grid) => {
     <GridViewSelectionCellFrame
       :grid="grid"
     />
-    <div
-      v-if="grid.editor.editing.value"
-    >
-      <GridRegion
-        v-for="region of localReferenceList"
-        :key="region.toStringWithoutGrid()"
-        :region="region"
-        class="bg-referenced-cell"
-      />
-    </div>
+    <GridRegion
+      v-for="region of localReferenceList"
+      :key="region.toStringWithoutGrid()"
+      :region="region"
+      class="bg-referenced-cell"
+    />
     <GridRegion
       v-if="grid.editor.editing.value"
       active

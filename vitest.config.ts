@@ -6,4 +6,9 @@ export default defineVitestConfig({
       provider: 'v8',
     },
   },
+  // resolve: {
+  //   alias: {
+  //     '@mojir/pretty-pi': '../pretty-pi',
+  //   },
+  // },
 })
