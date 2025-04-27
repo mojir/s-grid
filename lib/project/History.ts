@@ -11,7 +11,6 @@ function assertString(value: unknown): asserts value is string {
 export class History {
   public constructor(private project: Project) {
     this.project.pubSub.subscribe({
-      listener: 'History',
       filter: { Change: true },
       callback: this.onPubSubEvent.bind(this),
     })
@@ -152,7 +151,7 @@ export class History {
         const { data } = event
         const grid = this.project.getGridByName(data.gridName)
         if (method === 'undo') {
-          grid.insertRowsBefore(data.rowIndex, data.count, data.cells)
+          grid.insertRowsBefore(data.rowIndex, data.count, data.cells.map(cell => cell.getDTO()))
           data.heights.forEach((height, index) => grid.getRow(data.rowIndex + index).setHeight(height))
         }
         else {
@@ -164,7 +163,7 @@ export class History {
         const { data } = event
         const grid = this.project.getGridByName(data.gridName)
         if (method === 'undo') {
-          grid.insertColsBefore(data.colIndex, data.count, data.cells)
+          grid.insertColsBefore(data.colIndex, data.count, data.cells.map(cell => cell.getDTO()))
           data.widths.forEach((width, index) => grid.getCol(data.colIndex + index).setWidth(width))
         }
         else {

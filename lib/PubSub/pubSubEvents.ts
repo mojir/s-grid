@@ -1,4 +1,5 @@
 import type { Mx } from '../Mx'
+import type { Cell } from '../cell/Cell'
 import type { EventType } from '.'
 import type { CellDTO } from '~/dto/CellDTO'
 
@@ -20,7 +21,7 @@ export type AlertEvent<T extends 'success' | 'error' | 'warning'> = BaseEvent<
   T,
   {
     title: string
-    body?: number
+    body?: string
   }
 >
 
@@ -51,7 +52,7 @@ export type RowsRemovedEvent = BaseEvent<
     gridName: string
     rowIndex: number
     count: number
-    cells: Mx<CellDTO>
+    cells: Mx<Cell>
     heights: number[]
   }
 >
@@ -63,7 +64,7 @@ export type ColsRemovedEvent = BaseEvent<
     gridName: string
     colIndex: number
     count: number
-    cells: Mx<CellDTO>
+    cells: Mx<Cell>
     widths: number[]
   }
 >

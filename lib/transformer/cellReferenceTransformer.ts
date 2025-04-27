@@ -33,7 +33,7 @@ export function transformCellReference({
 }
 
 export function cellTransformMove(cellReference: CellReference, { grid, toGrid, toRowIndex, toColIndex, deltaRow, deltaCol, range }: MoveTransformation): CellReference {
-  if (range && !range.containsCell(cellReference)) {
+  if (range && !range.contains(cellReference)) {
     return cellReference
   }
 

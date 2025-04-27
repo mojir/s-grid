@@ -308,7 +308,7 @@ export class CellReference {
   }
 
   private cellPageUp(range: RangeReference): CellReference {
-    if (!range.containsCell(this)) {
+    if (!range.contains(this)) {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
@@ -352,7 +352,7 @@ export class CellReference {
   }
 
   private cellPageDown(range: RangeReference): CellReference {
-    if (!range.containsCell(this)) {
+    if (!range.contains(this)) {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
@@ -396,7 +396,7 @@ export class CellReference {
   }
 
   private cellPageLeft(range: RangeReference): CellReference {
-    if (!range.containsCell(this)) {
+    if (!range.contains(this)) {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 
@@ -440,7 +440,7 @@ export class CellReference {
   }
 
   private cellPageRight(range: RangeReference): CellReference {
-    if (!range.containsCell(this)) {
+    if (!range.contains(this)) {
       throw new Error(`Cell ${this.toStringWithGrid()} is not in range ${range.toStringWithGrid()}`)
     }
 

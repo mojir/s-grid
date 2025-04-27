@@ -123,7 +123,7 @@ export class Cell {
     })
   }
 
-  private handleSpill() {
+  public handleSpill() {
     const value = this.internalOutput.value
 
     const matrix = isGrid(value)

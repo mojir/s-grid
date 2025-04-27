@@ -35,11 +35,12 @@ const project = new Project({
   aliases: {},
 })
 project.pubSub.subscribe({
-  listener: 'UI',
   filter: { Alert: true },
   callback: (event) => {
     if (event.type === 'Alert') {
-      alert(event.data.title)
+      const { title, body } = event.data
+      const message = `${title}${body ? `\n${body}` : ''}`
+      alert(message)
     }
   },
 })
@@ -200,7 +201,7 @@ function onMouseDown(event: MouseEvent) {
   const [type, , cellReferenceString] = targetId.split('|')
   if (type === DocumentIdType.Cell) {
     const reference = CellReference.fromString(grid.value, cellReferenceString!)
-    if (isRightClick && selection.value.selectedRange.value.containsCell(reference)) {
+    if (isRightClick && selection.value.selectedRange.value.contains(reference)) {
       return
     }
     grid.value.state.value = 'selecting'

@@ -63,6 +63,17 @@ export class ProjectClipboard {
   }
 
   public paste(targetRange: RangeReference) {
+    if (targetRange.hasReadonlyCells()) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Readonly cell',
+          body: 'Cannot paste into readonly cells',
+        },
+      })
+      return
+    }
     if (this.cutCellIds.value) {
       this.moveClipboard(targetRange)
     }

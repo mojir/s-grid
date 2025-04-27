@@ -12,7 +12,7 @@ describe('PubSub', () => {
       data: { rowIndex: 1, count: 2, gridName: 'Grid1' },
     }
 
-    const unsubscribe = pubSub.subscribe({ listener: 'CommandCenter', callback, filter: { Change: ['rowsInserted'] } })
+    const unsubscribe = pubSub.subscribe({ callback, filter: { Change: ['rowsInserted'] } })
     pubSub.publish(event)
 
     expect(callback).toHaveBeenCalledWith(event)
@@ -28,7 +28,7 @@ describe('PubSub', () => {
       data: { rowIndex: 1, count: 2, gridName: 'Grid1' },
     }
 
-    pubSub.subscribe({ listener: 'CommandCenter', callback, filter: { Change: ['colsInserted'] } })
+    pubSub.subscribe({ callback, filter: { Change: ['colsInserted'] } })
     pubSub.publish(event)
 
     expect(callback).not.toHaveBeenCalled()
@@ -43,7 +43,7 @@ describe('PubSub', () => {
       data: { rowIndex: 1, count: 2, gridName: 'Grid1' },
     }
 
-    const unsubscribe = pubSub.subscribe({ listener: 'CommandCenter', callback, filter: { Change: ['rowsInserted'] } })
+    const unsubscribe = pubSub.subscribe({ callback, filter: { Change: ['rowsInserted'] } })
     unsubscribe()
     pubSub.publish(event)
 

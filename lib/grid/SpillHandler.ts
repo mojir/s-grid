@@ -11,7 +11,13 @@ export type SpillValue = {
 
 export class SpillHandler {
   private spills = new Map<Cell, RangeReference>()
+  private logger = useLogger().createLogger('PubSub')
+
   constructor(private grid: Grid) {}
+
+  public getSpillRange(source: Cell): RangeReference | undefined {
+    return this.spills.get(source)
+  }
 
   public removeSpill(source: Cell): void {
     const existingRange = this.spills.get(source)
@@ -23,7 +29,11 @@ export class SpillHandler {
     }
   }
 
-  public addSpill(source: Cell, spillMatrix: Mx<unknown>): boolean {
+  public intersectsSpill(rangeReference: RangeReference): boolean {
+    return this.spills.values().some(spillRange => spillRange.intersects(rangeReference))
+  }
+
+  public addSpill(source: Cell, spillMatrix: Mx<unknown>): void {
     const spillRange = RangeReference.fromCellReferences(
       source.cellReference,
       CellReference.fromCoords(this.grid, {
@@ -32,13 +42,31 @@ export class SpillHandler {
       }),
     )
 
+    if (!this.grid.gridRange.value.contains(spillRange)) {
+      this.grid.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Spill range out of bounds',
+          body: 'Spill range is out of bounds',
+        },
+      })
+      return
+    }
+
     // Check if the spill range intersects with any other spills
-    const otherEntries = [...this.spills.keys()].filter(c => c !== source)
-    for (const otherEntry of otherEntries) {
-      const otherRange = this.spills.get(otherEntry)!
-      if (otherRange.intersects(spillRange)) {
-        return false
-      }
+
+    const existingSpillCells = new Set(this.spills.get(source)?.getCells() ?? [])
+
+    if (spillRange.getCells().some(cell => !existingSpillCells.has(cell) && cell.readonly.value)) {
+      this.grid.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Readonly cell',
+          body: 'Cannot spill into readonly cells',
+        },
+      })
     }
 
     const cells = spillRange.getCells()
@@ -59,6 +87,5 @@ export class SpillHandler {
       const value = spillMatrix.get(row, col)
       c.spillValue.value = { value, source }
     })
-    return true
   }
 }

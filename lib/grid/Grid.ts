@@ -29,7 +29,7 @@ export class Grid {
   public hoveredCell: Ref<CellReference | null> = shallowRef(null)
   public state = ref<GridState>('idle')
   private readonly cells: Mx<Cell>
-  private readonly spillHandler = new SpillHandler(this)
+  public readonly spillHandler = new SpillHandler(this)
   private scrollPosition = { scrollTop: 0, scrollLeft: 0 }
 
   constructor({
@@ -202,7 +202,7 @@ export class Grid {
     }
     this.position.value = newPosition
 
-    if (!this.selection.selectedRange.value.containsCell(newPosition)) {
+    if (!this.selection.selectedRange.value.contains(newPosition)) {
       const location = RangeReference.fromCellReference(newPosition)
       this.selection.updateSelection(location.start, location.end)
     }
@@ -520,7 +520,27 @@ export class Grid {
 
   public deleteRows(rowIndexToDelete: number, count: number) {
     if (count === this.rows.value.length) {
-      throw new Error('Cannot delete all rows')
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Delete rows',
+          body: 'Cannot delete all rows',
+        },
+      })
+      return
+    }
+
+    if (RangeReference.fromRowIndex(this, rowIndexToDelete, count).hasReadonlyCells()) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Delete rows',
+          body: 'Cannot delete read only cells',
+        },
+      })
+      return
     }
 
     const rowsRemovedEvent: RowsRemovedEvent = {
@@ -530,8 +550,7 @@ export class Grid {
         gridName: this.name.value,
         rowIndex: rowIndexToDelete,
         count,
-        cells: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count))
-          .map(cell => cell.getDTO()),
+        cells: Mx.from(this.cells.rows().slice(rowIndexToDelete, rowIndexToDelete + count)),
         heights: this.rows.value.slice(rowIndexToDelete, rowIndexToDelete + count).map(row => row.height.value),
       },
     }
@@ -588,7 +607,27 @@ export class Grid {
 
   public deleteCols(colIndexToDelete: number, count: number) {
     if (colIndexToDelete === 0 && count >= this.cols.value.length) {
-      throw new Error('Cannot delete all columns')
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Delete cols',
+          body: 'Cannot delete all cols',
+        },
+      })
+      return
+    }
+
+    if (RangeReference.fromColIndex(this, colIndexToDelete, count).hasReadonlyCells()) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Delete rows',
+          body: 'Cannot delete read only cells',
+        },
+      })
+      return
     }
 
     const colsRemovedEvent: ColsRemovedEvent = {
@@ -598,9 +637,7 @@ export class Grid {
         gridName: this.name.value,
         colIndex: colIndexToDelete,
         count,
-        cells: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count))
-          .toTransposed()
-          .map(cell => cell.getDTO()),
+        cells: Mx.from(this.cells.cols().slice(colIndexToDelete, colIndexToDelete + count)).toTransposed(),
         widths: this.cols.value.slice(colIndexToDelete, colIndexToDelete + count).map(col => col.width.value),
       },
     }
@@ -656,6 +693,18 @@ export class Grid {
   }
 
   public insertRowsBefore(rowIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (rowIndex > 0 && this.spillHandler.intersectsSpill(RangeReference.fromRowIndex(this, rowIndex - 1))) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Insert rows',
+          body: 'Cannot insert rows within spilling cells',
+        },
+      })
+      return
+    }
+
     if (!data) {
       const range = RangeReference.fromCellReferences(
         CellReference.fromCoords(this, { rowIndex, colIndex: 0 }),
@@ -676,6 +725,18 @@ export class Grid {
   }
 
   public insertRowsAfter(rowIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (this.spillHandler.intersectsSpill(RangeReference.fromRowIndex(this, rowIndex))) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Insert rows',
+          body: 'Cannot insert rows within spilling cells',
+        },
+      })
+      return
+    }
+
     if (!data) {
       const range = RangeReference.fromCellReferences(
         CellReference.fromCoords(this, { rowIndex, colIndex: 0 }),
@@ -775,6 +836,18 @@ export class Grid {
   }
 
   public insertColsBefore(colIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (colIndex > 0 && this.spillHandler.intersectsSpill(RangeReference.fromColIndex(this, colIndex - 1))) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Insert rows',
+          body: 'Cannot insert rows within spilling cells',
+        },
+      })
+      return
+    }
+
     if (!data) {
       const range = RangeReference.fromCellReferences(
         CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
@@ -795,6 +868,17 @@ export class Grid {
   }
 
   public insertColsAfter(colIndex: number, count: number, data?: Mx<CellDTO>) {
+    if (this.spillHandler.intersectsSpill(RangeReference.fromColIndex(this, colIndex))) {
+      this.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Insert rows',
+          body: 'Cannot insert rows within spilling cells',
+        },
+      })
+      return
+    }
     const range = RangeReference.fromCellReferences(
       CellReference.fromCoords(this, { rowIndex: 0, colIndex }),
       CellReference.fromCoords(this, { rowIndex: this.rows.value.length - 1, colIndex: colIndex + count - 1 }),

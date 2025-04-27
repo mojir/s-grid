@@ -1,4 +1,3 @@
-import type { SGridComponent } from '../SGridComponent'
 import type { PubSubEvents, SGridEvent } from './pubSubEvents'
 
 export type EventType = 'Change' | 'Alert'
@@ -6,7 +5,6 @@ type Filter<Component extends keyof PubSubEvents = keyof PubSubEvents> =
   Partial<Record<Component, PubSubEvents[Component][number][] | true>>
 
 type Subscriber = {
-  listener: SGridComponent
   callback: (event: SGridEvent) => void
   filter?: Filter
 }

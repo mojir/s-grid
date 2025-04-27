@@ -92,6 +92,10 @@ export class RangeReference {
     }
   }
 
+  public hasReadonlyCells(): boolean {
+    return this.getCells().some(cell => cell.readonly.value)
+  }
+
   public rowCount(): number {
     return this.end.rowIndex - this.start.rowIndex + 1
   }
@@ -339,14 +343,22 @@ export class RangeReference {
     return this.getCellReferenceMatrix().map(reference => reference.getCell())
   }
 
-  public containsCell(cellReference: CellReference): boolean {
+  public contains(cellReference: Reference): boolean {
     if (this.grid !== cellReference.grid) {
       return false
     }
-    return cellReference.rowIndex >= this.start.rowIndex
-      && cellReference.rowIndex <= this.end.rowIndex
-      && cellReference.colIndex >= this.start.colIndex
-      && cellReference.colIndex <= this.end.colIndex
+    if (cellReference instanceof CellReference) {
+      return cellReference.rowIndex >= this.start.rowIndex
+        && cellReference.rowIndex <= this.end.rowIndex
+        && cellReference.colIndex >= this.start.colIndex
+        && cellReference.colIndex <= this.end.colIndex
+    }
+    else {
+      return cellReference.start.rowIndex >= this.start.rowIndex
+        && cellReference.end.rowIndex <= this.end.rowIndex
+        && cellReference.start.colIndex >= this.start.colIndex
+        && cellReference.end.colIndex <= this.end.colIndex
+    }
   }
 
   public intersects(rangeReference: RangeReference): boolean {

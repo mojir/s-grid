@@ -20,6 +20,14 @@ const localReferenceList = computed(() => {
     return reference.grid === grid.value
   })
 })
+
+const spillRange = computed(() => {
+  if (grid.value.currentCell.value.spillValue?.value) {
+    return grid.value.spillHandler.getSpillRange(grid.value.currentCell.value.spillValue.value.source)
+  }
+  return undefined
+})
+
 watch(grid.value.position, (newPosition) => {
   newPosition.getSurroundingCorners(grid.value.gridRange.value)
     .map(reference => document.getElementById(getDocumentCellId(reference)))
@@ -102,6 +110,11 @@ watch(grid, (grid) => {
       :key="region.toStringWithoutGrid()"
       :region="region"
       class="bg-referenced-cell"
+    />
+    <GridRegion
+      v-if="spillRange"
+      :region="spillRange"
+      class="border-2 border-dotted border-blue-500 bg-spill-cell"
     />
     <GridRegion
       v-if="grid.editor.editing.value"
