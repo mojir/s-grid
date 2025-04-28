@@ -76,7 +76,7 @@ function recalculate() {
 
 <template>
   <div
-    class="dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center min-h-8 overflow-auto"
+    class="dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center min-h-[40px] overflow-auto"
   >
     <div class="flex justify-between px-2 overlow-x-auto items-center">
       <div
@@ -140,7 +140,7 @@ function recalculate() {
       <Button
         v-if="isFormula"
         variant="link"
-        class="text-xs text-gray-500 h-auto"
+        class="text-sm text-gray-600 dark:text-gray-400 h-auto"
         @click="recalculate()"
       >
         Recalculate
