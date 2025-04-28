@@ -91,7 +91,7 @@ function recalculate() {
           :value="grid.name.value"
         />
         <FormulaBarEntry
-          title="Reference"
+          title="Selection"
           :value="selectionLabel"
         />
         <FormulaBarEntry
@@ -111,7 +111,7 @@ function recalculate() {
         />
         <FormulaBarEntry
           v-if="output !== null"
-          :title="singleCell ? 'Output' : 'Range Output'"
+          :title="singleCell ? 'Output' : 'Selection Output'"
           :value="JSON.stringify(output, null, 2)"
           :short-value="JSON.stringify(output)"
         />
