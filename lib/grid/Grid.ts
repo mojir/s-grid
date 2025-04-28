@@ -79,14 +79,14 @@ export class Grid {
 
     Object.entries(gridDTO.rowHeights)
       .map<[number, number]>(([rowId, height]) => [getRowIndex(rowId), height])
-      .filter(([rowIndex]) => rowIndex > 0 && rowIndex < newGrid.rows.value.length)
+      .filter(([rowIndex]) => rowIndex >= 0 && rowIndex < newGrid.rows.value.length)
       .forEach(([rowIndex, height]) => {
         newGrid.getRow(rowIndex).setHeight(height)
       })
 
     Object.entries(gridDTO.colWidths)
       .map<[number, number]>(([colId, width]) => [getColIndex(colId), width])
-      .filter(([colIndex]) => colIndex > 0 && colIndex < newGrid.cols.value.length)
+      .filter(([colIndex]) => colIndex >= 0 && colIndex < newGrid.cols.value.length)
       .forEach(([colIndex, width]) => {
         newGrid.getCol(colIndex).setWidth(width)
       })
@@ -130,6 +130,34 @@ export class Grid {
       }
     })
     return newGrid
+  }
+
+  public getDTO(): GridDTO {
+    const cells: Record<string, CellDTO> = {}
+    this.cells.flat()
+      .filter(cell => !cell.isPristine())
+      .forEach((cell) => {
+        cells[cell.cellReference.toStringWithoutGrid()] = cell.getDTO()
+      })
+
+    const rowHeights: Record<string, number> = {}
+    this.rows.value.forEach((row) => {
+      rowHeights[getRowId(row.index.value)] = row.height.value
+    })
+
+    const colWidths: Record<string, number> = {}
+    this.cols.value.forEach((col) => {
+      colWidths[getColId(col.index.value)] = col.width.value
+    })
+
+    return {
+      name: this.name.value,
+      nbrOfRows: this.rows.value.length,
+      nbrOfCols: this.cols.value.length,
+      cells,
+      rowHeights,
+      colWidths,
+    }
   }
 
   public getCell({ rowIndex, colIndex }: { rowIndex: number, colIndex: number }): Cell {
@@ -222,7 +250,8 @@ export class Grid {
   }
 
   public setBackgroundColor(color: Color | null, reference: Reference | null): void {
-    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
+    console.log('setBackgroundColor', color, reference)
+    ;(reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.backgroundColor.value = color
     })
   }
@@ -243,7 +272,8 @@ export class Grid {
   }
 
   public setTextColor(color: Color | null, reference: Reference | null): void {
-    (reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
+    console.log('setTextColor', color, reference)
+    ;(reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.textColor.value = color
     })
   }

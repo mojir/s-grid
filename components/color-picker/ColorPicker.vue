@@ -30,6 +30,7 @@ watch(open, (isOpen) => {
 function updateColor(color: Color | null) {
   emit('update:modelValue', color)
 }
+const { darkMode } = useSettings()
 </script>
 
 <template>
@@ -50,7 +51,7 @@ function updateColor(color: Color | null) {
           />
           <div
             class="w-full h-1 mt-[-3px]"
-            :style="{ backgroundColor: modelValue?.getStyleString() ?? 'transparent' }"
+            :style="{ backgroundColor: (!darkMode ? modelValue?.toggleLightness().getStyleString() : modelValue?.getStyleString()) ?? 'transparent' }"
           />
         </div>
       </Button>

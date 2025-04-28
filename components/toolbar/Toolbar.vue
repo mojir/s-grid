@@ -12,13 +12,21 @@ const { sidePanelOpen } = useSidePanel()
 
 <template>
   <div
-    class="gap-2 py-1.5 px-4 w-full flex items-center dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-3xl drop-shadow-md min-w-[780px] overflow-x-auto overflow-y-hidden"
+    class="gap-2 py-1 px-2 w-full flex dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-md drop-shadow-md min-w-[320px] overflow-x-auto overflow-y-hidden"
   >
-    <AppLogo
-      class="w-[60px] h-[60px] -ml-2 -my-3"
-    />
-
-    <div class="flex flex-wrap flex-1 items-center gap-x-0.5 gap-y-1">
+    <DropdownMenu>
+      <DropdownMenuTrigger as-child>
+        <AppLogo
+          class="w-[60px] h-[60px] -ml-2 -my-3 cursor-pointer"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem @click="project.clear()">
+          New
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <div class="flex overflow-x-auto flex-1 items-center gap-x-0.5 gap-y-1">
       <ToolbarUndoButton :project="project" />
       <ToolbarRedoButton
         :project="project"
@@ -61,7 +69,7 @@ const { sidePanelOpen } = useSidePanel()
     </div>
 
     <div
-      class="items-center dark:text-slate-400 text-gray-600 h-7 w-7"
+      class="items-center dark:text-slate-400 text-gray-600 h-7 w-7 mt-1"
     >
       <Icon
         v-if="!sidePanelOpen"

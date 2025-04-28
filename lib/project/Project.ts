@@ -11,11 +11,13 @@ import { PubSub } from '../PubSub'
 import { ProjectClipboard } from './ProjectClipboard'
 import { AutoFiller } from './AutoFiller'
 import { History } from './History'
+import { Saver } from './Saver'
 import { CommandCenter } from '~/lib/CommandCenter'
 import type { GridDTO } from '~/dto/GridDTO'
-import type { ProjectDTO } from '~/dto/ProjectDTO'
+import { createEmptyProject, type ProjectDTO } from '~/dto/ProjectDTO'
 
 export class Project {
+  public readonly name = ref('')
   public readonly pubSub = new PubSub()
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
@@ -25,11 +27,12 @@ export class Project {
   public readonly history = new History(this)
   public readonly autoFiller = new AutoFiller(this)
   public readonly diagrams = new Diagrams(this, [])
-  public readonly aliases: Aliases
+  public aliases: Aliases
   public readonly grids: Ref<Grid[]>
   public readonly keyboardClaimed = ref(false)
 
-  public constructor(projectDTO: ProjectDTO) {
+  private readonly saver = new Saver(this)
+  public constructor(projectDTO: ProjectDTO = createEmptyProject()) {
     if (projectDTO.grids.length === 0) {
       throw new Error('Project must have at least one grid')
     }
@@ -37,6 +40,7 @@ export class Project {
       throw new Error('Invalid currentGridIndex')
     }
 
+    this.name.value = projectDTO.name
     this.grids = shallowRef(projectDTO.grids.map(gridDTO => Grid.fromDTO(this, gridDTO)))
     this.currentGridIndex = ref(projectDTO.currentGridIndex)
     this.currentGrid = computed(() => {
@@ -45,6 +49,22 @@ export class Project {
     this.aliases = new Aliases(this, projectDTO.aliases)
     this.commandCenter.registerCommands()
     nextTick(() => this.history.start())
+  }
+
+  public clear() {
+    if (window !== undefined) {
+      this.saver.clear()
+      window.location.reload()
+    }
+  }
+
+  public getDTO(): ProjectDTO {
+    return {
+      name: this.name.value,
+      grids: this.grids.value.map(grid => grid.getDTO()),
+      currentGridIndex: this.currentGridIndex.value,
+      aliases: this.aliases.getDTO(),
+    }
   }
 
   public importGrid(gridDTO: GridDTO) {
@@ -86,6 +106,7 @@ export class Project {
     })
     this.grids.value = this.grids.value.filter(g => g !== grid)
     this.currentGridIndex.value = Math.max(this.currentGridIndex.value - 1, 0)
+    this.saver.save()
   }
 
   public renameGrid(grid: Grid, newName: string) {
@@ -106,6 +127,7 @@ export class Project {
         newValue: newGridName,
       },
     })
+    this.saver.save()
   }
 
   public addGrid() {
@@ -124,6 +146,7 @@ export class Project {
         nbrOfCols: defaultNbrOfCols,
       }),
     ]
+    this.saver.save()
   }
 
   public getValuesFromUndefinedIdentifiers(unresolvedIdentifiers: string[], grid: Grid) {

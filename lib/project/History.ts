@@ -51,6 +51,16 @@ export class History {
     })
   }
 
+  public clear(): void {
+    this.undoStack.value = []
+    this.redoStack.value = []
+    this.currentChanges = []
+    this.timer = null
+    this.changePromise = null
+    this.resolveChangePromise = null
+    this.paused = false
+  }
+
   public start(): void {
     this.paused = false
   }

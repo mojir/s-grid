@@ -2,6 +2,7 @@ import type { Project } from './project/Project'
 import type { ReferenceTransformation } from './transformer'
 import { getReferenceFromStringWithGrid, isReferenceString, type Reference } from './reference/utils'
 import { transformReference } from './transformer/referenceTransformer'
+import type { AliasesDTO } from '~/dto/AliasesDTO'
 
 const aliasNameRegexp = /^[A-Z][a-zA-Z0-9_-]*$/
 
@@ -19,6 +20,13 @@ export class Aliases {
       const reference = getReferenceFromStringWithGrid(project, referenceString)
       this.setAlias(alias, reference)
     })
+  }
+
+  public getDTO(): AliasesDTO {
+    return Object.entries(this.aliases.value).reduce((acc: Record<string, string>, [alias, reference]) => {
+      acc[alias] = reference.value.toString()
+      return acc
+    }, {})
   }
 
   public setAlias(alias: string, reference: Reference) {

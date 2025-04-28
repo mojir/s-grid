@@ -36,7 +36,7 @@ const cellBackgroundColor = computed<Color | null>(() => {
     return null
   }
 
-  if (darkMode.value) {
+  if (!darkMode.value) {
     return bg.toggleLightness()
   }
   return bg
@@ -48,7 +48,7 @@ const cellTextColor = computed<Color | null>(() => {
     return null
   }
 
-  if (darkMode.value) {
+  if (!darkMode.value) {
     return c.toggleLightness()
   }
   return c

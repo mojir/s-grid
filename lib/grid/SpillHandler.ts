@@ -51,6 +51,7 @@ export class SpillHandler {
           body: 'Spill range is out of bounds',
         },
       })
+      this.removeSpill(source)
       return
     }
 
@@ -67,6 +68,21 @@ export class SpillHandler {
           body: 'Cannot spill into readonly cells',
         },
       })
+      this.removeSpill(source)
+      return
+    }
+
+    if (spillRange.getCells().some(cell => cell !== source && cell.input.value)) {
+      this.grid.project.pubSub.publish({
+        type: 'Alert',
+        eventName: 'error',
+        data: {
+          title: 'Non-empty cell',
+          body: 'Cannot spill into non-empty cells',
+        },
+      })
+      this.removeSpill(source)
+      return
     }
 
     const cells = spillRange.getCells()

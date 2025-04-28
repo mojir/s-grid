@@ -62,6 +62,6 @@ export class CellEditor {
   }
 
   public editingLitsCode = computed<boolean>(() => {
-    return this.editing.value && this.editorText.value.startsWith('=')
+    return this.editing.value && (this.editorText.value.startsWith('=') || this.editorText.value.startsWith(':='))
   })
 }

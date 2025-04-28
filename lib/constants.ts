@@ -36,8 +36,8 @@ export const defaultFontFamily: StyleFontFamily = 'sans-serif:Arial'
 export const defaultLineHeight = getLineHeight(defaultFontSize)
 export const rowHeaderWidth = 50
 export const colHeaderHeight = 25
-export const minColHeight = 10
-export const minRowWidth = 10
+export const minColHeight = 16
+export const minRowWidth = 48
 export const defaultColWidth = 120
 export const defaultRowHeight = defaultLineHeight
 

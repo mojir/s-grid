@@ -223,6 +223,21 @@ export class Cell {
     })
   }
 
+  public isPristine() {
+    return this.input.value === ''
+      && this.isoDateInput.value === undefined
+      && this.cellType.value === defaultCellType
+      && this.numberFormatter.value === defaultNumberFormatter
+      && this.fontSize.value === defaultFontSize
+      && this.bold.value === false
+      && this.italic.value === false
+      && this.textDecoration.value === 'none'
+      && this.justify.value === 'auto'
+      && this.align.value === 'auto'
+      && this.backgroundColor.value === null
+      && this.textColor.value === null
+  }
+
   public input = computed<string>({
     get: () => this.inputState.value,
     set: (value) => {

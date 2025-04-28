@@ -56,6 +56,7 @@ export function mockProject(options: MockProjectOptions = {}): Project {
   }
 
   return new Project({
+    name: 'Untitled',
     grids: [grid1, grid2, grid3],
     currentGridIndex: options.currentGridIndex ?? 0,
     aliases: options.aliases ?? {},

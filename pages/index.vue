@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RangeReference } from '~/lib/reference/RangeReference'
-import { colHeaderHeight, defaultNbrOfCols, defaultNbrOfRows, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
+import { colHeaderHeight, minColHeight, minRowWidth, rowHeaderWidth } from '~/lib/constants'
 import { Project } from '~/lib/project/Project'
 import { DocumentIdType, type Direction } from '~/lib/reference/utils'
 import { CellReference, isCellReferenceString } from '~/lib/reference/CellReference'
 import type { Diagram } from '~/lib/Diagram'
+import type { ProjectDTO } from '~/dto/ProjectDTO'
 
 type RowIdentifier = {
   rowIndex: number
@@ -20,20 +21,26 @@ function isColIdentifier(value: unknown): value is ColIdentifier {
   return !!value && (value as ColIdentifier).colIndex !== undefined
 }
 
-const project = new Project({
-  grids: [
-    {
-      name: 'Grid1',
-      nbrOfRows: defaultNbrOfRows,
-      nbrOfCols: defaultNbrOfCols,
-      cells: {},
-      rowHeights: {},
-      colWidths: {},
-    },
-  ],
-  currentGridIndex: 0,
-  aliases: {},
-})
+function getSavedProject(): ProjectDTO | null {
+  if (window === undefined) {
+    return null
+  }
+  const currentProject = localStorage.getItem('current-project')
+  if (!currentProject) {
+    return null
+  }
+  try {
+    return JSON.parse(currentProject)
+  }
+  catch (e) {
+    console.error('Failed to parse saved project', e)
+    return null
+  }
+}
+
+const savedProject = getSavedProject()
+
+const project = savedProject ? new Project(savedProject) : new Project()
 project.pubSub.subscribe({
   filter: { Alert: true },
   callback: (event) => {
@@ -649,7 +656,7 @@ watch(grid, () => {
     <div
       class="flex flex-col overflow-hidden w-screen"
     >
-      <div class="m-4">
+      <div class="m-2">
         <Toolbar :project="project" />
       </div>
       <FormulaBar
