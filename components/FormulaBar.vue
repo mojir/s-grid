@@ -34,6 +34,10 @@ const input = computed(() => {
   return grid.value.currentCell.value.input.value
 })
 
+const displayString = computed(() => {
+  return grid.value.currentCell.value.display.value
+})
+
 const output = computed(() => {
   if (singleCell.value) {
     return grid.value.currentCell.value.output.value
@@ -43,10 +47,6 @@ const output = computed(() => {
     return mx.flat()
   }
   return mx.rows()
-})
-
-const internalOutput = computed(() => {
-  return grid.value.currentCell.value.internalOutput.value
 })
 
 const isFormula = computed(() => {
@@ -61,8 +61,19 @@ const cellReadonly = computed(() => {
   return grid.value.currentCell.value.readonly.value
 })
 
+const spillObject = computed(() => {
+  return grid.value.currentCell.value.spillValue.value
+})
+
 const spillValue = computed(() => {
-  return grid.value.currentCell.value.spillValue.value !== null
+  if (!spillObject.value) {
+    return null
+  }
+  return spillObject.value.source.internalOutput.value
+})
+
+const spillSource = computed(() => {
+  return spillObject.value?.source.cellReference.toStringWithoutGrid() ?? null
 })
 
 function recalculate() {
@@ -78,73 +89,82 @@ function recalculate() {
   <div
     class="dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center min-h-[40px] overflow-auto"
   >
-    <div class="flex justify-between px-2 overlow-x-auto items-center mt-[2px]">
+    <div class="flex gap-4 overlow-x-auto items-center mt-[2px]">
       <div
-        class="flex gap-x-4"
+        class="w-9 flex items-center pl-3 -mr-2"
       >
-        <FormulaBarEntry
-          title="Project"
-          :value="grid.project.name.value"
+        <Icon
+          v-if="isFormula"
+          name="mdi-reload"
+          class="w-6 h-6 cursor-pointer text-gray-500 dark:text-gray-500 hover:text-gray-700 hover:dark:text-gray-300"
+          @click="recalculate()"
         />
-        <FormulaBarEntry
-          title="Grid"
-          :value="grid.name.value"
-        />
-        <FormulaBarEntry
-          title="Selection"
-          :value="selectionLabel"
-        />
-        <FormulaBarEntry
-          v-if="!singleCell"
-          title="Rows"
-          :value="`${rows}`"
-        />
-        <FormulaBarEntry
-          v-if="!singleCell"
-          title="Cols"
-          :value="`${cols}`"
-        />
-        <FormulaBarEntry
-          v-if="singleCell"
-          title="Input"
-          :value="input"
-        />
-        <FormulaBarEntry
-          v-if="output !== null"
-          :title="singleCell ? 'Output' : 'Selection Output'"
-          :value="JSON.stringify(output, null, 2)"
-          :short-value="JSON.stringify(output)"
-        />
-        <FormulaBarEntry
-          v-if="singleCell"
-          title="Type"
-          :value="type"
-        />
-        <FormulaBarEntry
-          v-if="internalOutput && singleCell && spillValue"
-          title="Internal Output"
-          :value="JSON.stringify(internalOutput, null, 2)"
-          :short-value="JSON.stringify(internalOutput)"
-        />
-        <FormulaBarEntry
-          v-if="cellReadonly && singleCell"
-          title="Readonly"
-          value="Yes"
-        />
-        <FormulaBarEntry
-          v-if="spillValue && singleCell"
-          title="Spill Value"
-          value="Yes"
+        <Icon
+          v-else
+          sname="mdi-emoticon-kiss-outline"
+          name="mdi-emoticon-kiss-outline"
+          class="w-6 h-6 text-gray-500 dark:text-gray-500"
         />
       </div>
-      <Button
-        v-if="isFormula"
-        variant="link"
-        class="text-sm text-gray-600 dark:text-gray-400 h-auto"
-        @click="recalculate()"
-      >
-        Recalculate
-      </Button>
+      <FormulaBarEntry
+        title="Project"
+        :value="grid.project.name.value"
+      />
+      <FormulaBarEntry
+        title="Grid"
+        :value="grid.name.value"
+      />
+      <FormulaBarEntry
+        :title="singleCell ? 'Cell' : 'Selection'"
+        :value="selectionLabel"
+      />
+      <FormulaBarEntry
+        v-if="!singleCell"
+        title="Rows"
+        :value="`${rows}`"
+      />
+      <FormulaBarEntry
+        v-if="!singleCell"
+        title="Cols"
+        :value="`${cols}`"
+      />
+      <FormulaBarEntry
+        v-if="singleCell && input"
+        title="Input"
+        :value="input"
+      />
+      <FormulaBarEntry
+        v-if="singleCell && displayString"
+        title="Display string"
+        :value="displayString"
+      />
+      <FormulaBarEntry
+        v-if="output !== null"
+        :title="singleCell ? 'Output' : 'Selection Output'"
+        :value="JSON.stringify(output, null, 2)"
+        :short-value="JSON.stringify(output)"
+      />
+      <FormulaBarEntry
+        v-if="singleCell"
+        title="Type"
+        :value="type"
+      />
+      <FormulaBarEntry
+        v-if="cellReadonly && singleCell"
+        title="Readonly"
+        value="Yes"
+      />
+      <FormulaBarEntry
+        v-if="spillValue !== null && singleCell"
+        title="Spill value"
+        :value="JSON.stringify(spillValue, null, 2)"
+        :short-value="JSON.stringify(spillValue)"
+      />
+      <FormulaBarEntry
+        v-if="spillSource && singleCell"
+        title="Spill source"
+        :value="spillSource"
+      />
     </div>
   </div>
 </template>

@@ -195,7 +195,7 @@ const updateDimensions = () => {
   <textarea
     ref="inputRef"
     v-model="grid.editor.editorText.value"
-    class="border-2 border-blue-500 box-border min-h-full min-w-full resize-none relative px-1 dark:bg-slate-900 bg-white dark:text-white text-black"
+    class="border-2 border-blue-500 box-border min-h-full min-w-full resize-none relative px-1 dark:bg-slate-900 bg-white dark:text-white text-black font-mono"
     @input="updateDimensions"
     @keydown="onKeyDown"
     @click="grid.editor.keyboardEnabled.value = true"
