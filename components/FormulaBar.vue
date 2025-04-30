@@ -38,8 +38,15 @@ const displayString = computed(() => {
   return grid.value.currentCell.value.display.value
 })
 
+const type = computed(() => {
+  return grid.value.currentCell.value.derivedType.value
+})
+
 const output = computed(() => {
   if (singleCell.value) {
+    if (type.value === 'function') {
+      return 'λ'
+    }
     return grid.value.currentCell.value.output.value
   }
   const mx = grid.value.selection.selectedRange.value.getCellMatrix().map(cell => cell.output.value)
@@ -51,10 +58,6 @@ const output = computed(() => {
 
 const isFormula = computed(() => {
   return !!grid.value.currentCell.value.formula.value
-})
-
-const type = computed(() => {
-  return grid.value.currentCell.value.derivedType.value
 })
 
 const cellReadonly = computed(() => {
@@ -87,7 +90,7 @@ function recalculate() {
 
 <template>
   <div
-    class="dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center min-h-[40px] overflow-auto"
+    class="dark:bg-slate-900 bg-white border-t dark:border-slate-800 border-gray-300 items-center min-h-[40px] overflow-auto [scrollbar-width:none] [-ms-overflow-style:none]"
   >
     <div class="flex gap-4 overlow-x-auto items-center mt-[2px]">
       <div
@@ -139,7 +142,6 @@ function recalculate() {
         :value="displayString"
       />
       <FormulaBarEntry
-        v-if="output !== null"
         :title="singleCell ? 'Output' : 'Selection Output'"
         :value="JSON.stringify(output, null, 2)"
         :short-value="JSON.stringify(output)"

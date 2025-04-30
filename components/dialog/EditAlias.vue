@@ -52,7 +52,7 @@ const submitForm = handleSubmit(({ alias: newAlias, reference: newReference }) =
     project.value.aliases.editAlias(alias.value, { newAlias, newReference: aliasReference })
   }
   else {
-    project.value.aliases.setAlias(newAlias, aliasReference)
+    project.value.aliases.addAlias(newAlias, aliasReference)
   }
   open.value = false
 })

@@ -31,6 +31,7 @@ export function transformLitsPrograms({
   if (!litsProgram) {
     return
   }
+  const spillFormula = cell.spillFormula.value
   const lits = useLits()
 
   const unresolvedIdentifiers = lits.getUnresolvedIdentifers(litsProgram)
@@ -49,7 +50,7 @@ export function transformLitsPrograms({
       })
     },
   )
-  cell.setFormula(lits.untokenize(transformedTokenStream))
+  cell.input.value = `${spillFormula ? '=' : ':='}${lits.untokenize(transformedTokenStream)}`
 }
 
 function transformIdentifier({

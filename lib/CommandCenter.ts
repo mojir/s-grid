@@ -92,7 +92,7 @@ export class CommandCenter {
       execute: (alias: string, input: string, cellReferenceString?: string) => {
         const grid = this.project.currentGrid
         const reference = (cellReferenceString && CellReference.fromString(grid.value, cellReferenceString)) || grid.value.position.value
-        this.project.aliases.setAlias(alias, reference)
+        this.project.aliases.addAlias(alias, reference)
         grid.value.setInput(input, reference)
       },
       description: 'Clear the current cell',
@@ -230,7 +230,7 @@ export class CommandCenter {
         if (!reference) {
           throw new Error(`Invalid reference: ${referenceString}`)
         }
-        this.project.aliases.setAlias(alias, reference)
+        this.project.aliases.addAlias(alias, reference)
       },
       description: 'Create an alias for a cell',
     })

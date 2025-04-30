@@ -7,6 +7,9 @@ export function calculateDisplay({
   error,
   formattedNumber,
   formattedDate,
+  formula,
+  reverseAliases,
+  referenceString,
 }:
 {
   isEmpty: Ref<boolean>
@@ -14,6 +17,9 @@ export function calculateDisplay({
   error: Ref<Error | undefined>
   formattedNumber: Ref<Result<string>>
   formattedDate: Ref<Result<string>>
+  formula: Ref<string | undefined>
+  reverseAliases: Ref<Record<string, string>>
+  referenceString: string
 }): string {
   if (isEmpty.value) {
     return ''
@@ -23,17 +29,17 @@ export function calculateDisplay({
     return errorDisplay
   }
 
-  if (output.value === null || output.value === undefined) {
-    return ''
+  if (output.value === null) {
+    return 'null'
   }
 
   if (isLitsFunction(output.value)) {
-    // TODO, this is a temporary solution
-    // We can have many aliases for a cell, we should handle this
-    // const alias = this.project.aliases.getAliases(this.cellReference)[0]
-
-    // return `${alias ? `${alias} ` : ''}λ`
-    return 'λ'
+    const aliasName = reverseAliases.value[referenceString]
+    return aliasName
+      ? `λ: ${aliasName}`
+      : formula.value
+        ? `λ: ${formula.value}`
+        : 'λ'
   }
 
   if (typeof formattedNumber.value.result === 'string') {

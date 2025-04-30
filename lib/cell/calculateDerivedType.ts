@@ -1,3 +1,4 @@
+import { isGrid, isLitsFunction, isMatrix, isVector } from '@mojir/lits'
 import type { DerivedType } from './cellTypes'
 import type { CellType } from '~/dto/CellDTO'
 
@@ -30,6 +31,30 @@ export function calculateDerivedType({
 
   if (typeof output.value === 'string') {
     return 'string'
+  }
+
+  if (output.value === null) {
+    return 'null'
+  }
+
+  if (isMatrix(output.value)) {
+    return 'matrix'
+  }
+
+  if (isGrid(output.value)) {
+    return 'grid'
+  }
+
+  if (isVector(output.value)) {
+    return 'vector'
+  }
+
+  if (Array.isArray(output.value)) {
+    return 'array'
+  }
+
+  if (isLitsFunction(output.value)) {
+    return 'function'
   }
 
   return 'unknown'

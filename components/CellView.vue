@@ -68,7 +68,7 @@ const cellStyle = computed(() => {
   }
 
   style.fontSize = `${cell.value.fontSize.value}px`
-  style.fontFamily = toFontFamilyCss(cell.value.fontFamily.value)
+  style.fontFamily = cell.value.derivedType.value === 'function' ? 'monospace' : toFontFamilyCss(cell.value.fontFamily.value)
   style.lineHeight = `${getLineHeight(cell.value.fontSize.value) - 1}px`
   if (cell.value.bold.value) {
     style.fontWeight = 'bold'
@@ -100,9 +100,9 @@ const cellStyle = computed(() => {
   else {
     style.justifyContent = cell.value.error.value
       ? 'center'
-      : cell.value.derivedType.value === 'number' || cell.value.derivedType.value === 'date' || isLitsFunction(cell.value.output.value)
-        ? 'right'
-        : 'left'
+      : cell.value.derivedType.value === 'string' || cell.value.derivedType.value === 'function'
+        ? 'left'
+        : 'right'
   }
 
   if (cell.value.align.value === 'top') {

@@ -77,7 +77,7 @@ export function isHandle(value: unknown): value is Handle {
 
 export function jsToLits(js: unknown): string {
   if (js === null || js === undefined) {
-    return 'nil'
+    return 'null'
   }
   if (typeof js === 'string') {
     return `"${js}"`

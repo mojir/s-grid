@@ -12,7 +12,7 @@ const { sidePanelOpen } = useSidePanel()
 
 <template>
   <div
-    class="gap-2 py-1 px-2 w-full flex dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-md drop-shadow-md min-w-[320px] overflow-x-auto overflow-y-hidden"
+    class="gap-2 py-1 px-2 w-full flex dark:bg-slate-800 bg-white dark:text-slate-300 text-gray-700 box-border rounded-md drop-shadow-md min-w-[320px] overflow-y-hidden"
   >
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
@@ -26,7 +26,7 @@ const { sidePanelOpen } = useSidePanel()
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    <div class="flex overflow-x-auto flex-1 items-center gap-x-0.5 gap-y-1">
+    <div class="flex overflow-x-auto flex-1 items-center gap-x-0.5 gap-y-1 [scrollbar-width:none] [-ms-overflow-style:none]">
       <ToolbarUndoButton :project="project" />
       <ToolbarRedoButton
         :project="project"

@@ -46,7 +46,7 @@ export class Cell {
   public readonly textColor = ref<Color | null>(null)
 
   constructor(
-    public cellReference: CellReference,
+    public readonly cellReference: CellReference,
     {
       project,
       grid,
@@ -343,6 +343,9 @@ export class Cell {
     error: this.error,
     formattedNumber: this.formattedNumber,
     formattedDate: this.formattedDate,
+    formula: this.formula,
+    reverseAliases: this.project.aliases?.reverseAliases,
+    referenceString: this.cellReference.toStringWithGrid(),
   }))
 
   public error = computed<Error | undefined>(() => calculateError({
@@ -353,10 +356,6 @@ export class Cell {
     cellType: this.cellType,
     isoDate: this.isoDate,
   }))
-
-  public setFormula(formula: string) {
-    this.input.value = `=${formula}`
-  }
 
   public getDebugInfo() {
     return {
