@@ -35,10 +35,10 @@ export class SpillHandler {
 
   public addSpill(source: Cell, spillMatrix: Mx<unknown>): void {
     const spillRange = RangeReference.fromCellReferences(
-      source.cellReference,
+      source.cellReference.value,
       CellReference.fromCoords(this.grid, {
-        rowIndex: source.cellReference.rowIndex + spillMatrix.rows().length - 1,
-        colIndex: source.cellReference.colIndex + spillMatrix.cols().length - 1,
+        rowIndex: source.cellReference.value.rowIndex + spillMatrix.rows().length - 1,
+        colIndex: source.cellReference.value.colIndex + spillMatrix.cols().length - 1,
       }),
     )
 
@@ -98,8 +98,8 @@ export class SpillHandler {
 
     // set spill values for new cells in the spill range
     cells.forEach((c) => {
-      const row = c.cellReference.rowIndex - source.cellReference.rowIndex
-      const col = c.cellReference.colIndex - source.cellReference.colIndex
+      const row = c.cellReference.value.rowIndex - source.cellReference.value.rowIndex
+      const col = c.cellReference.value.colIndex - source.cellReference.value.colIndex
       const value = spillMatrix.get(row, col)
       c.spillValue.value = { value, source }
     })

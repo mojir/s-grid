@@ -76,7 +76,7 @@ const spillValue = computed(() => {
 })
 
 const spillSource = computed(() => {
-  return spillObject.value?.source.cellReference.toStringWithoutGrid() ?? null
+  return spillObject.value?.source.cellReference.value.toStringWithoutGrid() ?? null
 })
 
 function recalculate() {

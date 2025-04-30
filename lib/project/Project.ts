@@ -67,6 +67,13 @@ export class Project {
     }
   }
 
+  public setDTO(dto: ProjectDTO) {
+    if (window !== undefined) {
+      this.saver.save(dto)
+      location.reload()
+    }
+  }
+
   public importGrid(gridDTO: GridDTO) {
     const gridName = getGridName(gridDTO.name)
     const newGrid = Grid.fromDTO(this, gridDTO)

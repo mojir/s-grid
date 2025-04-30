@@ -44,9 +44,10 @@ export class Cell {
   public readonly align = ref<StyleAlign>('auto')
   public readonly backgroundColor = ref<Color | null>(null)
   public readonly textColor = ref<Color | null>(null)
+  public readonly cellReference: Ref<CellReference>
 
   constructor(
-    public readonly cellReference: CellReference,
+    public readonly cellRef: CellReference,
     {
       project,
       grid,
@@ -54,12 +55,13 @@ export class Cell {
       project: Project
       grid: Grid
     }) {
+    this.cellReference = shallowRef(cellRef)
     this.project = project
     this.grid = grid
 
     watch(this.display, (newValue, oldValue) => {
       if ((!oldValue && newValue) || oldValue.split('\n').length !== newValue.split('\n').length) {
-        grid.autoSetRowHeight({ cellReference: this.cellReference })
+        grid.autoSetRowHeight({ cellReference: this.cellReference.value })
       }
     })
 
@@ -344,8 +346,8 @@ export class Cell {
     formattedNumber: this.formattedNumber,
     formattedDate: this.formattedDate,
     formula: this.formula,
-    reverseAliases: this.project.aliases?.reverseAliases,
-    referenceString: this.cellReference.toStringWithGrid(),
+    project: this.project,
+    cellReference: this.cellReference,
   }))
 
   public error = computed<Error | undefined>(() => calculateError({
@@ -361,11 +363,11 @@ export class Cell {
     return {
       ...this.getDTO(),
       grid: this.grid.name.value,
-      reference: this.cellReference.toStringForGrid(this.grid),
+      reference: this.cellReference.value.toStringForGrid(this.grid),
       output: formatDebugOutputValue(this.output.value),
       display: this.display.value,
-      rowIndex: this.cellReference.rowIndex,
-      colIndex: this.cellReference.colIndex,
+      rowIndex: this.cellReference.value.rowIndex,
+      colIndex: this.cellReference.value.colIndex,
       localReferences: [...this.directLitsDeps.value],
       references: [...this.allLitsDeps.value],
       hasError: this.error.value,
@@ -378,8 +380,8 @@ export class Cell {
       eventName: 'cellChange',
       data: {
         gridName: this.grid.name.value,
-        rowIndex: this.cellReference.rowIndex,
-        colIndex: this.cellReference.colIndex,
+        rowIndex: this.cellReference.value.rowIndex,
+        colIndex: this.cellReference.value.colIndex,
         attribute,
         oldValue,
         newValue,

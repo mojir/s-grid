@@ -1,25 +1,27 @@
 import { isLitsFunction } from '@mojir/lits'
+import type { CellReference } from '../reference/CellReference'
+import type { Project } from '../project/Project'
 import type { Result } from './cellTypes'
 
 export function calculateDisplay({
+  project,
   isEmpty,
   output,
   error,
   formattedNumber,
   formattedDate,
   formula,
-  reverseAliases,
-  referenceString,
+  cellReference,
 }:
 {
+  project: Project
   isEmpty: Ref<boolean>
   output: Ref<unknown>
   error: Ref<Error | undefined>
   formattedNumber: Ref<Result<string>>
   formattedDate: Ref<Result<string>>
   formula: Ref<string | undefined>
-  reverseAliases: Ref<Record<string, string>>
-  referenceString: string
+  cellReference: Ref<CellReference>
 }): string {
   if (isEmpty.value) {
     return ''
@@ -34,7 +36,7 @@ export function calculateDisplay({
   }
 
   if (isLitsFunction(output.value)) {
-    const aliasName = reverseAliases.value[referenceString]
+    const aliasName = project.aliases.reverseAliases.value[cellReference.value.toStringWithGrid()]
     return aliasName
       ? `λ: ${aliasName}`
       : formula.value

@@ -27,8 +27,7 @@ export class Saver {
     }
   }
 
-  public save() {
-    const projectDTO = this.project.getDTO()
+  public save(projectDTO = this.project.getDTO()): void {
     if (window !== undefined) {
       window.localStorage.setItem('current-project', JSON.stringify(projectDTO))
     }

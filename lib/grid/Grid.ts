@@ -137,7 +137,7 @@ export class Grid {
     this.cells.flat()
       .filter(cell => !cell.isPristine())
       .forEach((cell) => {
-        cells[cell.cellReference.toStringWithoutGrid()] = cell.getDTO()
+        cells[cell.cellReference.value.toStringWithoutGrid()] = cell.getDTO()
       })
 
     const rowHeights: Record<string, number> = {}
@@ -521,7 +521,7 @@ export class Grid {
         if (!cell.display.value) {
           return acc
         }
-        const elem = document.getElementById(getDocumentCellId(cell.cellReference))
+        const elem = document.getElementById(getDocumentCellId(cell.cellReference.value))
         if (!elem) {
           return acc
         }
@@ -621,7 +621,7 @@ export class Grid {
     for (let rowIndex = rowIndexToDelete; rowIndex < rows.length; rowIndex += 1) {
       this.getRow(rowIndex).setIndex(rowIndex)
       for (let colIndex = 0; colIndex < cols.length; colIndex += 1) {
-        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference.value = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -708,7 +708,7 @@ export class Grid {
     for (let colIndex = colIndexToDelete; colIndex < cols.length; colIndex += 1) {
       this.getCol(colIndex).setIndex(colIndex)
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference.value = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -813,7 +813,7 @@ export class Grid {
     for (let rowIndex = rowInsertIndex + count; rowIndex < rows.length; rowIndex += 1) {
       this.getRow(rowIndex).setIndex(rowIndex)
       for (let colIndex = 0; colIndex < cols.length; colIndex += 1) {
-        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(this, { rowIndex, colIndex })
+        this.getCell({ rowIndex, colIndex }).cellReference.value = CellReference.fromCoords(this, { rowIndex, colIndex })
       }
     }
 
@@ -948,7 +948,7 @@ export class Grid {
     for (let colIndex = colInsertIndex + count; colIndex < cols.length; colIndex += 1) {
       this.getCol(colIndex).setIndex(colIndex)
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-        this.getCell({ rowIndex, colIndex }).cellReference = CellReference.fromCoords(
+        this.getCell({ rowIndex, colIndex }).cellReference.value = CellReference.fromCoords(
           this,
           { rowIndex, colIndex },
         )
