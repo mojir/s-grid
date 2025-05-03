@@ -15,6 +15,13 @@ export class SpillHandler {
 
   constructor(private grid: Grid) {}
 
+  public withoutSpilling(fn: () => void) {
+    const pausedSpillCells = [...this.spills.keys()]
+    this.spills.keys().forEach(cell => this.removeSpill(cell))
+    fn()
+    pausedSpillCells?.forEach(cell => cell.handleSpill())
+  }
+
   public getSpillRange(source: Cell): RangeReference | undefined {
     return this.spills.get(source)
   }
@@ -29,8 +36,26 @@ export class SpillHandler {
     }
   }
 
-  public intersectsSpill(rangeReference: RangeReference): boolean {
-    return this.spills.values().some(spillRange => spillRange.intersects(rangeReference))
+  public spillContainsRows(rowIndex: number, count: number) {
+    return this.spills.values().some((spillRange) => {
+      for (let i = rowIndex; i < rowIndex + count; i += 1) {
+        if (!spillRange.intersects(RangeReference.fromRowIndex(this.grid, i))) {
+          return false
+        }
+      }
+      return true
+    })
+  }
+
+  public spillContainsCols(colIndex: number, count: number) {
+    return this.spills.values().some((spillRange) => {
+      for (let i = colIndex; i < colIndex + count; i += 1) {
+        if (!spillRange.intersects(RangeReference.fromColIndex(this.grid, i))) {
+          return false
+        }
+      }
+      return true
+    })
   }
 
   public addSpill(source: Cell, spillMatrix: Mx<unknown>): void {
