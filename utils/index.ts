@@ -117,3 +117,23 @@ export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
+
+export function replaceInfinities(value: unknown): unknown {
+  if (value === Number.POSITIVE_INFINITY) {
+    return '∞'
+  }
+  if (value === Number.NEGATIVE_INFINITY) {
+    return '-∞'
+  }
+  if (Array.isArray(value)) {
+    return value.map(replaceInfinities)
+  }
+  if (typeof value === 'object' && value !== null) {
+    const result: Record<string, unknown> = {}
+    for (const [key, val] of Object.entries(value)) {
+      result[key] = replaceInfinities(val)
+    }
+    return result
+  }
+  return value
+}

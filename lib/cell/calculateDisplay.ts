@@ -53,7 +53,9 @@ export function calculateDisplay({
   }
 
   if (typeof output.value === 'object') {
-    return JSON.stringify(output.value)
+    return JSON.stringify(replaceInfinities(output.value))
+      .replaceAll('"∞"', '∞')
+      .replaceAll('"-∞"', '-∞')
   }
 
   return `${output.value}`

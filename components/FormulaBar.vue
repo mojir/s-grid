@@ -47,7 +47,7 @@ const output = computed(() => {
     if (type.value === 'function') {
       return 'λ'
     }
-    return grid.value.currentCell.value.output.value
+    return replaceInfinities(grid.value.currentCell.value.output.value)
   }
   const mx = grid.value.selection.selectedRange.value.getCellMatrix().map(cell => cell.output.value)
   if (rows.value === 1 || cols.value === 1) {
@@ -85,6 +85,11 @@ function recalculate() {
   nextTick(() => {
     grid.value.currentCell.value.input.value = temp
   })
+}
+
+function stringify(value: unknown, short: boolean) {
+  const str = short ? JSON.stringify(value) : JSON.stringify(value, null, 2)
+  return str.replaceAll('"∞"', '∞').replaceAll('"-∞"', '-∞')
 }
 </script>
 
@@ -143,8 +148,8 @@ function recalculate() {
       />
       <FormulaBarEntry
         :title="singleCell ? 'Output' : 'Selection Output'"
-        :value="JSON.stringify(output, null, 2)"
-        :short-value="JSON.stringify(output)"
+        :value="stringify(output, false)"
+        :short-value="stringify(output, true)"
       />
       <FormulaBarEntry
         v-if="singleCell"
@@ -159,8 +164,8 @@ function recalculate() {
       <FormulaBarEntry
         v-if="spillValue !== null && singleCell"
         title="Spill value"
-        :value="JSON.stringify(spillValue, null, 2)"
-        :short-value="JSON.stringify(spillValue)"
+        :value="stringify(spillValue, false)"
+        :short-value="stringify(spillValue, true)"
       />
       <FormulaBarEntry
         v-if="spillSource && singleCell"

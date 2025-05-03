@@ -22,6 +22,15 @@ export function calculateFormattedNumber({
   }
   if (derivedType.value === 'number') {
     if (typeof output.value === 'number') {
+      if (output.value === Number.POSITIVE_INFINITY) {
+        return { result: '∞' }
+      }
+      if (output.value === Number.NEGATIVE_INFINITY) {
+        return { result: '-∞' }
+      }
+      if (Number.isNaN(output.value)) {
+        return { result: 'NaN' }
+      }
       const formattedNumber = formatNumber({
         value: output.value,
         numberFormatter: numberFormatter.value,
