@@ -121,13 +121,13 @@ export default function useLits() {
     getAutoCompleter,
   }
 }
+const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys, ...Object.keys(interopFunctions)].sort())
 
 const autoCompleteTokenTypes = [
   'Operator',
   'ReservedSymbol',
   'Symbol',
 ]
-const litsCommands = new Set([...normalExpressionKeys, ...specialExpressionKeys, ...Object.keys(interopFunctions)].sort())
 export type Suggestion = {
   suggestion: string
   searchPattern: string

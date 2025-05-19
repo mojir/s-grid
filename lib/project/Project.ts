@@ -52,7 +52,7 @@ export class Project {
   }
 
   public clear() {
-    if (window !== undefined) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       this.saver.clear()
       window.location.reload()
     }
@@ -68,7 +68,7 @@ export class Project {
   }
 
   public setDTO(dto: ProjectDTO) {
-    if (window !== undefined) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       this.saver.save(dto)
       location.reload()
     }

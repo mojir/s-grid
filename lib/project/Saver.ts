@@ -22,13 +22,13 @@ export class Saver {
   }
 
   public clear(): void {
-    if (window !== undefined) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.removeItem('current-project')
     }
   }
 
   public save(projectDTO = this.project.getDTO()): void {
-    if (window !== undefined) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem('current-project', JSON.stringify(projectDTO))
     }
   }
