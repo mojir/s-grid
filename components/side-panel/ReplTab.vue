@@ -45,12 +45,25 @@ function onKeyDown(e: KeyboardEvent) {
 
   if (e.key === 'Tab') {
     e.preventDefault()
-    if (e.shiftKey) {
-      input.value = repl.getSuggestion(enteredText.value, 'previous')
+    const cursorPosition = inputRef.value?.selectionStart ?? 0
+    const suggestion = repl.getSuggestion(enteredText.value, cursorPosition, e.shiftKey ? 'previous' : 'next')
+    if (suggestion) {
+      input.value = suggestion.value
+      inputRef.value!.value = suggestion.value
+      inputRef.value!.setSelectionRange(suggestion.cursorPosition, suggestion.cursorPosition)
     }
-    else if (!hasModifierKey(e)) {
-      input.value = repl.getSuggestion(enteredText.value, 'next')
+  }
+  else if (e.key === 'Escape') {
+    const result = repl.clearSuggestions()
+    if (result) {
+      input.value = result.value
+      inputRef.value!.value = result.value
+      inputRef.value!.setSelectionRange(result.cursorPosition, result.cursorPosition)
+      return
     }
+  }
+  else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Meta' && e.key !== 'Alt') {
+    repl.clearSuggestions()
   }
 
   if (e.ctrlKey && e.key === 'l') {

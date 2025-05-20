@@ -7,6 +7,7 @@ import {
   type Context,
   type ApiName,
   isFunctionReference,
+  type AutoCompleter,
 } from '@mojir/lits'
 import type { Project } from './project/Project'
 import { interopFunctionNames } from './lits/interop'
@@ -22,9 +23,13 @@ export class REPL {
   private historyIndex = -1
   private globalContext: Context = {}
   public history = ref<HistoryEntry[]>([])
-  private suggestionHistory: { enteredText: string, suggestions: string[], index: number } | null = null
+  private autoCompleting: {
+    originalText: string
+    cursorPosition: number
+    autoCompleter: AutoCompleter
+  } | null = null
 
-  public constructor(private project: Project) {}
+  public constructor(private project: Project) { }
 
   public clearRepl() {
     nextTick(() => {
@@ -52,8 +57,7 @@ export class REPL {
     }
     const command = commands.get(topic)
     if (command) {
-      return `${command.name}
-${command.description}`
+      return `${command.name}\n${command.description}`
     }
     const reference = apiReference[topic as ApiName]
     if (reference) {
@@ -64,82 +68,45 @@ ${command.description}`
     return `Unknown command or function ${topic}`
   }
 
-  private getAllSuggestions(enteredText: string): string[] {
-    const commands = this.project.commandCenter.commands
-    const startsWithParentheses = enteredText.startsWith('(')
-    const searchPattern = (startsWithParentheses ? enteredText.substring(1).trim() : enteredText.trim()).toLowerCase()
-    const suggestions = new Set<string>()
-    const commandNames = Array.from(commands.keys())
-
-    commandNames
-      .filter(name => name.toLowerCase().startsWith(searchPattern))
-      .forEach(name => suggestions.add(name))
-
-    this.litsCommands.values()
-      .filter(name => name.toLowerCase().startsWith(searchPattern))
-      .forEach(name => suggestions.add(name))
-
-    if (!startsWithParentheses) {
-      commandNames
-        .filter(name => name.toLowerCase().includes(searchPattern))
-        .forEach(name => suggestions.add(name))
-
-      this.litsCommands.values()
-        .filter(name => name.toLowerCase().includes(searchPattern))
-        .forEach(name => suggestions.add(name))
-    }
-
-    return [...suggestions]
-  }
-
-  private getNextSuggestion(enteredText: string): string {
-    if (this.suggestionHistory === null) {
-      const suggestions = this.getAllSuggestions(enteredText)
-      this.suggestionHistory = {
-        enteredText,
-        suggestions,
-        index: -1,
+  public getSuggestion(text: string, position: number, direction: 'next' | 'previous'): { value: string, cursorPosition: number } | null {
+    console.log('getSuggestion', { text, position, direction, autoCompleting: !!this.autoCompleting })
+    if (!this.autoCompleting) {
+      const program = text.slice(0, position)
+      this.autoCompleting = {
+        autoCompleter: this.lits.getAutoCompleter(program, { globalContext: this.globalContext }),
+        cursorPosition: position,
+        originalText: text,
       }
     }
-    this.suggestionHistory.index += 1
-    if (this.suggestionHistory.index >= this.suggestionHistory.suggestions.length) {
-      this.suggestionHistory.index = 0
+
+    const result = direction === 'next'
+      ? this.autoCompleting.autoCompleter.getNextSuggestion()
+      : this.autoCompleting.autoCompleter.getPreviousSuggestion()
+
+    if (result === null) {
+      return null
     }
-    return this.getSuggestionString(this.suggestionHistory.suggestions[this.suggestionHistory.index], enteredText)
+
+    const { originalText, cursorPosition } = this.autoCompleting
+    const before = originalText.slice(0, cursorPosition - result.searchPattern.length)
+    const after = originalText.slice(before.length + result.searchPattern.length)
+
+    return {
+      value: before + result.suggestion + after,
+      cursorPosition: before.length + result.suggestion.length,
+    }
   }
 
-  private getPreviousSuggestion(enteredText: string): string {
-    if (this.suggestionHistory === null) {
-      const suggestions = this.getAllSuggestions(enteredText)
-      this.suggestionHistory = {
-        enteredText,
-        suggestions,
-        index: suggestions.length,
+  public clearSuggestions(): { value: string, cursorPosition: number } | null {
+    if (this.autoCompleting) {
+      const result = {
+        value: this.autoCompleting.originalText,
+        cursorPosition: this.autoCompleting.cursorPosition,
       }
+      this.autoCompleting = null
+      return result
     }
-    this.suggestionHistory.index -= 1
-    if (this.suggestionHistory.index < 0) {
-      this.suggestionHistory.index = this.suggestionHistory.suggestions.length - 1
-    }
-    return this.getSuggestionString(this.suggestionHistory.suggestions[this.suggestionHistory.index], enteredText)
-  }
-
-  public getSuggestion(enteredText: string, direction: 'next' | 'previous'): string {
-    if (direction === 'next') {
-      return this.getNextSuggestion(enteredText)
-    }
-    return this.getPreviousSuggestion(enteredText)
-  }
-
-  private getSuggestionString(suggestion: string | undefined, enteredText: string): string {
-    if (suggestion === undefined) {
-      return enteredText
-    }
-    return suggestion.includes('-') ? `'${suggestion}'` : suggestion
-  }
-
-  public clearSuggestions() {
-    this.suggestionHistory = null
+    return null
   }
 
   public run(program: string) {
@@ -150,6 +117,7 @@ ${command.description}`
       result = this.lits.run(program, {
         values,
         globalContext: this.globalContext,
+        repl: true,
       })
     }
     catch (error) {

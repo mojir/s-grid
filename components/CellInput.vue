@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AutoCompleter } from '@mojir/lits'
 import { onMounted, ref, watch } from 'vue'
 import type { Grid } from '~/lib/grid/Grid'
 
@@ -130,7 +131,7 @@ function onKeyDown(e: KeyboardEvent) {
         const prefix = originalText.startsWith('=') ? '=' : ':='
         const autoCompleteProgram = originalText.slice(prefix.length, cursorPosition)
         autoCompleting = {
-          autoCompleter: useLits().getAutoCompleter(autoCompleteProgram, Object.keys(grid.value.project.commandCenter.commands)),
+          autoCompleter: useLits().getAutoCompleter(autoCompleteProgram),
           originalText,
           cursorPosition,
           prefix,
