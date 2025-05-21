@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { isLitsFunction } from '@mojir/lits'
 import { computed, toRefs, type CSSProperties } from 'vue'
 import { toFontFamilyCss } from '~/dto/CellDTO'
 import type { Col } from '~/lib/Col'

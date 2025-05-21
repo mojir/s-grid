@@ -48,17 +48,17 @@ function onKeyDown(e: KeyboardEvent) {
     const cursorPosition = inputRef.value?.selectionStart ?? 0
     const suggestion = repl.getSuggestion(enteredText.value, cursorPosition, e.shiftKey ? 'previous' : 'next')
     if (suggestion) {
-      input.value = suggestion.value
-      inputRef.value!.value = suggestion.value
-      inputRef.value!.setSelectionRange(suggestion.cursorPosition, suggestion.cursorPosition)
+      input.value = suggestion.program
+      inputRef.value!.value = suggestion.program
+      inputRef.value!.setSelectionRange(suggestion.position, suggestion.position)
     }
   }
   else if (e.key === 'Escape') {
     const result = repl.clearSuggestions()
     if (result) {
-      input.value = result.value
-      inputRef.value!.value = result.value
-      inputRef.value!.setSelectionRange(result.cursorPosition, result.cursorPosition)
+      input.value = result.program
+      inputRef.value!.value = result.program
+      inputRef.value!.setSelectionRange(result.position, result.position)
       return
     }
   }

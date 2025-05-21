@@ -12,8 +12,6 @@ const { grid } = toRefs(props)
 const initialValue = ref('')
 const inputRef = ref<HTMLTextAreaElement>()
 let autoCompleting: {
-  originalText: string
-  cursorPosition: number
   autoCompleter: AutoCompleter
   prefix: '=' | ':='
 } | null = null
@@ -126,14 +124,15 @@ function onKeyDown(e: KeyboardEvent) {
     const inputElement = inputRef.value
     if (inputElement) {
       if (!autoCompleting) {
-        const originalText = grid.value.editor.editorText.value
-        const cursorPosition = inputRef.value?.selectionStart ?? 0
-        const prefix = originalText.startsWith('=') ? '=' : ':='
-        const autoCompleteProgram = originalText.slice(prefix.length, cursorPosition)
+        const editorValue = grid.value.editor.editorText.value
+        const prefix = editorValue.startsWith('=') ? '=' : ':='
+        const cursorPosition = (inputRef.value?.selectionStart ?? 0) - prefix.length
+        if (cursorPosition <= 0) {
+          return
+        }
+        const originalProgram = editorValue.slice(prefix.length)
         autoCompleting = {
-          autoCompleter: useLits().getAutoCompleter(autoCompleteProgram),
-          originalText,
-          cursorPosition,
+          autoCompleter: useLits().getAutoCompleter(originalProgram, cursorPosition),
           prefix,
         }
       }
@@ -145,9 +144,9 @@ function onKeyDown(e: KeyboardEvent) {
         return
       }
 
-      inputElement.value = autoCompleting.originalText.slice(0, autoCompleting.cursorPosition - suggestion.searchPattern.length) + suggestion.suggestion + autoCompleting.originalText.slice(autoCompleting.cursorPosition)
+      inputElement.value = autoCompleting.prefix + suggestion.program
       grid.value.editor.editorText.value = inputElement.value
-      const position = autoCompleting.cursorPosition - suggestion.searchPattern.length + suggestion.suggestion.length
+      const position = suggestion.position + autoCompleting.prefix.length
       inputElement.setSelectionRange(position, position)
     }
   }
@@ -155,9 +154,9 @@ function onKeyDown(e: KeyboardEvent) {
     if (autoCompleting) {
       const inputElement = inputRef.value
       if (inputElement) {
-        inputElement.value = autoCompleting.originalText
-        grid.value.editor.editorText.value = autoCompleting.originalText
-        const position = autoCompleting.cursorPosition
+        inputElement.value = autoCompleting.prefix + autoCompleting.autoCompleter.originalProgram
+        grid.value.editor.editorText.value = inputElement.value
+        const position = autoCompleting.autoCompleter.originalProgram.length + autoCompleting.prefix.length
         inputElement.setSelectionRange(position, position)
       }
       autoCompleting = null

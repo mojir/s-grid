@@ -23,11 +23,7 @@ export class REPL {
   private historyIndex = -1
   private globalContext: Context = {}
   public history = ref<HistoryEntry[]>([])
-  private autoCompleting: {
-    originalText: string
-    cursorPosition: number
-    autoCompleter: AutoCompleter
-  } | null = null
+  private autoCompleter: AutoCompleter | null = null
 
   public constructor(private project: Project) { }
 
@@ -68,42 +64,25 @@ export class REPL {
     return `Unknown command or function ${topic}`
   }
 
-  public getSuggestion(text: string, position: number, direction: 'next' | 'previous'): { value: string, cursorPosition: number } | null {
-    console.log('getSuggestion', { text, position, direction, autoCompleting: !!this.autoCompleting })
-    if (!this.autoCompleting) {
+  public getSuggestion(text: string, position: number, direction: 'next' | 'previous') {
+    console.log('getSuggestion', { text, position, direction, autoCompleter: !!this.autoCompleter })
+    if (!this.autoCompleter) {
       const program = text.slice(0, position)
-      this.autoCompleting = {
-        autoCompleter: this.lits.getAutoCompleter(program, { globalContext: this.globalContext }),
-        cursorPosition: position,
-        originalText: text,
-      }
+      this.autoCompleter = this.lits.getAutoCompleter(program, position, { globalContext: this.globalContext })
     }
 
-    const result = direction === 'next'
-      ? this.autoCompleting.autoCompleter.getNextSuggestion()
-      : this.autoCompleting.autoCompleter.getPreviousSuggestion()
-
-    if (result === null) {
-      return null
-    }
-
-    const { originalText, cursorPosition } = this.autoCompleting
-    const before = originalText.slice(0, cursorPosition - result.searchPattern.length)
-    const after = originalText.slice(before.length + result.searchPattern.length)
-
-    return {
-      value: before + result.suggestion + after,
-      cursorPosition: before.length + result.suggestion.length,
-    }
+    return direction === 'next'
+      ? this.autoCompleter.getNextSuggestion()
+      : this.autoCompleter.getPreviousSuggestion()
   }
 
-  public clearSuggestions(): { value: string, cursorPosition: number } | null {
-    if (this.autoCompleting) {
+  public clearSuggestions() {
+    if (this.autoCompleter) {
       const result = {
-        value: this.autoCompleting.originalText,
-        cursorPosition: this.autoCompleting.cursorPosition,
+        program: this.autoCompleter.originalProgram,
+        position: this.autoCompleter.originalPosition,
       }
-      this.autoCompleting = null
+      this.autoCompleter = null
       return result
     }
     return null

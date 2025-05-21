@@ -47,11 +47,11 @@ export default function useLits() {
     }
   }
 
-  function getAutoCompleter(program: string, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {
+  function getAutoCompleter(program: string, position: number, { values, globalContext }: { values?: Record<string, unknown>, globalContext?: Context } = {}) {
     try {
       return debugEnabled.value
-        ? litsDebug.getAutoCompleter(program, { jsFunctions: interopFunctions, contexts: [builtingContextDebug], values, globalContext })
-        : lits.getAutoCompleter(program, { jsFunctions: interopFunctions, contexts: [builtingContext], values, globalContext })
+        ? litsDebug.getAutoCompleter(program, position, { jsFunctions: interopFunctions, contexts: [builtingContextDebug], values, globalContext })
+        : lits.getAutoCompleter(program, position, { jsFunctions: interopFunctions, contexts: [builtingContext], values, globalContext })
     }
     catch (error) {
       logger.warn('Lits operation "getAutoCompleter" failed:', error)
