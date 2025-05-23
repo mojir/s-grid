@@ -125,6 +125,22 @@ export class Cell {
     })
   }
 
+  public executeFunction() {
+    if (this.formula && isLitsFunction(this.output.value) && this.output.value.paramCount === 0) {
+      const values = this.project.getValuesFromUndefinedIdentifiers(this.allLitsDeps.value, this.grid)
+      const program = `(${this.formula.value})()`
+      const result = this.lits.run(program, { values })
+      if (result || result === 0) {
+        if (typeof result === 'number' || typeof result === 'string') {
+          alert(result)
+        }
+        else {
+          alert(JSON.stringify(result, null, 2))
+        }
+      }
+    }
+  }
+
   public handleSpill() {
     const value = this.internalOutput.value
 

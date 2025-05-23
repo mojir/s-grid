@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isLitsFunction } from '@mojir/lits'
 import type { Project } from '~/lib/project/Project'
 
 const props = defineProps<{
@@ -54,6 +55,35 @@ const output = computed(() => {
     return mx.flat()
   }
   return mx.rows()
+})
+
+const paramCount = computed(() => {
+  if (!singleCell.value) {
+    return null
+  }
+  const fn = grid.value.currentCell.value.output.value
+  if (!isLitsFunction(fn)) {
+    return null
+  }
+  return fn.paramCount
+})
+
+const paramCountValue = computed(() => {
+  return typeof paramCount.value === 'number' ? paramCount.value : null
+})
+
+const paramCountMin = computed<number | null>(() => {
+  if (paramCount.value === null || typeof paramCount.value !== 'object') {
+    return null
+  }
+  return paramCount.value.min ?? null
+})
+
+const paramCountMax = computed<number | null>(() => {
+  if (paramCount.value === null || typeof paramCount.value !== 'object') {
+    return null
+  }
+  return paramCount.value.max ?? null
 })
 
 const isFormula = computed(() => {
@@ -155,7 +185,66 @@ function stringify(value: unknown, short: boolean) {
         v-if="singleCell"
         title="Type"
         :value="type"
-      />
+      >
+        <div
+          v-if="type === 'function'"
+          class="flex flex-col"
+        >
+          <div
+            class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
+          >
+            Type
+          </div>
+          <pre
+            id="formula-entry-value"
+            class="text-sm break-words font-mono"
+          >{{ type }}</pre>
+
+          <div
+            v-if="paramCountValue !== null"
+            class="flex flex-col"
+          >
+            <div
+              class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
+            >
+              Parameters
+            </div>
+            <pre
+              id="formula-entry-value"
+              class="text-sm break-words font-mono"
+            >{{ paramCountValue }}</pre>
+          </div>
+          <div
+            v-if="paramCountMin !== null"
+            class="flex flex-col"
+          >
+            <div
+              class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
+            >
+              Min parameters
+            </div>
+            <pre
+              id="formula-entry-value"
+              class="text-sm break-words font-mono"
+            >{{ paramCountMin }}</pre>
+          </div>
+          <div
+            v-if="paramCountMax !== null"
+            class="flex flex-col"
+          >
+            <div
+              class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
+            >
+              Max parameters
+            </div>
+            <pre
+              v-if="paramCountMax !== null"
+              id="formula-entry-value"
+              class="text-sm break-words font-mono"
+            >{{ paramCountMax }}</pre>
+          </div>
+        </div>
+      </FormulaBarEntry>
       <FormulaBarEntry
         v-if="cellReadonly && singleCell"
         title="Readonly"

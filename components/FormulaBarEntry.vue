@@ -33,16 +33,19 @@ function select() {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent class="min-w-[200px] max-w-[80dvw] overflow-y-auto max-h-[50dvh] p-2">
-        <div
-          class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500  hover:underline underline-offset-2 cursor-pointer"
-          @click="select"
-        >
-          {{ title }}
-        </div>
-        <pre
-          id="formula-entry-value"
-          class="text-sm break-words font-mono"
-        >{{ value }}</pre>
+        <slot>
+          <div
+            class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
+            :class="{ 'hover:underline cursor-pointer': !$slots.default }"
+            @click="select"
+          >
+            {{ title }}
+          </div>
+          <pre
+            id="formula-entry-value"
+            class="text-sm break-words font-mono"
+          >{{ value }}</pre>
+        </slot>
       </DropdownMenuContent>
     </DropdownMenu>
     <div class="flex-1 text-sm max-w-60 overflow-hidden text-ellipsis whitespace-nowrap font-mono">

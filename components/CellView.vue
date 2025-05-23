@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isLitsFunction } from '@mojir/lits'
 import { computed, toRefs, type CSSProperties } from 'vue'
 import { toFontFamilyCss } from '~/dto/CellDTO'
 import type { Col } from '~/lib/Col'
@@ -29,6 +30,12 @@ const cellContent = computed(() => reference.value.getCell().display)
 
 const cellId = computed(() => getDocumentCellId(reference.value))
 
+const button = computed(() => isLitsFunction(cell.value.output.value) && cell.value.output.value.paramCount === 0)
+
+function run() {
+  cell.value.executeFunction()
+}
+
 const cellBackgroundColor = computed<Color | null>(() => {
   const bg = cell.value.backgroundColor.value
   if (!bg) {
@@ -51,6 +58,16 @@ const cellTextColor = computed<Color | null>(() => {
     return c.toggleLightness()
   }
   return c
+})
+
+const buttonStyle = computed(() => {
+  const buttonStyle: CSSProperties = {
+    fontSize: `${cell.value.fontSize.value * 0.85}px`,
+    marginTop: '-1px',
+    width: `${col.value.width.value / 1.15}px`,
+    height: `${row.value.height.value - 8}px`,
+  }
+  return buttonStyle
 })
 
 const cellStyle = computed(() => {
@@ -84,7 +101,11 @@ const cellStyle = computed(() => {
     }
   }
 
-  if (cell.value.justify.value === 'left') {
+  if (button.value) {
+    style.textAlign = 'center'
+    style.justifyContent = 'center'
+  }
+  else if (cell.value.justify.value === 'left') {
     style.textAlign = 'left'
     style.justifyContent = 'flex-start'
   }
@@ -104,7 +125,10 @@ const cellStyle = computed(() => {
         : 'right'
   }
 
-  if (cell.value.align.value === 'top') {
+  if (button.value) {
+    style.alignItems = 'center'
+  }
+  else if (cell.value.align.value === 'top') {
     style.alignItems = 'flex-start'
   }
   else if (cell.value.align.value === 'middle') {
@@ -139,7 +163,19 @@ const cellStyle = computed(() => {
       class="px-1 h-full relative flex box-border text-sm whitespace-pre"
       @dblclick="emit('cell-dblclick', reference)"
     >
-      {{ cellContent }}
+      <Button
+        v-if="button"
+        :id="cellId"
+        :style="buttonStyle"
+        class="overflow-hidden"
+        @click.stop="run()"
+        @mousedown.stop
+      >
+        {{ cellContent }}
+      </Button>
+      <template v-else>
+        {{ cellContent }}
+      </template>
     </div>
   </div>
 </template>
