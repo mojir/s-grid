@@ -1,3 +1,4 @@
+import type { HistoryDTO } from '../lib/project/History'
 import type { AliasesDTO } from './AliasesDTO'
 import type { GridDTO } from './GridDTO'
 import { defaultNbrOfCols, defaultNbrOfRows } from '~/lib/constants'
@@ -7,6 +8,7 @@ export type ProjectDTO = {
   grids: GridDTO[]
   aliases: AliasesDTO
   currentGridIndex: number
+  history: HistoryDTO
 }
 
 export function createEmptyProject(): ProjectDTO {
@@ -24,5 +26,9 @@ export function createEmptyProject(): ProjectDTO {
     ],
     currentGridIndex: 0,
     aliases: {},
+    history: {
+      redoStack: [],
+      undoStack: [],
+    },
   }
 }

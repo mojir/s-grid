@@ -222,8 +222,6 @@ export class Cell {
   }
 
   public clear() {
-    // TODO, what if is readonly?
-    this.watchInput.value = false
     this.input.value = ''
     this.isoDateInput.value = undefined
     this.cellType.value = defaultCellType
@@ -236,9 +234,6 @@ export class Cell {
     this.align.value = 'bottom'
     this.backgroundColor.value = null
     this.textColor.value = null
-    nextTick(() => {
-      this.watchInput.value = true
-    })
   }
 
   public isPristine() {

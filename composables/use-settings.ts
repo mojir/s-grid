@@ -32,7 +32,6 @@ export default createSharedComposable(() => {
   watch(darkMode, (value) => {
     // Use setTimeout to avoid nuxt dark mode to override the value
     setTimeout(() => {
-      console.log('darkMode', value)
       useColorMode().preference = value ? 'dark' : 'light'
     }, 0)
   }, { immediate: true })

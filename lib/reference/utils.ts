@@ -6,17 +6,29 @@ import { isRangeReferenceString, RangeReference } from './RangeReference'
 
 export type Reference = CellReference | RangeReference
 
-export type Heading = 'up' | 'down' | 'left' | 'right'
-export type Direction =
-  | Heading
-  | 'top'
-  | 'bottom'
-  | 'leftmost'
-  | 'rightmost'
-  | 'pageUp'
-  | 'pageDown'
-  | 'pageRight'
-  | 'pageLeft'
+const headings = ['up', 'down', 'left', 'right'] as const
+export type Heading = typeof headings[number]
+export function isHeading(value: unknown): value is Heading {
+  return headings.includes(value as Heading)
+}
+
+export const directions = [
+  ...headings,
+  'top',
+  'bottom',
+  'leftmost',
+  'rightmost',
+  'pageUp',
+  'pageDown',
+  'pageRight',
+  'pageLeft',
+] as const
+
+export type Direction = typeof directions[number]
+
+export function isDirection(value: unknown): value is Direction {
+  return directions.includes(value as Direction)
+}
 
 export type Movement = {
   toGrid?: Grid

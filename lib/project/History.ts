@@ -8,25 +8,41 @@ function assertString(value: unknown): asserts value is string {
   }
 }
 
+export type HistoryDTO = {
+  undoStack: ChangeEvent[][]
+  redoStack: ChangeEvent[][]
+}
+
 export class History {
-  public constructor(private project: Project) {
+  private changePromise: null | Promise<void> = null
+  private resolveChangePromise: (() => void) | null = null
+
+  private currentChanges: ChangeEvent[] = []
+  private timer: null | ReturnType<typeof setTimeout> = null
+  private readonly undoStack: Ref<ChangeEvent[][]>
+  private readonly redoStack: Ref<ChangeEvent[][]>
+  private paused = true
+
+  public constructor(private project: Project, historyDTO: HistoryDTO) {
+    this.undoStack = shallowRef(historyDTO.undoStack)
+    this.redoStack = shallowRef(historyDTO.redoStack)
+
     this.project.pubSub.subscribe({
       filter: { Change: true },
       callback: this.onPubSubEvent.bind(this),
     })
   }
 
-  private changePromise: null | Promise<void> = null
-  private resolveChangePromise: (() => void) | null = null
-
-  private currentChanges: ChangeEvent[] = []
-  private timer: null | ReturnType<typeof setTimeout> = null
-  private readonly undoStack = shallowRef<ChangeEvent[][]>([])
-  private readonly redoStack = shallowRef<ChangeEvent[][]>([])
-  private paused = true
-
   public canUndo = computed(() => this.undoStack.value.length > 0)
   public canRedo = computed(() => this.redoStack.value.length > 0)
+
+  public async getHistoryDTO(): Promise<HistoryDTO> {
+    await this.changePromise
+    return {
+      redoStack: this.redoStack.value,
+      undoStack: this.undoStack.value,
+    }
+  }
 
   private onPubSubEvent(event: SGridEvent) {
     const changeEvent = event as ChangeEvent
@@ -200,6 +216,16 @@ export class History {
         }
         else {
           grid.insertColsBefore(data.colIndex, data.count)
+        }
+        break
+      }
+      case 'projectChange': {
+        const { data: { oldValue, newValue } } = event
+        if (method === 'undo') {
+          this.project.name.value = oldValue
+        }
+        else {
+          this.project.name.value = newValue
         }
         break
       }

@@ -4,7 +4,7 @@ import type { EventType } from '.'
 import type { CellDTO } from '~/dto/CellDTO'
 
 export const pubSubEvents = {
-  Change: ['rowsInserted', 'colsInserted', 'rowsRemoved', 'colsRemoved', 'cellChange', 'rowChange', 'colChange', 'cellChange', 'rowChange', 'colChange', 'gridChange'],
+  Change: ['rowsInserted', 'colsInserted', 'rowsRemoved', 'colsRemoved', 'cellChange', 'rowChange', 'colChange', 'cellChange', 'rowChange', 'colChange', 'gridChange', 'projectChange'],
   Alert: ['success', 'error', 'warning'],
 } as const satisfies Partial<Record<EventType, readonly string[]>>
 
@@ -114,6 +114,16 @@ export type GridChangeEvent = BaseEvent<
   }
 >
 
+export type ProjectChangeEvent = BaseEvent<
+  'Change',
+  'projectChange',
+  {
+    attribute: 'name'
+    newValue: string
+    oldValue: string
+  }
+>
+
 export type ChangeEvent =
   | RowsInsertedEvent
   | ColsInsertedEvent
@@ -123,6 +133,7 @@ export type ChangeEvent =
   | RowChangeEvent
   | ColChangeEvent
   | GridChangeEvent
+  | ProjectChangeEvent
 
 export type SGridEvent =
   | ChangeEvent

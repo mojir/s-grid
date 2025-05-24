@@ -20,9 +20,9 @@ function renameProject() {
   project.value.name.value = renameInput.value
   menuOpen.value = false
 }
-function download() {
+async function download() {
   // Get the text content from textarea
-  const textContent = JSON.stringify(project.value.getDTO(), null, 2)
+  const textContent = JSON.stringify(await project.value.getDTO(), null, 2)
 
   // Create a Blob containing the text
   const blob = new Blob([textContent], { type: 'text/plain' })

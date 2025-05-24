@@ -17,21 +17,41 @@ import type { GridDTO } from '~/dto/GridDTO'
 import { createEmptyProject, type ProjectDTO } from '~/dto/ProjectDTO'
 
 export class Project {
-  public readonly name = ref('')
+  private nameState = ref('')
+  public readonly name = computed<string>({
+    get: () => this.nameState.value,
+    set: (newValue: string) => {
+      if (!newValue) {
+        throw new Error('Project name cannot be empty')
+      }
+      const oldValue = this.nameState.value
+      this.nameState.value = newValue
+      this.pubSub.publish({
+        type: 'Change',
+        eventName: 'projectChange',
+        data: {
+          attribute: 'name',
+          newValue,
+          oldValue,
+        },
+      })
+    },
+  })
+
   public readonly pubSub = new PubSub()
   public readonly repl = new REPL(this)
   public readonly commandCenter = new CommandCenter(this)
   public readonly clipboard = new ProjectClipboard(this)
   public readonly currentGridIndex = ref(0)
   public readonly currentGrid: ComputedRef<Grid>
-  public readonly history = new History(this)
+  public readonly history: History
   public readonly autoFiller = new AutoFiller(this)
   public readonly diagrams = new Diagrams(this, [])
   public aliases: Aliases
   public readonly grids: Ref<Grid[]>
   public readonly keyboardClaimed = ref(false)
+  public readonly saver = new Saver(this)
 
-  private readonly saver = new Saver(this)
   public constructor(projectDTO: ProjectDTO = createEmptyProject()) {
     if (projectDTO.grids.length === 0) {
       throw new Error('Project must have at least one grid')
@@ -40,6 +60,7 @@ export class Project {
       throw new Error('Invalid currentGridIndex')
     }
 
+    this.history = new History(this, projectDTO.history ?? { undoStack: [], redoStack: [] })
     this.name.value = projectDTO.name
     this.grids = shallowRef(projectDTO.grids.map(gridDTO => Grid.fromDTO(this, gridDTO)))
     this.currentGridIndex = ref(projectDTO.currentGridIndex)
@@ -58,12 +79,14 @@ export class Project {
     }
   }
 
-  public getDTO(): ProjectDTO {
+  public async getDTO(): Promise<ProjectDTO> {
+    const history = await this.history.getHistoryDTO()
     return {
       name: this.name.value,
       grids: this.grids.value.map(grid => grid.getDTO()),
       currentGridIndex: this.currentGridIndex.value,
       aliases: this.aliases.getDTO(),
+      history,
     }
   }
 
@@ -137,12 +160,28 @@ export class Project {
     this.saver.save()
   }
 
-  public addGrid() {
-    let gridIndex = this.grids.value.length + 1
-    let gridName = `Grid${gridIndex}`
-    while (this.grids.value.find(grid => grid.name.value === getGridName(gridName))) {
-      gridIndex += 1
+  public addGrid(name?: string) {
+    let gridName: string = name ?? ''
+    if (!gridName) {
+      let gridIndex = this.grids.value.length + 1
       gridName = `Grid${gridIndex}`
+      while (this.grids.value.find(grid => grid.name.value === getGridName(gridName))) {
+        gridIndex += 1
+        gridName = `Grid${gridIndex}`
+      }
+    }
+    else {
+      if (this.grids.value.find(grid => grid.name.value === getGridName(gridName))) {
+        this.pubSub.publish({
+          type: 'Alert',
+          eventName: 'error',
+          data: {
+            title: 'Grid name exists',
+            body: `Grid with name "${gridName}" already exists`,
+          },
+        })
+        return
+      }
     }
 
     this.grids.value = [

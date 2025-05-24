@@ -1,3 +1,4 @@
+import type { ProjectDTO } from '../../dto/ProjectDTO'
 import type { SGridEvent } from '../PubSub/pubSubEvents'
 import type { Project } from './Project'
 
@@ -27,9 +28,10 @@ export class Saver {
     }
   }
 
-  public save(projectDTO = this.project.getDTO()): void {
+  public async save(projectDTO?: ProjectDTO) {
+    const dto = projectDTO ?? await this.project.getDTO()
     if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem('current-project', JSON.stringify(projectDTO))
+      window.localStorage.setItem('current-project', JSON.stringify(dto))
     }
   }
 }
