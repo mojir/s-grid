@@ -57,7 +57,7 @@ const output = computed(() => {
   return mx.rows()
 })
 
-const paramCount = computed(() => {
+const arity = computed(() => {
   if (!singleCell.value) {
     return null
   }
@@ -65,25 +65,15 @@ const paramCount = computed(() => {
   if (!isLitsFunction(fn)) {
     return null
   }
-  return fn.paramCount
-})
-
-const paramCountValue = computed(() => {
-  return typeof paramCount.value === 'number' ? paramCount.value : null
+  return fn.arity
 })
 
 const paramCountMin = computed<number | null>(() => {
-  if (paramCount.value === null || typeof paramCount.value !== 'object') {
-    return null
-  }
-  return paramCount.value.min ?? null
+  return arity.value?.min ?? null
 })
 
 const paramCountMax = computed<number | null>(() => {
-  if (paramCount.value === null || typeof paramCount.value !== 'object') {
-    return null
-  }
-  return paramCount.value.max ?? null
+  return arity.value?.max ?? null
 })
 
 const isFormula = computed(() => {
@@ -200,20 +190,6 @@ function stringify(value: unknown, short: boolean) {
             class="text-sm break-words font-mono"
           >{{ type }}</pre>
 
-          <div
-            v-if="paramCountValue !== null"
-            class="flex flex-col"
-          >
-            <div
-              class="flex items-center text-xs select-none text-gray-500 dark:text-gray-500 underline-offset-2"
-            >
-              Parameters
-            </div>
-            <pre
-              id="formula-entry-value"
-              class="text-sm break-words font-mono"
-            >{{ paramCountValue }}</pre>
-          </div>
           <div
             v-if="paramCountMin !== null"
             class="flex flex-col"

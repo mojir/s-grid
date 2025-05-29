@@ -126,7 +126,7 @@ export class Cell {
   }
 
   public executeFunction() {
-    if (this.formula && isLitsFunction(this.output.value) && this.output.value.paramCount === 0) {
+    if (this.formula && isLitsFunction(this.output.value) && this.output.value.arity.max === 0) {
       const values = this.project.getValuesFromUndefinedIdentifiers(this.allLitsDeps.value, this.grid)
       const program = `(${this.formula.value})()`
       const result = this.lits.run(program, { values })

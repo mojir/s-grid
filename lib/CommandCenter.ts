@@ -1,3 +1,4 @@
+import type { Arity } from '@mojir/lits'
 import { CellReference, isCellReferenceString } from './reference/CellReference'
 import { directions, getReferenceFromString, isDirection, type Direction } from './reference/utils'
 import { isRangeReferenceString, RangeReference } from './reference/RangeReference'
@@ -56,7 +57,7 @@ type Command<T extends string> = {
   name: T
   description: string
   execute: (...args: unknown[]) => unknown
-  paramCount: number | { min?: number, max?: number }
+  arity: Arity
 }
 
 function assertMaybeString(value: unknown): asserts value is string | undefined {
@@ -106,7 +107,8 @@ export class CommandCenter {
     this.commands.set(command.name, command)
     this.lits.registerJsFunction(command.name, {
       fn: (...args: unknown[]) => this.exec(command.name, ...args),
-      paramCount: command.paramCount,
+      arity: command.arity,
+      docString: command.description,
     })
   }
 
@@ -129,7 +131,7 @@ export class CommandCenter {
 
         this.project.diagrams.openDiagramEditor(diagramName)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Clear the current cell',
     })
 
@@ -145,7 +147,7 @@ export class CommandCenter {
         this.project.aliases.addAlias(alias, reference)
         grid.value.setInput(input, reference)
       },
-      paramCount: { min: 2, max: 3 },
+      arity: { min: 2, max: 3 },
       description: 'Clear the current cell',
     })
 
@@ -168,7 +170,7 @@ export class CommandCenter {
         const rangeReference = RangeReference.fromRowIndex(grid.value, rowIndex, count)
         grid.value.setRowHeight(height, rangeReference)
       },
-      paramCount: { min: 1, max: 3 },
+      arity: { min: 1, max: 3 },
       description: 'Set row height',
     })
 
@@ -191,7 +193,7 @@ export class CommandCenter {
         const rangeReference = RangeReference.fromColIndex(grid.value, colIndex, count)
         grid.value.setRowHeight(width, rangeReference)
       },
-      paramCount: { min: 1, max: 3 },
+      arity: { min: 1, max: 3 },
       description: 'Set column width',
     })
 
@@ -202,7 +204,7 @@ export class CommandCenter {
 
         this.project.currentGrid.value.movePosition(direction)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Move the position one step in a specific direction.',
     })
     this.registerCommand({
@@ -214,7 +216,7 @@ export class CommandCenter {
         const reference = CellReference.fromString(grid.value, cellReference)
         grid.value.movePositionTo(reference)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Move the position to a specific cell',
     })
     this.registerCommand({
@@ -234,7 +236,7 @@ export class CommandCenter {
         }
         grid.value.setInput(input, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
     })
     this.registerCommand({
@@ -254,7 +256,7 @@ export class CommandCenter {
         }
         grid.value.clear(reference)
       },
-      paramCount: { max: 1 },
+      arity: { max: 1 },
       description: 'Clear a cell or a range of cells. If no target is specified, clear the current selection.',
     })
     this.registerCommand({
@@ -263,7 +265,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         grid.value.clearAllCells()
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
       description: 'Clear all cells',
     })
     this.registerCommand({
@@ -278,7 +280,7 @@ export class CommandCenter {
         }
         throw new Error(`Invalid reference: ${cellreference}`)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Get a cell. If no target is specified, get the active cell.',
     })
     this.registerCommand({
@@ -299,7 +301,7 @@ export class CommandCenter {
           throw new Error(`Invalid reference: ${referenceString}`)
         }
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Get array of cells. If no target is specified, get all cells in the current selection.',
     })
     this.registerCommand({
@@ -315,7 +317,7 @@ export class CommandCenter {
         }
         this.project.aliases.addAlias(alias, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Create an alias for a cell',
     })
 
@@ -340,7 +342,7 @@ export class CommandCenter {
         }
         grid.value.setFontSize(fontSize, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the font size of a cell or a range of cells. If no target is specified, set the font size of all cells in the current selection.',
     })
 
@@ -362,7 +364,7 @@ export class CommandCenter {
         }
         grid.value.setBold(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the bold of a cell or a range of cells. If no target is specified, set the bold of all cells in the current selection.',
     })
 
@@ -384,7 +386,7 @@ export class CommandCenter {
         }
         grid.value.setItalic(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the italic of a cell or a range of cells. If no target is specified, set the italic of all cells in the current selection.',
     })
 
@@ -410,7 +412,7 @@ export class CommandCenter {
         }
         grid.value.setTextDecoration(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the text decoration of a cell or a range of cells. If no target is specified, set the text decoration of all cells in the current selection.',
     })
 
@@ -436,7 +438,7 @@ export class CommandCenter {
         }
         grid.value.setJustify(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the justify of a cell or a range of cells. If no target is specified, set the justify of all cells in the current selection.',
     })
 
@@ -462,7 +464,7 @@ export class CommandCenter {
         }
         grid.value.setAlign(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the align of a cell or a range of cells. If no target is specified, set the align of all cells in the current selection.',
     })
 
@@ -484,7 +486,7 @@ export class CommandCenter {
         }
         grid.value.setBackgroundColor(color, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the background color of a cell or a range of cells. If no target is specified, set the background color of all cells in the current selection.',
     })
 
@@ -508,7 +510,7 @@ export class CommandCenter {
 
         grid.value.setTextColor(color, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the text color of a cell or a range of cells. If no target is specified, set the text color of all cells in the current selection.',
     })
 
@@ -533,7 +535,7 @@ export class CommandCenter {
         }
         grid.value.setCellType(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the cell type of a cell or a range of cells. If no target is specified, set the cell type of all cells in the current selection.',
     })
 
@@ -555,7 +557,7 @@ export class CommandCenter {
         }
         grid.value.setNumberFormatter(value, reference)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
       description: 'Set the number formatter program of a cell or a range of cells. If no target is specified, set the number formatter program of all cells in the current selection.',
     })
 
@@ -565,14 +567,14 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         grid.value.resetSelection()
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
       description: 'Reset the selection',
     })
 
     this.registerCommand({
       name: 'GetSelection',
       execute: () => this.project.currentGrid.value.selection.selectedRange.value.toStringWithGrid(),
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
       description: 'Get the current selection.',
     })
 
@@ -583,7 +585,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         grid.value.selection.expandSelection(direction)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Expand the selection one step in a specific direction',
     })
 
@@ -595,7 +597,7 @@ export class CommandCenter {
         const grid = this.project.currentGrid
         grid.value.selection.expandSelectionTo(cellReference)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Expand the selection to a cell',
     })
 
@@ -616,7 +618,7 @@ export class CommandCenter {
           grid.value.selection.updateSelection(reference.start, reference.end)
         }
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
       description: 'Select a cell or a range',
     })
 
@@ -626,7 +628,7 @@ export class CommandCenter {
       execute: () => {
         repl.clearRepl()
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
     })
 
     this.registerCommand({
@@ -636,7 +638,7 @@ export class CommandCenter {
         repl.restartRepl()
         return 'Repl context cleared'
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
     })
 
     this.registerCommand({
@@ -647,7 +649,7 @@ export class CommandCenter {
 
         return repl.getHelp(topic)
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
     })
 
     this.registerCommand({
@@ -664,7 +666,7 @@ export class CommandCenter {
         const endRowIndex = Math.max(rowIndex1, rowIndex2)
         grid.value.deleteRows(startRowIndex, endRowIndex - startRowIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -681,7 +683,7 @@ export class CommandCenter {
         const endColIndex = Math.max(colIndex1, colIndex2)
         grid.value.deleteCols(startColIndex, endColIndex - startColIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -698,7 +700,7 @@ export class CommandCenter {
         const endRowIndex = Math.max(rowIndex1, rowIndex2)
         grid.value.insertRowsBefore(startRowIndex, endRowIndex - startRowIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -715,7 +717,7 @@ export class CommandCenter {
         const endRowIndex = Math.max(rowIndex1, rowIndex2)
         grid.value.insertRowsAfter(startRowIndex, endRowIndex - startRowIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -732,7 +734,7 @@ export class CommandCenter {
         const endColIndex = Math.max(colIndex1, colIndex2)
         grid.value.insertColsBefore(startColIndex, endColIndex - startColIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -749,7 +751,7 @@ export class CommandCenter {
         const endColIndex = Math.max(colIndex1, colIndex2)
         grid.value.insertColsAfter(startColIndex, endColIndex - startColIndex + 1)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -758,7 +760,7 @@ export class CommandCenter {
       execute: () => {
         this.project.history.undo()
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
     })
 
     this.registerCommand({
@@ -767,7 +769,7 @@ export class CommandCenter {
       execute: () => {
         this.project.history.redo()
       },
-      paramCount: 0,
+      arity: { min: 0, max: 0 },
     })
 
     this.registerCommand({
@@ -778,7 +780,7 @@ export class CommandCenter {
 
         this.project.addGrid(gridName)
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
     })
 
     this.registerCommand({
@@ -790,7 +792,7 @@ export class CommandCenter {
         const grid = gridName !== undefined ? this.project.getGridByName(gridName) : this.project.currentGrid.value
         this.project.removeGrid(grid)
       },
-      paramCount: { max: 1 },
+      arity: { max: 1 },
     })
 
     this.registerCommand({
@@ -803,7 +805,7 @@ export class CommandCenter {
         const grid = oldGridName !== undefined ? this.project.getGridByName(oldGridName) : this.project.currentGrid.value
         this.project.renameGrid(grid, newGridName)
       },
-      paramCount: { min: 1, max: 2 },
+      arity: { min: 1, max: 2 },
     })
 
     this.registerCommand({
@@ -814,7 +816,7 @@ export class CommandCenter {
 
         this.project.name.value = projectName
       },
-      paramCount: 1,
+      arity: { min: 1, max: 1 },
     })
 
     commandNames.forEach((name) => {

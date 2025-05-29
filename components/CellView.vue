@@ -30,7 +30,7 @@ const cellContent = computed(() => reference.value.getCell().display)
 
 const cellId = computed(() => getDocumentCellId(reference.value))
 
-const button = computed(() => isLitsFunction(cell.value.output.value) && cell.value.output.value.paramCount === 0)
+const button = computed(() => isLitsFunction(cell.value.output.value) && cell.value.output.value.arity.max === 0)
 
 function run() {
   cell.value.executeFunction()

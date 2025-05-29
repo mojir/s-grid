@@ -127,13 +127,13 @@ export class REPL {
       Array.from(commands.values())
         .sort((a, b) => a.name.localeCompare(b.name))
         .forEach((command) => {
-          result += `  ${command.name}: ${command.description}\n`
+          result += `${command.name}\n${command.description}\n\n`
         })
       return result
     }
     const command = commands.get(topic)
     if (command) {
-      return `${command.name}\n${command.description}`
+      return command.description
     }
     const reference = apiReference[topic as ApiName]
     if (reference) {
