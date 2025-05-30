@@ -250,7 +250,6 @@ export class Grid {
   }
 
   public setBackgroundColor(color: Color | null, reference: Reference | null): void {
-    console.log('setBackgroundColor', color, reference)
     ;(reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.backgroundColor.value = color
     })
@@ -272,7 +271,6 @@ export class Grid {
   }
 
   public setTextColor(color: Color | null, reference: Reference | null): void {
-    console.log('setTextColor', color, reference)
     ;(reference ?? this.selection.selectedRange.value).getCells().forEach((cell) => {
       cell.textColor.value = color
     })

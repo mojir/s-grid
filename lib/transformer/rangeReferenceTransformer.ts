@@ -9,7 +9,8 @@ export function transformRangeReference({
   rangeReference: RangeReference
   transformation: ReferenceTransformation
 }): RangeReference {
-  switch (transformation.type) {
+  const type = transformation.type
+  switch (type) {
     case 'move':
       return RangeReference.fromCellReferences(
         cellTransformMove(rangeReference.start, transformation),
@@ -33,9 +34,12 @@ export function transformRangeReference({
       return rangeTransformRowInsertBefore(rangeReference, transformation)
     case 'colInsertBefore':
       return rangeTransformColInsertBefore(rangeReference, transformation)
-    case 'gridDelete':
     case 'renameGrid':
+      return rangeReference
+    case 'gridDelete':
       throw new Error('Should have been handled')
+    default:
+      throw new Error(`Unknown transformation type: ${type satisfies never}`)
   }
 }
 

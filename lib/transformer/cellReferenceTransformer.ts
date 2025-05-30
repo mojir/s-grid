@@ -15,7 +15,8 @@ export function transformCellReference({
   cellReference: CellReference
   transformation: ReferenceTransformation
 }): CellReference {
-  switch (transformation.type) {
+  const type = transformation.type
+  switch (type) {
     case 'move':
       return cellTransformMove(cellReference, transformation)
     case 'rowDelete':
@@ -26,9 +27,12 @@ export function transformCellReference({
       return cellTransformRowInsertBefore(cellReference, transformation)
     case 'colInsertBefore':
       return cellTransformColInsertBefore(cellReference, transformation)
-    case 'gridDelete':
     case 'renameGrid':
+      return cellReference
+    case 'gridDelete':
       throw new Error('Should have been handled')
+    default:
+      throw new Error(`Unknown transformation type: ${type satisfies never}`)
   }
 }
 

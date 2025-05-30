@@ -16,6 +16,7 @@ const commandNames = [
   'OpenDiagramEditor!',
   'ExpandSelection!',
   'ExpandSelectionTo!',
+  'GetOutput',
   'GetCell',
   'GetCells',
   'GetSelection',
@@ -267,6 +268,21 @@ export class CommandCenter {
       },
       arity: { min: 0, max: 0 },
       description: 'Clear all cells',
+    })
+    this.registerCommand({
+      name: 'GetOutput',
+      execute: (cellreference) => {
+        assertString(cellreference)
+
+        const grid = this.project.currentGrid
+        const reference = this.project.aliases.getReference(cellreference)?.value ?? CellReference.fromString(grid.value, cellreference)
+        if (reference instanceof CellReference) {
+          return reference.getCell().output.value
+        }
+        throw new Error(`Invalid reference: ${cellreference}`)
+      },
+      arity: { min: 1, max: 1 },
+      description: 'Get the output from a cell. If no target is specified, use the selected cell.',
     })
     this.registerCommand({
       name: 'GetCell',
