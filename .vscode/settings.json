@@ -1,0 +1,8 @@
+{
+    "[typescript]": {
+        "editor.defaultFormatter": null,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        },
+    }
+}
