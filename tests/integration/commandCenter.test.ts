@@ -17,14 +17,14 @@ describe('CommandCenter', () => {
       commandCenter.exec('SetInput!', 'Hello', 'A1')
       expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Hello')
     })
-    test('Clear!', async () => {
+    test('ClearCell!', async () => {
       const project = mockProject()
       const commandCenter = project.commandCenter
       const persons = (await getTestFixtures()).persons
       project.importGrid(persons)
       expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('Albert')
       expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Berta')
-      commandCenter.exec('Clear!', 'A1')
+      commandCenter.exec('ClearCell!', 'A1')
       expect(project.currentGrid.value.getCell({ rowIndex: 0, colIndex: 0 }).input.value).toBe('')
       expect(project.currentGrid.value.getCell({ rowIndex: 1, colIndex: 0 }).input.value).toBe('Berta')
     })

@@ -7,9 +7,8 @@ import type { Project } from '~/lib/project/Project'
 import { isFontSize, isFormat, isStyleAlign, isStyleJustify, isStyleTextDecoration } from '~/dto/CellDTO'
 
 const commandNames = [
-  'Clear!',
+  'ClearCell!',
   'ClearAllCells!',
-  'ClearRepl!',
   'CreateNamedFunction!',
   'DeleteCols!',
   'DeleteRows!',
@@ -33,7 +32,7 @@ const commandNames = [
   'RemoveGrid!',
   'AddGrid!',
   'ResetSelection!',
-  'RestartRepl!',
+  'Clear!',
   'Select!',
   'AddAlias!',
   'SetBackgroundColor!',
@@ -241,7 +240,7 @@ export class CommandCenter {
       description: 'Set the input of a cell or a range of cells. If no target is specified, set input of all cells in the current selection.',
     })
     this.registerCommand({
-      name: 'Clear!',
+      name: 'ClearCell!',
       execute: (referenceString) => {
         assertMaybeString(referenceString)
 
@@ -639,20 +638,10 @@ export class CommandCenter {
     })
 
     this.registerCommand({
-      name: 'ClearRepl!',
-      description: 'Clear the Repl history',
+      name: 'Clear!',
+      description: 'Clear and restart REPL',
       execute: () => {
         repl.clearRepl()
-      },
-      arity: { min: 0, max: 0 },
-    })
-
-    this.registerCommand({
-      name: 'RestartRepl!',
-      description: 'Clear the Repl Lits context',
-      execute: () => {
-        repl.restartRepl()
-        return 'Repl context cleared'
       },
       arity: { min: 0, max: 0 },
     })

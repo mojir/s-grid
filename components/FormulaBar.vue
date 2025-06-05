@@ -13,15 +13,17 @@ const singleCell = computed(() => {
   return grid.value.selection.selectedRange.value.size() === 1
 })
 
-const selectionLabel = computed(() => {
+const reference = computed(() => {
   if (grid.value.editor.editing.value) {
-    return grid.value.position.value.toStringWithoutGrid()
+    return grid.value.position.value
   }
   if (singleCell.value) {
-    return grid.value.selection.selectedRange.value.start.toStringWithoutGrid()
+    return grid.value.selection.selectedRange.value.start
   }
-  return grid.value.selection.selectedRange.value.toStringWithoutGrid()
+  return grid.value.selection.selectedRange.value
 })
+
+const selectionLabel = computed(() => reference.value.toStringWithoutGrid())
 
 const rows = computed(() => {
   return grid.value.selection.selectedRange.value.rowCount()
@@ -97,6 +99,10 @@ const spillValue = computed(() => {
 
 const spillSource = computed(() => {
   return spillObject.value?.source.cellReference.value.toStringWithoutGrid() ?? null
+})
+
+const alias = computed(() => {
+  return project.value.aliases.reverseAliases.value[reference.value.toStringWithGrid()] ?? null
 })
 
 function recalculate() {
@@ -236,6 +242,11 @@ function stringify(value: unknown, short: boolean) {
         v-if="spillSource && singleCell"
         title="Spill source"
         :value="spillSource"
+      />
+      <FormulaBarEntry
+        v-if="alias"
+        title="Alias"
+        :value="alias"
       />
     </div>
   </div>

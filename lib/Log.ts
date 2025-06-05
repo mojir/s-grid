@@ -49,7 +49,7 @@ export class Log {
     gridDTO.cells.E1 = { input: 'Message', bold: true }
 
     this.entries.forEach((entry, rowIndex) => {
-      const textColor = entry.logLevel === 'error' ? errorColor : entry.logLevel === 'warn' ? warnColor : infoColor
+      const textColor = entry.logLevel === 'error' ? errorColor : entry.logLevel === 'warn' ? warnColor : undefined
       const rowId = getRowId(rowIndex + 1)
       gridDTO.cells[`A${rowId}`] = {
         input: new Date(entry.timestamp).toISOString(),

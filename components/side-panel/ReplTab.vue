@@ -20,6 +20,10 @@ const emit = defineEmits<{
 
 const inputRef = ref<HTMLInputElement>()
 
+onMounted(() => {
+  inputRef.value?.focus()
+})
+
 watch(enteredText, () => {
   repl.clearSuggestions()
 })
@@ -64,14 +68,6 @@ function onKeyDown(e: KeyboardEvent) {
   }
   else if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Meta' && e.key !== 'Alt') {
     repl.clearSuggestions()
-  }
-
-  if (e.ctrlKey && e.key === 'l') {
-    e.preventDefault()
-    commandCenter.exec('ClearRepl!')
-    enteredText.value = input.value = ''
-    repl.clearSuggestions()
-    repl.resetHistoryIndex()
   }
 
   if (hasModifierKey(e)) {

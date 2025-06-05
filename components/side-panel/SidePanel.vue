@@ -11,6 +11,12 @@ const { sidePanelOpen, currentTab } = useSidePanel()
 const repl = project.value.repl
 const tabsRef = ref()
 
+watch(currentTab, () => {
+  if (currentTab.value === 'repl') {
+    scrollToBottom()
+  }
+})
+
 watch(sidePanelOpen, () => {
   if (sidePanelOpen.value && currentTab.value === 'repl') {
     scrollToBottom()

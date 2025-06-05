@@ -116,10 +116,6 @@ export class REPL {
     })
   }
 
-  public restartRepl() {
-    this.globalContext = {}
-  }
-
   public getHelp(topic?: string): string {
     const commands = this.project.commandCenter.commands
     if (!topic) {

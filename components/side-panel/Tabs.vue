@@ -5,7 +5,7 @@ const tabContentRef = ref<HTMLDivElement>()
 defineExpose({
   scrollToBottom: () => tabContentRef.value?.scrollTo({
     top: tabContentRef.value.scrollHeight,
-    behavior: 'smooth',
+    behavior: 'instant',
   }),
 })
 </script>
